@@ -687,6 +687,15 @@ body.kb .tabbar,body.kb .fab{display:none!important}
 .hgoal button b{font-size:15px}
 .hgoal button span{font-size:12px;color:var(--muted);line-height:1.35}
 .hgoal button.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--bg))}
+.mt2{display:flex;flex-direction:column;margin-top:8px;gap:2px}
+.mt2 .mr{display:flex;align-items:center;gap:10px;min-height:30px;font-size:13.5px}
+.mt2 .mr .tm{width:62px;flex:none;color:var(--muted);font-weight:700;font-size:12.5px}
+.mt2 .mr .tt{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mt2 .mr.past{opacity:.45}
+.mt2 .mr.live .tm{color:var(--meet)}
+.mt2 .mr a.pill{height:24px;padding:0 9px;font-size:11.5px}
+.adchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.adchips span{font-size:12px;font-weight:700;padding:3px 8px;border-radius:8px;background:color-mix(in srgb,var(--meet) 14%,var(--bg));color:var(--ink)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -1251,7 +1260,8 @@ function todayData() {
 }
 const inboxTasks = () => open().filter(t => !t.projectId && !t.date && !t.someday).sort(sortTasks);
 function meetingsOn(d) { const seen = new Set(); return Object.values(S.meetLog).filter(m => !m.allDay && ymd(new Date(m.s)) === d).sort((a, b) => a.s - b.s).filter(m => { const k = (m.t || '').trim().toLowerCase() + '|' + m.s; if (seen.has(k)) return false; seen.add(k); return true; }); }
-function applyPcal() { Object.keys(S.meetLog).forEach(k => { if (S.meetLog[k].src === 'pcal') delete S.meetLog[k]; }); ((S.pcal || {}).ev || []).forEach(([id, t, s0, e0, all, cal, join]) => { if (all) return; S.meetLog['pc-' + id + '-' + s0] = { id: 'pc-' + id + '-' + s0, t: t || 'Busy', s: s0, e: e0, allDay: false, join: join || '', src: 'pcal', cal: cal || '' }; }); }
+function allDayOn(d) { const d0 = pYmd(d).getTime(), d1 = d0 + 864e5; const seen = new Set(); return Object.values(S.meetLog).filter(m => m.allDay && m.s < d1 && (m.e || m.s + 1) > d0).filter(m => { const k = (m.t || '').toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }); }
+function applyPcal() { Object.keys(S.meetLog).forEach(k => { if (S.meetLog[k].src === 'pcal') delete S.meetLog[k]; }); ((S.pcal || {}).ev || []).forEach(([id, t, s0, e0, all, cal, join]) => { S.meetLog['pc-' + id + '-' + s0] = { id: 'pc-' + id + '-' + s0, t: t || 'Busy', s: s0, e: e0, allDay: !!all, join: join || '', src: 'pcal', cal: cal || '' }; }); }
 function nextOcc(md) { const td = today(); const y = new Date().getFullYear(); let d = mkDateExact(y, md); if (d < td) d = mkDateExact(y + 1, md); return d; }
 function mkDateExact(y, md) { const [m, d] = md.split('-').map(Number); let dt = new Date(y, m - 1, d); if (dt.getMonth() !== m - 1) dt = new Date(y, m - 1, 28); return ymd(dt); }
 function datesOn(d) { return S.dates.filter(x => nextOcc(x.md) === d || mkDateExact(pYmd(d).getFullYear(), x.md) === d); }
@@ -1430,7 +1440,7 @@ function vWeek() {
     const ms = meetingsOn(d);
     h += `<section class="wcol" data-day="${d}" aria-label="${DAYSL[dd.getDay()]}"><div class="wh"><div class="wtop"><b>${i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : DAYSL[dd.getDay()]}</b><span>${dd.getDate()} ${MONS[dd.getMonth()]}</span></div><div class="wprog"><i style="width:${ts.length ? Math.round(doneN / ts.length * 100) : 0}%"></i></div></div>
     <button class="wadd" data-act="addon" data-d="${d}"><span>${I.plus}Add task</span><span>${mins ? fmtMins(mins) : ''}</span></button>
-    ${ms.length ? `<div class="wmeet">${I.gcal ? '' : ''}${plural(ms.length, 'meeting')}: ${esc(ms.slice(0, 2).map(m => fmtClock(m.s) + ' ' + m.t).join(', '))}${ms.length > 2 ? '…' : ''}</div>` : ''}
+    ${ms.length ? `<div class="wmeet">${ms.map(m => `${fmtClock(m.s)} ${esc(m.t)}`).join('<br>')}</div>` : ''}${allDayOn(d).length ? `<div class="adchips">${allDayOn(d).map(m => `<span>${esc(m.t)}</span>`).join('')}</div>` : ''}
     ${show.map(t => wcard(t)).join('')}</section>`;
   }
   return h + `</div>`;
@@ -1495,13 +1505,15 @@ function dayBand() {
   const now = Date.now(); const next = ms.find(m => m.e > now);
   const cur = S.cur ? catOf(S.cur.cat) : null;
   const nowChip = S.settings.track !== false ? `<button class="nowmini" data-act="nowpick">${cur ? `<span class="nowdot"></span>${cur.e} ${fmtMins((now - S.cur.s) / 6e4)}` : `${I.clock} Log`}</button>` : '';
-  if (!ms.length && !fs.length && !ticks.length) return `<div class="slim"><div class="sl1"><span class="nx">No meetings today</span>${loadHtml()}${nowChip}</div></div>`;
+  const ad = allDayOn(D); const adH = ad.length ? `<div class="adchips">${ad.map(m => `<span>${esc(m.t)}</span>`).join('')}</div>` : '';
+  if (!ms.length && !fs.length && !ticks.length) return `<div class="slim"><div class="sl1"><span class="nx">No meetings today</span>${loadHtml()}${nowChip}</div>${adH}</div>`;
   let bars = ms.map(m => { const s0 = minOf(m.s), e = Math.max(minOf(m.e) || 1440, s0 + 10); return `<i style="left:${pos(s0)}%;width:${Math.max(pos(e) - pos(s0), 1.2)}%;background:var(--meet)" title="${esc(m.t)}"></i>`; }).join('');
   bars += fs.map(f => { const s0 = minOf(f.start); return `<i style="left:${pos(s0)}%;width:${Math.max(pos(s0 + f.mins) - pos(s0), 1.2)}%;background:var(--accent)"></i>`; }).join('');
   bars += ticks.map(t => { const [hh, mi] = t.time.split(':').map(Number); return `<i style="left:${pos(hh * 60 + mi)}%;width:4px;top:3px;bottom:3px;background:${t.priority === 1 ? 'var(--danger)' : 'var(--ink)'}"></i>`; }).join('');
-  let nx = ms.length ? plural(ms.length, 'meeting') : 'Your day';
-  if (next) { const live = next.s <= now; const inMin = Math.round((next.s - now) / 6e4); nx = `${live ? 'Now' : inMin < 60 ? 'In ' + inMin + ' min' : fmtClock(next.s)}: ${esc(next.t)}`; }
-  return `<div class="slim"><div class="sl1"><span class="nx">${nx}</span>${next && next.join ? `<a class="pill meet" href="${esc(next.join)}" target="_blank" rel="noopener">Join</a>` : ''}${loadHtml()}${nowChip}</div><div class="trk2" role="img" aria-label="Your day from 8 AM to 10 PM">${bars}<span class="nw" style="left:${pos(minOf(now))}%"></span></div></div>`;
+  let nx = ms.length ? `${plural(ms.length, 'meeting')}${ms.length ? `, ${fmtMins(ms.reduce((a, m) => a + (m.e - m.s) / 6e4, 0))}` : ''}` : 'Your day';
+  if (next && next.s > now) { const inMin = Math.round((next.s - now) / 6e4); if (inMin < 60) nx += ` · next in ${inMin} min`; }
+  const list = ms.length ? `<div class="mt2">${ms.map(m => { const live = m.s <= now && m.e > now, past = m.e <= now; return `<div class="mr${past ? ' past' : ''}${live ? ' live' : ''}"><span class="tm">${live ? 'Now' : fmtClock(m.s)}</span><span class="tt">${esc(m.t)}</span>${m.join && !past ? `<a class="pill meet" href="${esc(m.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>`; }).join('')}</div>` : '';
+  return `<div class="slim"><div class="sl1"><span class="nx">${nx}</span>${loadHtml()}${nowChip}</div><div class="trk2" role="img" aria-label="Your day from 8 AM to 10 PM">${bars}<span class="nw" style="left:${pos(minOf(now))}%"></span></div>${list}${adH}</div>`;
 }
 function groupBy(list, mode) {
   if (mode === 'priority') { return [1, 2, 3, 4].map(p => ({ k: p === 4 ? 'No priority' : 'Priority ' + p, color: p === 1 ? 'var(--danger)' : p === 2 ? 'var(--accent-text)' : p === 3 ? 'var(--meet)' : 'var(--ring)', items: list.filter(t => t.priority === p).sort(sortTasks) })).filter(g => g.items.length); }
@@ -1591,7 +1603,7 @@ function vCalendar() {
     const d = new Date(y, m - 1, 1 - off + i); const k = ymd(d);
     if (i >= 35 && d.getMonth() !== m - 1) break;
     const nt = S.tasks.filter(t => t.date === k && (!t.done || S.settings.showDone)).length + repeating.filter(t => t.date !== k && occursOn(t, k)).length;
-    const nm = meetingsOn(k).length, nd = datesOn(k).length;
+    const nm = meetingsOn(k).length + allDayOn(k).length, nd = datesOn(k).length;
     const dots = (nt ? '<i style="background:var(--accent)"></i>' : '') + (nm ? '<i style="background:var(--meet)"></i>' : '') + (nd ? '<i style="background:var(--danger)"></i>' : '');
     h += `<button class="cd${d.getMonth() !== m - 1 ? ' om' : ''}${k === td ? ' td' : ''}${k === calSel ? ' sel' : ''}" data-act="calday" data-d="${k}" aria-label="${d.getDate()} ${MONSL[d.getMonth()]}${nt ? ', ' + plural(nt, 'task') : ''}"><span>${d.getDate()}</span><span class="dots">${dots}</span></button>`;
   }
@@ -1600,11 +1612,12 @@ function vCalendar() {
   const rep = repeating.filter(t => t.date !== calSel && occursOn(t, calSel));
   const ms = meetingsOn(calSel), bd = datesOn(calSel);
   h += `<div class="sechead"><h2 class="sec">${fmtDate(calSel) === 'Today' ? 'Today' : DAYSL[sd.getDay()] + ', ' + sd.getDate() + ' ' + MONS[sd.getMonth()]}</h2><span class="muted">${calSel === td ? '' : 'Tap Add to plan this day'}</span></div>`;
+  const adc = allDayOn(calSel); if (adc.length) h += `<div class="adchips" style="padding:0 24px 4px">${adc.map(m => `<span>${esc(m.t)}</span>`).join('')}</div>`;
   if (bd.length) h += bd.map(x => `<div class="mini" style="color:var(--danger);padding-top:4px">${x.kind === 'anniversary' ? '💍' : x.kind === 'birthday' ? '🎂' : '📌'} ${esc(x.name)}</div>`).join('');
   if (ms.length) h += `<div class="mlist" style="padding:0 24px">${ms.map(x => `<div class="mrow${x.e < Date.now() ? ' past' : ''}"><span class="tm">${fmtClock(x.s)}</span><span class="tt">${esc(x.t)}</span><button class="iconbtn" data-act="delmeet" data-id="${esc(x.id)}" aria-label="Remove meeting">${I.x}</button></div>`).join('')}</div>`;
   h += ts.length ? rows(ts) : '';
   if (rep.length) h += `<div class="grouph">${I.repeat} Repeating</div>` + rows(rep);
-  if (!ts.length && !rep.length && !ms.length && !bd.length) h += `<div class="empty">Free day. Tap <b>Add</b> to plan something for it.</div>`;
+  if (!ts.length && !rep.length && !ms.length && !bd.length && !adc.length) h += `<div class="empty">Free day. Tap <b>Add</b> to plan something for it.</div>`;
   return h;
 }
 
@@ -2200,7 +2213,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.4</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.4.1</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
