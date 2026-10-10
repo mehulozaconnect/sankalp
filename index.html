@@ -696,6 +696,16 @@ body.kb .tabbar,body.kb .fab{display:none!important}
 .mt2 .mr a.pill{height:24px;padding:0 9px;font-size:11.5px}
 .adchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .adchips span{font-size:12px;font-weight:700;padding:3px 8px;border-radius:8px;background:color-mix(in srgb,var(--meet) 14%,var(--bg));color:var(--ink)}
+.nowmini.run{background:color-mix(in srgb,#34C759 16%,var(--card));color:var(--ink)}
+.nowmini .nl{max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.curbox{display:flex;align-items:center;gap:12px;padding:14px;border-radius:16px;background:color-mix(in srgb,#34C759 12%,var(--bg));margin:10px 0 4px}
+.curbox .ce{font-size:28px}
+.curbox .ct{flex:1;min-width:0}
+.curbox .ct b{display:block;font-size:16px}
+.curbox .ct span{font-size:13px;color:var(--muted);font-weight:600}
+.curbox .btn{height:44px}
+.calsrc{margin:10px 24px 0;font-size:12.5px;color:var(--muted);line-height:1.5}
+.calsrc b{color:var(--soft)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -1261,6 +1271,12 @@ function todayData() {
 const inboxTasks = () => open().filter(t => !t.projectId && !t.date && !t.someday).sort(sortTasks);
 function meetingsOn(d) { const seen = new Set(); return Object.values(S.meetLog).filter(m => !m.allDay && ymd(new Date(m.s)) === d).sort((a, b) => a.s - b.s).filter(m => { const k = (m.t || '').trim().toLowerCase() + '|' + m.s; if (seen.has(k)) return false; seen.add(k); return true; }); }
 function allDayOn(d) { const d0 = pYmd(d).getTime(), d1 = d0 + 864e5; const seen = new Set(); return Object.values(S.meetLog).filter(m => m.allDay && m.s < d1 && (m.e || m.s + 1) > d0).filter(m => { const k = (m.t || '').toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }); }
+function calSources() {
+  const pc = S.pcal; if (!pc) return '';
+  const by = {}; (pc.ev || []).forEach(e => { const k = e[5] || 'Calendar'; by[k] = (by[k] || 0) + 1; });
+  const names = Object.keys(by); const outlook = names.some(n => /outlook|office|exchange|microsoft|@.*\.(com|in)$/i.test(n) && !/gmail/i.test(n));
+  return `<div class="calsrc" style="margin:10px 0 4px">Calendars Sankalp can see on your phone: ${names.length ? names.map(n => `<b>${esc(n)}</b> (${by[n]})`).join(', ') : '<b>none yet</b>'}.${outlook ? '' : ` <br>Your work Outlook calendar is not in this list. In the Outlook app on your phone: Settings, your work account, switch on <b>Sync calendars</b>. Then in Sankalp Phone tap Sync now.`}</div>`;
+}
 function applyPcal() { Object.keys(S.meetLog).forEach(k => { if (S.meetLog[k].src === 'pcal') delete S.meetLog[k]; }); ((S.pcal || {}).ev || []).forEach(([id, t, s0, e0, all, cal, join]) => { S.meetLog['pc-' + id + '-' + s0] = { id: 'pc-' + id + '-' + s0, t: t || 'Busy', s: s0, e: e0, allDay: !!all, join: join || '', src: 'pcal', cal: cal || '' }; }); }
 function nextOcc(md) { const td = today(); const y = new Date().getFullYear(); let d = mkDateExact(y, md); if (d < td) d = mkDateExact(y + 1, md); return d; }
 function mkDateExact(y, md) { const [m, d] = md.split('-').map(Number); let dt = new Date(y, m - 1, d); if (dt.getMonth() !== m - 1) dt = new Date(y, m - 1, 28); return ymd(dt); }
@@ -1504,7 +1520,7 @@ function dayBand() {
   const ticks = open().filter(t => t.date === D && t.time);
   const now = Date.now(); const next = ms.find(m => m.e > now);
   const cur = S.cur ? catOf(S.cur.cat) : null;
-  const nowChip = S.settings.track !== false ? `<button class="nowmini" data-act="nowpick">${cur ? `<span class="nowdot"></span>${cur.e} ${fmtMins((now - S.cur.s) / 6e4)}` : `${I.clock} Log`}</button>` : '';
+  const nowChip = S.settings.track !== false ? `<button class="nowmini${cur ? ' run' : ''}" data-act="nowpick" aria-label="${cur ? 'Running: ' + esc(cur.n) + '. Tap to stop or switch' : 'Log what you are doing'}">${cur ? `<span class="nowdot"></span><span class="nl">${esc(cur.n.split(',')[0])}</span> · ${fmtMins((now - S.cur.s) / 6e4)}` : `${I.plus} Log activity`}</button>` : '';
   const ad = allDayOn(D); const adH = ad.length ? `<div class="adchips">${ad.map(m => `<span>${esc(m.t)}</span>`).join('')}</div>` : '';
   if (!ms.length && !fs.length && !ticks.length) return `<div class="slim"><div class="sl1"><span class="nx">No meetings today</span>${loadHtml()}${nowChip}</div>${adH}</div>`;
   let bars = ms.map(m => { const s0 = minOf(m.s), e = Math.max(minOf(m.e) || 1440, s0 + 10); return `<i style="left:${pos(s0)}%;width:${Math.max(pos(e) - pos(s0), 1.2)}%;background:var(--meet)" title="${esc(m.t)}"></i>`; }).join('');
@@ -1531,7 +1547,7 @@ function vToday() {
   const gl = { time: 'Time', priority: 'Priority', project: 'Project' }[st.todayGroup] || 'Time';
   let h = topbar(`<button class="iconbtn" data-act="groupcycle" aria-label="Group by ${gl}. Tap to change" title="Group by ${gl}">${I.layers}</button>` + eyeBtn());
   const left = D.openCount;
-  h += `<div class="thead"><h1>Today</h1><span>${DAYS[d.getDay()]}, ${d.getDate()} ${MONS[d.getMonth()]}${bday.length ? ' · 🎂 ' + bday.map(x => esc(x.name)).join(', ') : ''}<br>${left} left${D.overdue.length ? ` · <b>${D.overdue.length} overdue</b>` : ''}${doneN ? ` · ${doneN} done` : ''}</span></div>`;
+  h += `<div class="thead"><h1>Today</h1><span>${DAYS[d.getDay()]}, ${d.getDate()} ${MONS[d.getMonth()]}${bday.length ? ' · 🎂 ' + bday.map(x => esc(x.name)).join(', ') : ''}<br>${(() => { const td0 = D.day.length + D.evening.length + D.pinned.length, od = D.overdue.length; const parts = []; if (td0) parts.push(`${td0} to do`); if (od) parts.push(`<b>${od} overdue</b>`); if (!parts.length) parts.push(doneN ? 'All done' : 'Nothing planned'); return parts.join(' + ') + (doneN ? ` · ${doneN} done` : ''); })()}</span></div>`;
   h += bannersHtml();
   if (S.settings.gOn && !gValid() && !S.pcal) h += `<button class="gnote" data-act="gref">${I.gcal}Google Calendar paused. Tap to refresh.</button>`;
   h += dayBand();
@@ -1596,7 +1612,8 @@ function vCalendar() {
   const td = today(); calSel ||= td; if (!calMonth) calMonth = td.slice(0, 7);
   const [y, m] = calMonth.split('-').map(Number); const first = new Date(y, m - 1, 1); const off = (first.getDay() + 6) % 7;
   let h = topbar(eyeBtn()) + `<div class="calhead"><b>${MONSL[m - 1]} ${y}</b><div><button class="iconbtn" data-act="calnav" data-dir="-1" aria-label="Previous month">${I.back}</button><button class="pill ghost" data-act="caltoday" style="height:32px">Today</button><button class="iconbtn" data-act="calnav" data-dir="1" aria-label="Next month">${I.next}</button></div></div>`;
-  if (!S.settings.gOn) h += `<a class="gnote" href="#settings/gcal" style="text-decoration:none;margin-bottom:8px">${I.gcal}Connect Google Calendar to see your meetings here</a>`; else if (!gValid()) h += `<button class="gnote" data-act="gref" style="margin-bottom:8px">${I.gcal}Google Calendar needs a tap to refresh</button>`;
+  if (S.pcal) h += `<a class="calsrc" href="#settings/gcal" style="display:block;text-decoration:none;margin:0 24px 8px">From your phone: ${esc([...new Set((S.pcal.ev || []).map(e => e[5]).filter(Boolean))].join(', ') || 'no calendars yet')} · updated ${fmtClock(S.pcal.at)}</a>`;
+  else if (!S.settings.gOn) h += `<a class="gnote" href="#settings/gcal" style="text-decoration:none;margin-bottom:8px">${I.gcal}Connect Google Calendar to see your meetings here</a>`; else if (!gValid()) h += `<button class="gnote" data-act="gref" style="margin-bottom:8px">${I.gcal}Google Calendar needs a tap to refresh</button>`;
   h += `<div class="calgrid">${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(x => `<span class="wd">${x}</span>`).join('')}`;
   const repeating = open().filter(t => t.repeat && t.date);
   for (let i = 0; i < 42; i++) {
@@ -2007,17 +2024,22 @@ function nowSwitch(k, note) {
   const now = Date.now(); S.logs ||= [];
   if (S.cur && now - S.cur.s >= 60000) S.logs.push({ id: uid(), s: S.cur.s, e: now, cat: S.cur.cat, note: S.cur.note || '' });
   S.cur = k ? { cat: k, s: now, note: note || '' } : null; save(); render();
-  toast(k ? `Now: ${catOf(k).e} ${catOf(k).n}` : 'Stopped');
+  toast(k ? `Started: ${catOf(k).e} ${catOf(k).n}` : 'Stopped and saved to Day review');
 }
 function nowCard(compact) {
   const c = S.cur ? catOf(S.cur.cat) : null; const el = c ? fmtMins((Date.now() - S.cur.s) / 6e4) : '';
   return `<div class="nowcard">${c ? `<span class="ne">${c.e}</span><span class="nt"><b><span class="nowdot"></span>${esc(c.n)}${S.cur.note ? ' · ' + esc(S.cur.note) : ''}</b><span>Since ${fmtClock(S.cur.s)}, ${el}</span></span><button class="pill ghost" data-act="nowpick">Switch</button><button class="pill ghost" data-act="nowstop">Stop</button>` : `<span class="ne">🕘</span><span class="nt"><b>What are you doing now?</b><span>One tap when you switch. Builds your day review.</span></span><button class="pill acc" data-act="nowpick">${compact ? 'Start' : 'Pick'}</button>`}</div>`;
 }
 function nowPick() {
-  openSheet(sheetHead('What are you doing now?', '', '') + `<div class="catgrid" style="margin-top:10px">${CATS.map(c => `<button class="catb${S.cur && S.cur.cat === c.k ? ' on' : ''}" data-k="${c.k}"><em>${c.e}</em>${esc(c.n)}</button>`).join('')}</div>
+  const c = S.cur ? catOf(S.cur.cat) : null;
+  openSheet(sheetHead(c ? 'Activity running' : 'What are you doing now?', '', '') + `
+  ${c ? `<div class="curbox"><span class="ce">${c.e}</span><span class="ct"><b>${esc(c.n)}${S.cur.note ? ' · ' + esc(S.cur.note) : ''}</b><span>Since ${fmtClock(S.cur.s)}, ${fmtMins((Date.now() - S.cur.s) / 6e4)} so far</span></span><button class="btn danger" id="nwStop">Stop</button></div><p class="sub" style="margin:10px 0 6px">Or switch to something else:</p>` : `<p class="sub" style="margin:8px 0 6px">Tap what you are starting. It keeps running until you stop it or pick something else.</p>`}
+  <div class="catgrid">${CATS.map(x => `<button class="catb${S.cur && S.cur.cat === x.k ? ' on' : ''}" data-k="${x.k}"><em>${x.e}</em>${esc(x.n)}</button>`).join('')}</div>
   <div class="field"><label for="nwNote">Note (optional)</label><input class="inp" id="nwNote" placeholder="e.g. Fusion proposal" autocomplete="off" value="${S.cur ? esc(S.cur.note || '') : ''}"></div>
-  <div class="btnrow"><button class="btn sec" data-act="logpast">${I.clock}Log earlier time instead</button></div>`);
+  <div class="btnrow"><button class="btn sec" data-act="logpast">${I.clock}Add earlier time</button><a class="btn sec" href="#review/today" id="nwRev">Day review</a></div>`);
   $$('#sheet .catb').forEach(b => b.onclick = () => { const n = $('#nwNote').value.trim(); closeSheet(true); nowSwitch(b.dataset.k, n); });
+  const st = $('#nwStop'); if (st) st.onclick = () => { closeSheet(true); nowSwitch(null); };
+  $('#nwRev').onclick = () => closeSheet(true);
 }
 function logSheet(edit) {
   const td = today(); const now = new Date(); const L = edit || null;
@@ -2213,7 +2235,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.4.1</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.4.2</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -2716,7 +2738,8 @@ const gValid = () => !!(gTok && gTok.exp > Date.now() + 60000);
 function gCalPanel() {
   const st = S.settings; const cfg = fbConfig(); const on = st.gOn;
   const pc = S.pcal; const pcN = pc ? (pc.ev || []).filter(e => e[2] >= Date.now()).length : 0;
-  const tip = pc ? `<div class="setrow"><span class="l"><b><span class="syncdot"></span>Phone calendar connected</b><span>${pcN} upcoming events from your phone's calendars (Google${pc.cals ? ', ' + esc(pc.cals.slice(0, 3).join(', ')) : ''}). Updated ${fmtClock(pc.at || Date.now())}.</span></span></div><p class="hint">This is the easiest way and needs nothing else. The Google sign-in below is only needed on a laptop without the phone app.</p>` : `<div class="banner" style="margin:0 0 10px">${I.bolt}<span class="bt"><b>Easiest: use your phone's calendar</b>The Sankalp Phone app reads the calendars on your phone (Google, and Outlook if the Outlook app syncs to your phone calendar). In Sankalp Phone, tap Allow calendar.</span></div>`;
+  const tip = pc ? `<div class="setrow"><span class="l"><b><span class="syncdot"></span>Phone calendar connected</b><span>${pcN} upcoming events. Updated ${fmtDate(ymd(new Date(pc.at || Date.now())))}, ${fmtClock(pc.at || Date.now())}.</span></span></div>${calSources()}<p class="hint">This is the easiest way and needs nothing else. The Google sign-in below is only needed on a laptop without the phone app.</p>` : `<div class="banner" style="margin:0 0 10px">${I.bolt}<span class="bt"><b>Easiest: use your phone's calendar</b>The Sankalp Phone app reads the calendars on your phone (Google, and Outlook if the Outlook app syncs to your phone calendar). In Sankalp Phone, tap Allow calendar.</span></div>`;
+  if (on && pc) return tip + `<div class="setrow"><span class="l"><b>Google sign-in also on</b><span>Not needed with the phone app. Disconnect it to avoid the hourly refresh.</span></span><button class="pill ghost" data-act="gout">Disconnect</button></div>`;
   if (pc && !on) return tip + `<details><summary class="sub" style="cursor:pointer">Connect Google Calendar on a laptop instead</summary>${gCalSteps(cfg)}</details>`;
   if (on) return `<div class="setrow"><span class="l"><b><span class="syncdot" style="${gValid() ? '' : 'background:var(--accent)'}"></span>${gValid() ? 'Connected' : 'Connected, needs a tap'}</b><span>${st.gSynced ? 'Updated ' + fmtClock(st.gSynced) + '. ' : ''}${Object.values(S.meetLog).filter(m => m.src === 'gcal' && m.s >= Date.now()).length} upcoming events. Google signs web apps out every hour; one tap brings it back.</span></span><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="pill ${gValid() ? 'ghost' : 'acc'}" data-act="${gValid() ? 'gsync' : 'gref'}">Refresh</button><button class="pill ghost" data-act="gout">Disconnect</button></div></div>`;
   return tip + gCalSteps(cfg);

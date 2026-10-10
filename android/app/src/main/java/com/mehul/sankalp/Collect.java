@@ -56,16 +56,17 @@ final class Collect {
             android.content.ContentUris.appendId(b, to);
             String[] cols = { CalendarContract.Instances.EVENT_ID, CalendarContract.Instances.TITLE, CalendarContract.Instances.BEGIN, CalendarContract.Instances.END,
                     CalendarContract.Instances.ALL_DAY, CalendarContract.Instances.CALENDAR_DISPLAY_NAME, CalendarContract.Instances.SELF_ATTENDEE_STATUS,
-                    CalendarContract.Instances.EVENT_LOCATION, CalendarContract.Instances.DESCRIPTION, CalendarContract.Instances.VISIBLE };
+                    CalendarContract.Instances.EVENT_LOCATION, CalendarContract.Instances.DESCRIPTION, CalendarContract.Instances.OWNER_ACCOUNT };
             Cursor cur = null;
             try {
                 cur = c.getContentResolver().query(b.build(), cols, null, null, CalendarContract.Instances.BEGIN + " ASC");
                 int n = 0;
                 while (cur != null && cur.moveToNext() && n < 600) {
-                    if (cur.getInt(9) == 0) continue;
                     if (cur.getInt(6) == CalendarContract.Attendees.ATTENDEE_STATUS_DECLINED) continue;
                     String title = cur.getString(1);
                     String cal = cur.getString(5);
+                    String owner = cur.getString(9);
+                    if (owner != null && owner.contains("@") && (cal == null || !cal.contains(owner))) cal = (cal == null || cal.isEmpty() ? "Calendar" : cal) + " (" + owner + ")";
                     if (cal != null && (cal.toLowerCase().contains("holiday") || cal.toLowerCase().contains("birthday") || cal.toLowerCase().contains("contacts"))) continue;
                     String txt = (cur.getString(7) == null ? "" : cur.getString(7)) + " " + (cur.getString(8) == null ? "" : cur.getString(8));
                     Matcher m = JOIN.matcher(txt);
