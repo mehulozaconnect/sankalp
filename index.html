@@ -1271,9 +1271,10 @@ function todayData() {
 const inboxTasks = () => open().filter(t => !t.projectId && !t.date && !t.someday).sort(sortTasks);
 function meetingsOn(d) { const seen = new Set(); return Object.values(S.meetLog).filter(m => !m.allDay && ymd(new Date(m.s)) === d).sort((a, b) => a.s - b.s).filter(m => { const k = (m.t || '').trim().toLowerCase() + '|' + m.s; if (seen.has(k)) return false; seen.add(k); return true; }); }
 function allDayOn(d) { const d0 = pYmd(d).getTime(), d1 = d0 + 864e5; const seen = new Set(); return Object.values(S.meetLog).filter(m => m.allDay && m.s < d1 && (m.e || m.s + 1) > d0).filter(m => { const k = (m.t || '').toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }); }
+function calShort() { const out = new Set(); ((S.pcal || {}).ev || []).forEach(e => { const c = e[5] || ''; if (pcSkip(c, 0)) return; const m = c.match(/\(([^)]+)\)/); const mail = m ? m[1] : c; out.add(/gmail\.com$/i.test(mail) ? 'Gmail' : /@/.test(mail) ? 'Work (' + mail.split('@')[1].split('.')[0] + ')' : c.replace(/\s*\(.*\)$/, '')); }); return [...out]; }
 function calSources() {
   const pc = S.pcal; if (!pc) return '';
-  const by = {}; (pc.ev || []).forEach(e => { const k = e[5] || 'Calendar'; by[k] = (by[k] || 0) + 1; });
+  const by = {}; (pc.ev || []).forEach(e => { if (pcSkip(e[5], 0)) return; const k = e[5] || 'Calendar'; by[k] = (by[k] || 0) + 1; });
   const names = Object.keys(by); const outlook = names.length > 1 || names.some(n => !/gmail/i.test(n));
   const now = Date.now(), until = pYmd(addDays(today(), 3)).getTime();
   const up = (pc.ev || []).filter(e => e[3] > now - 3600e3 && e[2] < until).sort((a, b) => a[2] - b[2]);
@@ -1617,7 +1618,7 @@ function vCalendar() {
   const td = today(); calSel ||= td; if (!calMonth) calMonth = td.slice(0, 7);
   const [y, m] = calMonth.split('-').map(Number); const first = new Date(y, m - 1, 1); const off = (first.getDay() + 6) % 7;
   let h = topbar(eyeBtn()) + `<div class="calhead"><b>${MONSL[m - 1]} ${y}</b><div><button class="iconbtn" data-act="calnav" data-dir="-1" aria-label="Previous month">${I.back}</button><button class="pill ghost" data-act="caltoday" style="height:32px">Today</button><button class="iconbtn" data-act="calnav" data-dir="1" aria-label="Next month">${I.next}</button></div></div>`;
-  if (S.pcal) h += `<a class="calsrc" href="#settings/gcal" style="display:block;text-decoration:none;margin:0 24px 8px">From your phone: ${esc([...new Set((S.pcal.ev || []).map(e => e[5]).filter(Boolean))].join(', ') || 'no calendars yet')} · updated ${fmtClock(S.pcal.at)}</a>`;
+  if (S.pcal) h += `<a class="calsrc" href="#settings/gcal" style="display:block;text-decoration:none;margin:0 24px 8px">From your phone: ${esc(calShort().join(', ') || 'no calendars yet')} · updated ${fmtClock(S.pcal.at)}</a>`;
   else if (!S.settings.gOn) h += `<a class="gnote" href="#settings/gcal" style="text-decoration:none;margin-bottom:8px">${I.gcal}Connect Google Calendar to see your meetings here</a>`; else if (!gValid()) h += `<button class="gnote" data-act="gref" style="margin-bottom:8px">${I.gcal}Google Calendar needs a tap to refresh</button>`;
   h += `<div class="calgrid">${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(x => `<span class="wd">${x}</span>`).join('')}`;
   const repeating = open().filter(t => t.repeat && t.date);
@@ -2240,7 +2241,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.4.3</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.4.4</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
