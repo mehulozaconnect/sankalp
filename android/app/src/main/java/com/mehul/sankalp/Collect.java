@@ -1,0 +1,149 @@
+package com.mehul.sankalp;
+
+import android.Manifest;
+import android.app.AppOpsManager;
+import android.app.usage.UsageEvents;
+import android.app.usage.UsageStatsManager;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.database.Cursor;
+import android.os.Build;
+import android.os.Process;
+import android.provider.CallLog;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/** Turns Android's own usage events (the data behind Digital Wellbeing) and the call log into one JSON object per day. */
+final class Collect {
+    private Collect() { }
+
+    static boolean usageAllowed(Context c) {
+        AppOpsManager ops = (AppOpsManager) c.getSystemService(Context.APP_OPS_SERVICE);
+        int mode;
+        if (Build.VERSION.SDK_INT >= 29) mode = ops.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), c.getPackageName());
+        else mode = ops.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), c.getPackageName());
+        return mode == AppOpsManager.MODE_ALLOWED;
+    }
+
+    static boolean callsAllowed(Context c) {
+        return c.checkSelfPermission(Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private static Set<String> skipSet(Context c) {
+        Set<String> s = new HashSet<>();
+        s.add(c.getPackageName());
+        s.add("android");
+        s.add("com.android.systemui");
+        s.add("com.google.android.permissioncontroller");
+        s.add("com.android.permissioncontroller");
+        s.add("com.android.settings");
+        try {
+            Intent home = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME);
+            for (ResolveInfo r : c.getPackageManager().queryIntentActivities(home, 0)) s.add(r.activityInfo.packageName);
+        } catch (Exception ignored) { }
+        return s;
+    }
+
+    private static final class Ses { String pkg; long s, e; Ses(String p, long a, long b) { pkg = p; s = a; e = b; } }
+
+    static JSONObject day(Context c, String date, long d0, long d1) throws Exception {
+        long now = System.currentTimeMillis();
+        long end = Math.min(d1, now);
+        JSONObject out = new JSONObject();
+        out.put("id", date);
+        out.put("at", now);
+        JSONArray ses = new JSONArray();
+        JSONObject apps = new JSONObject();
+        int unlocks = 0;
+        if (usageAllowed(c) && end > d0) {
+            UsageStatsManager um = (UsageStatsManager) c.getSystemService(Context.USAGE_STATS_SERVICE);
+            UsageEvents ev = um.queryEvents(d0, end);
+            UsageEvents.Event e = new UsageEvents.Event();
+            Set<String> skip = skipSet(c);
+            List<Ses> list = new ArrayList<>();
+            String cur = null;
+            long st = 0;
+            while (ev.hasNextEvent()) {
+                ev.getNextEvent(e);
+                int t = e.getEventType();
+                String pkg = e.getPackageName();
+                long ts = e.getTimeStamp();
+                if (t == 1) { // activity resumed / moved to foreground
+                    if (cur != null && !cur.equals(pkg)) { add(list, skip, cur, st, ts); cur = null; }
+                    if (cur == null) { cur = pkg; st = ts; }
+                } else if (t == 2) { // paused / moved to background
+                    if (pkg != null && pkg.equals(cur)) { add(list, skip, cur, st, ts); cur = null; }
+                } else if (t == 16) { // screen off
+                    if (cur != null) { add(list, skip, cur, st, ts); cur = null; }
+                } else if (t == 18) { // keyguard hidden = unlock
+                    unlocks++;
+                }
+            }
+            if (cur != null) add(list, skip, cur, st, end);
+            PackageManager pm = c.getPackageManager();
+            Map<String, String> labels = new HashMap<>();
+            int n = 0;
+            for (Ses x : list) {
+                if (x.e - x.s < 10000) continue;
+                if (n++ > 1500) break;
+                ses.put(new JSONArray().put(x.pkg).put(x.s).put(x.e));
+                if (!labels.containsKey(x.pkg)) {
+                    String label = x.pkg;
+                    try { label = pm.getApplicationLabel(pm.getApplicationInfo(x.pkg, 0)).toString(); } catch (Exception ignored) { }
+                    labels.put(x.pkg, label);
+                    apps.put(x.pkg, label);
+                }
+            }
+        }
+        out.put("ses", ses);
+        out.put("apps", apps);
+        out.put("unlocks", unlocks);
+        out.put("calls", calls(c, d0, d1));
+        return out;
+    }
+
+    private static void add(List<Ses> list, Set<String> skip, String pkg, long s, long e) {
+        if (pkg == null || skip.contains(pkg) || e - s < 3000) return;
+        if (!list.isEmpty()) {
+            Ses last = list.get(list.size() - 1);
+            if (last.pkg.equals(pkg) && s - last.e < 30000) { last.e = Math.max(last.e, e); return; }
+        }
+        list.add(new Ses(pkg, s, e));
+    }
+
+    static JSONArray calls(Context c, long d0, long d1) {
+        JSONArray out = new JSONArray();
+        if (!callsAllowed(c)) return out;
+        String[] cols = { CallLog.Calls.DATE, CallLog.Calls.DURATION, CallLog.Calls.TYPE, CallLog.Calls.CACHED_NAME, CallLog.Calls.NUMBER };
+        Cursor cur = null;
+        try {
+            cur = c.getContentResolver().query(CallLog.Calls.CONTENT_URI, cols,
+                    CallLog.Calls.DATE + ">=? AND " + CallLog.Calls.DATE + "<?",
+                    new String[] { String.valueOf(d0), String.valueOf(d1) }, CallLog.Calls.DATE + " ASC");
+            if (cur == null) return out;
+            while (cur.moveToNext()) {
+                long date = cur.getLong(0);
+                long dur = cur.getLong(1);
+                int type = cur.getInt(2);
+                String name = cur.getString(3);
+                String num = cur.getString(4);
+                if (name == null || name.isEmpty()) name = num == null || num.length() < 4 ? "Unknown" : "…" + num.substring(num.length() - 4);
+                out.put(new JSONArray().put(date).put(dur).put(type).put(name));
+            }
+        } catch (Exception ignored) {
+        } finally {
+            if (cur != null) cur.close();
+        }
+        return out;
+    }
+}
