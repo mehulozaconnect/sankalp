@@ -18,7 +18,7 @@ import java.util.Locale;
 final class Sync {
     private Sync() { }
 
-    static final int JOB_PERIODIC = 1, JOB_NOW = 2;
+    static final int JOB_PERIODIC = 1, JOB_NOW = 2, JOB_CAL = 3;
 
     static String day(long ms) { return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date(ms)); }
 
@@ -105,6 +105,7 @@ final class Sync {
     static void schedule(Context ctx) {
         JobScheduler js = (JobScheduler) ctx.getSystemService(Context.JOB_SCHEDULER_SERVICE);
         ComponentName cn = new ComponentName(ctx, SyncJob.class);
+        watchCalendar(ctx);
         if (js.getPendingJob(JOB_PERIODIC) == null) {
             js.schedule(new JobInfo.Builder(JOB_PERIODIC, cn)
                     .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
@@ -112,6 +113,20 @@ final class Sync {
                     .setPersisted(true)
                     .build());
         }
+    }
+
+    /** Wakes a sync a few seconds after anything in the phone's calendar changes (new meeting, moved, accepted). One-shot, so it is re-armed after each run. */
+    static void watchCalendar(Context ctx) { watchCalendar(ctx, false); }
+
+    static void watchCalendar(Context ctx, boolean force) {
+        JobScheduler js = (JobScheduler) ctx.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+        if (!force && js.getPendingJob(JOB_CAL) != null) return;
+        js.schedule(new JobInfo.Builder(JOB_CAL, new ComponentName(ctx, SyncJob.class))
+                .addTriggerContentUri(new JobInfo.TriggerContentUri(android.provider.CalendarContract.CONTENT_URI, JobInfo.TriggerContentUri.FLAG_NOTIFY_FOR_DESCENDANTS))
+                .setTriggerContentUpdateDelay(10 * 1000L)
+                .setTriggerContentMaxDelay(60 * 1000L)
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .build());
     }
 
     static void soon(Context ctx) {

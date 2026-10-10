@@ -49,7 +49,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         build();
-        if (Api.linked(this)) Coach.schedule(this);
+        if (Api.linked(this)) { Coach.schedule(this); Sync.schedule(this); }
     }
 
     @Override
@@ -189,7 +189,7 @@ public class MainActivity extends Activity {
         root.addView(btns);
         if (linked) root.addView(button("Sync now", true, v -> syncNow(2)));
         root.addView(button("Open Sankalp", false, v -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(Alarms.SITE + "#review/today")))));
-        TextView foot = text("Your data goes only to your own Firebase project. Syncs every 15 minutes.", 12, MUTED, false);
+        TextView foot = text("Your data goes only to your own Firebase project. Syncs when your calendar changes, and every 15 minutes.", 12, MUTED, false);
         foot.setPadding(0, dp(18), 0, 0);
         root.addView(foot);
         setContentView(sv);
