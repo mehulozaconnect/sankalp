@@ -1278,12 +1278,12 @@ function calSources() {
   const names = Object.keys(by); const outlook = names.length > 1 || names.some(n => !/gmail/i.test(n));
   const now = Date.now(), until = pYmd(addDays(today(), 3)).getTime();
   const up = (pc.ev || []).filter(e => e[3] > now - 3600e3 && e[2] < until).sort((a, b) => a[2] - b[2]);
-  const why = e => e[7] === 2 ? 'skipped: marked as declined' : pcSkip(e[5], e[7]) ? 'skipped: holiday or birthday calendar' : e[4] ? 'all-day' : '';
+  const why = e => pcSkip(e[5], e[7]) ? 'skipped: holiday or birthday calendar' : e[7] === 2 ? 'shown, phone says declined' : e[4] ? 'all-day' : '';
   return `<div class="calsrc" style="margin:10px 0 4px">Calendars Sankalp can see on your phone: ${names.length ? names.map(n => `<b>${esc(n)}</b> (${by[n]})`).join(', ') : '<b>none yet</b>'}.${outlook ? '' : ` <br>No work calendar here yet. In the Outlook app on your phone: Settings, your work account, switch on <b>Sync calendars</b>. Then in Sankalp Phone tap Sync now.`}</div>
   <details style="margin:6px 0 8px"><summary class="sub" style="cursor:pointer">Events received for the next 3 days (${up.length})</summary>${up.length ? up.map(e => `<div class="logrow"><span class="lt">${fmtDate(ymd(new Date(e[2])))}${e[4] ? '' : ', ' + fmtClock(e[2])}</span><span class="ln">${esc(e[1])}<small>${esc(e[5] || '')}${why(e) ? ' · ' + why(e) : ''}</small></span></div>`).join('') : '<p class="sub">None. Tap Sync now in Sankalp Phone.</p>'}</details>`;
 }
-const pcSkip = (cal, st) => st === 2 || /holiday|birthday|contacts/i.test(cal || '');
-function applyPcal() { Object.keys(S.meetLog).forEach(k => { if (S.meetLog[k].src === 'pcal') delete S.meetLog[k]; }); ((S.pcal || {}).ev || []).forEach(([id, t, s0, e0, all, cal, join, st]) => { if (pcSkip(cal, st)) return; S.meetLog['pc-' + id + '-' + s0] = { id: 'pc-' + id + '-' + s0, t: t || 'Busy', s: s0, e: e0, allDay: !!all, join: join || '', src: 'pcal', cal: cal || '' }; }); }
+const pcSkip = (cal, st) => /holiday|birthday|contacts/i.test(cal || '');
+function applyPcal() { Object.keys(S.meetLog).forEach(k => { if (S.meetLog[k].src === 'pcal') delete S.meetLog[k]; }); ((S.pcal || {}).ev || []).forEach(([id, t, s0, e0, all, cal, join, st]) => { if (pcSkip(cal, st)) return; S.meetLog['pc-' + id + '-' + s0] = { id: 'pc-' + id + '-' + s0, t: t || 'Busy', s: s0, e: e0, allDay: !!all, join: join || '', src: 'pcal', cal: cal || '', dec: st === 2 }; }); }
 function nextOcc(md) { const td = today(); const y = new Date().getFullYear(); let d = mkDateExact(y, md); if (d < td) d = mkDateExact(y + 1, md); return d; }
 function mkDateExact(y, md) { const [m, d] = md.split('-').map(Number); let dt = new Date(y, m - 1, d); if (dt.getMonth() !== m - 1) dt = new Date(y, m - 1, 28); return ymd(dt); }
 function datesOn(d) { return S.dates.filter(x => nextOcc(x.md) === d || mkDateExact(pYmd(d).getFullYear(), x.md) === d); }
@@ -1534,7 +1534,7 @@ function dayBand() {
   bars += ticks.map(t => { const [hh, mi] = t.time.split(':').map(Number); return `<i style="left:${pos(hh * 60 + mi)}%;width:4px;top:3px;bottom:3px;background:${t.priority === 1 ? 'var(--danger)' : 'var(--ink)'}"></i>`; }).join('');
   let nx = ms.length ? `${plural(ms.length, 'meeting')}${ms.length ? `, ${fmtMins(ms.reduce((a, m) => a + (m.e - m.s) / 6e4, 0))}` : ''}` : 'Your day';
   if (next && next.s > now) { const inMin = Math.round((next.s - now) / 6e4); if (inMin < 60) nx += ` · next in ${inMin} min`; }
-  const list = ms.length ? `<div class="mt2">${ms.map(m => { const live = m.s <= now && m.e > now, past = m.e <= now; return `<div class="mr${past ? ' past' : ''}${live ? ' live' : ''}"><span class="tm">${live ? 'Now' : fmtClock(m.s)}</span><span class="tt">${esc(m.t)}</span>${m.join && !past ? `<a class="pill meet" href="${esc(m.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>`; }).join('')}</div>` : '';
+  const list = ms.length ? `<div class="mt2">${ms.map(m => { const live = m.s <= now && m.e > now, past = m.e <= now; return `<div class="mr${past ? ' past' : ''}${live ? ' live' : ''}"><span class="tm">${live ? 'Now' : fmtClock(m.s)}</span><span class="tt">${esc(m.t)}${m.dec ? ' <small class="muted">· declined?</small>' : ''}</span>${m.join && !past ? `<a class="pill meet" href="${esc(m.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>`; }).join('')}</div>` : '';
   return `<div class="slim"><div class="sl1"><span class="nx">${nx}</span>${loadHtml()}${nowChip}</div><div class="trk2" role="img" aria-label="Your day from 8 AM to 10 PM">${bars}<span class="nw" style="left:${pos(minOf(now))}%"></span></div>${list}${adH}</div>`;
 }
 function groupBy(list, mode) {
@@ -2241,7 +2241,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.4.4</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.4.5</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
