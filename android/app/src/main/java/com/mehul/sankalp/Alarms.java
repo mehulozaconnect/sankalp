@@ -99,7 +99,7 @@ final class Alarms {
             JSONArray ev = cal.optJSONArray("ev");
             if (ev != null) for (int i = 0; i < ev.length(); i++) {
                 JSONArray x = ev.getJSONArray(i);
-                if (x.optBoolean(4)) continue;
+                if (x.optBoolean(4) || x.optInt(7, 0) == 2 || x.optString(5, "").toLowerCase().matches(".*(holiday|birthday|contacts).*")) continue;
                 long st = x.getLong(2), at = st - mb * 60000L;
                 if (at <= now || at > until) continue;
                 java.text.SimpleDateFormat f = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.US);
