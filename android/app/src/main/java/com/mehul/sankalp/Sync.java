@@ -14,46 +14,92 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-/** One sync run: upload screen time and calls for the last few days, then plan reminder alarms. */
+/** One sync run: upload screen time, calls and phone calendar, read your settings and tasks, then plan reminders. */
 final class Sync {
     private Sync() { }
 
     static final int JOB_PERIODIC = 1, JOB_NOW = 2;
 
+    static String day(long ms) { return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date(ms)); }
+
+    static long midnight(int addDays) {
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.DAY_OF_MONTH, addDays);
+        c.set(Calendar.HOUR_OF_DAY, 0); c.set(Calendar.MINUTE, 0); c.set(Calendar.SECOND, 0); c.set(Calendar.MILLISECOND, 0);
+        return c.getTimeInMillis();
+    }
+
     static String run(Context ctx, int days) throws Exception {
         if (!Api.linked(ctx)) throw new IllegalStateException("Not linked yet. Open Sankalp on this phone, Settings, Link phone app.");
-        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         JSONArray writes = new JSONArray();
-        int sessions = 0, calls = 0;
+        int sessions = 0, calls = 0, events = 0;
         double todayMin = 0;
         for (int i = days - 1; i >= 0; i--) {
-            Calendar c = Calendar.getInstance();
-            c.add(Calendar.DAY_OF_MONTH, -i);
-            c.set(Calendar.HOUR_OF_DAY, 0); c.set(Calendar.MINUTE, 0); c.set(Calendar.SECOND, 0); c.set(Calendar.MILLISECOND, 0);
-            long d0 = c.getTimeInMillis();
-            c.add(Calendar.DAY_OF_MONTH, 1);
-            long d1 = c.getTimeInMillis();
-            String date = f.format(new Date(d0));
-            JSONObject day = Collect.day(ctx, date, d0, d1);
-            JSONArray ses = day.getJSONArray("ses");
-            if (ses.length() == 0 && day.getJSONArray("calls").length() == 0) continue;
+            long d0 = midnight(-i), d1 = midnight(-i + 1);
+            String date = day(d0);
+            JSONObject dj = Collect.day(ctx, date, d0, d1);
+            JSONArray ses = dj.getJSONArray("ses");
+            if (ses.length() == 0 && dj.getJSONArray("calls").length() == 0) continue;
             sessions += ses.length();
-            calls += day.getJSONArray("calls").length();
+            calls += dj.getJSONArray("calls").length();
             if (i == 0) for (int k = 0; k < ses.length(); k++) { JSONArray s = ses.getJSONArray(k); todayMin += (s.getLong(2) - s.getLong(1)) / 60000.0; }
-            writes.put(Api.write(Api.itemName(ctx, "phone%3A" + date), day.toString(), "phone"));
+            writes.put(Api.write(Api.itemName(ctx, "phone%3A" + date), dj.toString(), "phone"));
+        }
+        JSONObject cal = null;
+        if (Collect.calAllowed(ctx)) {
+            cal = Collect.calendar(ctx, midnight(-7), midnight(15));
+            events = cal.getJSONArray("ev").length();
+            writes.put(Api.write(Api.itemName(ctx, "pcal%3Aall"), cal.toString(), "pcal"));
+            Api.p(ctx).edit().putString("pcal", cal.toString()).apply();
         }
         Api.commit(ctx, writes);
 
-        JSONObject prefs = null;
+        JSONObject prefs = null, coach = null;
         try { prefs = Api.getD(ctx, Api.itemName(ctx, "meta%3Aprefs")); } catch (Exception ignored) { }
+        try { coach = Api.getD(ctx, Api.itemName(ctx, "meta%3Acoach")); } catch (Exception ignored) { }
         SharedPreferences.Editor e = Api.p(ctx).edit();
-        if (prefs != null) e.putBoolean("quietOn", prefs.optBoolean("quietOn", false)).putString("quietStart", prefs.optString("quietStart", "22:00")).putString("quietEnd", prefs.optString("quietEnd", "07:30"));
+        if (prefs != null) {
+            e.putBoolean("quietOn", prefs.optBoolean("quietOn", false)).putString("quietStart", prefs.optString("quietStart", "22:00")).putString("quietEnd", prefs.optString("quietEnd", "07:30"))
+             .putString("workStart", prefs.optString("workStart", "09:30")).putString("shutdown", prefs.optString("shutdown", "19:00")).putString("morning", prefs.optString("morning", "08:30"))
+             .putInt("meetBefore", prefs.optInt("meetBefore", 10))
+             .putString("coach", prefs.optJSONObject("coach") == null ? "{}" : prefs.optJSONObject("coach").toString())
+             .putString("appmap", prefs.optJSONObject("appmap") == null ? "{}" : prefs.optJSONObject("appmap").toString());
+        }
+        if (coach != null) e.putString("coachBrief", coach.toString());
+        JSONArray tasks = Api.list(ctx, "task");
+        e.putString("brief", brief(tasks).toString());
         e.apply();
-        int alarms = Alarms.plan(ctx, Api.list(ctx, "task"), prefs);
+        int alarms = Alarms.plan(ctx, tasks, prefs, cal);
+        Coach.schedule(ctx);
 
-        String sum = "Screen time today " + Alarms.mins((int) Math.round(todayMin)) + ", " + sessions + " app sessions, " + calls + " calls sent. " + alarms + " reminders set for the next 2 days.";
+        String sum = "Screen time today " + Alarms.mins((int) Math.round(todayMin)) + ", " + calls + " calls, " + events + " calendar events. " + alarms + " reminders set for the next 2 days.";
         Api.p(ctx).edit().putLong("lastSync", System.currentTimeMillis()).putString("lastSum", sum).remove("lastErr").apply();
         return sum;
+    }
+
+    /** What the coach needs offline: the top open task, P1 progress today, tasks done today and this week. */
+    static JSONObject brief(JSONArray tasks) throws Exception {
+        String td = day(System.currentTimeMillis());
+        long d0 = midnight(0), w0 = midnight(-6);
+        JSONObject top = null; int topP = 9; String topDate = "9999";
+        int p1 = 0, p1d = 0, doneToday = 0, doneWeek = 0;
+        for (int i = 0; i < tasks.length(); i++) {
+            JSONObject t = tasks.getJSONObject(i).getJSONObject("d");
+            if (t.has("orig") && !t.isNull("orig") && !t.optBoolean("done")) continue;
+            String date = t.isNull("date") ? "" : t.optString("date", "");
+            boolean done = t.optBoolean("done", false);
+            long doneAt = t.optLong("doneAt", 0);
+            if (done && doneAt >= d0) doneToday++;
+            if (done && doneAt >= w0) doneWeek++;
+            int pr = t.optInt("priority", 4);
+            if (pr == 1 && (date.equals(td) || (done && doneAt >= d0) || (!done && !date.isEmpty() && date.compareTo(td) < 0))) { p1++; if (done) p1d++; }
+            if (!done && !date.isEmpty() && date.compareTo(td) <= 0 && !t.optBoolean("someday", false)) {
+                if (pr < topP || (pr == topP && date.compareTo(topDate) < 0)) { topP = pr; topDate = date; top = t; }
+            }
+        }
+        JSONObject b = new JSONObject().put("date", td).put("p1", p1).put("p1d", p1d).put("doneToday", doneToday).put("doneWeek", doneWeek);
+        if (top != null) b.put("topId", top.optString("id")).put("topTitle", top.optString("title")).put("topP", topP);
+        return b;
     }
 
     static void schedule(Context ctx) {

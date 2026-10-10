@@ -12,6 +12,9 @@ import android.database.Cursor;
 import android.os.Build;
 import android.os.Process;
 import android.provider.CallLog;
+import android.provider.CalendarContract;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -33,6 +36,49 @@ final class Collect {
         if (Build.VERSION.SDK_INT >= 29) mode = ops.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), c.getPackageName());
         else mode = ops.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), c.getPackageName());
         return mode == AppOpsManager.MODE_ALLOWED;
+    }
+
+    static boolean calAllowed(Context c) {
+        return c.checkSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private static final Pattern JOIN = Pattern.compile("https://(teams\\.microsoft\\.com|[\\w.-]*zoom\\.us|meet\\.google\\.com|[\\w.-]*webex\\.com)/[^\\s\"<>]+");
+
+    /** Events from every calendar on the phone (Google, and Outlook if it syncs to the phone calendar). */
+    static JSONObject calendar(Context c, long from, long to) throws Exception {
+        JSONObject out = new JSONObject();
+        JSONArray ev = new JSONArray();
+        JSONArray cals = new JSONArray();
+        java.util.Set<String> calSet = new java.util.LinkedHashSet<>();
+        if (calAllowed(c)) {
+            android.net.Uri.Builder b = CalendarContract.Instances.CONTENT_URI.buildUpon();
+            android.content.ContentUris.appendId(b, from);
+            android.content.ContentUris.appendId(b, to);
+            String[] cols = { CalendarContract.Instances.EVENT_ID, CalendarContract.Instances.TITLE, CalendarContract.Instances.BEGIN, CalendarContract.Instances.END,
+                    CalendarContract.Instances.ALL_DAY, CalendarContract.Instances.CALENDAR_DISPLAY_NAME, CalendarContract.Instances.SELF_ATTENDEE_STATUS,
+                    CalendarContract.Instances.EVENT_LOCATION, CalendarContract.Instances.DESCRIPTION, CalendarContract.Instances.VISIBLE };
+            Cursor cur = null;
+            try {
+                cur = c.getContentResolver().query(b.build(), cols, null, null, CalendarContract.Instances.BEGIN + " ASC");
+                int n = 0;
+                while (cur != null && cur.moveToNext() && n < 600) {
+                    if (cur.getInt(9) == 0) continue;
+                    if (cur.getInt(6) == CalendarContract.Attendees.ATTENDEE_STATUS_DECLINED) continue;
+                    String title = cur.getString(1);
+                    String cal = cur.getString(5);
+                    if (cal != null && (cal.toLowerCase().contains("holiday") || cal.toLowerCase().contains("birthday") || cal.toLowerCase().contains("contacts"))) continue;
+                    String txt = (cur.getString(7) == null ? "" : cur.getString(7)) + " " + (cur.getString(8) == null ? "" : cur.getString(8));
+                    Matcher m = JOIN.matcher(txt);
+                    String join = m.find() ? m.group() : "";
+                    ev.put(new JSONArray().put(cur.getLong(0)).put(title == null ? "Busy" : title).put(cur.getLong(2)).put(cur.getLong(3)).put(cur.getInt(4) == 1).put(cal == null ? "" : cal).put(join));
+                    if (cal != null) calSet.add(cal);
+                    n++;
+                }
+            } finally { if (cur != null) cur.close(); }
+        }
+        for (String x : calSet) cals.put(x);
+        out.put("id", "all").put("at", System.currentTimeMillis()).put("ev", ev).put("cals", cals);
+        return out;
     }
 
     static boolean callsAllowed(Context c) {

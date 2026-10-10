@@ -59,7 +59,7 @@ final class Alarms {
     }
 
     /** Works out every reminder in the next 48 hours from the task list and (re)schedules them. Returns how many. */
-    static int plan(Context ctx, JSONArray tasks, JSONObject prefs) throws Exception {
+    static int plan(Context ctx, JSONArray tasks, JSONObject prefs, JSONObject cal) throws Exception {
         long now = System.currentTimeMillis(), until = now + 48L * 3600000L;
         int nagDef = prefs == null ? 10 : prefs.optInt("nagDef", 10);
         JSONObject next = new JSONObject();
@@ -92,6 +92,21 @@ final class Alarms {
                 if (c.optBoolean("d", false) || sat.length() < 16) continue;
                 long at = ts(sat.substring(0, 10), sat.substring(11, 16));
                 if (at > now && at < until) put(next, tid + "|s|" + c.optString("id"), at, c.optString("t", "Subtask"), "Part of " + title, prio, nag, name, c.optString("id"), tid, false);
+            }
+        }
+        int mb = prefs == null ? 10 : prefs.optInt("meetBefore", 10);
+        if (cal != null && mb > 0) {
+            JSONArray ev = cal.optJSONArray("ev");
+            if (ev != null) for (int i = 0; i < ev.length(); i++) {
+                JSONArray x = ev.getJSONArray(i);
+                if (x.optBoolean(4)) continue;
+                long st = x.getLong(2), at = st - mb * 60000L;
+                if (at <= now || at > until) continue;
+                java.text.SimpleDateFormat f = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.US);
+                String id = "m|" + x.get(0) + "|" + st;
+                JSONObject a = new JSONObject().put("id", id).put("at", at).put("title", x.optString(1, "Meeting"))
+                        .put("body", "Starts at " + clock(f.format(new java.util.Date(st))) + " (in " + mb + " min)").put("meet", true).put("join", x.optString(6, "")).put("tid", id);
+                next.put(id, a);
             }
         }
         JSONObject old = new JSONObject(Api.p(ctx).getString("alarms", "{}"));
@@ -182,6 +197,21 @@ final class Alarms {
                 .setAutoCancel(true)
                 .addAction(new Notification.Action.Builder(ic, "Done", donePi).build())
                 .addAction(new Notification.Action.Builder(ic, "Snooze 10 min", snzPi).build());
+        NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+        try { nm.notify(nid, b.build()); } catch (SecurityException ignored) { }
+    }
+
+    static void showMeet(Context ctx, JSONObject a) {
+        channel(ctx);
+        int nid = notifId(a);
+        String join = a.optString("join", "");
+        Intent open = new Intent(Intent.ACTION_VIEW, Uri.parse(join.isEmpty() ? SITE + "#today" : join));
+        PendingIntent pi = PendingIntent.getActivity(ctx, nid, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        Notification.Builder b = new Notification.Builder(ctx, CH)
+                .setSmallIcon(R.drawable.ic_stat).setColor(0xFF8B5CF6)
+                .setContentTitle(a.optString("title")).setContentText(a.optString("body"))
+                .setCategory(Notification.CATEGORY_EVENT).setContentIntent(pi).setAutoCancel(true);
+        if (!join.isEmpty()) b.addAction(new Notification.Action.Builder(Icon.createWithResource(ctx, R.drawable.ic_stat), "Join", pi).build());
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         try { nm.notify(nid, b.build()); } catch (SecurityException ignored) { }
     }

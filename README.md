@@ -1,4 +1,4 @@
-# Sankalp 3.3
+# Sankalp 3.4
 
 Tasks, habits, focus, birthdays and insights in one calm app. Phone, laptop and Home Screen.
 
@@ -129,6 +129,12 @@ The `android` folder is a small Android app. GitHub builds it automatically (Act
 2. On your phone: Sankalp, Settings, **Android app**, **Download Sankalp for Android**, open the file, allow installing.
 3. Back in Sankalp (on the phone): **Link phone app**. The Sankalp Phone app opens; allow Usage access, Call log, Notifications, Alarms and battery.
 It syncs every 15 minutes: app screen time (same data as Digital Wellbeing) and calls go into Day review; task and subtask reminders ring as exact alarms with Done and Snooze, even when Sankalp is closed.
+
+## Coach and phone calendar (3.4)
+
+- The Sankalp Phone app now reads your **phone calendar** (allow Calendar in the app). Google Calendar and Outlook (if the Outlook app syncs to your phone calendar) show on Today, Week and Calendar, with a reminder before each meeting.
+- **Coach** (Settings, Coach): live nudge after 15 minutes on social media in work hours, daily social limit, P1 check at 11:30, morning plan, evening summary and a Sunday weekly report. Each can be turned off.
+- **Share to Sankalp**: share any WhatsApp message, email or link to Sankalp to turn it into a task.
 
 ## Task page
 

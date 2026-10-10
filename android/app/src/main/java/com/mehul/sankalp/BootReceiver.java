@@ -10,6 +10,6 @@ public class BootReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Context ctx = context.getApplicationContext();
         Alarms.restore(ctx);
-        if (Api.linked(ctx)) { Sync.schedule(ctx); Sync.soon(ctx); }
+        if (Api.linked(ctx)) { Sync.schedule(ctx); Sync.soon(ctx); Coach.schedule(ctx); }
     }
 }

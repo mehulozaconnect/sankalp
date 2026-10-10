@@ -49,6 +49,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         build();
+        if (Api.linked(this)) Coach.schedule(this);
     }
 
     @Override
@@ -159,6 +160,8 @@ public class MainActivity extends Activity {
                 v -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(Alarms.SITE + "#settings/phoneapp"))));
         row("Screen time (Usage access)", Collect.usageAllowed(this), "Find \"Sankalp Phone\" in the list and switch it on. This is the same data Digital Wellbeing uses.", "Allow usage access",
                 v -> startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)));
+        row("Calendar", Collect.calAllowed(this), "Shows your phone's calendar meetings (Google, and Outlook if it syncs to the phone) in Sankalp, with a reminder before each.", "Allow calendar",
+                v -> requestPermissions(new String[] { Manifest.permission.READ_CALENDAR }, 4));
         row("Calls (Call log)", Collect.callsAllowed(this), "Adds your phone calls as Client calls, with time and duration.", "Allow call log",
                 v -> requestPermissions(new String[] { Manifest.permission.READ_CALL_LOG }, 2));
         boolean notif = Build.VERSION.SDK_INT < 33 || checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
