@@ -74,6 +74,50 @@ final class Collect {
                     n++;
                 }
             } finally { if (cur != null) cur.close(); }
+            // Second pass: single events read straight from the Events table, in case the phone did not expand them into Instances.
+            java.util.Set<String> have = new java.util.HashSet<>();
+            for (int i = 0; i < ev.length(); i++) { JSONArray a = ev.getJSONArray(i); have.add(a.getLong(0) + "|" + a.getLong(2)); }
+            String[] ec = { CalendarContract.Events._ID, CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART, CalendarContract.Events.DTEND,
+                    CalendarContract.Events.ALL_DAY, CalendarContract.Events.CALENDAR_DISPLAY_NAME, CalendarContract.Events.SELF_ATTENDEE_STATUS,
+                    CalendarContract.Events.EVENT_LOCATION, CalendarContract.Events.DESCRIPTION, CalendarContract.Events.OWNER_ACCOUNT };
+            try {
+                cur = c.getContentResolver().query(CalendarContract.Events.CONTENT_URI, ec,
+                        CalendarContract.Events.DTSTART + ">=? AND " + CalendarContract.Events.DTSTART + "<? AND " + CalendarContract.Events.DELETED + "=0",
+                        new String[] { String.valueOf(from), String.valueOf(to) }, CalendarContract.Events.DTSTART + " ASC");
+                while (cur != null && cur.moveToNext()) {
+                    long id = cur.getLong(0), s0 = cur.getLong(2);
+                    if (have.contains(id + "|" + s0)) continue;
+                    long e0 = cur.isNull(3) ? s0 + 3600000L : cur.getLong(3);
+                    String title = cur.getString(1), cal = cur.getString(5), owner = cur.getString(9);
+                    if (owner != null && owner.contains("@") && (cal == null || !cal.contains(owner))) cal = (cal == null || cal.isEmpty() ? "Calendar" : cal) + " (" + owner + ")";
+                    String txt = (cur.getString(7) == null ? "" : cur.getString(7)) + " " + (cur.getString(8) == null ? "" : cur.getString(8));
+                    Matcher m = JOIN.matcher(txt);
+                    ev.put(new JSONArray().put(id).put(title == null ? "Busy" : title).put(s0).put(e0).put(cur.getInt(4) == 1).put(cal == null ? "" : cal).put(m.find() ? m.group() : "").put(cur.getInt(6)).put(1));
+                    if (cal != null) calSet.add(cal);
+                }
+            } catch (Exception ignored) {
+            } finally { if (cur != null) cur.close(); }
+            // Every calendar on the phone, with whether it is shown and synced, for the diagnostics list.
+            String[] cc = { CalendarContract.Calendars._ID, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, CalendarContract.Calendars.ACCOUNT_NAME,
+                    CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.Calendars.VISIBLE, CalendarContract.Calendars.SYNC_EVENTS };
+            JSONArray all = new JSONArray();
+            try {
+                cur = c.getContentResolver().query(CalendarContract.Calendars.CONTENT_URI, cc, null, null, null);
+                while (cur != null && cur.moveToNext()) {
+                    long cid = cur.getLong(0);
+                    int cnt = 0;
+                    Cursor k = null;
+                    try {
+                        k = c.getContentResolver().query(CalendarContract.Events.CONTENT_URI, new String[] { CalendarContract.Events._ID },
+                                CalendarContract.Events.CALENDAR_ID + "=? AND " + CalendarContract.Events.DTSTART + ">=? AND " + CalendarContract.Events.DTSTART + "<? AND " + CalendarContract.Events.DELETED + "=0",
+                                new String[] { String.valueOf(cid), String.valueOf(from), String.valueOf(to) }, null);
+                        cnt = k == null ? 0 : k.getCount();
+                    } catch (Exception ignored) { } finally { if (k != null) k.close(); }
+                    all.put(new JSONArray().put(cur.getString(1)).put(cur.getString(2)).put(cur.getString(3)).put(cur.getInt(4)).put(cur.getInt(5)).put(cnt));
+                }
+            } catch (Exception ignored) {
+            } finally { if (cur != null) cur.close(); }
+            out.put("calInfo", all);
         }
         for (String x : calSet) cals.put(x);
         out.put("id", "all").put("at", System.currentTimeMillis()).put("ev", ev).put("cals", cals);
