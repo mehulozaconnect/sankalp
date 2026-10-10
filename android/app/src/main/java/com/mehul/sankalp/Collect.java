@@ -56,12 +56,13 @@ final class Collect {
             android.content.ContentUris.appendId(b, to);
             String[] cols = { CalendarContract.Instances.EVENT_ID, CalendarContract.Instances.TITLE, CalendarContract.Instances.BEGIN, CalendarContract.Instances.END,
                     CalendarContract.Instances.ALL_DAY, CalendarContract.Instances.CALENDAR_DISPLAY_NAME, CalendarContract.Instances.SELF_ATTENDEE_STATUS,
-                    CalendarContract.Instances.EVENT_LOCATION, CalendarContract.Instances.DESCRIPTION, CalendarContract.Instances.OWNER_ACCOUNT };
+                    CalendarContract.Instances.EVENT_LOCATION, CalendarContract.Instances.DESCRIPTION, CalendarContract.Instances.OWNER_ACCOUNT, CalendarContract.Instances.STATUS };
             Cursor cur = null;
             try {
                 cur = c.getContentResolver().query(b.build(), cols, null, null, CalendarContract.Instances.BEGIN + " ASC");
                 int n = 0;
                 while (cur != null && cur.moveToNext() && n < 600) {
+                    if (!cur.isNull(10) && cur.getInt(10) == CalendarContract.Events.STATUS_CANCELED) continue;
                     String title = cur.getString(1);
                     String cal = cur.getString(5);
                     String owner = cur.getString(9);
@@ -79,7 +80,7 @@ final class Collect {
             for (int i = 0; i < ev.length(); i++) { JSONArray a = ev.getJSONArray(i); have.add(a.getLong(0) + "|" + a.getLong(2)); }
             String[] ec = { CalendarContract.Events._ID, CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART, CalendarContract.Events.DTEND,
                     CalendarContract.Events.ALL_DAY, CalendarContract.Events.CALENDAR_DISPLAY_NAME, CalendarContract.Events.SELF_ATTENDEE_STATUS,
-                    CalendarContract.Events.EVENT_LOCATION, CalendarContract.Events.DESCRIPTION, CalendarContract.Events.OWNER_ACCOUNT };
+                    CalendarContract.Events.EVENT_LOCATION, CalendarContract.Events.DESCRIPTION, CalendarContract.Events.OWNER_ACCOUNT, CalendarContract.Events.STATUS };
             try {
                 cur = c.getContentResolver().query(CalendarContract.Events.CONTENT_URI, ec,
                         CalendarContract.Events.DTSTART + ">=? AND " + CalendarContract.Events.DTSTART + "<? AND " + CalendarContract.Events.DELETED + "=0",
@@ -87,6 +88,7 @@ final class Collect {
                 while (cur != null && cur.moveToNext()) {
                     long id = cur.getLong(0), s0 = cur.getLong(2);
                     if (have.contains(id + "|" + s0)) continue;
+                    if (!cur.isNull(10) && cur.getInt(10) == CalendarContract.Events.STATUS_CANCELED) continue;
                     long e0 = cur.isNull(3) ? s0 + 3600000L : cur.getLong(3);
                     String title = cur.getString(1), cal = cur.getString(5), owner = cur.getString(9);
                     if (owner != null && owner.contains("@") && (cal == null || !cal.contains(owner))) cal = (cal == null || cal.isEmpty() ? "Calendar" : cal) + " (" + owner + ")";
