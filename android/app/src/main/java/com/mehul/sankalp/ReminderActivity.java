@@ -192,6 +192,7 @@ public class ReminderActivity extends Activity {
     }
 
     private void open() {
+        if (a.optBoolean("test")) { dismiss(); return; }
         unlockThen(() -> {
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(Alarms.SITE + "?open=" + Uri.encode(a.optString("tid")))));
             dismiss();
@@ -199,12 +200,14 @@ public class ReminderActivity extends Activity {
     }
 
     private void snooze(int mins) {
+        if (a.optBoolean("test")) { android.widget.Toast.makeText(this, "Works. Real reminders snooze for " + mins + " min.", android.widget.Toast.LENGTH_SHORT).show(); dismiss(); return; }
         Intent i = new Intent(this, ActionReceiver.class).setAction("snooze").putExtra("a", a.toString()).putExtra("mins", mins);
         sendBroadcast(i);
         dismiss();
     }
 
     private void done() {
+        if (a.optBoolean("test")) { android.widget.Toast.makeText(this, "Works. Real tasks are marked done in Sankalp.", android.widget.Toast.LENGTH_SHORT).show(); dismiss(); return; }
         if (a.optBoolean("rep") && !a.has("sub")) {
             // Repeating tasks are completed in Sankalp so the next one is created correctly.
             unlockThen(() -> {

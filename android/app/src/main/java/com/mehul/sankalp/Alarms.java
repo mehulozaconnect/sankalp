@@ -167,6 +167,22 @@ final class Alarms {
         }
     }
 
+    /** Some phones (Realme, OPPO, Xiaomi, Vivo) ignore the lock-screen card; with "Display over other apps" we open it ourselves when the phone is locked or idle. */
+    static void openCard(Context ctx, JSONObject a) {
+        try {
+            if (!android.provider.Settings.canDrawOverlays(ctx)) return;
+            android.os.PowerManager pm = (android.os.PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
+            android.app.KeyguardManager km = (android.app.KeyguardManager) ctx.getSystemService(Context.KEYGUARD_SERVICE);
+            boolean idle = !pm.isInteractive() || (km != null && km.isKeyguardLocked());
+            if (!idle) return;
+            Intent i = new Intent(ctx, ReminderActivity.class)
+                    .setData(Uri.parse("sankalp://card/" + Uri.encode(a.optString("id"))))
+                    .putExtra("a", a.toString())
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_USER_ACTION | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+            ctx.startActivity(i);
+        } catch (Exception ignored) { }
+    }
+
     /** Whether Android lets us show the reminder card on the lock screen (Android 14+ asks you once). */
     static boolean cardOn(Context ctx) {
         if (Build.VERSION.SDK_INT < 34) return true;
@@ -209,6 +225,7 @@ final class Alarms {
         if (cardOn(ctx)) b.setFullScreenIntent(ReminderActivity.pending(ctx, a, nid + 3), true);
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         try { nm.notify(nid, b.build()); } catch (SecurityException ignored) { }
+        openCard(ctx, a);
     }
 
     static void showMeet(Context ctx, JSONObject a) {
@@ -225,6 +242,7 @@ final class Alarms {
         if (cardOn(ctx)) b.setFullScreenIntent(ReminderActivity.pending(ctx, a, nid + 3), true);
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         try { nm.notify(nid, b.build()); } catch (SecurityException ignored) { }
+        openCard(ctx, a);
     }
 
     static PendingIntent action(Context ctx, String act, JSONObject a, int req) {

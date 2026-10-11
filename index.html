@@ -2241,7 +2241,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.4.7</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.4.8</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -2882,6 +2882,26 @@ async function pushNow() {
   Object.entries(ents).forEach(([k, v]) => { const js = JSON.stringify(v); if (lastSent[k] !== js || needK.has(k)) { ops.push([k, { d: js, u: Date.now(), x: false, k: k.split(':')[0] }]); lastSent[k] = js; needK.delete(k); } });
   Object.keys(lastSent).forEach(k => { if (!(k in ents)) { ops.push([k, { d: '', u: Date.now(), x: true, k: k.split(':')[0] }]); delete lastSent[k]; } });
   for (let i = 0; i < ops.length; i += 400) { const b = db.batch(); ops.slice(i, i + 400).forEach(([k, v]) => b.set(colRef.doc(ekey(k)), v)); try { await b.commit(); } catch (e) { console.warn(e); toast('Sync could not save. Check Firestore rules.'); } }
+  if (ops.some(([k]) => k === 'meta:rv')) pokePhone();
+}
+/* A reminder was added or changed and it is due soon: wake the phone app so it schedules it now, not at its next check. */
+function nextRemAt() {
+  const now = Date.now(); let best = Infinity;
+  S.tasks.forEach(t => {
+    if (t.done) return;
+    if (t.snoozeUntil > now) best = Math.min(best, t.snoozeUntil);
+    if (t.date && (t.reminders || []).length) { const [h, m] = (t.time || '09:00').split(':').map(Number); t.reminders.forEach(mins => { const at = pYmd(t.date); at.setHours(h, m - mins, 0, 0); if (at.getTime() > now) best = Math.min(best, at.getTime()); }); }
+    (t.subs || []).forEach(c => { if (!c.d && c.at) { const at = new Date(c.at).getTime(); if (at > now) best = Math.min(best, at); } });
+  });
+  return best;
+}
+function pokePhone() {
+  try {
+    if (!phoneLinked() || !/Android/i.test(navigator.userAgent)) return;
+    if (nextRemAt() - Date.now() > 40 * 6e4) return;
+    if (navigator.userActivation && !navigator.userActivation.isActive) return;
+    location.href = 'sankalp://sync';
+  } catch (e) { }
 }
 
 /* ================= render ================= */

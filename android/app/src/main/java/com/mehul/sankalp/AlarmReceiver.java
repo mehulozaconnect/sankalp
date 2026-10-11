@@ -18,6 +18,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         new Thread(() -> {
             try {
                 JSONObject a = new JSONObject(raw);
+                if (a.optBoolean("test")) { Alarms.show(ctx, a); return; }
                 if (a.optBoolean("meet")) { if (!Alarms.quiet(ctx)) Alarms.showMeet(ctx, a); return; }
                 boolean open = true;
                 try {

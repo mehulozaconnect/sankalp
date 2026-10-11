@@ -81,6 +81,16 @@ public class MainActivity extends Activity {
         }).start();
     }
 
+    private void testCard() {
+        try {
+            org.json.JSONObject a = new org.json.JSONObject().put("id", "test|card").put("tid", "test").put("title", "Test reminder from Sankalp")
+                    .put("body", "Lock your phone now. This card should appear in 10 seconds.").put("prio", 1).put("nag", 0).put("n", 0)
+                    .put("at", System.currentTimeMillis() + 10000L).put("test", true);
+            Alarms.schedule(this, a);
+            Toast.makeText(this, "Lock your phone now. The reminder rings in 10 seconds.", Toast.LENGTH_LONG).show();
+        } catch (Exception e) { Toast.makeText(this, "Could not set test: " + e.getMessage(), Toast.LENGTH_LONG).show(); }
+    }
+
     private int dp(int v) { return Math.round(v * getResources().getDisplayMetrics().density); }
 
     private TextView text(String s, int sp, int color, boolean bold) {
@@ -173,6 +183,8 @@ public class MainActivity extends Activity {
                 v -> startActivity(new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:" + getPackageName()))));
         row("Reminder card on lock screen", Alarms.cardOn(this), "Shows a big card with Done and Snooze when a reminder rings while the phone is locked.", "Allow",
                 v -> startActivity(new Intent("android.settings.MANAGE_APP_USE_FULL_SCREEN_INTENT", Uri.parse("package:" + getPackageName()))));
+        row("Card on any phone (Display over other apps)", Settings.canDrawOverlays(this), "Some phones (Realme, OPPO, Xiaomi, Vivo) hide the card unless this is on. Find Sankalp Phone and switch it on.", "Allow",
+                v -> startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()))));
         PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
         boolean batt = pm.isIgnoringBatteryOptimizations(getPackageName());
         row("Not stopped by battery saver", batt, "So syncing and reminders keep working in the background. Uses very little battery.", "Allow",
@@ -190,6 +202,7 @@ public class MainActivity extends Activity {
         btns.setPadding(0, dp(8), 0, 0);
         root.addView(btns);
         if (linked) root.addView(button("Sync now", true, v -> syncNow(2)));
+        root.addView(button("Test reminder card (rings in 10 sec)", false, v -> testCard()));
         root.addView(button("Open Sankalp", false, v -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(Alarms.SITE + "#review/today")))));
         TextView foot = text("Your data goes only to your own Firebase project. Syncs when your calendar changes, and every 15 minutes.", 12, MUTED, false);
         foot.setPadding(0, dp(18), 0, 0);

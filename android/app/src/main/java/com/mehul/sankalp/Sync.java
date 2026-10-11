@@ -157,6 +157,16 @@ final class Sync {
                 .build());
     }
 
+    /** A few seconds from now (so Sankalp has saved the new reminder), then sync and plan alarms. */
+    static void later(Context ctx) {
+        JobScheduler js = (JobScheduler) ctx.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+        js.schedule(new JobInfo.Builder(JOB_NOW, new ComponentName(ctx, SyncJob.class))
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .setMinimumLatency(4000L)
+                .setOverrideDeadline(30 * 1000L)
+                .build());
+    }
+
     static void soon(Context ctx) {
         JobScheduler js = (JobScheduler) ctx.getSystemService(Context.JOB_SCHEDULER_SERVICE);
         js.schedule(new JobInfo.Builder(JOB_NOW, new ComponentName(ctx, SyncJob.class))
