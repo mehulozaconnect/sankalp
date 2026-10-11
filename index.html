@@ -706,6 +706,12 @@ body.kb .tabbar,body.kb .fab{display:none!important}
 .curbox .btn{height:44px}
 .calsrc{margin:10px 24px 0;font-size:12.5px;color:var(--muted);line-height:1.5}
 .calsrc b{color:var(--soft)}
+.qm #app,.qm #tabbar,.qm #fab,.qm #toast{display:none!important}
+.qm{background:var(--bg)}
+.qm #scrim{background:transparent!important}
+.qm .tplbtn,.qm .tplrow{display:none!important}
+.tplrow[hidden]{display:none!important}
+.qmsaved{position:fixed;inset:0;display:grid;place-items:center;font-size:18px;font-weight:700;color:var(--ink);background:var(--bg)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -1567,12 +1573,12 @@ function vToday() {
     const list = [...D.overdue, ...D.day, ...D.evening];
     groupBy(list, st.todayGroup).forEach(g => { h += `<div class="grouph"><i class="dot" style="background:${g.color}"></i>${esc(g.k)} <span class="cnt">${g.items.length}</span></div>` + rows(g.items, { hideProject: st.todayGroup === 'project' && g.hide }); });
   }
-  if (!D.openCount) h += `<div class="empty">${doneN ? '<b>All done for today.</b> ' : ''}Tap <b>Add</b> and type something like <b>Send proposal 4pm p1</b>.</div>`;
+  if (!D.openCount) h += `<div class="empty">${doneN ? 'All done ✓' : 'Nothing for today.'}</div>`;
   if (D.doneToday.length && st.showDone) h += `<div class="doneh">Done today <span>${D.doneToday.length}</span></div>` + rows(D.doneToday);
   if (D.doneToday.length && !st.showDone) h += `<button class="doneh" data-act="toggledone">${plural(D.doneToday.length, 'completed task')} hidden <span style="color:var(--accent-text)">Show</span></button>`;
   return h;
 }
-function vInbox() { const l = inboxTasks(); return topbar() + `<div class="pad"><h1 class="title">Inbox</h1><p class="sub" style="margin:6px 0 0">Tasks without a date or project. Sort them when you have a minute.</p></div><div style="height:8px"></div>` + (l.length ? rows(l) : `<div class="empty">Inbox is clear.</div>`); }
+function vInbox() { const l = inboxTasks(); return topbar() + `<div class="pad"><h1 class="title">Inbox</h1></div><div style="height:8px"></div>` + (l.length ? rows(l) : `<div class="empty">Inbox is clear.</div>`); }
 function vUpcoming() {
   const td = today(); let h = topbar() + `<div class="pad"><h1 class="title">Next 7 days</h1></div>`;
   for (let i = 1; i <= 7; i++) {
@@ -1586,7 +1592,7 @@ function vUpcoming() {
   if (later.length) h += `<div class="sechead"><h2 class="sec">Later</h2></div>` + rows(later, { showDate: true });
   return h;
 }
-function vSomeday() { const l = open().filter(t => t.someday).sort(sortTasks); return topbar() + `<div class="pad"><h1 class="title">Someday</h1><p class="sub" style="margin:6px 0 0">Ideas and things with no deadline. Swipe one left to move it to today.</p></div><div style="height:8px"></div>` + (l.length ? rows(l) : `<div class="empty">Nothing here. Type <b>someday</b> or <b>kabhi</b> when adding a task.</div>`); }
+function vSomeday() { const l = open().filter(t => t.someday).sort(sortTasks); return topbar() + `<div class="pad"><h1 class="title">Someday</h1></div><div style="height:8px"></div>` + (l.length ? rows(l) : `<div class="empty">Nothing here.</div>`); }
 function vProject(id) {
   const p = proj(id); if (!p) return `<div class="empty">This project was deleted. <a href="#home">Go back</a></div>`;
   const all = S.tasks.filter(t => t.projectId === id && !t.orig); const ts = all.filter(t => !t.done); const doneL = S.tasks.filter(t => t.projectId === id && t.done);
@@ -1600,7 +1606,7 @@ function vProject(id) {
   if (dated.length) h += `<div class="sechead"><h2 class="sec">Scheduled</h2></div>` + rows(dated, { showDate: true, hideProject: true });
   if (nod.length) h += `<div class="sechead"><h2 class="sec">Anytime</h2></div>` + rows(nod, { hideProject: true });
   if (sd.length) h += `<div class="sechead"><h2 class="sec">Someday</h2></div>` + rows(sd, { hideProject: true });
-  if (!ts.length) h += `<div class="empty">No open tasks. Tap <b>Add</b>; tasks added here go into ${esc(p.name)}.</div>`;
+  if (!ts.length) h += `<div class="empty">No tasks.</div>`;
   if (doneL.length && S.settings.showDone) h += `<div class="doneh">Completed <span>${doneL.length}</span></div>` + rows(doneL.sort((a, b) => b.doneAt - a.doneAt).slice(0, 30), { hideProject: true });
   return h;
 }
@@ -1608,7 +1614,7 @@ function vDone() {
   const l = S.tasks.filter(t => t.done && t.doneAt).sort((a, b) => b.doneAt - a.doneAt).slice(0, 300);
   let h = topbar() + `<div class="pad"><h1 class="title">Done</h1></div>`; let cur = '';
   l.forEach(t => { const d = ymd(new Date(t.doneAt)); if (d !== cur) { cur = d; h += `<div class="dayh"><b>${fmtDate(d)}</b></div>`; } h += rows([t]); });
-  if (!l.length) h += `<div class="empty">Finished tasks show up here.</div>`;
+  if (!l.length) h += `<div class="empty">Nothing done yet.</div>`;
   return h;
 }
 
@@ -1640,7 +1646,7 @@ function vCalendar() {
   if (ms.length) h += `<div class="mlist" style="padding:0 24px">${ms.map(x => `<div class="mrow${x.e < Date.now() ? ' past' : ''}"><span class="tm">${fmtClock(x.s)}</span><span class="tt">${esc(x.t)}</span><button class="iconbtn" data-act="delmeet" data-id="${esc(x.id)}" aria-label="Remove meeting">${I.x}</button></div>`).join('')}</div>`;
   h += ts.length ? rows(ts) : '';
   if (rep.length) h += `<div class="grouph">${I.repeat} Repeating</div>` + rows(rep);
-  if (!ts.length && !rep.length && !ms.length && !bd.length && !adc.length) h += `<div class="empty">Free day. Tap <b>Add</b> to plan something for it.</div>`;
+  if (!ts.length && !rep.length && !ms.length && !bd.length && !adc.length) h += `<div class="empty">Free day.</div>`;
   return h;
 }
 
@@ -1747,7 +1753,7 @@ function vDates() {
   let h = topbar(`<button class="iconbtn" data-act="newdate" aria-label="Add a date">${I.plus}</button>`) + `<div class="pad"><h1 class="title">Birthdays and dates</h1></div>`;
   const list = S.dates.map(x => ({ x, ...dateInfo(x) })).filter(o => dateFilter === 'all' || o.x.kind === dateFilter).sort((a, b) => a.days - b.days);
   h += `<div class="filters optchips">${[['all', 'All'], ['birthday', 'Birthdays'], ['anniversary', 'Anniversaries'], ['event', 'Events']].map(([k, l]) => `<button class="${dateFilter === k ? 'on' : ''}" data-act="dfilter" data-f="${k}">${l}</button>`).join('')}</div>`;
-  if (!list.length) return h + `<div class="empty">Add birthdays and anniversaries once. Sankalp counts down, reminds you a day before, and shows them on your calendar.<br><button class="btn" data-act="newdate" style="margin-top:14px">${I.plus}Add a date</button></div>`;
+  if (!list.length) return h + `<div class="empty">No dates yet.<br><button class="btn" data-act="newdate" style="margin-top:14px">${I.plus}Add a date</button></div>`;
   const n = list[0];
   h += `<div class="dhero"><div class="big">${n.days === 0 ? 'Today' : n.days}<small>${n.days === 0 ? 'celebrate' : n.days === 1 ? 'day to go' : 'days to go'}</small></div><div><b>${n.emoji} ${esc(n.x.name)}</b><span>${cap(n.what)} on ${DAYSL[pYmd(n.occ).getDay()]}, ${fmtShort(n.occ)}</span></div></div>`;
   let cur = '';
@@ -1826,7 +1832,7 @@ function ekQueue() {
 let ekIdx = 0;
 function ekSheet(reset) {
   if (reset) ekIdx = 0; const q = ekQueue();
-  if (!q.length) { openSheet(sheetHead('Pick my next task', '', '') + `<div class="empty" style="padding:24px 4px">Nothing due right now. Enjoy the space, or pick something from <b>Someday</b>.</div>`); return; }
+  if (!q.length) { openSheet(sheetHead('Pick my next task', '', '') + `<div class="empty" style="padding:24px 4px">Nothing due now.</div>`); return; }
   if (ekIdx >= q.length) ekIdx = 0;
   const { t, why } = q[ekIdx]; const p = proj(t.projectId);
   openSheet(`<div class="shead"><button class="cx" data-close>Close</button><span class="ttl">Pick my next task</span><span></span></div>
@@ -2228,6 +2234,7 @@ function vSettings(arg) {
   <div class="setrow"><span class="l"><b>Installed as an app</b><span>${standalone() ? 'Yes' : 'Not yet. Installing gives full screen and steadier reminders.'}</span></span>${standalone() ? '' : `<button class="pill ghost" data-act="install">Install</button>`}</div>
   <div class="setrow"><span class="l"><b>Fingerprint lock</b><span>${lockId() ? 'On. Asked when you open Sankalp or come back after a minute.' : 'Ask for your fingerprint or screen lock to open Sankalp.'}</span></span><button class="switch${lockId() ? ' on' : ''}" data-act="lockon" role="switch" aria-checked="${!!lockId()}" aria-label="Fingerprint lock"></button></div></div>`;
   if (!isWide() || Object.keys(S.phone || {}).length) h += `<div class="sechead" id="phoneapp"><h2 class="sec">Android app: screen time, calls, alarms</h2></div><div class="setsec">${phonePanel()}</div>`;
+  if (/Windows/i.test(navigator.userAgent)) h += `<div class="sechead" id="hotkey"><h2 class="sec">Add from any app</h2></div><div class="setsec">${hotkeyPanel()}</div>`;
   h += `<div class="sechead" id="coach"><h2 class="sec">Coach</h2></div><div class="setsec">${coachPanel()}</div>`;
   h += `<div class="sechead" id="gcal"><h2 class="sec">Calendar</h2></div><div class="setsec">${gCalPanel()}</div>`;
   h += `<div class="sechead"><h2 class="sec">Look and feel</h2></div><div class="setsec"><div class="seg" role="group" aria-label="Mode">${['light', 'dark', 'auto'].map(m => `<button class="${st.mode === m ? 'on' : ''}" data-act="mode" data-m="${m}">${cap(m)}</button>`).join('')}</div><p class="hint">Auto follows your phone.</p>
@@ -2256,7 +2263,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.4.9</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.5</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -2318,6 +2325,43 @@ document.addEventListener('keydown', e => {
   }
 });
 
+/* Windows: a desktop shortcut with a Ctrl+Alt key opens a small add box from any app. */
+const QK_URL = () => location.origin + location.pathname + '?quick=1';
+const QK_EXE = { chrome: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', edge: 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe' };
+function hotkeyPanel() {
+  const k = S.settings.qkey || 'N', br = S.settings.qbr || 'chrome';
+  const keys = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
+  return `<p class="sub" style="margin:0 0 10px">Press <b>Ctrl + Alt + ${k}</b> in any app, type, Enter. Saved and closed.</p>
+  <div class="grid2"><div class="field" style="margin:0"><label for="qkKey">Ctrl + Alt +</label><select class="inp" id="qkKey">${keys.map(x => `<option${x === k ? ' selected' : ''}>${x}</option>`).join('')}</select></div>
+  <div class="field" style="margin:0"><label for="qkBr">Browser</label><select class="inp" id="qkBr"><option value="chrome"${br === 'chrome' ? ' selected' : ''}>Chrome</option><option value="edge"${br === 'edge' ? ' selected' : ''}>Edge</option></select></div></div>
+  <div class="btnrow" style="margin-top:12px"><button class="btn" data-act="qkdl">Download shortcut</button></div>
+  <p class="sub" style="margin:8px 0 0">Open the downloaded file once. It puts <b>Sankalp Quick Add</b> on your desktop.</p>
+  <details style="margin-top:8px"><summary class="sub" style="cursor:pointer">File blocked? Set it up by hand</summary><ol class="sub" style="line-height:1.6;padding-left:18px;margin:8px 0 0">
+  <li>Right-click the desktop, New, Shortcut.</li><li>Paste this, then Next, name it <b>Sankalp Quick Add</b>, Finish:<br><code style="user-select:all;word-break:break-all">"${QK_EXE[br]}" --app="${QK_URL()}"</code></li>
+  <li>Right-click it, Properties, click <b>Shortcut key</b>, press <b>Ctrl + Alt + ${k}</b>, OK.</li></ol></details>`;
+}
+function hotkeyFile() {
+  const k = S.settings.qkey || 'N', br = S.settings.qbr || 'chrome', url = QK_URL();
+  const paths = br === 'edge' ? ['%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe', '%ProgramFiles%\\Microsoft\\Edge\\Application\\msedge.exe']
+    : ['%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe', '%ProgramFiles(x86)%\\Google\\Chrome\\Application\\chrome.exe', '%LocalAppData%\\Google\\Chrome\\Application\\chrome.exe'];
+  const vbs = [
+    'Set sh = CreateObject("WScript.Shell")', 'Set fs = CreateObject("Scripting.FileSystemObject")', 'exe = ""',
+    ...paths.map(p => `p = sh.ExpandEnvironmentStrings("${p}") : If exe = "" And fs.FileExists(p) Then exe = p`),
+    `If exe = "" Then MsgBox "${br === 'edge' ? 'Edge' : 'Chrome'} was not found on this computer.", 48, "Sankalp" : WScript.Quit`,
+    'Set lnk = sh.CreateShortcut(sh.SpecialFolders("Desktop") & "\\Sankalp Quick Add.lnk")',
+    'lnk.TargetPath = exe', `lnk.Arguments = "--app=""${url}"" --window-size=540,340"`, `lnk.Hotkey = "CTRL+ALT+${k}"`,
+    'lnk.WindowStyle = 1', 'lnk.Description = "Add a task to Sankalp"', 'lnk.Save',
+    `MsgBox "Done. Press Ctrl + Alt + ${k} in any app to add a task to Sankalp.", 64, "Sankalp"`].join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([vbs], { type: 'text/plain' })); a.download = 'Sankalp-quick-add.vbs'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+/* Quick-add window (opened by the desktop shortcut): save, make sure it reached the cloud, then close. */
+async function quickDone() {
+  document.body.insertAdjacentHTML('beforeend', '<div class="qmsaved">Saved ✓</div>');
+  try { saveLocal(); } catch (e) { }
+  const t0 = Date.now(); while ((!fbUser || syncState !== 'on') && Date.now() - t0 < 8000 && S.settings.syncOn !== false) await new Promise(r => setTimeout(r, 250));
+  try { if (fbUser) await pushNow(); } catch (e) { }
+  setTimeout(() => { window.close(); setTimeout(() => { const m = document.querySelector('.qmsaved'); if (m) m.textContent = 'Saved ✓  You can close this window.'; }, 400); }, 350);
+}
 function quickAdd(ctxOverride) {
   const ctx = { ...route(), ...(ctxOverride || {}) }; if (ctx.view === 'calendar' && !ctx.date) ctx.date = calSel;
   const ph = ['Call mom kal 5pm p2, home', 'Send proposal fri 4pm p1 sales', 'Call dad daily 5:30pm from tomorrow till 31 dec', 'Pay bill 15 oct remind 1 day before', 'meet Client call 3pm-4pm', 'Gym every mon, wed, fri 7am'];
@@ -2325,22 +2369,22 @@ function quickAdd(ctxOverride) {
   <div id="qaForm"><div class="qa-in"><label for="qaIn" class="sr">New task</label><textarea id="qaIn" rows="1" placeholder="${ph[Math.floor(Math.random() * ph.length)]}" enterkeyhint="done" autocomplete="off" autocapitalize="sentences" spellcheck="true" data-form-type="other">${ctx.tpl ? esc(ctx.tpl.title) : ''}</textarea>${('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) ? `<button type="button" class="iconbtn" id="qaMic" aria-label="Speak the task">${I.mic}</button>` : ''}</div>
   <div class="chips" id="qaChips"></div><div class="preview" id="qaPrev"></div></div>
   ${ctx.tpl ? '' : `<button type="button" class="tplbtn" id="qaTplBtn" aria-expanded="false">${I.layers}Templates</button><div class="tplrow" id="qaTpl" hidden>${S.templates.map(t => `<button class="tplchip" data-tpl="${t.id}">${t.emoji} ${esc(t.name)}</button>`).join('')}<button class="tplchip" id="qaNewTpl" style="border-style:dashed;color:var(--muted)">${I.plus} New</button></div>`}
-  `);
+  `, ctx.quick ? () => window.close() : null, !!ctx.quick);
   const inp = $('#qaIn'), addB = $('#qaAdd');
   const upd = () => { const v = inp.value.trim(); addB.disabled = !v; if (!v) { $('#qaChips').innerHTML = ''; $('#qaPrev').innerHTML = ''; return; } const r = parseTask(v); $('#qaChips').innerHTML = chipsFor(r); $('#qaPrev').innerHTML = r.title ? `${r.meeting ? 'Meeting' : 'Task'}: <b>${esc(r.title)}</b>` : ''; };
   const fit = () => { inp.style.height = 'auto'; inp.style.height = inp.scrollHeight + 'px'; };
   inp.addEventListener('input', () => { fit(); upd(); }); upd(); fit();
-  inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } });
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } else if (e.key === 'Escape' && ctx.quick) window.close(); });
   const submit = e => {
     e && e.preventDefault(); const v = inp.value.trim(); if (!v) return;
     const res = addFromText(v, ctx); if (!res) { toast('Add a few words for the task name'); return; }
-    if (res.meeting) { closeSheet(true); render(); toast(`Meeting added, ${fmtClock(res.meeting.s)}`); return; }
+    if (res.meeting) { closeSheet(true); if (ctx.quick) { quickDone(); return; } render(); toast(`Meeting added, ${fmtClock(res.meeting.s)}`); return; }
     if (res.reminders.length) askNotify();
     render();
     if (ctx.tpl) { closeSheet(true); setTimeout(() => taskSheet(res.id), 220); return; }
     const where = res.someday ? 'Someday' : res.date === today() ? 'Today' : res.date ? fmtDate(res.date) : res.projectId ? proj(res.projectId).name : 'Inbox';
-    toast(`Added to ${where}`); inp.value = ''; upd(); fit();
-    if (!isWide()) closeSheet(true); else inp.focus();
+    if (ctx.quick) { closeSheet(true); quickDone(); return; }
+    toast(`Added to ${where}`); closeSheet(true);
   };
   addB.onclick = submit;
   $$('.tplchip[data-tpl]').forEach(b => b.onclick = () => { const t = S.templates.find(x => x.id === b.dataset.tpl); quickAdd({ ...ctx, tpl: t }); });
@@ -2933,6 +2977,7 @@ function render() {
 function wire(view) {
   if (view === 'focus') { const s = $('#tTask'); if (s) s.onchange = () => { S.timer.taskId = s.value; save(); }; }
   if (view === 'review') $$('[data-appmap]').forEach(el => el.onchange = () => { S.settings.appmap = { ...(S.settings.appmap || {}), [el.dataset.appmap]: el.value }; if (!el.value) delete S.settings.appmap[el.dataset.appmap]; save(); render(); });
+  if (view === 'settings') { const qk = $('#qkKey'), qb = $('#qkBr'); if (qk) qk.onchange = () => { S.settings.qkey = qk.value; save(); render(); }; if (qb) qb.onchange = () => { S.settings.qbr = qb.value; save(); render(); }; }
   if (view === 'settings') $$('[data-coach]').forEach(el => el.onchange = () => { const k = el.dataset.coach; S.settings.coach = { ...coachSet(), [k]: k === 'p1At' ? el.value : +el.value }; save(); });
   if (view === 'settings' || view === 'review') {
     $$('[data-set]').forEach(el => el.onchange = () => { const k = el.dataset.set; let v = el.value; if (['meetBefore', 'nagDef', 'checkin'].includes(k)) v = isNaN(+v) ? DEF_SETTINGS[k] : +v; else if (['pomo', 'brk'].includes(k)) v = +v || DEF_SETTINGS[k]; S.settings[k] = v; if (k === 'pomo' && !S.timer.running && S.timer.mode === 'work') S.timer.left = v * 60; save(); });
@@ -3002,6 +3047,7 @@ document.addEventListener('click', e => {
     ics: importICS, clearics: () => { Object.keys(S.meetLog).forEach(k => { if (S.meetLog[k].src === 'ics') delete S.meetLog[k]; }); save(); render(); toast('Imported meetings cleared'); },
     import: () => importSheet(), newtpl: () => tplForm(), edittpl: () => tplForm(id), usetpl: () => quickAdd({ tpl: S.templates.find(x => x.id === id) }),
     gconnect: () => gConnect(true),
+    qkdl: () => hotkeyFile(),
     hidebanner: () => { S.settings['hide_' + b.dataset.k] = true; save(); render(); }, gconnectid: () => { const v = $('#gcid')?.value.trim(); if (v) { S.settings.gcid = v; save(); } gConnect(true, true); }, gref: () => gConnect(false), gsync: () => gSync(true), gout: gDisconnect,
     fbin: fbSignIn, fbout: () => { firebase.auth().signOut(); toast('Signed out. Data stays on this device.'); },
     export: exportData, restore: restoreData,
@@ -3158,12 +3204,13 @@ applyTheme();
   if (q.get('snooze')) handleAction({ type: 'snooze', id: q.get('snooze'), sub });
   if (q.get('open')) setTimeout(() => handleAction({ type: 'open', id: q.get('open') }), 300);
   const shared = [q.get('title'), q.get('text'), q.get('url')].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
-  if (q.get('add') || shared) setTimeout(() => quickAdd({ prefill: (q.get('prefill') || shared).slice(0, 200) }), 400);
+  if (q.get('quick')) { window.QM = true; document.body.classList.add('qm'); document.title = 'Add to Sankalp'; setTimeout(() => quickAdd({ quick: true }), 120); }
+  else if (q.get('add') || shared) setTimeout(() => quickAdd({ prefill: (q.get('prefill') || shared).slice(0, 200) }), 400);
   if (q.get('focus') && getTask(q.get('focus'))) setTimeout(() => { S.timer.taskId = q.get('focus'); resetTimer('work'); startTimer(); go('focus'); }, 400);
   if (q.toString()) history.replaceState({ sk: 'app' }, '', location.pathname + location.hash);
 })();
 render();
-showLock();
+if (!window.QM) showLock();
 if (S.settings.fb) fbInit().catch(e => console.warn('sync init', e));
 idb.all().then(o => { Object.assign(IMGS, o); if (pageId) renderPage(); }).catch(() => { });
 if (gValid()) gSync(false);
