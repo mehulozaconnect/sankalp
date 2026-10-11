@@ -167,6 +167,15 @@ final class Alarms {
         }
     }
 
+    /** Whether Android lets us show the reminder card on the lock screen (Android 14+ asks you once). */
+    static boolean cardOn(Context ctx) {
+        if (Build.VERSION.SDK_INT < 34) return true;
+        try {
+            NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+            return (Boolean) NotificationManager.class.getMethod("canUseFullScreenIntent").invoke(nm);
+        } catch (Exception e) { return true; }
+    }
+
     static int notifId(JSONObject a) { return ("n" + a.optString("tid") + a.optString("sub", "")).hashCode(); }
 
     static void show(Context ctx, JSONObject a) {
@@ -197,6 +206,7 @@ final class Alarms {
                 .setAutoCancel(true)
                 .addAction(new Notification.Action.Builder(ic, "Done", donePi).build())
                 .addAction(new Notification.Action.Builder(ic, "Snooze 10 min", snzPi).build());
+        if (cardOn(ctx)) b.setFullScreenIntent(ReminderActivity.pending(ctx, a, nid + 3), true);
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         try { nm.notify(nid, b.build()); } catch (SecurityException ignored) { }
     }
@@ -212,6 +222,7 @@ final class Alarms {
                 .setContentTitle(a.optString("title")).setContentText(a.optString("body"))
                 .setCategory(Notification.CATEGORY_EVENT).setContentIntent(pi).setAutoCancel(true);
         if (!join.isEmpty()) b.addAction(new Notification.Action.Builder(Icon.createWithResource(ctx, R.drawable.ic_stat), "Join", pi).build());
+        if (cardOn(ctx)) b.setFullScreenIntent(ReminderActivity.pending(ctx, a, nid + 3), true);
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         try { nm.notify(nid, b.build()); } catch (SecurityException ignored) { }
     }

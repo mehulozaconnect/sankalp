@@ -171,6 +171,8 @@ public class MainActivity extends Activity {
         boolean exact = Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms();
         row("On-time alarms", exact, "Lets reminders ring at the exact minute.", "Allow alarms",
                 v -> startActivity(new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:" + getPackageName()))));
+        row("Reminder card on lock screen", Alarms.cardOn(this), "Shows a big card with Done and Snooze when a reminder rings while the phone is locked.", "Allow",
+                v -> startActivity(new Intent("android.settings.MANAGE_APP_USE_FULL_SCREEN_INTENT", Uri.parse("package:" + getPackageName()))));
         PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
         boolean batt = pm.isIgnoringBatteryOptimizations(getPackageName());
         row("Not stopped by battery saver", batt, "So syncing and reminders keep working in the background. Uses very little battery.", "Allow",

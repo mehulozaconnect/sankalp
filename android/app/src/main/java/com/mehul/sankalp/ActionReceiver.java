@@ -14,6 +14,7 @@ public class ActionReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         final String raw = intent.getStringExtra("a");
         final String act = intent.getAction();
+        final int mins = Math.max(1, intent.getIntExtra("mins", 10));
         if (raw == null || act == null) return;
         final Context ctx = context.getApplicationContext();
         final PendingResult pr = goAsync();
@@ -26,7 +27,7 @@ public class ActionReceiver extends BroadcastReceiver {
                 if ("snooze".equals(act)) {
                     JSONObject x = new JSONObject(a.toString());
                     String base = a.optString("id").replaceAll("\\|(n|snz)$", "");
-                    x.put("id", base + "|snz").put("n", 0).put("body", "Snoozed reminder").put("at", System.currentTimeMillis() + 10 * 60000L);
+                    x.put("id", base + "|snz").put("n", 0).put("body", "Snoozed reminder").put("at", System.currentTimeMillis() + mins * 60000L);
                     Alarms.schedule(ctx, x);
                 } else if ("done".equals(act)) {
                     String name = a.optString("name");
