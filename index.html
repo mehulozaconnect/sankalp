@@ -2263,7 +2263,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.5</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.5.1</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -2328,31 +2328,56 @@ document.addEventListener('keydown', e => {
 /* Windows: a desktop shortcut with a Ctrl+Alt key opens a small add box from any app. */
 const QK_URL = () => location.origin + location.pathname + '?quick=1';
 const QK_EXE = { chrome: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', edge: 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe' };
+const QK_MODS = { alt: ['Alt', 1], ctrl: ['Ctrl', 2], win: ['Win', 8], shift: ['Shift', 4] };
+const QK_KEYS = ['Space', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split(''), 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'];
+const qkVk = k => k === 'Space' ? 0x20 : /^F\d+$/.test(k) ? 0x6F + +k.slice(1) : k.charCodeAt(0);
+function qkLabel() { return QK_MODS[S.settings.qmod || 'alt'][0] + ' + ' + (S.settings.qkey2 || 'Space'); }
 function hotkeyPanel() {
-  const k = S.settings.qkey || 'N', br = S.settings.qbr || 'chrome';
-  const keys = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
-  return `<p class="sub" style="margin:0 0 10px">Press <b>Ctrl + Alt + ${k}</b> in any app, type, Enter. Saved and closed.</p>
-  <div class="grid2"><div class="field" style="margin:0"><label for="qkKey">Ctrl + Alt +</label><select class="inp" id="qkKey">${keys.map(x => `<option${x === k ? ' selected' : ''}>${x}</option>`).join('')}</select></div>
-  <div class="field" style="margin:0"><label for="qkBr">Browser</label><select class="inp" id="qkBr"><option value="chrome"${br === 'chrome' ? ' selected' : ''}>Chrome</option><option value="edge"${br === 'edge' ? ' selected' : ''}>Edge</option></select></div></div>
-  <div class="btnrow" style="margin-top:12px"><button class="btn" data-act="qkdl">Download shortcut</button></div>
-  <p class="sub" style="margin:8px 0 0">Open the downloaded file once. It puts <b>Sankalp Quick Add</b> on your desktop.</p>
-  <details style="margin-top:8px"><summary class="sub" style="cursor:pointer">File blocked? Set it up by hand</summary><ol class="sub" style="line-height:1.6;padding-left:18px;margin:8px 0 0">
-  <li>Right-click the desktop, New, Shortcut.</li><li>Paste this, then Next, name it <b>Sankalp Quick Add</b>, Finish:<br><code style="user-select:all;word-break:break-all">"${QK_EXE[br]}" --app="${QK_URL()}"</code></li>
-  <li>Right-click it, Properties, click <b>Shortcut key</b>, press <b>Ctrl + Alt + ${k}</b>, OK.</li></ol></details>`;
+  const m = S.settings.qmod || 'alt', k = S.settings.qkey2 || 'Space', br = S.settings.qbr || 'chrome';
+  return `<p class="sub" style="margin:0 0 10px">Press <b>${qkLabel()}</b> in any app, type, Enter. Saved and closed.</p>
+  <div class="grid2"><div class="field" style="margin:0"><label for="qkMod">Hold</label><select class="inp" id="qkMod">${Object.entries(QK_MODS).map(([v, x]) => `<option value="${v}"${v === m ? ' selected' : ''}>${x[0]}</option>`).join('')}</select></div>
+  <div class="field" style="margin:0"><label for="qkKey">and press</label><select class="inp" id="qkKey">${QK_KEYS.map(x => `<option${x === k ? ' selected' : ''}>${x}</option>`).join('')}</select></div></div>
+  <div class="field" style="margin:10px 0 0"><label for="qkBr">Browser you use Sankalp in</label><select class="inp" id="qkBr"><option value="chrome"${br === 'chrome' ? ' selected' : ''}>Chrome</option><option value="edge"${br === 'edge' ? ' selected' : ''}>Edge</option></select></div>
+  <div class="btnrow" style="margin-top:12px"><button class="btn" data-act="qkdl">Download setup</button></div>
+  <p class="sub" style="margin:8px 0 0">Open the file once. It starts with Windows from then on. To change keys, pick new ones and run the new file.</p>`;
 }
 function hotkeyFile() {
-  const k = S.settings.qkey || 'N', br = S.settings.qbr || 'chrome', url = QK_URL();
-  const paths = br === 'edge' ? ['%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe', '%ProgramFiles%\\Microsoft\\Edge\\Application\\msedge.exe']
-    : ['%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe', '%ProgramFiles(x86)%\\Google\\Chrome\\Application\\chrome.exe', '%LocalAppData%\\Google\\Chrome\\Application\\chrome.exe'];
+  const m = S.settings.qmod || 'alt', k = S.settings.qkey2 || 'Space', br = S.settings.qbr || 'chrome', url = QK_URL();
+  const mod = QK_MODS[m][1] | 0x4000, vk = qkVk(k), label = qkLabel();
+  const exes = br === 'edge' ? ['${env:ProgramFiles(x86)}\\Microsoft\\Edge\\Application\\msedge.exe', '$env:ProgramFiles\\Microsoft\\Edge\\Application\\msedge.exe']
+    : ['$env:ProgramFiles\\Google\\Chrome\\Application\\chrome.exe', '${env:ProgramFiles(x86)}\\Google\\Chrome\\Application\\chrome.exe', '$env:LocalAppData\\Google\\Chrome\\Application\\chrome.exe'];
+  const ps = [
+    '$exe = @(' + exes.map(e => `"${e}"`).join(', ') + ') | Where-Object { Test-Path $_ } | Select-Object -First 1',
+    'if (-not $exe) { exit }',
+    'Add-Type -TypeDefinition @"',
+    'using System; using System.Runtime.InteropServices;',
+    'public static class SkHk {',
+    '  [StructLayout(LayoutKind.Sequential)] public struct MSG { public IntPtr h; public uint m; public IntPtr w; public IntPtr l; public uint t; public int x; public int y; }',
+    '  [DllImport("user32.dll")] public static extern bool RegisterHotKey(IntPtr h, int id, uint mod, uint vk);',
+    '  [DllImport("user32.dll")] public static extern int GetMessage(out MSG m, IntPtr h, uint a, uint b);',
+    '}',
+    '"@',
+    `if (-not [SkHk]::RegisterHotKey([IntPtr]::Zero, 7, ${mod}, ${vk})) { (New-Object -ComObject WScript.Shell).Popup('${label} is already used by another program. In Sankalp Settings pick other keys and run the new setup file.', 0, 'Sankalp', 48) | Out-Null; exit }`,
+    '$msg = New-Object SkHk+MSG',
+    `while ([SkHk]::GetMessage([ref]$msg, [IntPtr]::Zero, 0, 0) -gt 0) { if ($msg.m -eq 0x0312) { Start-Process -FilePath $exe -ArgumentList '--app="${url}"', '--window-size=540,340' } }`];
+  const q = x => '"' + x.replace(/"/g, '""') + '"';
   const vbs = [
-    'Set sh = CreateObject("WScript.Shell")', 'Set fs = CreateObject("Scripting.FileSystemObject")', 'exe = ""',
-    ...paths.map(p => `p = sh.ExpandEnvironmentStrings("${p}") : If exe = "" And fs.FileExists(p) Then exe = p`),
-    `If exe = "" Then MsgBox "${br === 'edge' ? 'Edge' : 'Chrome'} was not found on this computer.", 48, "Sankalp" : WScript.Quit`,
-    'Set lnk = sh.CreateShortcut(sh.SpecialFolders("Desktop") & "\\Sankalp Quick Add.lnk")',
-    'lnk.TargetPath = exe', `lnk.Arguments = "--app=""${url}"" --window-size=540,340"`, `lnk.Hotkey = "CTRL+ALT+${k}"`,
-    'lnk.WindowStyle = 1', 'lnk.Description = "Add a task to Sankalp"', 'lnk.Save',
-    `MsgBox "Done. Press Ctrl + Alt + ${k} in any app to add a task to Sankalp.", 64, "Sankalp"`].join('\r\n');
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([vbs], { type: 'text/plain' })); a.download = 'Sankalp-quick-add.vbs'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    'Set sh = CreateObject("WScript.Shell")', 'Set fs = CreateObject("Scripting.FileSystemObject")',
+    'dir = sh.ExpandEnvironmentStrings("%APPDATA%") & "\\Sankalp"', 'If Not fs.FolderExists(dir) Then fs.CreateFolder(dir)',
+    'On Error Resume Next',
+    'For Each p In GetObject("winmgmts:").ExecQuery("select * from Win32_Process where Name=\'powershell.exe\'")',
+    '  If InStr(LCase(p.CommandLine), "sankalp\\hotkey.ps1") > 0 Then p.Terminate()',
+    'Next', 'On Error GoTo 0',
+    'Set f = fs.CreateTextFile(dir & "\\hotkey.ps1", True)',
+    ...ps.map(l => 'f.WriteLine ' + q(l)), 'f.Close',
+    'Set r = fs.CreateTextFile(dir & "\\start.vbs", True)',
+    'r.WriteLine "CreateObject(""WScript.Shell"").Run ""powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File """"" & dir & "\\hotkey.ps1"""""", 0, False"',
+    'r.Close',
+    'Set lnk = sh.CreateShortcut(sh.SpecialFolders("Startup") & "\\Sankalp hotkey.lnk")',
+    'lnk.TargetPath = "wscript.exe"', 'lnk.Arguments = """" & dir & "\\start.vbs"""', 'lnk.Save',
+    'sh.Run "wscript.exe """ & dir & "\\start.vbs""", 0, False',
+    `MsgBox "Done. Press ${label} in any app to add a task to Sankalp.", 64, "Sankalp"`].join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([vbs], { type: 'text/plain' })); a.download = 'Sankalp-hotkey-setup.vbs'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
 /* Quick-add window (opened by the desktop shortcut): save, make sure it reached the cloud, then close. */
 async function quickDone() {
@@ -2977,7 +3002,7 @@ function render() {
 function wire(view) {
   if (view === 'focus') { const s = $('#tTask'); if (s) s.onchange = () => { S.timer.taskId = s.value; save(); }; }
   if (view === 'review') $$('[data-appmap]').forEach(el => el.onchange = () => { S.settings.appmap = { ...(S.settings.appmap || {}), [el.dataset.appmap]: el.value }; if (!el.value) delete S.settings.appmap[el.dataset.appmap]; save(); render(); });
-  if (view === 'settings') { const qk = $('#qkKey'), qb = $('#qkBr'); if (qk) qk.onchange = () => { S.settings.qkey = qk.value; save(); render(); }; if (qb) qb.onchange = () => { S.settings.qbr = qb.value; save(); render(); }; }
+  if (view === 'settings') { const qk = $('#qkKey'), qb = $('#qkBr'); if (qk) qk.onchange = () => { S.settings.qkey2 = qk.value; save(); render(); }; const qm = $('#qkMod'); if (qm) qm.onchange = () => { S.settings.qmod = qm.value; save(); render(); }; if (qb) qb.onchange = () => { S.settings.qbr = qb.value; save(); render(); }; }
   if (view === 'settings') $$('[data-coach]').forEach(el => el.onchange = () => { const k = el.dataset.coach; S.settings.coach = { ...coachSet(), [k]: k === 'p1At' ? el.value : +el.value }; save(); });
   if (view === 'settings' || view === 'review') {
     $$('[data-set]').forEach(el => el.onchange = () => { const k = el.dataset.set; let v = el.value; if (['meetBefore', 'nagDef', 'checkin'].includes(k)) v = isNaN(+v) ? DEF_SETTINGS[k] : +v; else if (['pomo', 'brk'].includes(k)) v = +v || DEF_SETTINGS[k]; S.settings[k] = v; if (k === 'pomo' && !S.timer.running && S.timer.mode === 'work') S.timer.left = v * 60; save(); });
