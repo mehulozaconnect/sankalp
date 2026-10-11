@@ -2119,7 +2119,7 @@ function aiPanel(sc, A) {
   <div class="setrow"><span class="l"><b>Model</b><span>Key saved on this device</span></span><span style="display:flex;gap:6px"><select class="inp" data-set="aiModel" style="width:150px">${AI_MODELS.map(([v, l]) => `<option value="${v}"${(S.settings.aiModel || AI_MODELS[0][0]) === v ? ' selected' : ''}>${l.split(' ')[0]}</option>`).join('')}</select><button class="pill ghost" data-act="aikeyrm">Remove key</button></span></div>`;
   return h;
 }
-function aiRender(r) {
+function aiRender(r) { if (r && r.text && !r.headline && /^\s*\{/.test(r.text)) { const j = jsonLoose(r.text); if (j && j.headline) r = { ...j, at: r.at }; }
   if (r.text) return r.text.split(/\n{2,}/).map(p => `<p style="margin:0 0 10px;font-size:14.5px;line-height:1.55">${esc(p).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>')}</p>`).join('');
   const li = a => `<ul>${(a || []).map(x => `<li>${typeof x === 'string' ? esc(x) : `<b>${esc(x.title || '')}</b>${x.minutes ? ` (${fmtMins(x.minutes)})` : ''}. ${esc(x.detail || x.how || '')}`}</li>`).join('')}</ul>`;
   return `${r.score != null ? `<span class="aiscore" title="Day score">${r.score}</span>` : ''}<div class="ahl">${esc(r.headline || '')}</div><div style="clear:both"></div>
@@ -2154,6 +2154,21 @@ async function aiCall(system, user, maxTok) {
   return (j.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
 }
 const AI_SYS = `You are a sharp, warm productivity analyst reviewing one person's day using data from their task app Sankalp. They work in B2B sales and business development, with client calls, proposals, follow-ups and meetings. Be specific: name times, categories, minutes and task names from the data. No generic advice, no lecturing, no filler. If data is thin (much time not logged), say so briefly and still give the best read possible. Times are local (India).`;
+/* Reads the AI's JSON even if it was wrapped in prose or cut off part-way: keeps every complete item and closes the rest. */
+function jsonLoose(txt) {
+  const i = txt.indexOf('{'); if (i < 0) return null; const src = txt.slice(i);
+  try { return JSON.parse(src.slice(0, src.lastIndexOf('}') + 1)); } catch (e) { }
+  const st = []; let inS = false, esc2 = false, cut = 0, cutStack = [];
+  for (let k = 0; k < src.length; k++) {
+    const ch = src[k];
+    if (inS) { if (esc2) esc2 = false; else if (ch === '\\') esc2 = true; else if (ch === '"') inS = false; continue; }
+    if (ch === '"') inS = true; else if (ch === '{' || ch === '[') st.push(ch);
+    else if (ch === '}' || ch === ']') { st.pop(); cut = k + 1; cutStack = st.slice(); if (!st.length) break; }
+    else if (ch === ',') { cut = k; cutStack = st.slice(); }
+  }
+  const close = cutStack.slice().reverse().map(c => c === '{' ? '}' : ']').join('');
+  try { return JSON.parse(src.slice(0, cut) + close); } catch (e) { return null; }
+}
 async function aiRun(sc) {
   if (aiBusy) return; aiBusy = true; render();
   try {
@@ -2161,8 +2176,8 @@ async function aiRun(sc) {
     const txt = await aiCall(AI_SYS, `Review this period and reply with ONLY a JSON object, no prose around it, in this shape:
 {"score": 0-100 overall productivity score, "headline": "one sentence verdict", "where": ["3-5 short bullets on where time went, with minutes"], "leaks": [{"title":"", "minutes": number, "detail": "why it is a leak and when it happened"}], "wins": ["2-3 things that worked"], "changes": [{"title":"", "how":"one concrete action, with a time of day"}], "next": "tomorrow or next week", "tomorrow": ["3-5 bullets: what to do first and when, using their open P1/P2 tasks"]}
 Data:
-${JSON.stringify(data)}`);
-    let r; try { r = JSON.parse(txt.slice(txt.indexOf('{'), txt.lastIndexOf('}') + 1)); } catch (e) { r = { text: txt }; }
+${JSON.stringify(data)}`, 4000);
+    let r = jsonLoose(txt); if (!r || typeof r !== 'object') r = { text: txt };
     r.at = Date.now(); try { localStorage.setItem(aiCacheK(sc), JSON.stringify(r)); } catch (e) { }
   } catch (e) { toast(e.message.includes('Failed to fetch') ? 'Could not reach Anthropic. Check your internet.' : e.message); }
   finally { aiBusy = false; render(); }
@@ -2241,7 +2256,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.4.8</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.4.9</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
