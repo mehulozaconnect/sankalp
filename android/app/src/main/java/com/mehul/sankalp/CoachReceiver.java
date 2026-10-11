@@ -5,7 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-/** Runs the coach every few minutes, and handles "5 more min" on a nudge. */
+/** Every few minutes: picks up reminder changes, runs the coach, and handles "5 more min" on a nudge. */
 public class CoachReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -17,6 +17,7 @@ public class CoachReceiver extends BroadcastReceiver {
         }
         final PendingResult pr = goAsync();
         new Thread(() -> {
+            try { Sync.quick(ctx); } catch (Exception ignored) { }
             try { Coach.tick(ctx); } catch (Exception ignored) { }
             finally { Coach.schedule(ctx); pr.finish(); }
         }).start();

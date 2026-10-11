@@ -59,6 +59,7 @@ final class Sync {
         try { coach = Api.getD(ctx, Api.itemName(ctx, "meta%3Acoach")); } catch (Exception ignored) { }
         SharedPreferences.Editor e = Api.p(ctx).edit();
         if (prefs != null) {
+            e.putString("prefsJson", prefs.toString());
             e.putBoolean("quietOn", prefs.optBoolean("quietOn", false)).putString("quietStart", prefs.optString("quietStart", "22:00")).putString("quietEnd", prefs.optString("quietEnd", "07:30"))
              .putString("workStart", prefs.optString("workStart", "09:30")).putString("shutdown", prefs.optString("shutdown", "19:00")).putString("morning", prefs.optString("morning", "08:30"))
              .putInt("meetBefore", prefs.optInt("meetBefore", 10))
@@ -66,15 +67,42 @@ final class Sync {
              .putString("appmap", prefs.optJSONObject("appmap") == null ? "{}" : prefs.optJSONObject("appmap").toString());
         }
         if (coach != null) e.putString("coachBrief", coach.toString());
+        String rvNow = "";
+        try { JSONObject rv = Api.getD(ctx, Api.itemName(ctx, "meta%3Arv")); if (rv != null) rvNow = rv.optString("v", ""); } catch (Exception ignored) { }
         JSONArray tasks = Api.list(ctx, "task");
         e.putString("brief", brief(tasks).toString());
         e.apply();
         int alarms = Alarms.plan(ctx, tasks, prefs, cal);
+        try { ack(ctx, rvNow); } catch (Exception ignored) { }
         Coach.schedule(ctx);
 
         String sum = "Screen time today " + Alarms.mins((int) Math.round(todayMin)) + ", " + calls + " calls, " + events + " calendar events. " + alarms + " reminders set for the next 2 days.";
         Api.p(ctx).edit().putLong("lastSync", System.currentTimeMillis()).putString("lastSum", sum).remove("lastErr").apply();
         return sum;
+    }
+
+    /** Cheap check every few minutes: if your reminders changed in Sankalp, fetch tasks and re-plan alarms right away. */
+    static void quick(Context ctx) throws Exception {
+        if (!Api.linked(ctx)) return;
+        JSONObject rv = Api.getD(ctx, Api.itemName(ctx, "meta%3Arv"));
+        if (rv == null) return;
+        String v = rv.optString("v", "");
+        SharedPreferences p = Api.p(ctx);
+        if (v.isEmpty() || v.equals(p.getString("rv", ""))) return;
+        JSONArray tasks = Api.list(ctx, "task");
+        JSONObject prefs = null, cal = null;
+        try { prefs = new JSONObject(p.getString("prefsJson", "{}")); } catch (Exception ignored) { }
+        try { cal = new JSONObject(p.getString("pcal", "{}")); } catch (Exception ignored) { }
+        Alarms.plan(ctx, tasks, prefs, cal);
+        p.edit().putString("brief", brief(tasks).toString()).apply();
+        ack(ctx, v);
+    }
+
+    /** Tells Sankalp the phone now has these reminders, so the web app stops sending its own. */
+    static void ack(Context ctx, String v) throws Exception {
+        if (v == null || v.isEmpty()) return;
+        Api.commit(ctx, new JSONArray().put(Api.write(Api.itemName(ctx, "meta%3Aack"), new JSONObject().put("v", v).put("at", System.currentTimeMillis()).toString(), "meta")));
+        Api.p(ctx).edit().putString("rv", v).apply();
     }
 
     /** What the coach needs offline: the top open task, P1 progress today, tasks done today and this week. */
