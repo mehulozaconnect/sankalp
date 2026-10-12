@@ -2322,7 +2322,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.8.3</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.8.4</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -2688,8 +2688,12 @@ function pickTags(t) {
   setTimeout(() => $('#gIn').focus(), 250);
 }
 function pickDur(t) {
-  openSheet(sheetHead('Time needed', '', '') + `<p class="sub" style="margin:6px 0 10px">Used by Insights to show where your time goes.</p><div class="optchips">${[0, 10, 15, 30, 45, 60, 90, 120, 180, 240].map(v => `<button type="button" data-v="${v}" class="${(t.duration || 0) === v ? 'on' : ''}">${v ? fmtMins(v) : 'Not set'}</button>`).join('')}</div>`);
-  $$('.optchips button').forEach(b => b.onclick = () => { t.duration = +b.dataset.v || null; applyAndRefresh(t); });
+  const pre = [0, 5, 10, 15, 30, 45, 60, 90, 120, 180, 240], cur = t.duration || 0, custom = cur && !pre.includes(cur);
+  openSheet(sheetHead('Time needed', 'Save', 'durOk') + `<p class="sub" style="margin:6px 0 10px">Used for your day's workload and Insights.</p><div class="optchips">${pre.map(v => `<button type="button" data-v="${v}" class="${cur === v ? 'on' : ''}">${v ? fmtMins(v) : 'Not set'}</button>`).join('')}<button type="button" id="durC" class="${custom ? 'on' : ''}">Custom</button></div>
+  <div class="grid2" id="durBox" style="margin-top:12px"${custom ? '' : ' hidden'}><div class="field" style="margin:0"><label for="durH">Hours</label><input class="inp" type="number" id="durH" min="0" max="24" inputmode="numeric" value="${custom ? Math.floor(cur / 60) : ''}" placeholder="0"></div><div class="field" style="margin:0"><label for="durM">Minutes</label><input class="inp" type="number" id="durM" min="0" max="59" inputmode="numeric" value="${custom ? cur % 60 : ''}" placeholder="0"></div></div>`);
+  $$('.optchips button[data-v]').forEach(b => b.onclick = () => { t.duration = +b.dataset.v || null; applyAndRefresh(t); });
+  $('#durC').onclick = () => { $('#durBox').hidden = false; $$('.optchips button').forEach(x => x.classList.toggle('on', x.id === 'durC')); setTimeout(() => $('#durH').focus(), 50); };
+  $('#durOk').onclick = () => { if ($('#durBox').hidden) { closeSheet(true); return; } const m = (+$('#durH').value || 0) * 60 + (+$('#durM').value || 0); t.duration = m > 0 ? Math.min(m, 1440) : null; applyAndRefresh(t); };
 }
 function pickMore(t) {
   openSheet(sheetHead('Add to task', '', '') + `<div class="menu"><button data-m="repeat">${I.repeat}Repeat<span>${t.repeat ? esc(repeatLabel(t.repeat)) : 'Never'}</span></button><button data-m="remind">${I.bell}Reminders<span>${t.reminders.length || 'None'}</span></button><button data-m="priority">${I.flag}Priority<span>${t.priority < 4 ? 'P' + t.priority : 'None'}</span></button><button data-m="tags">${I.tag}Tags<span>${t.tags.length || 'None'}</span></button><button data-m="dur">${I.hour}Time needed<span>${t.duration ? fmtMins(t.duration) : 'Not set'}</span></button><button data-m="img">${I.img}Image<span>${t.imgs.length || 'None'}</span></button></div>`);
