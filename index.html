@@ -1510,7 +1510,7 @@ function loadHtml() {
   const nowM = Math.max(minOf(Date.now()), 9 * 60); let free = Math.max(0, endM - nowM);
   meetingsOn(td).forEach(m => { const s = Math.max(minOf(m.s), nowM), e = Math.min(minOf(m.e) || 1440, endM); if (e > s) free -= (e - s); });
   free = Math.max(0, free); if (minOf(Date.now()) >= endM) return ''; const over = planned > free;
-  return `<span class="load${over ? ' over' : ''}" title="Planned time against free time left today">${fmtMins(planned)}/${fmtMins(free)}${over ? ' ⚠' : ''}</span>`;
+  return `<span class="load${over ? ' over' : ''}" title="Time your tasks need, against free time left today (after meetings, until ${fmtTime(S.settings.shutdown || '19:00')})">${over ? `Tasks ${fmtMins(planned)}, only ${fmtMins(free)} free ⚠` : `Tasks ${fmtMins(planned)} · ${fmtMins(free)} free`}</span>`;
 }
 
 /* ---------- week board (Sunsama-style) ---------- */
@@ -2322,7 +2322,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.8.2</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.8.3</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
