@@ -187,6 +187,15 @@ h2.sec{margin:0;font-size:20px;font-weight:700}
 .shead .ok{justify-self:end;height:36px;padding:0 16px;border-radius:18px;background:var(--ink);color:var(--bg);font-weight:700;font-size:14.5px}
 .shead .ok:disabled{opacity:.35}
 .qa-in{display:flex;gap:6px;align-items:flex-start}
+.qa-note{width:100%;border:0;outline:none;background:transparent;font:inherit;font-size:15px;color:var(--soft);resize:none;padding:0 0 8px;line-height:1.45;min-height:24px;overflow:hidden}
+.qa-note::placeholder{color:var(--muted);opacity:.8}
+.qa-wrap{position:relative}
+.qa-pick{position:absolute;left:0;right:0;z-index:5;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.18);max-height:252px;overflow:auto;padding:4px}
+.qa-pick button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;color:var(--ink);font:inherit;font-size:15px;padding:10px 12px;border-radius:10px;text-align:left;cursor:pointer}
+.qa-pick button.on,.qa-pick button:hover{background:var(--surface)}
+.qa-pick .pd{width:10px;height:10px;border-radius:50%;flex:none}
+.qa-pick .ph{width:18px;text-align:center;color:var(--muted);font-weight:700;flex:none}
+.qa-pick small{margin-left:auto;color:var(--muted);font-size:12.5px}
 .qa-in textarea{flex:1;min-width:0;border:0;outline:none;background:transparent;font-size:19px;font-weight:600;padding:12px 0;resize:none;line-height:1.35;overflow:hidden;min-height:50px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;min-height:6px;margin:4px 0}
 .chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:16px;background:var(--surface);font-size:13.5px;font-weight:600;color:var(--soft)}
@@ -1025,7 +1034,8 @@ function save() { saveLocal(); schedulePush(); }
 
 const getTask = id => S.tasks.find(t => t.id === id);
 const proj = id => S.projects.find(p => p.id === id);
-function findProject(name) { const n = name.trim().toLowerCase(); return S.projects.find(p => p.name.toLowerCase() === n); }
+const pslug = x => (x || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '');
+function findProject(name) { const n = name.trim().toLowerCase(), g = pslug(name); return S.projects.find(p => p.name.toLowerCase() === n) || (g && S.projects.find(p => pslug(p.name) === g)); }
 function ensureProject(name, area) { if (!name) return null; let p = findProject(name); if (!p) { const cols = ['#F2A33A', '#14B8A6', '#5B5BD6', '#C2367A', '#4D9A2A', '#1F6FEB', '#E0482A', '#8B5CF6']; p = { id: uid(), name: name.trim(), area: area || 'Personal', color: cols[S.projects.length % cols.length], emoji: '' }; S.projects.push(p); } return p; }
 function addPlan(t) { if (!t.date || t.done) return; (S.plan[t.date] ||= []); if (!S.plan[t.date].includes(t.id)) S.plan[t.date].push(t.id); }
 function setDate(t, date) { const old = t.date; if (old && date && date > old && old <= today()) t.pushed = (t.pushed || 0) + 1; t.date = date; t.firedKeys = []; if (date) t.someday = false; addPlan(t); }
@@ -2263,7 +2273,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.5.1</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.6</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -2392,6 +2402,8 @@ function quickAdd(ctxOverride) {
   const ph = ['Call mom kal 5pm p2, home', 'Send proposal fri 4pm p1 sales', 'Call dad daily 5:30pm from tomorrow till 31 dec', 'Pay bill 15 oct remind 1 day before', 'meet Client call 3pm-4pm', 'Gym every mon, wed, fri 7am'];
   openSheet(`<div class="shead"><button class="cx" data-close>Cancel</button><span class="ttl">${ctx.tpl ? esc(ctx.tpl.emoji + ' ' + ctx.tpl.name) : ctx.date ? 'New task, ' + fmtDate(ctx.date) : 'New task'}</span><button class="ok" id="qaAdd" disabled>Add</button></div>
   <div id="qaForm"><div class="qa-in"><label for="qaIn" class="sr">New task</label><textarea id="qaIn" rows="1" placeholder="${ph[Math.floor(Math.random() * ph.length)]}" enterkeyhint="done" autocomplete="off" autocapitalize="sentences" spellcheck="true" data-form-type="other">${ctx.tpl ? esc(ctx.tpl.title) : ''}</textarea>${('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) ? `<button type="button" class="iconbtn" id="qaMic" aria-label="Speak the task">${I.mic}</button>` : ''}</div>
+  <div class="qa-wrap"><div class="qa-pick" id="qaPick" role="listbox" hidden></div></div>
+  <label for="qaNote" class="sr">Notes</label><textarea class="qa-note" id="qaNote" rows="1" placeholder="Notes" autocomplete="off" data-form-type="other"></textarea>
   <div class="chips" id="qaChips"></div><div class="preview" id="qaPrev"></div></div>
   ${ctx.tpl ? '' : `<button type="button" class="tplbtn" id="qaTplBtn" aria-expanded="false">${I.layers}Templates</button><div class="tplrow" id="qaTpl" hidden>${S.templates.map(t => `<button class="tplchip" data-tpl="${t.id}">${t.emoji} ${esc(t.name)}</button>`).join('')}<button class="tplchip" id="qaNewTpl" style="border-style:dashed;color:var(--muted)">${I.plus} New</button></div>`}
   `, ctx.quick ? () => window.close() : null, !!ctx.quick);
@@ -2399,10 +2411,51 @@ function quickAdd(ctxOverride) {
   const upd = () => { const v = inp.value.trim(); addB.disabled = !v; if (!v) { $('#qaChips').innerHTML = ''; $('#qaPrev').innerHTML = ''; return; } const r = parseTask(v); $('#qaChips').innerHTML = chipsFor(r); $('#qaPrev').innerHTML = r.title ? `${r.meeting ? 'Meeting' : 'Task'}: <b>${esc(r.title)}</b>` : ''; };
   const fit = () => { inp.style.height = 'auto'; inp.style.height = inp.scrollHeight + 'px'; };
   inp.addEventListener('input', () => { fit(); upd(); }); upd(); fit();
-  inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } else if (e.key === 'Escape' && ctx.quick) window.close(); });
+  // # projects and @ tags: a picker pops up while you type
+  const note = $('#qaNote'), pick = $('#qaPick'); let pk = { items: [], i: 0, start: -1 };
+  const fitN = () => { note.style.height = 'auto'; note.style.height = note.scrollHeight + 'px'; };
+  note.addEventListener('input', fitN);
+  note.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); submit(); } else if (e.key === 'Escape' && ctx.quick) window.close(); });
+  const allTags = () => { const c = {}; S.tasks.forEach(t => (t.tags || []).forEach(x => c[x] = (c[x] || 0) + 1)); ['work', 'personal', 'home', 'call', 'email', 'followup', 'waiting'].forEach(x => c[x] ||= 0); return Object.keys(c).sort((a, b) => c[b] - c[a] || a.localeCompare(b)); };
+  const closePick = () => { pick.hidden = true; pk = { items: [], i: 0, start: -1 }; };
+  const drawPick = () => {
+    pick.innerHTML = pk.items.map((x, k) => `<button type="button" role="option" data-k="${k}" class="${k === pk.i ? 'on' : ''}" aria-selected="${k === pk.i}">${x.html}</button>`).join('');
+    pick.hidden = !pk.items.length; const on = pick.querySelector('.on'); on && on.scrollIntoView({ block: 'nearest' });
+    $$('button', pick).forEach(b => b.onmousedown = ev => { ev.preventDefault(); choose(+b.dataset.k); });
+  };
+  const scanPick = () => {
+    const pos = inp.selectionStart, before = inp.value.slice(0, pos), m = before.match(/(^|\s)([#@])([\p{L}\p{N}_-]*)$/u);
+    if (!m) return closePick();
+    const sym = m[2], q = m[3].toLowerCase(), start = pos - m[3].length - 1; let items;
+    if (sym === '#') {
+      items = S.projects.filter(p => !q || pslug(p.name).includes(q.replace(/_/g, '-')) || p.name.toLowerCase().includes(q)).slice(0, 8)
+        .map(p => ({ ins: '#' + (pslug(p.name) || p.name), html: `<span class="pd" style="background:${p.color || 'var(--muted)'}"></span>${esc((p.emoji ? p.emoji + ' ' : '') + p.name)}<small>${esc(p.area || '')}</small>` }));
+      if (q && !S.projects.some(p => pslug(p.name) === pslug(q))) items.push({ ins: '#' + q, html: `<span class="ph">+</span>New project “${esc(cap(q.replace(/[-_]/g, ' ')))}”` });
+    } else {
+      const tags = allTags(); items = tags.filter(x => !q || x.includes(q)).slice(0, 8).map(x => ({ ins: '@' + x, html: `<span class="ph">@</span>${esc(x)}` }));
+      if (q && !tags.includes(q)) items.push({ ins: '@' + q, html: `<span class="ph">+</span>New tag “${esc(q)}”` });
+    }
+    pk = { items, i: 0, start }; drawPick();
+  };
+  const choose = k => {
+    const x = pk.items[k]; if (!x) return; const pos = inp.selectionStart;
+    inp.value = inp.value.slice(0, pk.start) + x.ins + ' ' + inp.value.slice(pos).replace(/^\s+/, '');
+    const c = pk.start + x.ins.length + 1; closePick(); inp.focus(); inp.setSelectionRange(c, c); fit(); upd();
+  };
+  inp.addEventListener('input', scanPick); inp.addEventListener('click', scanPick); inp.addEventListener('blur', () => setTimeout(closePick, 150));
+  inp.addEventListener('keydown', e => {
+    if (!pick.hidden && pk.items.length) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); pk.i = (pk.i + 1) % pk.items.length; drawPick(); return; }
+      if (e.key === 'ArrowUp') { e.preventDefault(); pk.i = (pk.i - 1 + pk.items.length) % pk.items.length; drawPick(); return; }
+      if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); choose(pk.i); return; }
+      if (e.key === 'Escape') { e.preventDefault(); closePick(); return; }
+    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } else if (e.key === 'Escape' && ctx.quick) window.close();
+  });
   const submit = e => {
     e && e.preventDefault(); const v = inp.value.trim(); if (!v) return;
     const res = addFromText(v, ctx); if (!res) { toast('Add a few words for the task name'); return; }
+    const nv = (note.value || '').trim(); if (nv && !res.meeting) { res.notes = (res.notes || '') + textToHtml(nv); res.nh = true; save(); }
     if (res.meeting) { closeSheet(true); if (ctx.quick) { quickDone(); return; } render(); toast(`Meeting added, ${fmtClock(res.meeting.s)}`); return; }
     if (res.reminders.length) askNotify();
     render();
