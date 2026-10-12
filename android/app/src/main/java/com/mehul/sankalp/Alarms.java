@@ -59,7 +59,7 @@ final class Alarms {
     }
 
     /** Works out every reminder in the next 48 hours from the task list and (re)schedules them. Returns how many. */
-    static int plan(Context ctx, JSONArray tasks, JSONObject prefs, JSONObject cal) throws Exception {
+    static int plan(Context ctx, JSONArray tasks, JSONArray dates, JSONObject prefs, JSONObject cal) throws Exception {
         long now = System.currentTimeMillis(), until = now + 48L * 3600000L;
         int nagDef = prefs == null ? 10 : prefs.optInt("nagDef", 10);
         JSONObject next = new JSONObject();
@@ -94,6 +94,9 @@ final class Alarms {
                 if (at > now && at < until) put(next, tid + "|s|" + c.optString("id"), at, c.optString("t", "Subtask"), "Part of " + title, prio, nag, name, c.optString("id"), tid, false);
             }
         }
+        if (dates != null) for (int i = 0; i < dates.length(); i++) {
+            try { planDate(next, dates.getJSONObject(i).getJSONObject("d"), now, until); } catch (Exception ignored) { }
+        }
         int mb = prefs == null ? 10 : prefs.optInt("meetBefore", 10);
         if (cal != null && mb > 0) {
             JSONArray ev = cal.optJSONArray("ev");
@@ -116,6 +119,39 @@ final class Alarms {
         while (nk.hasNext()) { String k = nk.next(); schedule(ctx, next.getJSONObject(k)); }
         Api.p(ctx).edit().putString("alarms", next.toString()).apply();
         return next.length();
+    }
+
+    /** Birthdays, anniversaries and events: yearly, monthly or once, reminded N days before at the chosen time. */
+    static void planDate(JSONObject next, JSONObject x, long now, long until) throws Exception {
+        String md = x.optString("md", ""), rep = x.optString("rep", "yearly"), time = x.optString("time", "09:00"), full = x.isNull("full") ? "" : x.optString("full", "");
+        if (md.length() < 5 && full.isEmpty()) return;
+        if (time.isEmpty()) time = "09:00";
+        JSONArray rem = x.optJSONArray("remind");
+        if (rem == null || rem.length() == 0) return;
+        java.util.List<String> occs = new java.util.ArrayList<>();
+        Calendar c = Calendar.getInstance();
+        int y = c.get(Calendar.YEAR), mo = c.get(Calendar.MONTH);
+        if ("once".equals(rep)) { if (!full.isEmpty()) occs.add(full); }
+        else if ("monthly".equals(rep)) {
+            int dd = Integer.parseInt(md.substring(3, 5));
+            for (int k = 0; k < 3; k++) { Calendar m = Calendar.getInstance(); m.set(y, mo, 1); m.add(Calendar.MONTH, k); int last = m.getActualMaximum(Calendar.DAY_OF_MONTH); occs.add(String.format(java.util.Locale.US, "%04d-%02d-%02d", m.get(Calendar.YEAR), m.get(Calendar.MONTH) + 1, Math.min(dd, last))); }
+        } else {
+            int mm = Integer.parseInt(md.substring(0, 2)), dd = Integer.parseInt(md.substring(3, 5));
+            for (int k = 0; k < 2; k++) { Calendar m = Calendar.getInstance(); m.set(y + k, mm - 1, 1); int last = m.getActualMaximum(Calendar.DAY_OF_MONTH); occs.add(String.format(java.util.Locale.US, "%04d-%02d-%02d", y + k, mm, Math.min(dd, last))); }
+        }
+        String kind = x.optString("kind", "event");
+        String emoji = "birthday".equals(kind) ? "🎂 " : "anniversary".equals(kind) ? "💍 " : "📌 ";
+        String what = "birthday".equals(kind) ? "Birthday" : "anniversary".equals(kind) ? "Anniversary" : "Event";
+        for (String occ : occs) for (int r = 0; r < rem.length(); r++) {
+            int dd = rem.optInt(r, 0);
+            long at = ts(occ, time) - dd * 86400000L;
+            if (at <= now || at >= until) continue;
+            String id = "d|" + x.optString("id") + "|" + occ + "|" + dd;
+            String body = dd == 0 ? what + " today" : what + (dd == 1 ? " tomorrow" : " in " + dd + " days");
+            JSONObject a = new JSONObject().put("id", id).put("at", at).put("title", emoji + x.optString("name", what)).put("body", body)
+                    .put("meet", true).put("date", true).put("join", "").put("tid", id);
+            next.put(id, a);
+        }
     }
 
     static void put(JSONObject map, String id, long at, String title, String body, int prio, int nag, String name, String sub, String tid, boolean rep) throws Exception {

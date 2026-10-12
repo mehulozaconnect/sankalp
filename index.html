@@ -186,6 +186,9 @@ h2.sec{margin:0;font-size:20px;font-weight:700}
 .shead .cx{justify-self:start;height:40px;padding:0 10px;font-weight:600;color:var(--muted);font-size:15.5px}
 .shead .ok{justify-self:end;height:36px;padding:0 16px;border-radius:18px;background:var(--ink);color:var(--bg);font-weight:700;font-size:14.5px}
 .shead .ok:disabled{opacity:.35}
+.shead .qa-r{justify-self:end;display:flex;align-items:center;gap:4px}
+.shead .qa-x{width:36px;height:36px;color:var(--soft)}
+.shead .qa-x:disabled{opacity:.35}
 .qa-in{display:flex;gap:6px;align-items:flex-start}
 .qa-note{width:100%;border:0;outline:none;background:transparent;font:inherit;font-size:15px;color:var(--soft);resize:none;padding:0 0 8px;line-height:1.45;min-height:24px;overflow:hidden}
 .qa-note::placeholder{color:var(--muted);opacity:.8}
@@ -484,9 +487,21 @@ textarea.inp{height:auto;min-height:96px;padding:10px 12px;line-height:1.5;resiz
 .viewer .vbar{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 8px) 10px 8px}
 .viewer .vbar button{color:#fff;height:44px;padding:0 14px;font-weight:700;border-radius:22px;background:rgba(255,255,255,.12)}
 .clw{flex:1;min-width:0;display:flex;flex-direction:column}
-.clat{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--muted);margin:-4px 0 6px}
+.ntool{position:relative}
+.npop{position:fixed;z-index:60;min-width:180px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.2);padding:4px;display:flex;flex-direction:column}
+.npop[hidden]{display:none}
+.npop button{display:block;width:100%;text-align:left;padding:9px 12px!important;border-radius:8px;height:auto!important;white-space:nowrap}
+.npop button:hover{background:var(--surface)}
+.fs-s{font-size:.82em}.fs-l{font-size:1.22em}.fs-xl{font-size:1.5em;font-weight:700;line-height:1.25}
+.ff-serif{font-family:Georgia,'Times New Roman',serif}.ff-mono{font-family:ui-monospace,Menlo,Consolas,'Courier New',monospace}.ff-hand{font-family:'Segoe Print','Bradley Hand','Comic Sans MS',cursive}
+ul.ls-arrow,ul.ls-check,ul.ls-dash,ul.ls-star{list-style:none;padding-left:1.5em}
+ul.ls-arrow>li::before,ul.ls-check>li::before,ul.ls-dash>li::before,ul.ls-star>li::before{display:inline-block;width:1.4em;margin-left:-1.4em;color:var(--accent-text,var(--accent))}
+ul.ls-arrow>li::before{content:'➤'}ul.ls-check>li::before{content:'☐'}ul.ls-dash>li::before{content:'–'}ul.ls-star>li::before{content:'★'}
+.clat{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:12px;font-weight:600;color:var(--muted);margin:-4px 0 6px}
+.clat span{display:inline-flex;align-items:center;gap:3px}
 .clat svg{width:12px;height:12px}
-.clat.late{color:var(--danger)}
+.clat .late,.clat.late{color:var(--danger)}
+.clat .sp.p1{color:#E5484D}.clat .sp.p2{color:#E8930C}.clat .sp.p3{color:#2F7BEA}
 .cl .iconbtn.on{color:var(--accent-text)}
 /* templates */
 .tpls{display:flex;flex-direction:column;padding:10px 14px 0}
@@ -820,6 +835,7 @@ const I = {
   layers: sv('<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>', 2),
   sync: sv('<path d="M21 12a9 9 0 0 1-15.5 6.2M3 12A9 9 0 0 1 18.5 5.8"/><path d="M21 4v4h-4M3 20v-4h4"/>', 2),
   arrow: sv('<path d="M5 12h14M13 6l6 6-6 6"/>', 2.2),
+  expand: sv('<path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/>'),
   x: sv('<path d="M6 6l12 12M18 6L6 18"/>', 2.6),
   cols: sv('<rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="4" height="7" rx="1.5"/>', 2),
   menu: sv('<path d="M4 7h16M4 12h16M4 17h16"/>', 2.2),
@@ -893,7 +909,17 @@ function applyLogoAssets() {
   const ic = k === 'sky' ? 'icon-192.png' : `icons/${k}-192.png`; $$('link[rel=icon],link[rel=apple-touch-icon]').forEach(l => l.setAttribute('href', ic));
 }
 /* ================= rich notes ================= */
-const RT_OK = ['B', 'I', 'U', 'MARK', 'BR', 'DIV', 'P', 'UL', 'OL', 'LI', 'A', 'H3'];
+const RT_OK = ['B', 'I', 'U', 'MARK', 'BR', 'DIV', 'P', 'UL', 'OL', 'LI', 'A', 'H3', 'SPAN'];
+const RT_CLS = /^(fs-(s|l|xl)|ff-(serif|mono|hand)|ls-(arrow|check|dash|star))$/;
+function rtClasses(c) {
+  const out = []; const st = (c.getAttribute('style') || '').toLowerCase(); const sz = c.getAttribute('size'), face = (c.getAttribute('face') || '').toLowerCase();
+  (c.getAttribute('class') || '').split(/\s+/).forEach(k => { if (RT_CLS.test(k)) out.push(k); });
+  const n = sz ? +sz : /font-size:\s*(x-small|small)\b/.test(st) ? 2 : /font-size:\s*(large)\b/.test(st) ? 5 : /font-size:\s*(x-large|xx-large|xxx-large)/.test(st) ? 6 : 0;
+  if (n) { if (n <= 2) out.push('fs-s'); else if (n >= 6) out.push('fs-xl'); else if (n >= 4) out.push('fs-l'); }
+  const f = face || (st.match(/font-family:\s*([^;]+)/) || [])[1] || '';
+  if (/georgia|serif/.test(f) && !/sans/.test(f)) out.push('ff-serif'); else if (/courier|mono/.test(f)) out.push('ff-mono'); else if (/comic|print|cursive|hand/.test(f)) out.push('ff-hand');
+  return [...new Set(out)];
+}
 function cleanNode(node, out) {
   // transparent highlight = removed
   node.childNodes.forEach(c => {
@@ -901,9 +927,11 @@ function cleanNode(node, out) {
     if (c.nodeType !== 1) return;
     let tag = c.tagName; const st = c.getAttribute('style') || '';
     if (tag === 'STRONG') tag = 'B'; if (tag === 'EM') tag = 'I'; if (/^H[1-6]$/.test(tag)) tag = 'H3';
-    if (tag === 'SPAN' || tag === 'FONT') tag = (/background/i.test(st) && !/transparent|rgba\(0, 0, 0, 0\)/i.test(st)) ? 'MARK' : /font-weight:\s*(bold|[6-9]00)/i.test(st) ? 'B' : null;
+    let cls = [];
+    if (tag === 'SPAN' || tag === 'FONT') { cls = rtClasses(c); tag = (/background/i.test(st) && !/transparent|rgba\(0, 0, 0, 0\)/i.test(st)) ? 'MARK' : /font-weight:\s*(bold|[6-9]00)/i.test(st) ? 'B' : cls.length ? 'SPAN' : null; }
+    if (tag === 'UL') cls = (c.getAttribute('class') || '').split(/\s+/).filter(k => /^ls-/.test(k) && RT_CLS.test(k));
     if (tag && RT_OK.includes(tag)) {
-      const el = document.createElement(tag);
+      const el = document.createElement(tag); if (cls.length && (tag === 'SPAN' || tag === 'UL')) el.className = cls.join(' ');
       if (tag === 'A') { const h = c.getAttribute('href') || ''; if (/^https?:/i.test(h)) { el.setAttribute('href', h); el.setAttribute('target', '_blank'); el.setAttribute('rel', 'noopener'); } }
       cleanNode(c, el); out.appendChild(el);
     } else cleanNode(c, out);
@@ -913,7 +941,7 @@ function cleanHtml(h) { if (!h) return ''; const doc = new DOMParser().parseFrom
 function textOfHtml(h) { return (h || '').replace(/<br\s*\/?>/gi, ' ').replace(/<\/(div|p|li|h3)>/gi, ' ').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim(); }
 const textOf = textOfHtml;
 function textToHtml(s) { if (!s) return ''; if (/^\s*<(div|p|b|ul|ol|mark|br|h3|i|u)\b/i.test(s)) return cleanHtml(s); return s.split('\n').map(l => `<div>${l ? esc(l) : '<br>'}</div>`).join(''); }
-function toolbarHtml() { return `<div class="ntool" role="toolbar" aria-label="Formatting">${[['bold', '<b>B</b>', 'Bold'], ['italic', '<i style="font-family:serif">I</i>', 'Italic'], ['underline', '<u>U</u>', 'Underline'], ['mark', '<mark style="background:#FFE58A;color:#1a1400;padding:0 5px;border-radius:3px">H</mark>', 'Highlight'], ['h3', '<b style="font-size:17px">T</b>', 'Heading'], ['insertUnorderedList', '•&nbsp;List', 'Bullet list'], ['insertOrderedList', '1.&nbsp;List', 'Numbered list'], ['link', 'Link', 'Add link'], ['removeFormat', 'Clear', 'Clear formatting']].map(([c, l, a]) => `<button type="button" data-cmd="${c}" aria-label="${a}" style="${l.length > 30 ? '' : 'padding:0 8px'}">${l}</button>`).join('')}</div>`; }
+function toolbarHtml() { return `<div class="ntool" role="toolbar" aria-label="Formatting">${[['bold', '<b>B</b>', 'Bold'], ['italic', '<i style="font-family:serif">I</i>', 'Italic'], ['underline', '<u>U</u>', 'Underline'], ['mark', '<mark style="background:#FFE58A;color:#1a1400;padding:0 5px;border-radius:3px">H</mark>', 'Highlight'], ['h3', '<b style="font-size:17px">T</b>', 'Heading'], ['pop:fs', '<span style="font-size:13px">A</span><span style="font-size:17px">A</span>&nbsp;▾', 'Text size'], ['pop:ff', 'Font&nbsp;▾', 'Font'], ['pop:ls', '•&nbsp;List&nbsp;▾', 'List style'],  ['link', 'Link', 'Add link'], ['removeFormat', 'Clear', 'Clear formatting']].map(([c, l, a]) => `<button type="button" data-cmd="${c}" aria-label="${a}" style="${l.length > 30 ? '' : 'padding:0 8px'}">${l}</button>`).join('')}<div class="npop" data-pop="fs" hidden>${[['fs:s', 'Small'], ['fs:n', 'Normal'], ['fs:l', 'Large'], ['fs:xl', 'Huge']].map(([c, l]) => `<button type="button" data-cmd="${c}" class="${c.slice(3) === 'n' ? '' : 'fs-' + c.slice(3)}">${l}</button>`).join('')}</div><div class="npop" data-pop="ff" hidden>${[['ff:default', 'Default'], ['ff:serif', 'Serif'], ['ff:mono', 'Mono'], ['ff:hand', 'Handwritten']].map(([c, l]) => `<button type="button" data-cmd="${c}" class="${c === 'ff:default' ? '' : 'ff-' + c.slice(3)}">${l}</button>`).join('')}</div><div class="npop" data-pop="ls" hidden>${[['ul:dot', '•  Bullets'], ['ul:arrow', '➤  Arrows'], ['ul:check', '☐  Checkboxes'], ['ul:dash', '–  Dashes'], ['ul:star', '★  Stars'], ['ol', '1.  Numbers']].map(([c, l]) => `<button type="button" data-cmd="${c}">${l}</button>`).join('')}</div></div>`; }
 function wireEditor(ed, bar, onSave) {
   let tm, range = null;
   const isTouch = matchMedia('(pointer:coarse)').matches;
@@ -932,15 +960,26 @@ function wireEditor(ed, bar, onSave) {
   ed.addEventListener('blur', flush);
   ed.addEventListener('paste', e => { const html = e.clipboardData.getData('text/html'), txt = e.clipboardData.getData('text/plain'); e.preventDefault(); document.execCommand('insertHTML', false, html ? cleanHtml(html) : textToHtml(txt)); });
   ed.addEventListener('click', e => { const a = e.target.closest('a'); if (a && a.href && (e.metaKey || e.ctrlKey || !ed.isContentEditable)) window.open(a.href, '_blank', 'noopener'); });
+  const listCmd = c => {
+    if (c === 'ol') { document.execCommand('insertOrderedList'); return; }
+    const inUl = () => { let n = getSelection().anchorNode; while (n && n !== ed) { if (n.nodeName === 'UL') return n; if (n.nodeName === 'OL') return null; n = n.parentNode; } return null; };
+    let ul = inUl(); if (!ul) { document.execCommand('insertUnorderedList'); ul = inUl(); } if (ul) ul.className = c === 'ul:dot' ? '' : 'ls-' + c.slice(3);
+  };
   $$('button', bar).forEach(b => {
     b.addEventListener('mousedown', e => e.preventDefault()); b.addEventListener('pointerdown', e => e.preventDefault()); b.addEventListener('touchstart', e => { e.preventDefault(); b.click(); }, { passive: false });
     b.addEventListener('click', () => {
       ed.focus(); if (range) { const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range); }
       const c = b.dataset.cmd;
       if (c === 'mark') { const on = markState(); document.execCommand('styleWithCSS', false, true); document.execCommand('hiliteColor', false, on ? 'transparent' : '#FFE58A'); document.execCommand('styleWithCSS', false, false); if (on) { const sel = getSelection(); let n = sel.anchorNode; while (n && n !== ed) { if (n.nodeName === 'MARK') { const p = n.parentNode; while (n.firstChild) p.insertBefore(n.firstChild, n); p.removeChild(n); break; } n = n.parentNode; } } }
+      else if (c.startsWith('pop:')) { const pp = bar.querySelector(`[data-pop="${c.slice(4)}"]`); const was = !pp.hidden; $$('.npop', bar).forEach(x => x.hidden = true); if (was) return; pp.hidden = false; const r = b.getBoundingClientRect(), cb = pp.offsetParent ? pp.offsetParent.getBoundingClientRect() : { left: 0, top: 0 }; const up = bar.classList.contains('float') || r.bottom + pp.offsetHeight + 8 > innerHeight; pp.style.left = (Math.max(8, Math.min(r.left, innerWidth - pp.offsetWidth - 8)) - cb.left) + 'px'; pp.style.top = ((up ? r.top - pp.offsetHeight - 6 : r.bottom + 6) - cb.top) + 'px'; return; }
+      else if (c.startsWith('fs:')) { document.execCommand('styleWithCSS', false, false); document.execCommand('fontSize', false, { s: '2', n: '3', l: '5', xl: '6' }[c.slice(3)]); }
+      else if (c.startsWith('ff:')) { document.execCommand('styleWithCSS', false, false); document.execCommand('fontName', false, { default: 'inherit', serif: 'Georgia', mono: 'Courier New', hand: 'Comic Sans MS' }[c.slice(3)]); }
+      else if (c.startsWith('ul:') || c === 'ol') { const sl = getSelection(), an = sl.anchorNode, atEnd = sl.isCollapsed && an && ((an.nodeType === 3 && sl.anchorOffset === an.length) || (an.nodeType === 1 && sl.anchorOffset === an.childNodes.length)); listCmd(c); if (atEnd) { let n = getSelection().anchorNode; while (n && n !== ed && n.nodeName !== 'LI') n = n.parentNode; if (n && n.nodeName === 'LI') { const rg = document.createRange(); rg.selectNodeContents(n); rg.collapse(false); const s2 = getSelection(); s2.removeAllRanges(); s2.addRange(rg); } } }
+      else if (false && c.startsWith('ul:')) { const inUl = () => { let n = getSelection().anchorNode; while (n && n !== ed) { if (n.nodeName === 'UL') return n; if (n.nodeName === 'OL') return null; n = n.parentNode; } return null; }; let ul = inUl(); if (!ul) { document.execCommand('insertUnorderedList'); ul = inUl(); } if (ul) ul.className = c === 'ul:dot' ? '' : 'ls-' + c.slice(3); }
       else if (c === 'h3') document.execCommand('formatBlock', false, 'H3');
       else if (c === 'link') { const u = prompt('Link address'); if (u) document.execCommand('createLink', false, /^https?:/i.test(u) ? u : 'https://' + u); }
       else document.execCommand(c);
+      $$('.npop', bar).forEach(x => x.hidden = true);
       ed.dispatchEvent(new Event('input'));
     });
   });
@@ -1088,7 +1127,7 @@ function occursOn(t, d) { // is a repeating task scheduled on date d (for calend
 /* ================= natural language ================= */
 const WDRE = '(?:mon(?:day)?|tue(?:s|sday)?|wed(?:nesday)?|thu(?:r|rs|rsday)?|fri(?:day)?|sat(?:urday)?|sun(?:day)?)';
 const MONRE = '(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t|tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)';
-const DATEPAT = '(?:day\\s+after\\s+tomorrow|today|tod|aaj|tomorrow|tmrw|tmr|kal|parso|next\\s+week|end\\s+of\\s+(?:the\\s+)?(?:month|year)|in\\s+\\d+\\s*(?:days?|weeks?|months?)|(?:next\\s+|this\\s+)?' + WDRE + '|\\d{1,2}(?:st|nd|rd|th)?\\s+' + MONRE + '(?:\\s+\\d{4})?|' + MONRE + '\\s+\\d{1,2}(?:st|nd|rd|th)?(?:\\s+\\d{4})?|\\d{1,2}/\\d{1,2}(?:/\\d{2,4})?|\\d{1,2}-\\d{1,2}-\\d{2,4})';
+const DATEPAT = '(?:day\\s+after\\s+tomorrow|today|tod|aaj|tomorrow|tmrw|tmr|tom|kal|parso|next\\s+week|end\\s+of\\s+(?:the\\s+)?(?:month|year)|in\\s+\\d+\\s*(?:days?|weeks?|months?)|(?:next\\s+|this\\s+)?' + WDRE + '|\\d{1,2}(?:st|nd|rd|th)?\\s+' + MONRE + '(?:\\s+\\d{4})?|' + MONRE + '\\s+\\d{1,2}(?:st|nd|rd|th)?(?:\\s+\\d{4})?|\\d{1,2}/\\d{1,2}(?:/\\d{2,4})?|\\d{1,2}-\\d{1,2}-\\d{2,4})';
 const wdIndex = w => ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'].indexOf(w.slice(0, 3).toLowerCase());
 const monIndex = w => ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].indexOf(w.slice(0, 3).toLowerCase());
 function nextWeekday(i, allowToday, from) { const d = from ? pYmd(from) : new Date(); d.setHours(0, 0, 0, 0); let k = 0; while (!(d.getDay() === i && (allowToday || k > 0))) { d.setDate(d.getDate() + 1); k++; } return ymd(d); }
@@ -1102,7 +1141,7 @@ function mkDate(d, m, y) {
 function dateFrom(w) {
   w = w.trim().toLowerCase().replace(/\s+/g, ' '); const td = today(); let m;
   if (/^(today|tod|aaj)$/.test(w)) return td;
-  if (/^(tomorrow|tmrw|tmr|kal)$/.test(w)) return addDays(td, 1);
+  if (/^(tomorrow|tmrw|tmr|tom|kal)$/.test(w)) return addDays(td, 1);
   if (/^(parso|day after tomorrow)$/.test(w)) return addDays(td, 2);
   if (w === 'next week') return nextWeekday(1, false);
   if ((m = w.match(/^end of (?:the )?(month|year)$/))) { const d = new Date(); return ymd(m[1] === 'month' ? new Date(d.getFullYear(), d.getMonth() + 1, 0) : new Date(d.getFullYear(), 11, 31)); }
@@ -1302,7 +1341,14 @@ const pcSkip = (cal, st) => /holiday|birthday|contacts/i.test(cal || '');
 function applyPcal() { Object.keys(S.meetLog).forEach(k => { if (S.meetLog[k].src === 'pcal') delete S.meetLog[k]; }); ((S.pcal || {}).ev || []).forEach(([id, t, s0, e0, all, cal, join, st]) => { if (pcSkip(cal, st)) return; S.meetLog['pc-' + id + '-' + s0] = { id: 'pc-' + id + '-' + s0, t: t || 'Busy', s: s0, e: e0, allDay: !!all, join: join || '', src: 'pcal', cal: cal || '', dec: st === 2 }; }); }
 function nextOcc(md) { const td = today(); const y = new Date().getFullYear(); let d = mkDateExact(y, md); if (d < td) d = mkDateExact(y + 1, md); return d; }
 function mkDateExact(y, md) { const [m, d] = md.split('-').map(Number); let dt = new Date(y, m - 1, d); if (dt.getMonth() !== m - 1) dt = new Date(y, m - 1, 28); return ymd(dt); }
-function datesOn(d) { return S.dates.filter(x => nextOcc(x.md) === d || mkDateExact(pYmd(d).getFullYear(), x.md) === d); }
+/* A date repeats yearly (default), monthly, or happens once. */
+function occOf(x) {
+  if (x.rep === 'once') return x.full || mkDateExact(new Date().getFullYear(), x.md);
+  if (x.rep === 'monthly') { const dd = +(x.md || '01-01').split('-')[1], td = today(), n = new Date(); const mk = (y, m) => { const last = new Date(y, m + 1, 0).getDate(); return ymd(new Date(y, m, Math.min(dd, last))); }; let d = mk(n.getFullYear(), n.getMonth()); if (d < td) d = mk(n.getFullYear(), n.getMonth() + 1); return d; }
+  return nextOcc(x.md);
+}
+function datesOn(d) { return S.dates.filter(x => x.rep === 'once' ? occOf(x) === d : x.rep === 'monthly' ? +x.md.split('-')[1] === Math.min(+x.md.split('-')[1], new Date(pYmd(d).getFullYear(), pYmd(d).getMonth() + 1, 0).getDate()) && pYmd(d).getDate() === Math.min(+x.md.split('-')[1], new Date(pYmd(d).getFullYear(), pYmd(d).getMonth() + 1, 0).getDate()) : (nextOcc(x.md) === d || mkDateExact(pYmd(d).getFullYear(), x.md) === d)); }
+const repLabel = x => x.rep === 'once' ? 'Once' : x.rep === 'monthly' ? 'Every month' : 'Every year';
 
 /* ================= toast ================= */
 let toastT;
@@ -1354,7 +1400,7 @@ function navItem(href, icon, color, name, count, on, extra = '') { return `<a cl
 function listsNav(cur) {
   const td = today(); const D = todayData(); const n7 = open().filter(t => t.date && t.date > td && t.date <= addDays(td, 7)).length;
   const hab = S.habits.filter(h => h.days.includes(new Date().getDay()) && h.log[td] == null).length;
-  const nextD = S.dates.map(x => dayDiff(td, nextOcc(x.md))).sort((a, b) => a - b)[0];
+  const nextD = S.dates.map(x => dayDiff(td, occOf(x))).filter(n => n >= 0).sort((a, b) => a - b)[0];
   let h = navItem('inbox', I.inbox, '#3B9EFF', 'Inbox', inboxTasks().length || '', cur === 'inbox');
   h += navItem('today', I.star, '#F5B800', 'Today', D.openCount || '', cur === 'today', D.overdue.length ? `<span class="bad" aria-label="${D.overdue.length} overdue">${D.overdue.length}</span>` : '');
   h += navItem('week', I.cols, '#2BB5A6', 'Week board', '', cur === 'week');
@@ -1565,7 +1611,7 @@ function vToday() {
   const d = new Date(); const D = todayData(); const st = S.settings;
   const total = D.day.length + D.evening.length + D.overdue.length + D.pinned.length + D.doneToday.length + (D.impact ? 1 : 0);
   const doneN = D.doneToday.length + (D.impact && D.impact.done ? 1 : 0);
-  const bday = S.dates.filter(x => nextOcc(x.md) === today());
+  const bday = S.dates.filter(x => occOf(x) === today());
   const gl = { time: 'Time', priority: 'Priority', project: 'Project' }[st.todayGroup] || 'Time';
   let h = topbar(`<button class="iconbtn" data-act="groupcycle" aria-label="Group by ${gl}. Tap to change" title="Group by ${gl}">${I.layers}</button>` + eyeBtn());
   const left = D.openCount;
@@ -1754,14 +1800,14 @@ function cycleHabit(x, k) { const v = x.log[k]; if (v == null) x.log[k] = 1; els
 /* ---------- dates (birthdays & anniversaries) ---------- */
 let dateFilter = 'all';
 function dateInfo(x) {
-  const occ = nextOcc(x.md), days = dayDiff(today(), occ), oy = pYmd(occ).getFullYear();
-  const yrs = x.year ? oy - x.year : null;
+  const occ = occOf(x), days = dayDiff(today(), occ), oy = pYmd(occ).getFullYear();
+  const yrs = x.year && (x.rep || 'yearly') === 'yearly' ? oy - x.year : null;
   const what = x.kind === 'birthday' ? (yrs ? `turns ${yrs}` : 'Birthday') : x.kind === 'anniversary' ? (yrs ? `${ordinal(yrs)} anniversary` : 'Anniversary') : 'Event';
   return { occ, days, yrs, what, emoji: x.kind === 'birthday' ? '🎂' : x.kind === 'anniversary' ? '💍' : '📌' };
 }
 function vDates() {
   let h = topbar(`<button class="iconbtn" data-act="newdate" aria-label="Add a date">${I.plus}</button>`) + `<div class="pad"><h1 class="title">Birthdays and dates</h1></div>`;
-  const list = S.dates.map(x => ({ x, ...dateInfo(x) })).filter(o => dateFilter === 'all' || o.x.kind === dateFilter).sort((a, b) => a.days - b.days);
+  const list = S.dates.map(x => ({ x, ...dateInfo(x) })).filter(o => (dateFilter === 'all' || o.x.kind === dateFilter) && o.days >= 0).sort((a, b) => a.days - b.days);
   h += `<div class="filters optchips">${[['all', 'All'], ['birthday', 'Birthdays'], ['anniversary', 'Anniversaries'], ['event', 'Events']].map(([k, l]) => `<button class="${dateFilter === k ? 'on' : ''}" data-act="dfilter" data-f="${k}">${l}</button>`).join('')}</div>`;
   if (!list.length) return h + `<div class="empty">No dates yet.<br><button class="btn" data-act="newdate" style="margin-top:14px">${I.plus}Add a date</button></div>`;
   const n = list[0];
@@ -1769,19 +1815,21 @@ function vDates() {
   let cur = '';
   list.forEach(o => {
     const mk = o.occ.slice(0, 7); if (mk !== cur) { cur = mk; const d = pYmd(o.occ); h += `<div class="dmonth">${MONSL[d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''}</div>`; }
-    h += `<button class="drow" data-act="editdate" data-id="${o.x.id}"><span class="tok${o.days === 0 ? ' now' : ''}"><b>${o.days === 0 ? '🎉' : o.days}</b><small>${o.days === 0 ? 'today' : o.days === 1 ? 'day' : 'days'}</small></span><span class="dn"><b>${esc(o.x.name)}</b><span>${cap(o.what)}, ${fmtShort(o.occ)}</span></span><span class="de">${o.emoji}</span></button>`;
+    h += `<button class="drow" data-act="editdate" data-id="${o.x.id}"><span class="tok${o.days === 0 ? ' now' : ''}"><b>${o.days === 0 ? '🎉' : o.days}</b><small>${o.days === 0 ? 'today' : o.days === 1 ? 'day' : 'days'}</small></span><span class="dn"><b>${esc(o.x.name)}</b><span>${cap(o.what)}, ${fmtShort(o.occ)} · ${fmtTime(o.x.time || '09:00')} · ${repLabel(o.x)}</span></span><span class="de">${o.emoji}</span></button>`;
   });
   return h;
 }
 function dateForm(id) {
-  const x = id ? S.dates.find(d => d.id === id) : { name: '', kind: 'birthday', md: '', year: '', remind: [0, 1], note: '' };
-  let kind = x.kind, rem = [...x.remind];
-  const val = x.md ? `${x.year || 2000}-${x.md}` : '';
+  const x = id ? S.dates.find(d => d.id === id) : { name: '', kind: 'birthday', md: '', year: '', remind: [0, 1], note: '', time: '09:00', rep: 'yearly' };
+  let kind = x.kind, rem = [...x.remind], rp = x.rep || 'yearly';
+  const val = x.full || (x.md ? `${x.year || new Date().getFullYear()}-${x.md}` : '');
   openSheet(sheetHead(id ? 'Edit date' : 'New date', 'Save', 'dSave') + `
   <div class="field"><label for="dName">Name</label><input class="inp" id="dName" value="${esc(x.name)}" placeholder="Pankaj Gala"></div>
   <div class="field"><span class="flabel">Type</span><div class="seg" id="dKind">${[['birthday', '🎂 Birthday'], ['anniversary', '💍 Anniversary'], ['event', '📌 Event']].map(([k, l]) => `<button type="button" data-k="${k}" class="${kind === k ? 'on' : ''}">${l}</button>`).join('')}</div></div>
   <div class="grid2"><div class="field" style="margin:0"><label for="dDate">Date</label><input class="inp" type="date" id="dDate" value="${val}"></div>
   <div class="field" style="margin:0"><label for="dYear">Year known?</label><select class="inp" id="dYear"><option value="1"${x.year ? ' selected' : ''}>Yes, show age</option><option value=""${!x.year ? ' selected' : ''}>No, skip age</option></select></div></div>
+  <div class="grid2" style="margin-top:12px"><div class="field" style="margin:0"><label for="dRep">Repeats</label><select class="inp" id="dRep">${[['yearly', 'Every year'], ['monthly', 'Every month'], ['once', 'Only once']].map(([v, l]) => `<option value="${v}"${rp === v ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
+  <div class="field" style="margin:0"><label for="dTime">Remind at</label><input class="inp" type="time" id="dTime" value="${x.time || '09:00'}"></div></div>
   <div class="field"><span class="flabel">Remind me</span><div class="optchips" id="dRem">${[[0, 'On the day'], [1, '1 day before'], [3, '3 days before'], [7, '1 week before']].map(([v, l]) => `<button type="button" data-v="${v}" class="${rem.includes(v) ? 'on' : ''}">${l}</button>`).join('')}</div></div>
   <div class="field"><label for="dNote">Gift ideas or notes</label><textarea class="inp" id="dNote" style="min-height:70px">${esc(x.note || '')}</textarea></div>
   ${id ? `<div class="btnrow"><button class="btn danger" id="dDel">${I.trash}Delete</button></div>` : ''}`);
@@ -1789,7 +1837,7 @@ function dateForm(id) {
   $$('#dRem button').forEach(b => b.onclick = () => { const v = +b.dataset.v; b.classList.toggle('on'); rem = b.classList.contains('on') ? [...rem, v] : rem.filter(z => z !== v); });
   $('#dSave').onclick = () => {
     const name = $('#dName').value.trim(), dv = $('#dDate').value; if (!name) { $('#dName').focus(); return; } if (!dv) { toast('Pick the date'); return; }
-    const [yy, mm, dd] = dv.split('-'); const vals = { name, kind, md: `${mm}-${dd}`, year: $('#dYear').value && +yy > 1900 && +yy <= new Date().getFullYear() ? +yy : null, remind: rem, note: $('#dNote').value };
+    const [yy, mm, dd] = dv.split('-'); rp = $('#dRep').value; const vals = { name, kind, md: `${mm}-${dd}`, year: rp === 'yearly' && $('#dYear').value && +yy > 1900 && +yy <= new Date().getFullYear() ? +yy : null, remind: rem, note: $('#dNote').value, time: $('#dTime').value || '09:00', rep: rp, full: rp === 'once' ? dv : null };
     if (id) Object.assign(x, vals); else S.dates.push({ id: uid(), ...vals });
     save(); closeSheet(true); render();
   };
@@ -2273,7 +2321,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.6</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.8</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -2357,8 +2405,10 @@ function hotkeyFile() {
   const exes = br === 'edge' ? ['${env:ProgramFiles(x86)}\\Microsoft\\Edge\\Application\\msedge.exe', '$env:ProgramFiles\\Microsoft\\Edge\\Application\\msedge.exe']
     : ['$env:ProgramFiles\\Google\\Chrome\\Application\\chrome.exe', '${env:ProgramFiles(x86)}\\Google\\Chrome\\Application\\chrome.exe', '$env:LocalAppData\\Google\\Chrome\\Application\\chrome.exe'];
   const ps = [
+    '$log = "$env:APPDATA\\Sankalp\\hotkey.log"',
+    'try {',
     '$exe = @(' + exes.map(e => `"${e}"`).join(', ') + ') | Where-Object { Test-Path $_ } | Select-Object -First 1',
-    'if (-not $exe) { exit }',
+    'if (-not $exe) { Set-Content $log "NOBROWSER"; exit }',
     'Add-Type -TypeDefinition @"',
     'using System; using System.Runtime.InteropServices;',
     'public static class SkHk {',
@@ -2367,9 +2417,11 @@ function hotkeyFile() {
     '  [DllImport("user32.dll")] public static extern int GetMessage(out MSG m, IntPtr h, uint a, uint b);',
     '}',
     '"@',
-    `if (-not [SkHk]::RegisterHotKey([IntPtr]::Zero, 7, ${mod}, ${vk})) { (New-Object -ComObject WScript.Shell).Popup('${label} is already used by another program. In Sankalp Settings pick other keys and run the new setup file.', 0, 'Sankalp', 48) | Out-Null; exit }`,
+    `if (-not [SkHk]::RegisterHotKey([IntPtr]::Zero, 7, ${mod}, ${vk})) { Set-Content $log "TAKEN"; exit }`,
+    'Set-Content $log "OK"',
     '$msg = New-Object SkHk+MSG',
-    `while ([SkHk]::GetMessage([ref]$msg, [IntPtr]::Zero, 0, 0) -gt 0) { if ($msg.m -eq 0x0312) { Start-Process -FilePath $exe -ArgumentList '--app="${url}"', '--window-size=540,340' } }`];
+    `while ([SkHk]::GetMessage([ref]$msg, [IntPtr]::Zero, 0, 0) -gt 0) { if ($msg.m -eq 0x0312) { Start-Process -FilePath $exe -ArgumentList '--app="${url}"', '--window-size=540,340' } }`,
+    '} catch { Set-Content $log ("ERR " + $_.Exception.Message) }'];
   const q = x => '"' + x.replace(/"/g, '""') + '"';
   const vbs = [
     'Set sh = CreateObject("WScript.Shell")', 'Set fs = CreateObject("Scripting.FileSystemObject")',
@@ -2385,8 +2437,15 @@ function hotkeyFile() {
     'r.Close',
     'Set lnk = sh.CreateShortcut(sh.SpecialFolders("Startup") & "\\Sankalp hotkey.lnk")',
     'lnk.TargetPath = "wscript.exe"', 'lnk.Arguments = """" & dir & "\\start.vbs"""', 'lnk.Save',
+    'logf = dir & "\\hotkey.log"', 'If fs.FileExists(logf) Then fs.DeleteFile logf',
     'sh.Run "wscript.exe """ & dir & "\\start.vbs""", 0, False',
-    `MsgBox "Done. Press ${label} in any app to add a task to Sankalp.", 64, "Sankalp"`].join('\r\n');
+    'res = ""', 'For i = 1 To 30', '  WScript.Sleep 500', '  If fs.FileExists(logf) Then', '    Set lf = fs.OpenTextFile(logf, 1)', '    If Not lf.AtEndOfStream Then res = Trim(lf.ReadAll)', '    lf.Close', '  End If', '  If res <> "" Then Exit For', 'Next',
+    'If Left(res, 2) = "OK" Then', `  MsgBox "Ready. Press ${label} in any app to add a task to Sankalp.", 64, "Sankalp"`,
+    'ElseIf Left(res, 5) = "TAKEN" Then', `  MsgBox "${label} is already used by Windows or another program. In Sankalp Settings pick other keys (Alt + Space or Ctrl + Q work on most PCs), download the setup again and open it.", 48, "Sankalp"`,
+    'ElseIf Left(res, 9) = "NOBROWSER" Then', `  MsgBox "${br === 'edge' ? 'Edge' : 'Chrome'} was not found. In Sankalp Settings pick the other browser, download the setup again and open it.", 48, "Sankalp"`,
+    'ElseIf res = "" Then', '  MsgBox "Your laptop blocked the shortcut helper: PowerShell scripts are not allowed here. Send this message to Claude.", 48, "Sankalp"',
+    'Else', '  MsgBox "The shortcut could not start: " & res & vbCrLf & vbCrLf & "Send this message to Claude.", 48, "Sankalp"',
+    'End If'].join('\r\n');
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([vbs], { type: 'text/plain' })); a.download = 'Sankalp-hotkey-setup.vbs'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
 /* Quick-add window (opened by the desktop shortcut): save, make sure it reached the cloud, then close. */
@@ -2400,7 +2459,7 @@ async function quickDone() {
 function quickAdd(ctxOverride) {
   const ctx = { ...route(), ...(ctxOverride || {}) }; if (ctx.view === 'calendar' && !ctx.date) ctx.date = calSel;
   const ph = ['Call mom kal 5pm p2, home', 'Send proposal fri 4pm p1 sales', 'Call dad daily 5:30pm from tomorrow till 31 dec', 'Pay bill 15 oct remind 1 day before', 'meet Client call 3pm-4pm', 'Gym every mon, wed, fri 7am'];
-  openSheet(`<div class="shead"><button class="cx" data-close>Cancel</button><span class="ttl">${ctx.tpl ? esc(ctx.tpl.emoji + ' ' + ctx.tpl.name) : ctx.date ? 'New task, ' + fmtDate(ctx.date) : 'New task'}</span><button class="ok" id="qaAdd" disabled>Add</button></div>
+  openSheet(`<div class="shead"><button class="cx" data-close>Cancel</button><span class="ttl">${ctx.tpl ? esc(ctx.tpl.emoji + ' ' + ctx.tpl.name) : ctx.date ? 'New task, ' + fmtDate(ctx.date) : 'New task'}</span><span class="qa-r"><button class="iconbtn qa-x" id="qaExp" disabled aria-label="Open full task: subtasks, notes, images" title="Open full task">${I.expand}</button><button class="ok" id="qaAdd" disabled>Add</button></span></div>
   <div id="qaForm"><div class="qa-in"><label for="qaIn" class="sr">New task</label><textarea id="qaIn" rows="1" placeholder="${ph[Math.floor(Math.random() * ph.length)]}" enterkeyhint="done" autocomplete="off" autocapitalize="sentences" spellcheck="true" data-form-type="other">${ctx.tpl ? esc(ctx.tpl.title) : ''}</textarea>${('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) ? `<button type="button" class="iconbtn" id="qaMic" aria-label="Speak the task">${I.mic}</button>` : ''}</div>
   <div class="qa-wrap"><div class="qa-pick" id="qaPick" role="listbox" hidden></div></div>
   <label for="qaNote" class="sr">Notes</label><textarea class="qa-note" id="qaNote" rows="1" placeholder="Notes" autocomplete="off" data-form-type="other"></textarea>
@@ -2408,7 +2467,7 @@ function quickAdd(ctxOverride) {
   ${ctx.tpl ? '' : `<button type="button" class="tplbtn" id="qaTplBtn" aria-expanded="false">${I.layers}Templates</button><div class="tplrow" id="qaTpl" hidden>${S.templates.map(t => `<button class="tplchip" data-tpl="${t.id}">${t.emoji} ${esc(t.name)}</button>`).join('')}<button class="tplchip" id="qaNewTpl" style="border-style:dashed;color:var(--muted)">${I.plus} New</button></div>`}
   `, ctx.quick ? () => window.close() : null, !!ctx.quick);
   const inp = $('#qaIn'), addB = $('#qaAdd');
-  const upd = () => { const v = inp.value.trim(); addB.disabled = !v; if (!v) { $('#qaChips').innerHTML = ''; $('#qaPrev').innerHTML = ''; return; } const r = parseTask(v); $('#qaChips').innerHTML = chipsFor(r); $('#qaPrev').innerHTML = r.title ? `${r.meeting ? 'Meeting' : 'Task'}: <b>${esc(r.title)}</b>` : ''; };
+  const upd = () => { const v = inp.value.trim(); addB.disabled = !v; $('#qaExp').disabled = !v; if (!v) { $('#qaChips').innerHTML = ''; $('#qaPrev').innerHTML = ''; return; } const r = parseTask(v); $('#qaChips').innerHTML = chipsFor(r); $('#qaPrev').innerHTML = r.title ? `${r.meeting ? 'Meeting' : 'Task'}: <b>${esc(r.title)}</b>` : ''; };
   const fit = () => { inp.style.height = 'auto'; inp.style.height = inp.scrollHeight + 'px'; };
   inp.addEventListener('input', () => { fit(); upd(); }); upd(); fit();
   // # projects and @ tags: a picker pops up while you type
@@ -2465,6 +2524,14 @@ function quickAdd(ctxOverride) {
     toast(`Added to ${where}`); closeSheet(true);
   };
   addB.onclick = submit;
+  $('#qaExp').onclick = () => {
+    const v = inp.value.trim(); if (!v) return inp.focus();
+    const res = addFromText(v, ctx); if (!res) { toast('Add a few words for the task name'); return; }
+    if (res.meeting) { closeSheet(true); render(); toast(`Meeting added, ${fmtClock(res.meeting.s)}`); return; }
+    const nv = (note.value || '').trim(); if (nv) { res.notes = (res.notes || '') + textToHtml(nv); res.nh = true; save(); }
+    closeSheet(true); if (ctx.quick) { document.body.classList.remove('qm'); window.QM = false; }
+    render(); setTimeout(() => taskSheet(res.id), 220);
+  };
   $$('.tplchip[data-tpl]').forEach(b => b.onclick = () => { const t = S.templates.find(x => x.id === b.dataset.tpl); quickAdd({ ...ctx, tpl: t }); });
   const nt = $('#qaNewTpl'); if (nt) nt.onclick = () => tplForm();
   const tb = $('#qaTplBtn'); if (tb) tb.onclick = () => { const r = $('#qaTpl'); r.hidden = !r.hidden; tb.setAttribute('aria-expanded', String(!r.hidden)); };
@@ -2528,7 +2595,7 @@ function renderPage(fresh) {
   <div class="ptitle${t.done ? ' done' : ''}"><button class="chk p${t.priority}${t.done ? ' isdone' : ''}" id="pChk" aria-label="${t.done ? 'Mark not done' : 'Complete task'}" style="${t.done ? '--x:1' : ''}">${t.done ? I.check : ''}</button><label for="pTitle" class="sr">Title</label><textarea id="pTitle" rows="1">${esc(t.title)}</textarea></div>
   <div class="props">${props.join('')}</div>
   ${t.pushed >= 2 ? `<div class="psec" style="padding-top:8px"><div class="warn">Moved ${t.pushed} times. Add a small first step below, or drop it from the menu.</div></div>` : ''}
-  <div class="psec"><h3><span>Subtasks${t.subs.length ? ` ${sd}/${t.subs.length}` : ''}</span></h3><div id="pCl">${t.subs.map(c => clRow(c, true)).join('')}</div><div class="cl"><span style="width:20px;display:flex;color:var(--muted)">${I.plus}</span><textarea class="clt" id="pClNew" rows="1" placeholder="Add a subtask" aria-label="Add a subtask" enterkeyhint="enter" autocomplete="off"></textarea></div></div>
+  <div class="psec"><h3><span>Subtasks${t.subs.length ? ` ${sd}/${t.subs.length}` : ''}</span></h3><div id="pCl">${t.subs.map(c => clRow(c, true)).join('')}</div><div class="cl"><button type="button" id="pClAdd" class="iconbtn" style="width:24px;color:var(--muted)" aria-label="Add subtask">${I.plus}</button><textarea class="clt" id="pClNew" rows="1" placeholder="Add a subtask, e.g. Call Madhu tod 4pm p1" aria-label="Add a subtask" enterkeyhint="enter" autocomplete="off"></textarea></div></div>
   <div class="psec"><h3><span>Notes</span></h3>${toolbarHtml()}<div class="notes" id="pNotes" contenteditable="true" data-ph="Write notes, call points, links. Use the bar above for bold and highlight." role="textbox" aria-multiline="true" aria-label="Notes">${cleanHtml(t.notes)}</div></div>
   <div class="psec"><h3><span>Images${t.imgs.length ? ' ' + t.imgs.length : ''}</span></h3><div class="imgs">${t.imgs.map(id => IMGS[id] ? `<button class="im" data-img="${id}" aria-label="Open image"><img src="${IMGS[id]}" alt="Attached image"></button>` : '').join('')}<button class="addimg" id="pAddImg">${I.img}<span>Add image</span></button></div></div>
   <div class="pfoot">Created ${fmtDate(ymd(new Date(t.createdAt)))}${t.done && t.doneAt ? `. Done ${fmtDate(ymd(new Date(t.doneAt)))}` : ''}${t.pushed ? `. Moved ${plural(t.pushed, 'time')}` : ''}.</div>`;
@@ -2553,7 +2620,11 @@ function renderPage(fresh) {
     const bl = el.querySelector('[data-bell]'); if (bl) bl.onclick = () => subRemind(t, c);
   });
   clWire();
-  $('#pClNew').onkeydown = e => { if (e.key !== 'Enter') return; e.preventDefault(); const v = e.target.value.trim(); if (!v) return; const c = { id: uid(), t: v, d: false }; t.subs.push(c); save(); $('#pCl').insertAdjacentHTML('beforeend', clRow(c, true)); e.target.value = ''; clWire(); };
+  const nw = $('#pClNew');
+  const addSub = () => { const v = nw.value.replace(/\n/g, ' ').trim(); nw.value = ''; if (!v) return; const c = subFromText(v); t.subs.push(c); save(); $('#pCl').insertAdjacentHTML('beforeend', clRow(c, true)); clWire(); if (c.at) askNotify(); nw.focus(); };
+  nw.onkeydown = e => { if (e.key === 'Enter' || e.keyCode === 13) { e.preventDefault(); addSub(); } };
+  nw.oninput = () => { if (nw.value.includes('\n')) addSub(); };
+  const ab = $('#pClAdd'); if (ab) { ab.onpointerdown = e => e.preventDefault(); ab.onclick = addSub; }
 }
 function applyAndRefresh(t) { t.firedKeys = []; save(); closeSheet(true); renderPage(); render(); }
 function pickWhen(t) {
@@ -2637,18 +2708,39 @@ function pageMenu(t) {
     else if (m === 'del') { if (confirm('Delete this task?')) { const id = t.id; closePage(); deleteTask(id); } }
   });
 }
-const clRow = (c, withBell) => `<div class="cl${c.d ? ' done' : ''}" data-c="${c.id}"><input type="checkbox"${c.d ? ' checked' : ''} aria-label="Done"><span class="clw"><textarea class="clt" rows="1" aria-label="Subtask" autocomplete="off">${esc(c.t)}</textarea>${c.at ? `<small class="clat${!c.d && new Date(c.at).getTime() < Date.now() ? ' late' : ''}">${I.bell}${esc(subWhen(c))}</small>` : ''}</span>${withBell ? `<button type="button" class="iconbtn${c.at ? ' on' : ''}" data-bell aria-label="${c.at ? 'Change reminder' : 'Add reminder'} for subtask">${I.bell}</button>` : ''}<button type="button" class="iconbtn" data-rm aria-label="Remove subtask">${I.trash}</button></div>`;
+const subMeta = c => { const m = []; if (c.p && c.p < 4) m.push(`<span class="sp p${c.p}">${I.flag}P${c.p}</span>`); if (c.at) m.push(`<span class="${!c.d && new Date(c.at).getTime() < Date.now() ? 'late' : ''}">${I.bell}${esc(subWhen(c))}</span>`); else if (c.due) m.push(`<span class="${!c.d && c.due < today() ? 'late' : ''}">${I.cal}${esc(fmtDate(c.due))}</span>`); (c.tags || []).forEach(x => m.push(`<span>@${esc(x)}</span>`)); return m.length ? `<small class="clat">${m.join('')}</small>` : ''; };
+const clRow = (c, withBell) => `<div class="cl${c.d ? ' done' : ''}" data-c="${c.id}"><input type="checkbox"${c.d ? ' checked' : ''} aria-label="Done"><span class="clw"><textarea class="clt" rows="1" aria-label="Subtask" autocomplete="off">${esc(c.t)}</textarea>${subMeta(c)}</span>${withBell ? `<button type="button" class="iconbtn${c.at || c.due || (c.p && c.p < 4) || (c.tags || []).length ? ' on' : ''}" data-bell aria-label="Subtask details: priority, date, time, tags">${I.more}</button>` : ''}<button type="button" class="iconbtn" data-rm aria-label="Remove subtask">${I.trash}</button></div>`;
+/* "Call Madhu tod 4pm p1 @call" -> subtask with priority, reminder and tags */
+function subFromText(v) {
+  const r = parseTask(v); const c = { id: uid(), t: (r.title || v).trim(), d: false };
+  if (r.priority && r.priority < 4) c.p = r.priority; if (r.tags.length) c.tags = r.tags;
+  if (r.time) c.at = (r.date || today()) + 'T' + r.time; else if (r.date) c.due = r.date;
+  return c;
+}
 function subRemind(t, c) {
   const td = today(); const [d0, t0] = (c.at || '').split('T');
-  openSheet(sheetHead('Subtask reminder', 'Done', 'srOk') + `<p class="sub" style="margin:6px 0 12px">${esc(c.t)}</p><div class="optchips" id="srQ">${[['30', 'In 30 min'], ['60', 'In 1 hour'], ['eve', 'This evening 6 PM'], ['tm', 'Tomorrow 9 AM']].map(([k, l]) => `<button type="button" data-q="${k}">${l}</button>`).join('')}</div>
-  <div class="grid2" style="margin-top:12px"><div class="field" style="margin:0"><label for="srD">Date</label><input class="inp" type="date" id="srD" value="${d0 || t.date || td}"></div><div class="field" style="margin:0"><label for="srT">Time</label><input class="inp" type="time" id="srT" value="${t0 || ''}"></div></div>
-  ${c.at ? `<div class="btnrow"><button class="btn danger" id="srDel">${I.trash}Remove reminder</button></div>` : ''}`);
+  openSheet(sheetHead('Subtask', 'Done', 'srOk') + `<div class="field"><label for="srN">Subtask</label><input class="inp" id="srN" value="${esc(c.t)}" autocomplete="off"></div>
+  <div class="field"><label>Priority</label><div class="seg" id="srP">${[1, 2, 3, 4].map(p => `<button type="button" data-p="${p}" class="${(c.p || 4) === p ? 'on' : ''}">${p === 4 ? 'None' : 'P' + p}</button>`).join('')}</div></div>
+  <div class="optchips" id="srQ">${[['30', 'In 30 min'], ['60', 'In 1 hour'], ['eve', 'Today 6 PM'], ['tm', 'Tomorrow 9 AM']].map(([k, l]) => `<button type="button" data-q="${k}">${l}</button>`).join('')}</div>
+  <div class="grid2" style="margin-top:12px"><div class="field" style="margin:0"><label for="srD">Date</label><input class="inp" type="date" id="srD" value="${d0 || c.due || ''}"></div><div class="field" style="margin:0"><label for="srT">Time (reminds you)</label><input class="inp" type="time" id="srT" value="${t0 || ''}"></div></div>
+  <div class="field" style="margin-top:12px"><label for="srG">Tags</label><input class="inp" id="srG" value="${esc((c.tags || []).join(', '))}" placeholder="call, email" autocomplete="off"></div>
+  ${c.at || c.due ? `<div class="btnrow"><button class="btn sec" id="srDel">${I.x}Clear date and time</button></div>` : ''}`);
+  let pr = c.p || 4;
+  $$('#srP button').forEach(b => b.onclick = () => { pr = +b.dataset.p; $$('#srP button').forEach(x => x.classList.toggle('on', x === b)); });
   const setAt = (dt) => { $('#srD').value = ymd(dt); $('#srT').value = pad(dt.getHours()) + ':' + pad(dt.getMinutes()); };
   $$('#srQ button').forEach(b => b.onclick = () => { const q = b.dataset.q; const n = new Date(); if (q === '30' || q === '60') { n.setMinutes(n.getMinutes() + +q, 0, 0); setAt(n); } else if (q === 'eve') { n.setHours(18, 0, 0, 0); setAt(n); } else { n.setDate(n.getDate() + 1); n.setHours(9, 0, 0, 0); setAt(n); } $$('#srQ button').forEach(x => x.classList.toggle('on', x === b)); });
-  $('#srOk').onclick = () => { const d = $('#srD').value, tm = $('#srT').value || '09:00'; if (!d) { $('#srD').focus(); return; } c.at = d + 'T' + tm; c.nagAt = 0; c.snoozeUntil = 0; t.firedKeys = t.firedKeys.filter(k => !k.startsWith('s' + c.id)); askNotify(); save(); closeSheet(true); renderPage(); toast('Reminder set for ' + subWhen(c)); };
-  if (c.at) $('#srDel').onclick = () => { delete c.at; c.nagAt = 0; save(); closeSheet(true); renderPage(); };
+  $('#srOk').onclick = () => {
+    const nm = $('#srN').value.trim(); if (nm) c.t = nm;
+    const d = $('#srD').value, tm = $('#srT').value; const oldAt = c.at;
+    delete c.at; delete c.due;
+    if (tm) c.at = (d || td) + 'T' + tm; else if (d) c.due = d;
+    if (c.at !== oldAt) { c.nagAt = 0; c.snoozeUntil = 0; t.firedKeys = t.firedKeys.filter(k => !k.startsWith('s' + c.id)); if (c.at) askNotify(); }
+    if (pr < 4) c.p = pr; else delete c.p;
+    const tg = $('#srG').value.split(',').map(x => x.trim().replace(/^@/, '').toLowerCase()).filter(Boolean); if (tg.length) c.tags = tg; else delete c.tags;
+    save(); closeSheet(true); renderPage(); if (c.at && c.at !== oldAt) toast('Reminder set for ' + subWhen(c));
+  };
+  if (c.at || c.due) $('#srDel').onclick = () => { delete c.at; delete c.due; c.nagAt = 0; save(); closeSheet(true); renderPage(); };
 }
-
 function scheduleMenu(id) {
   const t = getTask(id); if (!t) return; const td = today(); const nextMon = nextWeekday(1, false);
   openSheet(sheetHead('Move or pin', '', '') + `<p class="sub" style="margin:4px 0 6px">${esc(t.title.slice(0, 60))}</p><div class="menu">
@@ -2685,7 +2777,7 @@ function searchSheet() {
     if (ps.length) h += '<div class="sr-h">Projects</div>' + ps.map(p => `<button data-go="project/${p.id}"><span style="width:22px;text-align:center">${p.emoji || '●'}</span><span>${esc(p.name)}</span></button>`).join('');
     if (ts.length) h += '<div class="sr-h">Tasks</div>' + ts.map(t => `<button data-task="${t.id}"><span style="width:22px;text-align:center;color:var(--muted)">${t.done ? I.check : '○'}</span><span style="${t.done ? 'text-decoration:line-through;color:var(--muted)' : ''}">${esc(t.title)}<small>${[t.date ? fmtDate(t.date) : t.someday ? 'Someday' : 'No date', proj(t.projectId)?.name].filter(Boolean).join(', ')}</small></span></button>`).join('');
     if (hs.length) h += '<div class="sr-h">Habits</div>' + hs.map(x => `<button data-habit="${x.id}"><span style="width:22px;text-align:center">${x.emoji}</span><span>${esc(x.name)}</span></button>`).join('');
-    if (ds.length) h += '<div class="sr-h">Dates</div>' + ds.map(x => `<button data-go="dates"><span style="width:22px;text-align:center">🎂</span><span>${esc(x.name)}<small>${fmtShort(nextOcc(x.md))}</small></span></button>`).join('');
+    if (ds.length) h += '<div class="sr-h">Dates</div>' + ds.map(x => `<button data-go="dates"><span style="width:22px;text-align:center">🎂</span><span>${esc(x.name)}<small>${fmtShort(occOf(x))}</small></span></button>`).join('');
     $('#sRes').innerHTML = h || '<p class="hint">Nothing matches.</p>';
     $$('#sRes [data-go]').forEach(b => b.onclick = () => { closeSheet(true); go(b.dataset.go); });
     $$('#sRes [data-task]').forEach(b => b.onclick = () => { closeSheet(true); setTimeout(() => taskSheet(b.dataset.task), 230); });
@@ -3198,7 +3290,7 @@ async function notify(title, body, tag, data = {}, actions) {
   try { new Notification(title, { body, tag }); } catch (e) { }
 }
 function remSig() {
-  const a = S.tasks.filter(t => !t.done).map(t => [t.id, t.date || '', t.time || '', (t.reminders || []).join(','), t.snoozeUntil || 0, t.nag ?? '', t.priority, t.title, (t.subs || []).filter(c => !c.d && c.at).map(c => c.id + '@' + c.at + '@' + (c.snoozeUntil || 0)).join(';')].join('|')).sort().join('\n');
+  const a = S.tasks.filter(t => !t.done).map(t => [t.id, t.date || '', t.time || '', (t.reminders || []).join(','), t.snoozeUntil || 0, t.nag ?? '', t.priority, t.title, (t.subs || []).filter(c => !c.d && c.at).map(c => c.id + '@' + c.at + '@' + (c.snoozeUntil || 0)).join(';')].join('|')).sort().join('\n') + '\n' + S.dates.map(x => [x.id, x.name, x.kind, x.md, x.full || '', x.rep || '', x.time || '', (x.remind || []).join(',')].join('|')).sort().join('\n');
   let h = 5381; for (let i = 0; i < a.length; i++) h = ((h << 5) + h + a.charCodeAt(i)) | 0; return (h >>> 0).toString(36) + '.' + a.length;
 }
 function inQuiet() { const st = S.settings; if (!st.quietOn) return false; const hm = nowHM(); return st.quietStart <= st.quietEnd ? (hm >= st.quietStart && hm < st.quietEnd) : (hm >= st.quietStart || hm < st.quietEnd); }
@@ -3251,7 +3343,7 @@ function tick() {
   if (mb && !quiet && !(phoneDoes && S.pcal)) meetingsOn(td).forEach(m => { const k = 'm' + m.id + m.s; if (!S.fired[k] && now >= m.s - mb * 6e4 && now < m.s + 5 * 6e4) { S.fired[k] = 1; changed = true; notify(m.t, `Starts at ${fmtClock(m.s)}`, k, { url: m.join || '' }); } });
   const wd = new Date().getDay();
   if (!quiet && !shield) S.habits.forEach(x => { if (!x.time || !x.days.includes(wd) || x.log[td] != null) return; const k = 'h' + x.id + td; if (!S.fired[k] && hm >= x.time) { S.fired[k] = 1; changed = true; notify(`${x.emoji} ${x.name}`, `Streak: ${habitStreak(x)} days. Tap Habits to check in.`, k); } });
-  S.dates.forEach(x => { const occ = nextOcc(x.md); (x.remind || []).forEach(dd => { const day = addDays(occ, -dd); const k = 'd' + x.id + day; if (day === td && hm >= '09:00' && !S.fired[k] && !quiet) { S.fired[k] = 1; changed = true; const i = dateInfo(x); notify(`${i.emoji} ${x.name}`, dd === 0 ? `${cap(i.what)} today` : `${cap(i.what)} ${dd === 1 ? 'tomorrow' : 'in ' + dd + ' days'}, ${fmtShort(occ)}`, k); } }); });
+  if (!nativeRem) S.dates.forEach(x => { const occ = occOf(x); (x.remind || []).forEach(dd => { const day = addDays(occ, -dd); const k = 'd' + x.id + day; if (day === td && hm >= (x.time || '09:00') && !S.fired[k]) { S.fired[k] = 1; changed = true; const i = dateInfo(x); notify(`${i.emoji} ${x.name}`, dd === 0 ? `${cap(i.what)} today` : `${cap(i.what)} ${dd === 1 ? 'tomorrow' : 'in ' + dd + ' days'}, ${fmtShort(occ)}`, k); } }); });
   if (S.settings.lastSummary !== td && hm >= S.settings.morning && hm < '12:00' && !quiet && cs.morn && !phoneDoes) {
     S.settings.lastSummary = td; changed = true; const D = todayData(); const n = D.openCount; const mm = meetingsOn(td).length; const cb = coachBrief(); const top = [...D.overdue, ...D.day].sort(sortTasks)[0];
     notify('Good morning', `${plural(n, 'task')}${mm ? ` and ${plural(mm, 'meeting')}` : ''} today.${cb.best ? ` Best hours ${cb.best}.` : ''}${top ? ` Start with: ${top.title}.` : ''}${cb.leak ? ` Watch ${cb.leak}.` : ''}`, 'summary', { url: './#today' });

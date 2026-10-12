@@ -72,7 +72,9 @@ final class Sync {
         JSONArray tasks = Api.list(ctx, "task");
         e.putString("brief", brief(tasks).toString());
         e.apply();
-        int alarms = Alarms.plan(ctx, tasks, prefs, cal);
+        JSONArray dates = null;
+        try { dates = Api.list(ctx, "date"); } catch (Exception ignored) { }
+        int alarms = Alarms.plan(ctx, tasks, dates, prefs, cal);
         try { ack(ctx, rvNow); } catch (Exception ignored) { }
         Coach.schedule(ctx);
 
@@ -93,7 +95,9 @@ final class Sync {
         JSONObject prefs = null, cal = null;
         try { prefs = new JSONObject(p.getString("prefsJson", "{}")); } catch (Exception ignored) { }
         try { cal = new JSONObject(p.getString("pcal", "{}")); } catch (Exception ignored) { }
-        Alarms.plan(ctx, tasks, prefs, cal);
+        JSONArray dates = null;
+        try { dates = Api.list(ctx, "date"); } catch (Exception ignored) { }
+        Alarms.plan(ctx, tasks, dates, prefs, cal);
         p.edit().putString("brief", brief(tasks).toString()).apply();
         ack(ctx, v);
     }
