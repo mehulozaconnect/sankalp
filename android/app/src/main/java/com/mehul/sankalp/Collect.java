@@ -56,7 +56,7 @@ final class Collect {
             android.content.ContentUris.appendId(b, to);
             String[] cols = { CalendarContract.Instances.EVENT_ID, CalendarContract.Instances.TITLE, CalendarContract.Instances.BEGIN, CalendarContract.Instances.END,
                     CalendarContract.Instances.ALL_DAY, CalendarContract.Instances.CALENDAR_DISPLAY_NAME, CalendarContract.Instances.SELF_ATTENDEE_STATUS,
-                    CalendarContract.Instances.EVENT_LOCATION, CalendarContract.Instances.DESCRIPTION, CalendarContract.Instances.OWNER_ACCOUNT, CalendarContract.Instances.STATUS };
+                    CalendarContract.Instances.EVENT_LOCATION, CalendarContract.Instances.DESCRIPTION, CalendarContract.Instances.OWNER_ACCOUNT, CalendarContract.Instances.STATUS, CalendarContract.Instances.ORGANIZER };
             Cursor cur = null;
             try {
                 cur = c.getContentResolver().query(b.build(), cols, null, null, CalendarContract.Instances.BEGIN + " ASC");
@@ -70,7 +70,8 @@ final class Collect {
                     String txt = (cur.getString(7) == null ? "" : cur.getString(7)) + " " + (cur.getString(8) == null ? "" : cur.getString(8));
                     Matcher m = JOIN.matcher(txt);
                     String join = m.find() ? m.group() : "";
-                    ev.put(new JSONArray().put(cur.getLong(0)).put(title == null ? "Busy" : title).put(cur.getLong(2)).put(cur.getLong(3)).put(cur.getInt(4) == 1).put(cal == null ? "" : cal).put(join).put(cur.getInt(6)));
+                    ev.put(new JSONArray().put(cur.getLong(0)).put(title == null ? "Busy" : title).put(cur.getLong(2)).put(cur.getLong(3)).put(cur.getInt(4) == 1).put(cal == null ? "" : cal).put(join).put(cur.getInt(6))
+                            .put(cur.getString(7) == null ? "" : cur.getString(7)).put(cleanDesc(cur.getString(8))).put(cur.getString(11) == null ? "" : cur.getString(11)));
                     if (cal != null) calSet.add(cal);
                     n++;
                 }
@@ -94,11 +95,35 @@ final class Collect {
                     if (owner != null && owner.contains("@") && (cal == null || !cal.contains(owner))) cal = (cal == null || cal.isEmpty() ? "Calendar" : cal) + " (" + owner + ")";
                     String txt = (cur.getString(7) == null ? "" : cur.getString(7)) + " " + (cur.getString(8) == null ? "" : cur.getString(8));
                     Matcher m = JOIN.matcher(txt);
-                    ev.put(new JSONArray().put(id).put(title == null ? "Busy" : title).put(s0).put(e0).put(cur.getInt(4) == 1).put(cal == null ? "" : cal).put(m.find() ? m.group() : "").put(cur.getInt(6)).put(1));
+                    ev.put(new JSONArray().put(id).put(title == null ? "Busy" : title).put(s0).put(e0).put(cur.getInt(4) == 1).put(cal == null ? "" : cal).put(m.find() ? m.group() : "").put(cur.getInt(6))
+                            .put(cur.getString(7) == null ? "" : cur.getString(7)).put(cleanDesc(cur.getString(8))).put(""));
                     if (cal != null) calSet.add(cal);
                 }
             } catch (Exception ignored) {
             } finally { if (cur != null) cur.close(); }
+            // Who is invited, for the meeting details card.
+            try {
+                java.util.Map<Long, JSONArray> who = new java.util.HashMap<>();
+                java.util.List<String> ids = new java.util.ArrayList<>();
+                for (int i = 0; i < ev.length(); i++) { String k = String.valueOf(ev.getJSONArray(i).getLong(0)); if (!ids.contains(k)) ids.add(k); }
+                for (int from0 = 0; from0 < ids.size(); from0 += 150) {
+                    java.util.List<String> part = ids.subList(from0, Math.min(ids.size(), from0 + 150));
+                    Cursor at = null;
+                    try {
+                        at = c.getContentResolver().query(CalendarContract.Attendees.CONTENT_URI,
+                                new String[] { CalendarContract.Attendees.EVENT_ID, CalendarContract.Attendees.ATTENDEE_NAME, CalendarContract.Attendees.ATTENDEE_EMAIL },
+                                CalendarContract.Attendees.EVENT_ID + " IN (" + android.text.TextUtils.join(",", part) + ")", null, null);
+                        while (at != null && at.moveToNext()) {
+                            long eid = at.getLong(0); String nm = at.getString(1), em = at.getString(2);
+                            String who1 = nm != null && !nm.trim().isEmpty() ? nm.trim() : em == null ? "" : em.trim();
+                            if (who1.isEmpty()) continue;
+                            JSONArray l = who.get(eid); if (l == null) { l = new JSONArray(); who.put(eid, l); }
+                            if (l.length() < 30) l.put(who1);
+                        }
+                    } finally { if (at != null) at.close(); }
+                }
+                for (int i = 0; i < ev.length(); i++) { JSONArray a = ev.getJSONArray(i); while (a.length() < 11) a.put(""); JSONArray l = who.get(a.getLong(0)); a.put(l == null ? new JSONArray() : l); }
+            } catch (Exception ignored) { }
             // Every calendar on the phone, with whether it is shown and synced, for the diagnostics list.
             String[] cc = { CalendarContract.Calendars._ID, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, CalendarContract.Calendars.ACCOUNT_NAME,
                     CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.Calendars.VISIBLE, CalendarContract.Calendars.SYNC_EVENTS };
@@ -124,6 +149,22 @@ final class Collect {
         for (String x : calSet) cals.put(x);
         out.put("id", "all").put("at", System.currentTimeMillis()).put("ev", ev).put("cals", cals);
         return out;
+    }
+
+    /** Meeting description without the Teams/Zoom joining boilerplate, kept short. */
+    static String cleanDesc(String d) {
+        if (d == null) return "";
+        String t = d.replaceAll("<[^>]+>", " ").replace("&nbsp;", " ").replace("\r", "");
+        int cut = t.indexOf("________________"); if (cut >= 0) t = t.substring(0, cut);
+        StringBuilder out = new StringBuilder();
+        for (String line : t.split("\n")) {
+            String l = line.trim();
+            if (l.isEmpty() && (out.length() == 0 || out.toString().endsWith("\n\n"))) continue;
+            if (l.matches("(?i).*(join the meeting|meeting id|passcode|dial in|join on your computer|microsoft teams need help|click here to join|https://teams\\.microsoft|zoom\\.us/j/).*")) continue;
+            out.append(l).append("\n");
+        }
+        String r = out.toString().trim();
+        return r.length() > 600 ? r.substring(0, 600) + "…" : r;
     }
 
     static boolean callsAllowed(Context c) {

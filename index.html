@@ -605,8 +605,20 @@ body.kb .tabbar,body.kb .fab{display:none!important}
 #tl .tlh{cursor:pointer}
 .tlghost{position:absolute;left:58px;right:14px;height:24px;border-radius:8px;border:1.5px dashed color-mix(in srgb,var(--accent) 60%,transparent);color:var(--accent-text,var(--accent));font-size:12px;font-weight:700;padding:3px 8px;pointer-events:none;background:color-mix(in srgb,var(--accent) 8%,transparent)}
 .tlghost[hidden]{display:none}
-.tlb{position:absolute;left:58px;right:14px;border-radius:9px;padding:4px 8px;font-size:12px;font-weight:700;overflow:hidden;line-height:1.25;cursor:pointer;text-align:left}
-.tlb small{display:block;font-weight:600;opacity:.8}
+.tlb{position:absolute;left:58px;right:14px;border-radius:9px;padding:4px 8px;font-size:12px;font-weight:700;overflow:hidden;line-height:1.25;cursor:pointer;text-align:left;white-space:nowrap;text-overflow:ellipsis;font-family:inherit;border:0}
+.tlb small{display:inline;font-weight:600;opacity:.75;margin-left:6px}
+.tlb.tall{white-space:normal}.tlb.tall small{display:block;margin-left:0}
+.mt2 .tt[data-act]{cursor:pointer}.mt2 .tt[data-act]:hover{text-decoration:underline}
+.mtcard h2{font-size:20px;line-height:1.3;margin:6px 0 4px}
+.mtcard .when{font-size:14.5px;font-weight:600;color:var(--soft)}
+.mtcard .st{display:inline-block;margin-top:8px;font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:12px;background:var(--surface);color:var(--muted)}
+.mtcard .st.live{background:color-mix(in srgb,var(--meet) 20%,var(--bg));color:var(--meet)}
+.mtcard .mi{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line);font-size:14.5px;line-height:1.45}
+.mtcard .mi svg{width:18px;height:18px;flex:none;margin-top:2px;color:var(--muted)}
+.mtcard .mi small{display:block;color:var(--muted);font-size:12.5px;font-weight:600}
+.mtcard .desc{white-space:pre-wrap;word-break:break-word;font-size:14px;color:var(--soft);max-height:220px;overflow:auto}
+.mtcard .ppl{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.mtcard .ppl span{background:var(--surface);border-radius:12px;padding:3px 10px;font-size:13px}
 .tlb.m{background:color-mix(in srgb,var(--meet) 22%,var(--bg));color:var(--ink);border-left:3px solid var(--meet)}
 .tlb.t{background:color-mix(in srgb,var(--accent) 22%,var(--bg));color:var(--ink);border-left:3px solid var(--accent)}
 .tlb.t.d{opacity:.5;text-decoration:line-through}
@@ -1342,7 +1354,7 @@ function calSources() {
   <details style="margin:6px 0 8px"><summary class="sub" style="cursor:pointer">Events received for the next 3 days (${up.length})</summary>${up.length ? up.map(e => `<div class="logrow"><span class="lt">${fmtDate(ymd(new Date(e[2])))}${e[4] ? '' : ', ' + fmtClock(e[2])}</span><span class="ln">${esc(e[1])}<small>${esc(e[5] || '')}${why(e) ? ' · ' + why(e) : ''}</small></span></div>`).join('') : '<p class="sub">None. Tap Sync now in Sankalp Phone.</p>'}</details>${pc.calInfo ? `<details style="margin:0 0 8px"><summary class="sub" style="cursor:pointer">All calendars on your phone (${pc.calInfo.length})</summary>${pc.calInfo.map(c => `<div class="logrow"><span class="lt">${c[5]} events</span><span class="ln">${esc(c[0] || 'Calendar')}<small>${esc(c[1] || '')} · ${esc((c[2] || '').split('.').pop())}${c[3] ? '' : ' · hidden in calendar app'}${c[4] ? '' : ' · sync off'}</small></span></div>`).join('')}</details>` : ''}`;
 }
 const pcSkip = (cal, st) => /holiday|birthday|contacts/i.test(cal || '');
-function applyPcal() { Object.keys(S.meetLog).forEach(k => { if (S.meetLog[k].src === 'pcal') delete S.meetLog[k]; }); ((S.pcal || {}).ev || []).forEach(([id, t, s0, e0, all, cal, join, st]) => { if (pcSkip(cal, st)) return; S.meetLog['pc-' + id + '-' + s0] = { id: 'pc-' + id + '-' + s0, t: t || 'Busy', s: s0, e: e0, allDay: !!all, join: join || '', src: 'pcal', cal: cal || '', dec: st === 2 }; }); }
+function applyPcal() { Object.keys(S.meetLog).forEach(k => { if (S.meetLog[k].src === 'pcal') delete S.meetLog[k]; }); ((S.pcal || {}).ev || []).forEach(([id, t, s0, e0, all, cal, join, st, loc, desc, org, att]) => { if (pcSkip(cal, st)) return; S.meetLog['pc-' + id + '-' + s0] = { id: 'pc-' + id + '-' + s0, t: t || 'Busy', s: s0, e: e0, allDay: !!all, join: join || '', src: 'pcal', cal: cal || '', dec: st === 2, loc: typeof loc === 'string' ? loc : '', desc: typeof desc === 'string' ? desc : '', org: typeof org === 'string' ? org : '', att: Array.isArray(att) ? att : [] }; }); }
 function nextOcc(md) { const td = today(); const y = new Date().getFullYear(); let d = mkDateExact(y, md); if (d < td) d = mkDateExact(y + 1, md); return d; }
 function mkDateExact(y, md) { const [m, d] = md.split('-').map(Number); let dt = new Date(y, m - 1, d); if (dt.getMonth() !== m - 1) dt = new Date(y, m - 1, 28); return ymd(dt); }
 /* A date repeats yearly (default), monthly, or happens once. */
@@ -1549,15 +1561,35 @@ function renderRail() {
   const dd = pYmd(railDay); const ms = meetingsOn(railDay); const ts = S.tasks.filter(t => t.date === railDay && t.time && (!t.orig || t.done) && (!t.done || S.settings.showDone));
   const H0 = 7, H1 = 23, PX = 52; const top = mins => (mins - H0 * 60) / 60 * PX;
   let tl = ''; for (let hr = H0; hr < H1; hr++) tl += `<div class="tlh" data-hr="${hr}"><span>${hr === 12 ? '12 PM' : hr > 12 ? hr - 12 + ' PM' : hr + ' AM'}</span></div>`;
-  ms.forEach(x => { const s = minOf(x.s), e = Math.max(minOf(x.e) || 1440, s + 15); tl += `<div class="tlb m" style="top:${top(s)}px;height:${Math.max(top(e) - top(s) - 2, 20)}px" title="${esc(x.t)}">${esc(x.t)}<small>${fmtClock(x.s)} to ${fmtClock(x.e)}</small></div>`; });
+  ms.forEach(x => { const s = minOf(x.s), e = Math.max(minOf(x.e) || 1440, s + 15), hgt = Math.max(top(e) - top(s) - 2, 20); tl += `<button type="button" class="tlb m${hgt >= 60 ? ' tall' : ''}" data-act="meet" data-id="${esc(x.id)}" style="top:${top(s)}px;height:${hgt}px" title="${esc(x.t)}">${esc(x.t)}<small>${fmtClock(x.s)}</small></button>`; });
   ts.forEach(t => { const [hh, mm] = t.time.split(':').map(Number); const s = hh * 60 + mm, e = s + Math.max(+t.duration || 30, 20); tl += `<button class="tlb t${t.done ? ' d' : ''}" data-act="open" data-id="${t.id}" draggable="true" data-tid="${t.id}" style="top:${top(s)}px;height:${Math.max(top(e) - top(s) - 2, 20)}px">${esc(t.title)}<small>${fmtTime(t.time)}${t.duration ? ', ' + fmtMins(t.duration) : ''}</small></button>`; });
   if (railDay === td) { const nm = minOf(Date.now()); if (nm >= H0 * 60 && nm < H1 * 60) tl += `<div class="tlnow" style="top:${top(nm)}px"></div>`; }
   el.innerHTML = `<div class="rhead"><b>${MONSL[m - 1]} ${y}</b><div><button class="iconbtn" data-act="railmon" data-dir="-1" aria-label="Previous month">${I.back}</button><button class="iconbtn" data-act="railmon" data-dir="1" aria-label="Next month">${I.next}</button></div></div><div class="mcal2">${cal}</div>
   ${S.settings.gOn || S.pcal ? '' : `<a class="rnote" href="#settings/gcal">${I.gcal}<span>Connect a calendar to see your meetings here.</span></a>`}
   <div class="rday"><b>${railDay === td ? 'Today' : DAYSL[dd.getDay()]}, ${dd.getDate()} ${MONS[dd.getMonth()]}</b><span>${plural(ms.length, 'meeting')}</span></div>
-  ${ms.length ? `<div class="mt2" style="margin:0 12px 8px">${ms.map(x => { const now = Date.now(), live = x.s <= now && x.e > now, past = x.e <= now; return `<div class="mr${past ? ' past' : ''}${live ? ' live' : ''}"><span class="tm">${live ? 'Now' : fmtClock(x.s)}</span><span class="tt">${esc(x.t)}</span>${x.join && !past ? `<a class="pill meet" href="${esc(x.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>`; }).join('')}</div>` : ''}
+  ${ms.length ? `<div class="mt2" style="margin:0 12px 8px">${ms.map(x => { const now = Date.now(), live = x.s <= now && x.e > now, past = x.e <= now; return `<div class="mr${past ? ' past' : ''}${live ? ' live' : ''}"><span class="tm">${live ? 'Now' : fmtClock(x.s)}</span><span class="tt" data-act="meet" data-id="${esc(x.id)}">${esc(x.t)}</span>${x.join && !past ? `<a class="pill meet" href="${esc(x.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>`; }).join('')}</div>` : ''}
   <div class="tl" id="tl"><div style="position:relative;padding-top:8px">${tl}</div></div>`;
   const tlEl = $('#tl'); if (railDay === td) tlEl.scrollTop = Math.max(0, top(minOf(Date.now())) - 120); else tlEl.scrollTop = top(9 * 60) - 10;
+}
+/* Meeting details, like Teams or Google Calendar */
+function meetSheet(id) {
+  const m = S.meetLog[id]; if (!m) return;
+  const now = Date.now(), mins = Math.round((m.e - m.s) / 6e4), live = m.s <= now && m.e > now, past = m.e <= now;
+  const st = live ? 'Happening now' : past ? 'Ended' : (() => { const d = Math.round((m.s - now) / 6e4); return d < 60 ? `Starts in ${d} min` : d < 1440 ? `Starts in ${fmtMins(d)}` : `In ${Math.round(d / 1440)} day${d >= 2880 ? 's' : ''}`; })();
+  const cal = (m.cal || '').replace(/\s*\(.*\)$/, ''), owner = ((m.cal || '').match(/\(([^)]+)\)/) || [])[1] || '';
+  const app = /teams\.microsoft/.test(m.join || '') ? 'Teams' : /zoom\.us/.test(m.join || '') ? 'Zoom' : /meet\.google/.test(m.join || '') ? 'Google Meet' : /webex/.test(m.join || '') ? 'Webex' : 'meeting';
+  const att = (m.att || []).filter(Boolean);
+  openSheet(sheetHead('Meeting', '', '') + `<div class="mtcard">
+  <h2>${esc(m.t)}</h2><div class="when">${m.allDay ? fmtDate(ymd(new Date(m.s))) + ', all day' : `${fmtDate(ymd(new Date(m.s)))}, ${fmtClock(m.s)} to ${fmtClock(m.e)} (${fmtMins(mins)})`}</div><span class="st${live ? ' live' : ''}">${st}</span>
+  ${m.join && !past ? `<div class="btnrow" style="margin:14px 0 4px"><a class="btn" href="${esc(m.join)}" target="_blank" rel="noopener" style="background:var(--meet);color:#fff">Join ${app}</a><button class="btn sec" id="mtCopy">Copy link</button></div>` : ''}
+  ${m.loc && !/^https?:/.test(m.loc) && !/^(microsoft teams meeting|zoom|google meet)$/i.test(m.loc.trim()) ? `<div class="mi">${I.pin}<span><small>Where</small>${esc(m.loc)}</span></div>` : ''}
+  ${m.org ? `<div class="mi">${I.star}<span><small>Organiser</small>${esc(m.org)}</span></div>` : ''}
+  ${att.length ? `<div class="mi">${I.layers}<span style="flex:1"><small>${att.length} ${att.length === 1 ? 'person' : 'people'}</small><span class="ppl">${att.slice(0, 15).map(a => `<span>${esc(a)}</span>`).join('')}${att.length > 15 ? `<span>+${att.length - 15}</span>` : ''}</span></span></div>` : ''}
+  ${cal ? `<div class="mi">${I.cal}<span><small>Calendar</small>${esc(cal)}${owner ? ' · ' + esc(owner) : ''}</span></div>` : ''}
+  ${m.desc ? `<div class="mi">${I.note}<span style="flex:1;min-width:0"><small>Details</small><div class="desc">${esc(m.desc)}</div></span></div>` : ''}
+  <div class="btnrow" style="margin-top:14px"><button class="btn sec" id="mtPrep">${I.plus}Add a prep task</button></div></div>`);
+  const cp = $('#mtCopy'); if (cp) cp.onclick = () => { navigator.clipboard?.writeText(m.join).then(() => toast('Link copied')).catch(() => { }); };
+  $('#mtPrep').onclick = () => { closeSheet(true); const d = new Date(m.s - 30 * 6e4); setTimeout(() => quickAdd({ prefill: 'Prep: ' + m.t.slice(0, 120), date: ymd(d), time: pad(d.getHours()) + ':' + pad(d.getMinutes()) }), 220); };
 }
 // click an empty slot on the day timeline to add a task at that time
 function tlSlot(e) { const inner = $('#tl > div'); if (!inner) return null; const y = e.clientY - inner.getBoundingClientRect().top - 8; const m = 7 * 60 + Math.floor(y / 26) * 30; return m < 7 * 60 || m >= 23 * 60 ? null : m; }
@@ -1605,7 +1637,7 @@ function dayBand() {
   bars += ticks.map(t => { const [hh, mi] = t.time.split(':').map(Number); return `<i style="left:${pos(hh * 60 + mi)}%;width:4px;top:3px;bottom:3px;background:${t.priority === 1 ? 'var(--danger)' : 'var(--ink)'}"></i>`; }).join('');
   let nx = ms.length ? `${plural(ms.length, 'meeting')}${ms.length ? `, ${fmtMins(ms.reduce((a, m) => a + (m.e - m.s) / 6e4, 0))}` : ''}` : 'Your day';
   if (next && next.s > now) { const inMin = Math.round((next.s - now) / 6e4); if (inMin < 60) nx += ` · next in ${inMin} min`; }
-  const list = ms.length ? `<div class="mt2">${ms.map(m => { const live = m.s <= now && m.e > now, past = m.e <= now; return `<div class="mr${past ? ' past' : ''}${live ? ' live' : ''}"><span class="tm">${live ? 'Now' : fmtClock(m.s)}</span><span class="tt">${esc(m.t)}${m.dec ? ' <small class="muted">· declined?</small>' : ''}</span>${m.join && !past ? `<a class="pill meet" href="${esc(m.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>`; }).join('')}</div>` : '';
+  const list = ms.length ? `<div class="mt2">${ms.map(m => { const live = m.s <= now && m.e > now, past = m.e <= now; return `<div class="mr${past ? ' past' : ''}${live ? ' live' : ''}"><span class="tm">${live ? 'Now' : fmtClock(m.s)}</span><span class="tt" data-act="meet" data-id="${esc(m.id)}">${esc(m.t)}${m.dec ? ' <small class="muted">· declined?</small>' : ''}</span>${m.join && !past ? `<a class="pill meet" href="${esc(m.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>`; }).join('')}</div>` : '';
   return `<div class="slim"><div class="sl1"><span class="nx">${nx}</span>${loadHtml()}${nowChip}</div><div class="trk2" role="img" aria-label="Your day from 8 AM to 10 PM">${bars}<span class="nw" style="left:${pos(minOf(now))}%"></span></div>${list}${adH}</div>`;
 }
 function groupBy(list, mode) {
@@ -2330,7 +2362,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.8.5</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.9</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -2406,7 +2438,7 @@ function hotkeyPanel() {
   <div class="field" style="margin:0"><label for="qkKey">and press</label><select class="inp" id="qkKey">${QK_KEYS.map(x => `<option${x === k ? ' selected' : ''}>${x}</option>`).join('')}</select></div></div>
   <div class="field" style="margin:10px 0 0"><label for="qkBr">Browser you use Sankalp in</label><select class="inp" id="qkBr"><option value="chrome"${br === 'chrome' ? ' selected' : ''}>Chrome</option><option value="edge"${br === 'edge' ? ' selected' : ''}>Edge</option></select></div>
   <div class="btnrow" style="margin-top:12px"><button class="btn" data-act="qkdl">Download setup</button></div>
-  <p class="sub" style="margin:8px 0 0">Open the file once. It starts with Windows from then on. To change keys, pick new ones and run the new file.</p>`;
+  <p class="sub" style="margin:8px 0 0">Open the downloaded file once; a small window shows if it worked. It starts with Windows from then on. If Windows says it protected your PC, click <b>More info</b>, then <b>Run anyway</b>.</p>`;
 }
 function hotkeyFile() {
   const m = S.settings.qmod || 'alt', k = S.settings.qkey2 || 'Space', br = S.settings.qbr || 'chrome', url = QK_URL();
@@ -2431,31 +2463,33 @@ function hotkeyFile() {
     '$msg = New-Object SkHk+MSG',
     `while ([SkHk]::GetMessage([ref]$msg, [IntPtr]::Zero, 0, 0) -gt 0) { if ($msg.m -eq 0x0312) { Start-Process -FilePath $exe -ArgumentList '--app="${url}"', '--window-size=540,340' } }`,
     '} catch { Set-Content $log ("ERR " + $_.Exception.Message) }'];
-  const q = x => '"' + x.replace(/"/g, '""') + '"';
-  const vbs = [
-    'Set sh = CreateObject("WScript.Shell")', 'Set fs = CreateObject("Scripting.FileSystemObject")',
-    'dir = sh.ExpandEnvironmentStrings("%APPDATA%") & "\\Sankalp"', 'If Not fs.FolderExists(dir) Then fs.CreateFolder(dir)',
-    'On Error Resume Next',
-    'For Each p In GetObject("winmgmts:").ExecQuery("select * from Win32_Process where Name=\'powershell.exe\'")',
-    '  If InStr(LCase(p.CommandLine), "sankalp\\hotkey.ps1") > 0 Then p.Terminate()',
-    'Next', 'On Error GoTo 0',
-    'Set f = fs.CreateTextFile(dir & "\\hotkey.ps1", True)',
-    ...ps.map(l => 'f.WriteLine ' + q(l)), 'f.Close',
-    'Set r = fs.CreateTextFile(dir & "\\start.vbs", True)',
-    'r.WriteLine "CreateObject(""WScript.Shell"").Run ""powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File """"" & dir & "\\hotkey.ps1"""""", 0, False"',
-    'r.Close',
-    'Set lnk = sh.CreateShortcut(sh.SpecialFolders("Startup") & "\\Sankalp hotkey.lnk")',
-    'lnk.TargetPath = "wscript.exe"', 'lnk.Arguments = """" & dir & "\\start.vbs"""', 'lnk.Save',
-    'logf = dir & "\\hotkey.log"', 'If fs.FileExists(logf) Then fs.DeleteFile logf',
-    'sh.Run "wscript.exe """ & dir & "\\start.vbs""", 0, False',
-    'res = ""', 'For i = 1 To 30', '  WScript.Sleep 500', '  If fs.FileExists(logf) Then', '    Set lf = fs.OpenTextFile(logf, 1)', '    If Not lf.AtEndOfStream Then res = Trim(lf.ReadAll)', '    lf.Close', '  End If', '  If res <> "" Then Exit For', 'Next',
-    'If Left(res, 2) = "OK" Then', `  MsgBox "Ready. Press ${label} in any app to add a task to Sankalp.", 64, "Sankalp"`,
-    'ElseIf Left(res, 5) = "TAKEN" Then', `  MsgBox "${label} is already used by Windows or another program. In Sankalp Settings pick other keys (Alt + Space or Ctrl + Q work on most PCs), download the setup again and open it.", 48, "Sankalp"`,
-    'ElseIf Left(res, 9) = "NOBROWSER" Then', `  MsgBox "${br === 'edge' ? 'Edge' : 'Chrome'} was not found. In Sankalp Settings pick the other browser, download the setup again and open it.", 48, "Sankalp"`,
-    'ElseIf res = "" Then', '  MsgBox "Your laptop blocked the shortcut helper: PowerShell scripts are not allowed here. Send this message to Claude.", 48, "Sankalp"',
-    'Else', '  MsgBox "The shortcut could not start: " & res & vbCrLf & vbCrLf & "Send this message to Claude.", 48, "Sankalp"',
-    'End If'].join('\r\n');
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([vbs], { type: 'text/plain' })); a.download = 'Sankalp-hotkey-setup.vbs'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  const hk = ps.join('\r\n');
+  const setup = [
+    "$ErrorActionPreference = 'SilentlyContinue'",
+    "$dir = Join-Path $env:APPDATA 'Sankalp'; New-Item -ItemType Directory -Force -Path $dir | Out-Null",
+    "Get-CimInstance Win32_Process -Filter \"Name='powershell.exe'\" | Where-Object { $_.CommandLine -like '*Sankalp\\hotkey.ps1*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }",
+    "$hk = Join-Path $dir 'hotkey.ps1'",
+    "$code = @'", hk, "'@",
+    "Set-Content -Path $hk -Encoding UTF8 -Value $code",
+    "$st = [Environment]::GetFolderPath('Startup')",
+    "Remove-Item (Join-Path $st 'Sankalp hotkey.lnk')",
+    "Set-Content -Path (Join-Path $st 'Sankalp hotkey.cmd') -Encoding ASCII -Value ('@start \"\" /min powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"' + $hk + '\"')",
+    "$log = Join-Path $dir 'hotkey.log'; Remove-Item $log",
+    "Start-Process powershell -WindowStyle Hidden -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden', '-File', ('\"' + $hk + '\"'))",
+    "$res = ''; for ($i = 0; $i -lt 30; $i++) { Start-Sleep -Milliseconds 500; if (Test-Path $log) { $res = ([string](Get-Content $log -Raw)).Trim(); if ($res) { break } } }",
+    "Write-Host ''",
+    `if ($res -like 'OK*') { Write-Host '  READY. Press ${label} in any app to add a task to Sankalp.' -ForegroundColor Green; Write-Host '  It starts by itself whenever Windows starts.' }`,
+    `elseif ($res -like 'TAKEN*') { Write-Host '  ${label} is already used by Windows or another program.' -ForegroundColor Yellow; Write-Host '  In Sankalp Settings pick other keys (Alt + Space or Ctrl + Q), download the setup again and run it.' }`,
+    `elseif ($res -like 'NOBROWSER*') { Write-Host '  ${br === 'edge' ? 'Edge' : 'Chrome'} was not found. Pick the other browser in Sankalp Settings and run the new setup.' -ForegroundColor Yellow }`,
+    "elseif (-not $res) { Write-Host '  Your laptop blocked the shortcut helper. Send a photo of this window to Claude.' -ForegroundColor Red }",
+    "else { Write-Host ('  Could not start: ' + $res) -ForegroundColor Red; Write-Host '  Send a photo of this window to Claude.' }",
+    "Write-Host ''"].join('\r\n');
+  const b64 = btoa(unescape(encodeURIComponent(setup)));
+  const cmd = ['@echo off', 'title Sankalp shortcut setup', 'echo.', 'echo   Setting up the Sankalp shortcut, please wait...',
+    `powershell -NoProfile -ExecutionPolicy Bypass -Command "[IO.File]::WriteAllBytes((Join-Path $env:TEMP 'sankalp-setup.ps1'), [Convert]::FromBase64String('${b64}'))"`,
+    'powershell -NoProfile -ExecutionPolicy Bypass -File "%TEMP%\\sankalp-setup.ps1"',
+    'del "%TEMP%\\sankalp-setup.ps1" >nul 2>&1', 'echo   Press any key to close this window.', 'pause >nul'].join('\r\n') + '\r\n';
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([cmd], { type: 'application/octet-stream' })); a.download = 'Sankalp-shortcut-setup.cmd'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
 /* Quick-add window (opened by the desktop shortcut): save, make sure it reached the cloud, then close. */
 async function quickDone() {
@@ -3184,7 +3218,7 @@ document.addEventListener('click', e => {
   const a = b.dataset.act, id = b.dataset.id, td = today();
   const A = {
     done: () => { e.preventDefault(); const insheet = b.closest('#sheet'); if (insheet) closeSheet(true); toggleDone(id); },
-    open: () => taskSheet(id), nav: () => go(b.dataset.to), delete: () => deleteTask(id), search: searchSheet,
+    open: () => taskSheet(id), meet: () => meetSheet(id), nav: () => go(b.dataset.to), delete: () => deleteTask(id), search: searchSheet,
     subs: () => { openSubs.has(id) ? openSubs.delete(id) : openSubs.add(id); renderMainOnly(); },
     subdone: () => { const t = getTask(id); const c = t.subs.find(x => x.id === b.dataset.s); c.d = !c.d; save(); renderMainOnly(); if (t.subs.every(x => x.d) && !t.done) toast('All subtasks done. Finish the task?', () => toggleDone(id)); },
     toggledone: () => { S.settings.showDone = !S.settings.showDone; save(); render(); },
