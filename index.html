@@ -1111,11 +1111,11 @@ function repeatLabel(r) {
   let s = '';
   if (r.type === 'daily') s = r.n > 1 ? `Every ${r.n} days` : 'Daily';
   else if (r.type === 'weekly') s = r.n > 1 ? `Every ${r.n} weeks` : 'Weekly';
-  else if (r.type === 'monthly') s = r.n > 1 ? `Every ${r.n} months` : 'Monthly';
+  else if (r.type === 'monthly') s = (r.n > 1 ? `Every ${r.n} months` : 'Monthly') + (r.dom ? ' on the ' + ordinal(r.dom) : '');
   else if (r.type === 'yearly') s = 'Yearly';
   else if (r.type === 'weekdays') s = 'Weekdays';
   else if (r.type === 'days') s = 'Every ' + r.days.map(d => DAYS[d]).join(', ');
-  if (r.until) s += ` until ${fmtShort(r.until)}`;
+  if (r.until) s += ` until ${fmtShort(r.until)}${r.until.slice(0, 4) !== String(new Date().getFullYear()) ? ' ' + r.until.slice(0, 4) : ''}`;
   return s;
 }
 function stepDate(r, from) {
@@ -1151,7 +1151,7 @@ function occursOn(t, d) { // is a repeating task scheduled on date d (for calend
 /* ================= natural language ================= */
 const WDRE = '(?:mon(?:day)?|tue(?:s|sday)?|wed(?:nesday)?|thu(?:r|rs|rsday)?|fri(?:day)?|sat(?:urday)?|sun(?:day)?)';
 const MONRE = '(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t|tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)';
-const DATEPAT = '(?:day\\s+after\\s+tomorrow|today|tod|aaj|tomorrow|tmrw|tmr|tom|kal|parso|next\\s+week|next\\s+month|next\\s+year|end\\s+of\\s+(?:the\\s+)?(?:month|year)|in\\s+\\d+\\s*(?:days?|weeks?|months?)|(?:next\\s+|this\\s+)?' + WDRE + '|\\d{1,2}(?:st|nd|rd|th)?\\s+' + MONRE + '(?:\\s+\\d{4})?|' + MONRE + '\\s+\\d{1,2}(?:st|nd|rd|th)?(?:\\s+\\d{4})?|\\d{1,2}/\\d{1,2}(?:/\\d{2,4})?|\\d{1,2}-\\d{1,2}-\\d{2,4})';
+const DATEPAT = '(?:day\\s+after\\s+tomorrow|today|tod|aaj|tomorrow|tmrw|tmr|tom|kal|parso|next\\s+week|next\\s+month|next\\s+year|end\\s+of\\s+(?:the\\s+)?(?:month|year)|in\\s+\\d+\\s*(?:days?|weeks?|months?)|(?:next\\s+|this\\s+)?' + WDRE + '|\\d{1,2}(?:st|nd|rd|th)?\\s+' + MONRE + '(?:\\s+\\d{4})?|' + MONRE + '\\s+(?:\\d{4}|\\\'\\d{2})(?!\\d)|' + MONRE + '\\s+\\d{1,2}(?:st|nd|rd|th)?(?:\\s+\\d{4})?|\\d{1,2}/\\d{1,2}(?:/\\d{2,4})?|\\d{1,2}-\\d{1,2}-\\d{2,4})';
 const wdIndex = w => ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'].indexOf(w.slice(0, 3).toLowerCase());
 const monIndex = w => ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].indexOf(w.slice(0, 3).toLowerCase());
 function nextWeekday(i, allowToday, from) { const d = from ? pYmd(from) : new Date(); d.setHours(0, 0, 0, 0); let k = 0; while (!(d.getDay() === i && (allowToday || k > 0))) { d.setDate(d.getDate() + 1); k++; } return ymd(d); }
@@ -1173,6 +1173,7 @@ function dateFrom(w) {
   if ((m = w.match(/^in (\d+) ?(days?|weeks?|months?)$/))) { const n = +m[1]; if (m[2][0] === 'm') { const d = new Date(); d.setMonth(d.getMonth() + n); return ymd(d); } return addDays(td, m[2][0] === 'w' ? n * 7 : n); }
   if ((m = w.match(new RegExp('^(?:(next|this) )?(' + WDRE + ')$')))) { let d = nextWeekday(wdIndex(m[2]), m[1] !== 'next'); if (m[1] === 'next' && dayDiff(td, d) < 2) d = addDays(d, 7); return d; }
   if ((m = w.match(new RegExp('^(\\d{1,2})(?:st|nd|rd|th)? (' + MONRE + ')(?: (\\d{4}))?$')))) return mkDate(+m[1], monIndex(m[2]), m[3]);
+  if ((m = w.match(new RegExp("^(" + MONRE + ") (\\d{4}|'\\d{2})$")))) return mkDate(1, monIndex(m[1]), m[2].replace("'", ''));
   if ((m = w.match(new RegExp('^(' + MONRE + ') (\\d{1,2})(?:st|nd|rd|th)?(?: (\\d{4}))?$')))) return mkDate(+m[2], monIndex(m[1]), m[3]);
   if ((m = w.match(/^(\d{1,2})[/-](\d{1,2})(?:[/-](\d{2,4}))?$/))) return mkDate(+m[1], +m[2] - 1, m[3]);
   return null;
@@ -1198,9 +1199,9 @@ function parseTask(input) {
   for (let i = 0; i < 3; i++) if (!take('remind(?:\\s+me)?\\s+(\\d+)\\s*(m|min|mins|minutes?|h|hr|hrs|hours?|d|days?)(?:\\s+(?:before|early|earlier|pehle))?', m => { const u = m[3][0].toLowerCase(); r.reminders.push(+m[2] * (u === 'h' ? 60 : u === 'd' ? 1440 : 1)); })) break;
   take('remind(?:\\s+me)?(?:\\s+on\\s+(?:the\\s+)?(?:day|time))', () => { r.reminders.push(0); });
   // start / until
-  take('(?:start(?:ing|s)?(?:\\s+from)?|from|beginning)\\s+(' + DATEPAT + ')', m => { const d = dateFrom(m[2]); if (!d) return false; r.start = d; }) ||
+  take('(?:start(?:ing|s)?(?:\\s+from)?|from|beginning)\\s+(' + DATEPAT + ')', m => { const d = dateFrom(m[2]); if (!d) return false; r.start = d; r._sRaw = m[2].toLowerCase(); }) ||
     take('(' + DATEPAT + ')\\s+se', m => { const d = dateFrom(m[2]); if (!d) return false; r.start = d; });
-  take('(?:until|till|upto|up\\s+to|ending(?:\\s+on)?|ends(?:\\s+on)?)\\s+(' + DATEPAT + ')', m => { const d = dateFrom(m[2]); if (!d) return false; r.until = d; }) ||
+  take('(?:until|till|upto|up\\s+to|ending(?:\\s+on)?|ends(?:\\s+on)?)\\s+(' + DATEPAT + ')', m => { let d = dateFrom(m[2]); if (!d) return false; if (new RegExp("^" + MONRE + "\\s+(\\d{4}|'\\d{2})$", 'i').test(m[2].trim())) { const x = pYmd(d); d = ymd(new Date(x.getFullYear(), x.getMonth() + 1, 0)); } r.until = d; }) ||
     take('(' + DATEPAT + ')\\s+tak', m => { const d = dateFrom(m[2]); if (!d) return false; r.until = d; });
   // repeat
   const lead = (m, rep) => { r.repeat = rep; return m.index === 0 ? false : undefined; };
@@ -1209,6 +1210,9 @@ function parseTask(input) {
     take('every\\s+(\\d+)\\s*(days?|weeks?|months?)', m => { const u = m[3][0].toLowerCase(); r.repeat = { type: u === 'd' ? 'daily' : u === 'w' ? 'weekly' : 'monthly', n: +m[2] }; }) ||
     take('every\\s+(' + WDRE + '(?:\\s*(?:,|and|&)\\s*' + WDRE + ')*)', m => { const days = [...m[2].matchAll(new RegExp(WDRE, 'gi'))].map(x => wdIndex(x[0])); r.repeat = { type: 'days', days: [...new Set(days)].sort() }; }) ||
     take('every\\s+week', () => { r.repeat = { type: 'weekly', n: 1 }; }) ||
+    take('(?:every|each|har)\\s+month(?:\\s+on)?(?:\\s+the)?\\s+(\\d{1,2})(?:st|nd|rd|th)?(?!\\s*(?:am|pm|:|\\.\\d))', m => { const n = +m[2]; if (n < 1 || n > 31) return false; r.repeat = { type: 'monthly', n: 1 }; r.dom = n; }) ||
+    take('(?:on\\s+)?(?:the\\s+)?(\\d{1,2})(?:st|nd|rd|th)\\s+(?:of\\s+)?(?:every|each)\\s+month', m => { const n = +m[2]; if (n < 1 || n > 31) return false; r.repeat = { type: 'monthly', n: 1 }; r.dom = n; }) ||
+    take('(?:every|each)\\s+(\\d{1,2})(?:st|nd|rd|th)(?:\\s+of\\s+(?:the\\s+)?month)?', m => { const n = +m[2]; if (n < 1 || n > 31) return false; r.repeat = { type: 'monthly', n: 1 }; r.dom = n; }) ||
     take('every\\s+month', () => { r.repeat = { type: 'monthly', n: 1 }; }) ||
     take('(?:every\\s+year|annually)', () => { r.repeat = { type: 'yearly', n: 1 }; }) ||
     take('(?:everyday|daily|roz)', m => lead(m, { type: 'daily', n: 1 })) ||
@@ -1256,6 +1260,11 @@ function parseTask(input) {
   for (let i = 0; i < 3; i++) title = title.replace(/\s+(on|by|at|for|in|from|with)$/i, '').replace(/^[\s,]+|[\s,]+$/g, '');
   r.title = title ? title.charAt(0).toUpperCase() + title.slice(1) : '';
   if (r.time && r.endTime) { const [a1, a2] = r.time.split(':').map(Number), [b1, b2] = r.endTime.split(':').map(Number); r.duration ||= (b1 * 60 + b2) - (a1 * 60 + a2); }
+  // "every month 15th starting nov 26": nov 26 means November 2026 here; start on the first 15th on or after it
+  if (r.dom && r._sRaw) { const mm = r._sRaw.match(new RegExp('^(' + MONRE + ')\\s+(\\d{2})$', 'i')); if (mm) { const d = mkDate(1, monIndex(mm[1]), '20' + mm[2]); if (d) r.start = d; } }
+  if (r.dom && r.repeat) r.repeat.dom = r.dom;
+  if (r.dom) { const b = pYmd(r.start || r.date || today()); let y = b.getFullYear(), mo = b.getMonth(); const at = (yy, mm) => new Date(yy, mm, Math.min(r.dom, new Date(yy, mm + 1, 0).getDate())); let d = at(y, mo); if (d < b) d = at(y, mo + 1); r.start = ymd(d); r.date = r.start; }
+  delete r._sRaw;
   if (r.start && !r.date) r.date = r.start;
   if (r.repeat) { r.date = firstDate(r.repeat, r.date || today()); if (r.until) r.repeat.until = r.until; }
   else if (r.until && !r.date) r.date = r.until;
@@ -2373,7 +2382,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.9.4</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.9.5</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
