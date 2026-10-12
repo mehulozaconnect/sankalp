@@ -193,6 +193,11 @@ h2.sec{margin:0;font-size:20px;font-weight:700}
 .qa-note{width:100%;border:0;outline:none;background:transparent;font:inherit;font-size:15px;color:var(--soft);resize:none;padding:0 0 8px;line-height:1.45;min-height:24px;overflow:hidden}
 .qa-note::placeholder{color:var(--muted);opacity:.8}
 .qa-wrap{position:relative}
+.chip.ed{cursor:pointer;font:inherit;font-size:13.5px;font-weight:600;border:0}
+.chip.ed::after{content:'▾';margin-left:4px;opacity:.55;font-size:10px}
+.chip.ghost{background:transparent!important;border:1px dashed var(--line)!important;color:var(--muted)}
+.chip.ghost::after{content:''}
+.qa-hid{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;bottom:0;left:0}
 .qa-pick{position:absolute;left:0;right:0;z-index:5;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.18);max-height:252px;overflow:auto;padding:4px}
 .qa-pick button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;color:var(--ink);font:inherit;font-size:15px;padding:10px 12px;border-radius:10px;text-align:left;cursor:pointer}
 .qa-pick button.on,.qa-pick button:hover{background:var(--surface)}
@@ -1146,7 +1151,7 @@ function occursOn(t, d) { // is a repeating task scheduled on date d (for calend
 /* ================= natural language ================= */
 const WDRE = '(?:mon(?:day)?|tue(?:s|sday)?|wed(?:nesday)?|thu(?:r|rs|rsday)?|fri(?:day)?|sat(?:urday)?|sun(?:day)?)';
 const MONRE = '(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t|tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)';
-const DATEPAT = '(?:day\\s+after\\s+tomorrow|today|tod|aaj|tomorrow|tmrw|tmr|tom|kal|parso|next\\s+week|end\\s+of\\s+(?:the\\s+)?(?:month|year)|in\\s+\\d+\\s*(?:days?|weeks?|months?)|(?:next\\s+|this\\s+)?' + WDRE + '|\\d{1,2}(?:st|nd|rd|th)?\\s+' + MONRE + '(?:\\s+\\d{4})?|' + MONRE + '\\s+\\d{1,2}(?:st|nd|rd|th)?(?:\\s+\\d{4})?|\\d{1,2}/\\d{1,2}(?:/\\d{2,4})?|\\d{1,2}-\\d{1,2}-\\d{2,4})';
+const DATEPAT = '(?:day\\s+after\\s+tomorrow|today|tod|aaj|tomorrow|tmrw|tmr|tom|kal|parso|next\\s+week|next\\s+month|next\\s+year|end\\s+of\\s+(?:the\\s+)?(?:month|year)|in\\s+\\d+\\s*(?:days?|weeks?|months?)|(?:next\\s+|this\\s+)?' + WDRE + '|\\d{1,2}(?:st|nd|rd|th)?\\s+' + MONRE + '(?:\\s+\\d{4})?|' + MONRE + '\\s+\\d{1,2}(?:st|nd|rd|th)?(?:\\s+\\d{4})?|\\d{1,2}/\\d{1,2}(?:/\\d{2,4})?|\\d{1,2}-\\d{1,2}-\\d{2,4})';
 const wdIndex = w => ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'].indexOf(w.slice(0, 3).toLowerCase());
 const monIndex = w => ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].indexOf(w.slice(0, 3).toLowerCase());
 function nextWeekday(i, allowToday, from) { const d = from ? pYmd(from) : new Date(); d.setHours(0, 0, 0, 0); let k = 0; while (!(d.getDay() === i && (allowToday || k > 0))) { d.setDate(d.getDate() + 1); k++; } return ymd(d); }
@@ -1163,6 +1168,7 @@ function dateFrom(w) {
   if (/^(tomorrow|tmrw|tmr|tom|kal)$/.test(w)) return addDays(td, 1);
   if (/^(parso|day after tomorrow)$/.test(w)) return addDays(td, 2);
   if (w === 'next week') return nextWeekday(1, false);
+  if (w === 'next month' || w === 'next year') { const n = new Date(), d = n.getDate(); const t = w === 'next month' ? new Date(n.getFullYear(), n.getMonth() + 1, 1) : new Date(n.getFullYear() + 1, n.getMonth(), 1); t.setDate(Math.min(d, new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate())); return ymd(t); }
   if ((m = w.match(/^end of (?:the )?(month|year)$/))) { const d = new Date(); return ymd(m[1] === 'month' ? new Date(d.getFullYear(), d.getMonth() + 1, 0) : new Date(d.getFullYear(), 11, 31)); }
   if ((m = w.match(/^in (\d+) ?(days?|weeks?|months?)$/))) { const n = +m[1]; if (m[2][0] === 'm') { const d = new Date(); d.setMonth(d.getMonth() + n); return ymd(d); } return addDays(td, m[2][0] === 'w' ? n * 7 : n); }
   if ((m = w.match(new RegExp('^(?:(next|this) )?(' + WDRE + ')$')))) { let d = nextWeekday(wdIndex(m[2]), m[1] !== 'next'); if (m[1] === 'next' && dayDiff(td, d) < 2) d = addDays(d, 7); return d; }
@@ -1270,7 +1276,7 @@ function chipsFor(r) {
   if (r.someday) c.push(['date', I.box, 'Someday']);
   if (r.date) c.push(['date', I.cal, (r.repeat ? 'Starts ' : '') + fmtDate(r.date)]);
   if (r.time && !r.meeting) c.push(['time', I.clock, fmtTime(r.time) + (r.endTime ? '–' + fmtTime(r.endTime) : '')]);
-  if (r.repeat) c.push(['date', I.repeat, repeatLabel(r.repeat)]);
+  if (r.repeat) c.push(['rep', I.repeat, repeatLabel(r.repeat)]);
   if (r.priority) c.push(['pri', I.flag, 'P' + r.priority]);
   if (r.projectId) c.push(['proj', I.folder, proj(r.projectId).name]);
   if (r.newProject) c.push(['proj', I.folder, r.newProject + ' (new)']);
@@ -1278,7 +1284,8 @@ function chipsFor(r) {
   r.tags.forEach(x => c.push(['tag', I.tag, '@' + x]));
   r.reminders.forEach(m => c.push(['remind', I.bell, m === 0 ? 'Remind on time' : 'Remind ' + remLabel(m)]));
   if (r.duration && !r.endTime) c.push(['dur', I.hour, fmtMins(r.duration)]);
-  return c.map(([k, i, l]) => `<span class="chip k-${k}">${i}${esc(l)}</span>`).join('');
+  if (r._edit && !r.meeting && !r.someday) { if (!r.date) c.unshift(['date', I.cal, 'Date']); if (!r.time) c.splice(r.date ? 1 : 1, 0, ['time', I.clock, 'Time']); }
+  return c.map(([k, i, l]) => r._edit && (k === 'date' || k === 'time') ? `<button type="button" class="chip k-${k} ed${(k === 'date' && !r.date) || (k === 'time' && !r.time) ? ' ghost' : ''}" data-chip="${k}">${i}${(k === 'date' && !r.date) || (k === 'time' && !r.time) ? '+ ' : ''}${esc(l)}</button>` : `<span class="chip k-${k}">${i}${esc(l)}</span>`).join('');
 }
 
 /* ================= task actions ================= */
@@ -2366,7 +2373,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.9.3</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.9.4</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -2544,13 +2551,17 @@ function quickAdd(ctxOverride) {
   <div id="qaForm"><div class="qa-in"><label for="qaIn" class="sr">New task</label><textarea id="qaIn" rows="1" placeholder="${ph[Math.floor(Math.random() * ph.length)]}" enterkeyhint="done" autocomplete="off" autocapitalize="sentences" spellcheck="true" data-form-type="other">${ctx.tpl ? esc(ctx.tpl.title) : ''}</textarea>${('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) ? `<button type="button" class="iconbtn" id="qaMic" aria-label="Speak the task">${I.mic}</button>` : ''}</div>
   <div class="qa-wrap"><div class="qa-pick" id="qaPick" role="listbox" hidden></div></div>
   <label for="qaNote" class="sr">Notes</label><textarea class="qa-note" id="qaNote" rows="1" placeholder="Notes" autocomplete="off" data-form-type="other"></textarea>
-  <div class="chips" id="qaChips"></div><div class="preview" id="qaPrev"></div></div>
+  <div class="chips" id="qaChips"></div><div class="preview" id="qaPrev"></div><input type="date" id="qaD" class="qa-hid" tabindex="-1" aria-label="Pick date"><input type="time" id="qaT" class="qa-hid" tabindex="-1" aria-label="Pick time"></div>
   ${ctx.tpl ? '' : `<button type="button" class="tplbtn" id="qaTplBtn" aria-expanded="false">${I.layers}Templates</button><div class="tplrow" id="qaTpl" hidden>${S.templates.map(t => `<button class="tplchip" data-tpl="${t.id}">${t.emoji} ${esc(t.name)}</button>`).join('')}<button class="tplchip" id="qaNewTpl" style="border-style:dashed;color:var(--muted)">${I.plus} New</button></div>`}
   `, ctx.quick ? () => window.close() : null, !!ctx.quick);
   const inp = $('#qaIn'), addB = $('#qaAdd');
-  const upd = () => { const v = inp.value.trim(); addB.disabled = !v; $('#qaExp').disabled = !v; if (!v) { $('#qaChips').innerHTML = ''; $('#qaPrev').innerHTML = ''; return; } const r = parseTask(v); $('#qaChips').innerHTML = chipsFor(r); $('#qaPrev').innerHTML = r.title ? `${r.meeting ? 'Meeting' : 'Task'}: <b>${esc(r.title)}</b>` : ''; };
+  const ov = {};
+  const upd = () => { const v = inp.value.trim(); addB.disabled = !v; $('#qaExp').disabled = !v; if (!v) { $('#qaChips').innerHTML = ''; $('#qaPrev').innerHTML = ''; return; } const r = parseTask(v); if (ov.date) { r.date = ov.date; r.someday = false; } if (ov.time) { r.time = ov.time; if (!r.reminders.length) r.reminders = [0]; } r._edit = true; $('#qaChips').innerHTML = chipsFor(r); $$('#qaChips [data-chip]').forEach(b => { b.onpointerdown = e => e.preventDefault(); b.onclick = () => { const el = $(b.dataset.chip === 'date' ? '#qaD' : '#qaT'); el.value = b.dataset.chip === 'date' ? (r.date || today()) : (r.time || ''); try { el.showPicker(); } catch (x) { el.focus(); el.click(); } }; }); $('#qaPrev').innerHTML = r.title ? `${r.meeting ? 'Meeting' : 'Task'}: <b>${esc(r.title)}</b>` : ''; };
   const fit = () => { inp.style.height = 'auto'; inp.style.height = inp.scrollHeight + 'px'; };
   inp.addEventListener('input', () => { fit(); upd(); }); upd(); fit();
+  $('#qaD').onchange = e => { if (e.target.value) { ov.date = e.target.value; upd(); inp.focus(); } };
+  $('#qaT').onchange = e => { if (e.target.value) { ov.time = e.target.value; upd(); inp.focus(); } };
+  const applyOv = t => { if (!t || t.meeting) return; if (ov.date) { t.date = ov.date; t.someday = false; } if (ov.time) { t.time = ov.time; t.firedKeys = []; if (!t.reminders.length) t.reminders = [0]; } if (ov.date || ov.time) save(); };
   // # projects and @ tags: a picker pops up while you type
   const note = $('#qaNote'), pick = $('#qaPick'); let pk = { items: [], i: 0, start: -1 };
   const fitN = () => { note.style.height = 'auto'; note.style.height = note.scrollHeight + 'px'; };
@@ -2596,6 +2607,7 @@ function quickAdd(ctxOverride) {
     e && e.preventDefault(); const v = inp.value.trim(); if (!v) return;
     const res = addFromText(v, ctx); if (!res) { toast('Add a few words for the task name'); return; }
     const nv = (note.value || '').trim(); if (nv && !res.meeting) { res.notes = (res.notes || '') + textToHtml(nv); res.nh = true; save(); }
+    applyOv(res);
     if (res.meeting) { closeSheet(true); if (ctx.quick) { quickDone(); return; } render(); toast(`Meeting added, ${fmtClock(res.meeting.s)}`); return; }
     if (res.reminders.length) askNotify();
     render();
@@ -2610,6 +2622,7 @@ function quickAdd(ctxOverride) {
     const res = addFromText(v, ctx); if (!res) { toast('Add a few words for the task name'); return; }
     if (res.meeting) { closeSheet(true); render(); toast(`Meeting added, ${fmtClock(res.meeting.s)}`); return; }
     const nv = (note.value || '').trim(); if (nv) { res.notes = (res.notes || '') + textToHtml(nv); res.nh = true; save(); }
+    applyOv(res);
     closeSheet(true); if (ctx.quick) { document.body.classList.remove('qm'); window.QM = false; }
     render(); setTimeout(() => taskSheet(res.id), 220);
   };

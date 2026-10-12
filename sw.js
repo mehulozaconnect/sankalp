@@ -1,5 +1,5 @@
 // Sankalp service worker: offline app shell + notification buttons
-const CACHE = 'sankalp-v33';
+const CACHE = 'sankalp-v34';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
