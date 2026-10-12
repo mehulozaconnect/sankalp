@@ -1209,6 +1209,14 @@ function parseTask(input) {
   // reminders (up to 3)
   for (let i = 0; i < 3; i++) if (!take('remind(?:\\s+me)?\\s+(\\d+)\\s*(m|min|mins|minutes?|h|hr|hrs|hours?|d|days?)(?:\\s+(?:before|early|earlier|pehle))?', m => { const u = m[3][0].toLowerCase(); r.reminders.push(+m[2] * (u === 'h' ? 60 : u === 'd' ? 1440 : 1)); })) break;
   take('remind(?:\\s+me)?(?:\\s+on\\s+(?:the\\s+)?(?:day|time))', () => { r.reminders.push(0); });
+  // "in 5 mins", "after 2 hours", "in half an hour", "10 min mein/baad": that many minutes from now
+  take('(?:(?:in|after)\\s+(\\d+(?:\\.\\d+)?|an?|half\\s+an?)\\s*(m|min|mins|minutes?|h|hr|hrs|hours?)|(\\d+(?:\\.\\d+)?)\\s*(m|min|mins|minutes?|h|hr|hrs|hours?)\\s+(?:mein|me|baad|later|from\\s+now))\\b', m => {
+    const q = (m[2] || m[4] || '').toLowerCase(), u = (m[3] || m[5] || '').toLowerCase();
+    let n = /^half/.test(q) ? 0.5 : /^an?$/.test(q) ? 1 : +q; if (!(n > 0)) return false;
+    const mins = Math.round(n * (/^h/.test(u) ? 60 : 1)); if (mins < 1 || mins > 24 * 60) return false;
+    const at = new Date(Date.now() + mins * 6e4); if (at.getSeconds() > 0) at.setMinutes(at.getMinutes() + 1, 0, 0);
+    r.date = ymd(at); r.time = pad(at.getHours()) + ':' + pad(at.getMinutes()); r.rel = mins;
+  });
   // start / until
   take('(?:start(?:ing|s)?(?:\\s+from)?|from|beginning)\\s+(' + DATEPAT + ')', m => { const d = dateFrom(m[2]); if (!d) return false; r.start = d; r._sRaw = m[2].toLowerCase(); }) ||
     take('(' + DATEPAT + ')\\s+se', m => { const d = dateFrom(m[2]); if (!d) return false; r.start = d; });
@@ -1259,7 +1267,7 @@ function parseTask(input) {
       take('(?:on\\s+|due\\s+)?(' + DATEPAT + ')', m => { const d = dateFrom(m[2]); if (!d) return false; r.date = d; });
   }
   // duration
-  take('(\\d+)\\s*(m|min|mins|minutes|h|hr|hrs|hours)', m => { const v = +m[2] * (/^h/i.test(m[3]) ? 60 : 1); if (v < 1 || v > 720) return false; r.duration = v; });
+  take('(?:for\\s+)?(\\d+(?:\\.\\d+)?)\\s*(m|min|mins|minutes|h|hr|hrs|hours)\\b', m => { const v = Math.round(+m[2] * (/^h/i.test(m[3]) ? 60 : 1)); if (v < 1 || v > 720) return false; r.duration = v; });
   // bare project name after a comma or right after a parsed word
   if (!r.projectId && !r.newProject) {
     for (const p of [...S.projects].sort((a, b) => b.name.length - a.name.length)) {
@@ -2396,7 +2404,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.9.7</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.9.8</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
