@@ -610,6 +610,17 @@ body.kb .tabbar,body.kb .fab{display:none!important}
 #tl .tlh{cursor:pointer}
 .tlghost{position:absolute;left:58px;right:14px;height:24px;border-radius:8px;border:1.5px dashed color-mix(in srgb,var(--accent) 60%,transparent);color:var(--accent-text,var(--accent));font-size:12px;font-weight:700;padding:3px 8px;pointer-events:none;background:color-mix(in srgb,var(--accent) 8%,transparent)}
 .tlghost[hidden]{display:none}
+.mcal2 button i.t{background:var(--accent)!important}
+.mcal2 button i+i.t{margin-left:3px}
+.mcal2 button i:has(+i.t){margin-left:-7px}
+.rtasks{margin:0 12px 8px;display:flex;flex-direction:column;gap:2px}
+.rtk{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:9px;background:none;border:0;color:var(--ink);font:inherit;font-size:13.5px;font-weight:600;text-align:left;cursor:pointer;min-width:0}
+.rtk:hover{background:var(--surface)}
+.rtk .tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rtk.d .tt{text-decoration:line-through;opacity:.5}
+.rtk .pdot{width:9px;height:9px;border-radius:50%;border:2px solid var(--muted);flex:none}
+.rtk .pdot.p1{border-color:#E5484D}.rtk .pdot.p2{border-color:#E8930C}.rtk .pdot.p3{border-color:#2F7BEA}
+.rtk .rr svg{width:13px;height:13px;color:var(--muted)}
 textarea.inp.one{resize:none;overflow:hidden;white-space:nowrap;line-height:20px;padding:11px 12px!important;height:44px!important;min-height:0!important;font-family:inherit;color:var(--ink)}
 .keyb{min-width:110px;height:36px;padding:0 10px;border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:3px;border:1px solid var(--line)}
 .keyb.rec{border-color:var(--accent);color:var(--accent-text,var(--accent))}
@@ -1572,13 +1583,15 @@ function wcard(t) {
 
 /* ---------- right rail: day calendar with drag-to-schedule ---------- */
 let railDay = null, railMonth = null;
+function railHasTask(k) { return S.tasks.some(t => !t.done && !t.someday && (t.date === k || (t.repeat && t.date !== k && occursOn(t, k)))); }
 function renderRail() {
   const el = $('#rail'); if (!el || !matchMedia('(min-width:1280px)').matches) { if (el) el.innerHTML = ''; return; }
   const td = today(); railDay ||= td; railMonth ||= railDay.slice(0, 7);
   const [y, m] = railMonth.split('-').map(Number); const first = new Date(y, m - 1, 1); const off = (first.getDay() + 6) % 7;
   let cal = ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(x => `<span>${x}</span>`).join('');
-  for (let i = 0; i < 42; i++) { const d = new Date(y, m - 1, 1 - off + i); const k = ymd(d); if (i >= 35 && d.getMonth() !== m - 1) break; cal += `<button class="${d.getMonth() !== m - 1 ? 'om' : ''}${k === td ? ' td' : ''}${k === railDay ? ' sel' : ''}" data-act="railday" data-d="${k}" aria-label="${d.getDate()} ${MONSL[d.getMonth()]}">${d.getDate()}${meetingsOn(k).length ? '<i></i>' : ''}</button>`; }
-  const dd = pYmd(railDay); const ms = meetingsOn(railDay); const ts = S.tasks.filter(t => t.date === railDay && t.time && (!t.orig || t.done) && (!t.done || S.settings.showDone));
+  for (let i = 0; i < 42; i++) { const d = new Date(y, m - 1, 1 - off + i); const k = ymd(d); if (i >= 35 && d.getMonth() !== m - 1) break; cal += `<button class="${d.getMonth() !== m - 1 ? 'om' : ''}${k === td ? ' td' : ''}${k === railDay ? ' sel' : ''}" data-act="railday" data-d="${k}" aria-label="${d.getDate()} ${MONSL[d.getMonth()]}">${d.getDate()}${meetingsOn(k).length ? '<i></i>' : ''}${railHasTask(k) ? '<i class="t"></i>' : ''}</button>`; }
+  const dd = pYmd(railDay); const ms = meetingsOn(railDay); const ts = S.tasks.filter(t => t.time && ((t.date === railDay && (!t.orig || t.done) && (!t.done || S.settings.showDone)) || (!t.done && t.repeat && t.date !== railDay && occursOn(t, railDay))));
+  const ut = S.tasks.filter(t => !t.time && !t.someday && ((t.date === railDay && (!t.done || S.settings.showDone)) || (!t.done && t.repeat && t.date !== railDay && occursOn(t, railDay)))).sort(sortTasks);
   const H0 = 7, H1 = 23, PX = 52; const top = mins => (mins - H0 * 60) / 60 * PX;
   let tl = ''; for (let hr = H0; hr < H1; hr++) tl += `<div class="tlh" data-hr="${hr}"><span>${hr === 12 ? '12 PM' : hr > 12 ? hr - 12 + ' PM' : hr + ' AM'}</span></div>`;
   ms.forEach(x => { const s = minOf(x.s), e = Math.max(minOf(x.e) || 1440, s + 15), hgt = Math.max(top(e) - top(s) - 2, 20); tl += `<button type="button" class="tlb m${hgt >= 60 ? ' tall' : ''}" data-act="meet" data-id="${esc(x.id)}" style="top:${top(s)}px;height:${hgt}px" title="${esc(x.t)}">${esc(x.t)}<small>${fmtClock(x.s)}</small></button>`; });
@@ -1588,6 +1601,7 @@ function renderRail() {
   ${S.settings.gOn || S.pcal ? '' : `<a class="rnote" href="#settings/gcal">${I.gcal}<span>Connect a calendar to see your meetings here.</span></a>`}
   <div class="rday"><b>${railDay === td ? 'Today' : DAYSL[dd.getDay()]}, ${dd.getDate()} ${MONS[dd.getMonth()]}</b><span>${plural(ms.length, 'meeting')}</span></div>
   ${ms.length ? `<div class="mt2" style="margin:0 12px 8px">${ms.map(x => { const now = Date.now(), live = x.s <= now && x.e > now, past = x.e <= now; return `<div class="mr${past ? ' past' : ''}${live ? ' live' : ''}"><span class="tm">${live ? 'Now' : fmtClock(x.s)}</span><span class="tt" data-act="meet" data-id="${esc(x.id)}">${esc(x.t)}</span>${x.join && !past ? `<a class="pill meet" href="${esc(x.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>`; }).join('')}</div>` : ''}
+  ${ut.length ? `<div class="rtasks">${ut.map(t => `<button class="rtk${t.done ? ' d' : ''}" data-act="open" data-id="${t.id}"><span class="pdot p${t.priority}"></span><span class="tt">${esc(t.title)}</span>${t.repeat ? `<span class="rr">${I.repeat}</span>` : ''}</button>`).join('')}</div>` : ''}
   <div class="tl" id="tl"><div style="position:relative;padding-top:8px">${tl}</div></div>`;
   const tlEl = $('#tl'); if (railDay === td) tlEl.scrollTop = Math.max(0, top(minOf(Date.now())) - 120); else tlEl.scrollTop = top(9 * 60) - 10;
 }
@@ -2382,7 +2396,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.9.5</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.9.7</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -2687,7 +2701,7 @@ function renderPage(fresh) {
   const props = [];
   props.push(`<button class="prop${w && w.late ? ' late' : ''}${w ? '' : ' more'}" data-pp="when">${I.cal}${w ? esc(w.l) : 'Add date'}</button>`);
   if (t.repeat) props.push(`<button class="prop" data-pp="repeat">${I.repeat}${esc(repeatLabel(t.repeat))}</button>`);
-  if (t.reminders.length) props.push(`<button class="prop" data-pp="remind">${I.bell}${t.reminders.length === 1 ? remLabel(t.reminders[0]) : t.reminders.length + ' reminders'}${nagOf(t) ? `, then every ${nagOf(t)} min` : ''}</button>`);
+  if (t.reminders.length) props.push(`<button class="prop" data-pp="remind">${I.bell}${t.reminders.length === 1 ? remLabel(t.reminders[0]) : t.reminders.length + ' reminders'}</button>`);
   if (t.priority < 4) props.push(`<button class="prop p${t.priority}" data-pp="priority">${I.flag}P${t.priority}</button>`);
   props.push(`<button class="prop" data-pp="project">${p ? (p.emoji ? `<span>${p.emoji}</span>` : `<i class="dot" style="background:${p.color}"></i>`) + esc(p.name) : I.inbox + 'Inbox'}</button>`);
   if (t.tags.length) props.push(`<button class="prop" data-pp="tags">${I.tag}${t.tags.map(x => '@' + esc(x)).join(' ')}</button>`);
@@ -3411,8 +3425,8 @@ function tick() {
   S.tasks.forEach(t => {
     if (t.done || nativeRem) return; const hold = (quiet || shield) && t.priority !== 1;
     const nag = nagOf(t);
-    if (t.snoozeUntil && now >= t.snoozeUntil && !hold) { t.snoozeUntil = 0; startNag(t, nag); changed = true; notify(t.title, 'Snoozed reminder' + (nag ? `. Repeats every ${nag} min until done` : ''), 't' + t.id, { id: t.id }, true); return; }
-    if (t.nagAt && now >= t.nagAt && !hold) { t.nagN = (t.nagN || 0) + 1; t.nagAt = nag && t.nagN < NAG_MAX ? now + nag * 6e4 : 0; changed = true; notify(t.title, `Still not done. Reminder ${t.nagN + 1}${t.nagAt ? `, next in ${nag} min` : ', last one'}`, 't' + t.id, { id: t.id }, true); }
+    if (t.snoozeUntil && now >= t.snoozeUntil && !hold) { t.snoozeUntil = 0; startNag(t, nag); changed = true; notify(t.title, 'Snoozed reminder', 't' + t.id, { id: t.id }, true); return; }
+    if (t.nagAt && now >= t.nagAt && !hold) { t.nagN = (t.nagN || 0) + 1; t.nagAt = nag && t.nagN < NAG_MAX ? now + nag * 6e4 : 0; changed = true; notify(t.title, 'Still not done', 't' + t.id, { id: t.id }, true); }
     t.subs.forEach(c => {
       if (c.d || !c.at || hold) return; const p = proj(t.projectId);
       if (c.snoozeUntil && now >= c.snoozeUntil) { c.snoozeUntil = 0; startNag(c, nag); changed = true; notify(c.t, `Snoozed. Part of ${t.title}`, 's' + c.id, { id: t.id, sub: c.id }, true); return; }

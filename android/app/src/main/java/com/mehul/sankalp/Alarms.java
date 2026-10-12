@@ -246,7 +246,7 @@ final class Alarms {
         PendingIntent snzPi = action(ctx, "snooze", a, nid + 2);
         Icon ic = Icon.createWithResource(ctx, R.drawable.ic_stat);
         int n = a.optInt("n", 0);
-        String text = n > 0 ? "Still not done. Reminder " + (n + 1) : a.optString("body");
+        String text = n > 0 ? "Still not done" : a.optString("body");
         Notification.Builder b = new Notification.Builder(ctx, CH)
                 .setSmallIcon(R.drawable.ic_stat)
                 .setColor(0xFF2F7BEA)

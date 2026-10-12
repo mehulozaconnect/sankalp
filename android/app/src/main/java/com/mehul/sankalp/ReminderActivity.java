@@ -132,7 +132,7 @@ public class ReminderActivity extends Activity {
         title.setPadding(0, dp(2), 0, 0);
         tx.addView(title);
         int n = a.optInt("n", 0);
-        String body = n > 0 ? "Still not done · reminder " + (n + 1) : a.optString("body", "");
+        String body = n > 0 ? "Still not done" : a.optString("body", "");
         if (!body.isEmpty()) { TextView bt = text(body, 14, muted, false); bt.setPadding(0, dp(4), 0, 0); tx.addView(bt); }
         mid.addView(tx, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
         mid.setOnClickListener(v -> { open(); });
