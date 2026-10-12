@@ -1,5 +1,5 @@
 // Sankalp service worker: offline app shell + notification buttons
-const CACHE = 'sankalp-v32';
+const CACHE = 'sankalp-v33';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -20,10 +20,14 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   if (url.origin !== location.origin) return;
   if (req.mode === 'navigate') {
-    e.respondWith(
-      fetch(req, { cache: 'no-store' }).then(res => { const copy = res.clone(); caches.open(CACHE).then(c => c.put('./index.html', copy)); return res; })
-        .catch(() => caches.match('./index.html'))
-    );
+    // Newest version from the internet, but never wait more than 3 seconds: then open the saved copy (and save the new one when it arrives).
+    const net = fetch(req, { cache: 'no-store' }).then(res => { if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put('./index.html', copy)); } return res; });
+    e.respondWith((async () => {
+      const saved = await caches.match('./index.html');
+      if (!saved) return net.catch(() => Response.error());
+      const slow = new Promise(r => setTimeout(() => r(saved), 3000));
+      try { return await Promise.race([net, slow]); } catch (x) { return saved; }
+    })());
     return;
   }
   e.respondWith(caches.match(req).then(hit => hit || fetch(req)));
