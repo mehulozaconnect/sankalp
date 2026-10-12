@@ -602,6 +602,9 @@ body.kb .tabbar,body.kb .fab{display:none!important}
 .tlh{position:relative;height:52px;border-top:1px solid var(--line);margin-left:54px}
 .tlh>span{position:absolute;left:-48px;top:-8px;font-size:11px;font-weight:700;color:var(--muted);width:42px;text-align:right}
 .tlh.over{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+#tl .tlh{cursor:pointer}
+.tlghost{position:absolute;left:58px;right:14px;height:24px;border-radius:8px;border:1.5px dashed color-mix(in srgb,var(--accent) 60%,transparent);color:var(--accent-text,var(--accent));font-size:12px;font-weight:700;padding:3px 8px;pointer-events:none;background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.tlghost[hidden]{display:none}
 .tlb{position:absolute;left:58px;right:14px;border-radius:9px;padding:4px 8px;font-size:12px;font-weight:700;overflow:hidden;line-height:1.25;cursor:pointer;text-align:left}
 .tlb small{display:block;font-weight:600;opacity:.8}
 .tlb.m{background:color-mix(in srgb,var(--meet) 22%,var(--bg));color:var(--ink);border-left:3px solid var(--meet)}
@@ -1296,7 +1299,8 @@ function addFromText(text, ctx) {
   if (r.meeting) return { meeting: addMeeting(r) };
   if (r.newProject) r.projectId = ensureProject(r.newProject).id;
   const t = newTask({ title: r.title, date: r.date, time: r.time, evening: r.evening, someday: r.someday, priority: r.priority || 4, projectId: r.projectId, tags: r.tags, repeat: r.repeat, reminders: r.reminders, duration: r.duration, pinned: r.pinned });
-  if (!t.date && !t.someday) { if (ctx.view === 'today') t.date = today(); if (ctx.view === 'someday') t.someday = true; if (ctx.view === 'calendar' && ctx.date) t.date = ctx.date; }
+  if (!t.date && !t.someday) { if (ctx.view === 'today') t.date = today(); if (ctx.view === 'someday') t.someday = true; if (ctx.date) t.date = ctx.date; }
+  if (ctx.time && !t.time && !t.someday) { t.time = ctx.time; t.duration ||= 30; if (!t.reminders.length) t.reminders = [0]; }
   if (!t.projectId && ctx.view === 'project') t.projectId = ctx.arg;
   if (ctx.tpl) { t.notes = cleanHtml(ctx.tpl.notes || ''); t.subs = (ctx.tpl.subs || []).map(x => ({ id: uid(), t: x, d: false })); if (!r.priority && ctx.tpl.priority) t.priority = ctx.tpl.priority; if (!t.projectId && ctx.tpl.project) t.projectId = (findProject(ctx.tpl.project) || {}).id || null; }
   S.tasks.push(t); addPlan(t); save();
@@ -1555,6 +1559,10 @@ function renderRail() {
   <div class="tl" id="tl"><div style="position:relative;padding-top:8px">${tl}</div></div>`;
   const tlEl = $('#tl'); if (railDay === td) tlEl.scrollTop = Math.max(0, top(minOf(Date.now())) - 120); else tlEl.scrollTop = top(9 * 60) - 10;
 }
+// click an empty slot on the day timeline to add a task at that time
+function tlSlot(e) { const inner = $('#tl > div'); if (!inner) return null; const y = e.clientY - inner.getBoundingClientRect().top - 8; const m = 7 * 60 + Math.floor(y / 26) * 30; return m < 7 * 60 || m >= 23 * 60 ? null : m; }
+document.addEventListener('click', e => { const h = e.target.closest?.('#tl .tlh'); if (!h || e.target.closest('.tlb')) return; const m = tlSlot(e); if (m == null) return; quickAdd({ date: railDay || today(), time: pad(Math.floor(m / 60)) + ':' + pad(m % 60) }); });
+document.addEventListener('mousemove', e => { const tl = e.target.closest?.('#tl'); const g = $('#tlGhost'); if (!tl || e.target.closest('.tlb')) { if (g) g.hidden = true; return; } const m = tlSlot(e); const inner = $('#tl > div'); if (m == null || !inner) { if (g) g.hidden = true; return; } let gh = g; if (!gh) { inner.insertAdjacentHTML('beforeend', '<div id="tlGhost" class="tlghost"></div>'); gh = $('#tlGhost'); } gh.hidden = false; gh.style.top = (8 + (m - 7 * 60) / 60 * 52) + 'px'; gh.textContent = '+ Add task at ' + fmtTime(pad(Math.floor(m / 60)) + ':' + pad(m % 60)); });
 // drag and drop (desktop)
 let dragId = null;
 document.addEventListener('dragstart', e => { const el = e.target.closest?.('[draggable=true]'); if (!el) return; dragId = el.dataset.id || el.dataset.tid; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', dragId); } catch (x) { } });
@@ -2322,7 +2330,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.8.4</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.8.5</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -2460,7 +2468,7 @@ async function quickDone() {
 function quickAdd(ctxOverride) {
   const ctx = { ...route(), ...(ctxOverride || {}) }; if (ctx.view === 'calendar' && !ctx.date) ctx.date = calSel;
   const ph = ['Call mom kal 5pm p2, home', 'Send proposal fri 4pm p1 sales', 'Call dad daily 5:30pm from tomorrow till 31 dec', 'Pay bill 15 oct remind 1 day before', 'meet Client call 3pm-4pm', 'Gym every mon, wed, fri 7am'];
-  openSheet(`<div class="shead"><button class="cx" data-close>Cancel</button><span class="ttl">${ctx.tpl ? esc(ctx.tpl.emoji + ' ' + ctx.tpl.name) : ctx.date ? 'New task, ' + fmtDate(ctx.date) : 'New task'}</span><span class="qa-r"><button class="iconbtn qa-x" id="qaExp" disabled aria-label="Open full task: subtasks, notes, images" title="Open full task">${I.expand}</button><button class="ok" id="qaAdd" disabled>Add</button></span></div>
+  openSheet(`<div class="shead"><button class="cx" data-close>Cancel</button><span class="ttl">${ctx.tpl ? esc(ctx.tpl.emoji + ' ' + ctx.tpl.name) : ctx.date ? 'New task, ' + fmtDate(ctx.date) + (ctx.time ? ', ' + fmtTime(ctx.time) : '') : 'New task'}</span><span class="qa-r"><button class="iconbtn qa-x" id="qaExp" disabled aria-label="Open full task: subtasks, notes, images" title="Open full task">${I.expand}</button><button class="ok" id="qaAdd" disabled>Add</button></span></div>
   <div id="qaForm"><div class="qa-in"><label for="qaIn" class="sr">New task</label><textarea id="qaIn" rows="1" placeholder="${ph[Math.floor(Math.random() * ph.length)]}" enterkeyhint="done" autocomplete="off" autocapitalize="sentences" spellcheck="true" data-form-type="other">${ctx.tpl ? esc(ctx.tpl.title) : ''}</textarea>${('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) ? `<button type="button" class="iconbtn" id="qaMic" aria-label="Speak the task">${I.mic}</button>` : ''}</div>
   <div class="qa-wrap"><div class="qa-pick" id="qaPick" role="listbox" hidden></div></div>
   <label for="qaNote" class="sr">Notes</label><textarea class="qa-note" id="qaNote" rows="1" placeholder="Notes" autocomplete="off" data-form-type="other"></textarea>
