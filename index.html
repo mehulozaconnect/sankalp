@@ -400,7 +400,7 @@ textarea.inp{height:auto;min-height:96px;padding:10px 12px;line-height:1.5;resiz
 .dayh span{font-size:13px;color:var(--muted)}
 .mini{padding:0 24px;font-size:13px;color:var(--meet);font-weight:600}
 .srch{display:flex;align-items:center;gap:8px;height:46px;border-radius:14px;background:var(--surface);padding:0 12px;margin:6px 0 10px}
-.srch input{flex:1;border:0;background:transparent;outline:none;font-size:16px;min-width:0}
+.srch input,.srch textarea{flex:1;border:0;background:transparent;outline:none;font-size:16px;min-width:0;font-family:inherit;color:inherit;resize:none;overflow:hidden;white-space:nowrap;line-height:22px;height:24px;padding:0}
 .sres{display:flex;flex-direction:column}
 .sres .sr-h{font-size:12.5px;font-weight:700;color:var(--muted);padding:12px 0 2px}
 .sres button{display:flex;align-items:center;gap:10px;min-height:48px;text-align:left;border-bottom:1px solid var(--line);font-size:15.5px;font-weight:600;width:100%}
@@ -605,6 +605,10 @@ body.kb .tabbar,body.kb .fab{display:none!important}
 #tl .tlh{cursor:pointer}
 .tlghost{position:absolute;left:58px;right:14px;height:24px;border-radius:8px;border:1.5px dashed color-mix(in srgb,var(--accent) 60%,transparent);color:var(--accent-text,var(--accent));font-size:12px;font-weight:700;padding:3px 8px;pointer-events:none;background:color-mix(in srgb,var(--accent) 8%,transparent)}
 .tlghost[hidden]{display:none}
+textarea.inp.one{resize:none;overflow:hidden;white-space:nowrap;line-height:20px;padding:11px 12px!important;height:44px!important;min-height:0!important;font-family:inherit;color:var(--ink)}
+.keyb{min-width:110px;height:36px;padding:0 10px;border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:3px;border:1px solid var(--line)}
+.keyb.rec{border-color:var(--accent);color:var(--accent-text,var(--accent))}
+.keyb kbd,.hint kbd{font:inherit;font-size:12px;font-weight:700;background:var(--bg);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 6px}
 .tlb{position:absolute;left:58px;right:14px;border-radius:9px;padding:4px 8px;font-size:12px;font-weight:700;overflow:hidden;line-height:1.25;cursor:pointer;text-align:left;white-space:nowrap;text-overflow:ellipsis;font-family:inherit;border:0}
 .tlb small{display:inline;font-weight:600;opacity:.75;margin-left:6px}
 .tlb.tall{white-space:normal}.tlb.tall small{display:block;margin-left:0}
@@ -1451,7 +1455,7 @@ function projectsNav(cur, arg) {
 function renderSide() {
   const { view, arg } = route();
   $('#side').innerHTML = `<div style="padding:0 6px 14px;display:flex;justify-content:space-between;align-items:center"><a class="brand" href="#today">${LOGO(32)}<b>Sankalp</b></a><a class="iconbtn" href="#settings" aria-label="Settings">${I.gear}</a></div>
-  <button class="sidesearch" data-act="search">${I.search}Search<kbd>/</kbd></button>
+  <button class="sidesearch" data-act="search">${I.search}Search<kbd>${esc(keyMap().search || '/')}</kbd></button>
   <div class="nav" style="padding:0">${listsNav(view)}</div><div class="nav" style="padding:0">${projectsNav(view, arg)}</div>
   <button class="navi" data-act="newproject" style="color:var(--muted);font-size:14px;margin-top:8px">${I.plus}<span class="nm">New project</span></button>`;
 }
@@ -1793,7 +1797,7 @@ function habitForm(id) {
   const x = id ? S.habits.find(h => h.id === id) : { name: '', emoji: '🧘', section: S.habitSections[0]?.n || 'Morning', type: 'do', days: [0, 1, 2, 3, 4, 5, 6], time: '', prior: 0 };
   let emo = x.emoji, type = x.type;
   openSheet(sheetHead(id ? 'Edit habit' : 'New habit', 'Save', 'hSave') + `
-  <div class="field"><label for="hName">Name</label><input class="inp" id="hName" value="${esc(x.name)}" placeholder="Evening walk"></div>
+  <div class="field"><label for="hName">Name</label><textarea class="inp one" rows="1" id="hName" placeholder="Evening walk" data-form-type="other">${esc(x.name)}</textarea></div>
   <div class="field"><span class="flabel">Emoji</span><div class="emojis" id="hEmo">${EMOJIS.map(e => `<button type="button" class="${e === emo ? 'on' : ''}" data-e="${e}" aria-label="${e}">${e}</button>`).join('')}</div><input class="inp" id="hEmoIn" placeholder="Or type any emoji" style="margin-top:6px" maxlength="8"></div>
   <div class="grid2"><div class="field" style="margin:0"><label for="hSec">Section</label><select class="inp" id="hSec">${S.habitSections.map(s => `<option${s.n === x.section ? ' selected' : ''}>${esc(s.n)}</option>`).join('')}<option value="__new">New section…</option></select></div>
   </div><div class="field"><span class="flabel">Goal</span><div class="hgoal" id="hType"><button type="button" data-t="do" class="${type === 'do' ? 'on' : ''}"><b>✅ Build</b><span>Something to start doing. Tick on days you do it.</span></button><button type="button" data-t="avoid" class="${type === 'avoid' ? 'on' : ''}"><b>🚫 Quit</b><span>Something to stop. Tick on days you stayed away.</span></button></div></div>
@@ -1865,7 +1869,7 @@ function dateForm(id) {
   let kind = x.kind, rem = [...x.remind], rp = x.rep || 'yearly';
   const val = x.full || (x.md ? `${x.year || new Date().getFullYear()}-${x.md}` : '');
   openSheet(sheetHead(id ? 'Edit date' : 'New date', 'Save', 'dSave') + `
-  <div class="field"><label for="dName">Name</label><input class="inp" id="dName" value="${esc(x.name)}" placeholder="Pankaj Gala"></div>
+  <div class="field"><label for="dName">Name</label><textarea class="inp one" rows="1" id="dName" placeholder="Pankaj Gala" data-form-type="other">${esc(x.name)}</textarea></div>
   <div class="field"><span class="flabel">Type</span><div class="seg" id="dKind">${[['birthday', '🎂 Birthday'], ['anniversary', '💍 Anniversary'], ['event', '📌 Event']].map(([k, l]) => `<button type="button" data-k="${k}" class="${kind === k ? 'on' : ''}">${l}</button>`).join('')}</div></div>
   <div class="grid2"><div class="field" style="margin:0"><label for="dDate">Date</label><input class="inp" type="date" id="dDate" value="${val}"></div>
   <div class="field" style="margin:0"><label for="dYear">Year known?</label><select class="inp" id="dYear"><option value="1"${x.year ? ' selected' : ''}>Yes, show age</option><option value=""${!x.year ? ' selected' : ''}>No, skip age</option></select></div></div>
@@ -2146,7 +2150,7 @@ function nowPick() {
   openSheet(sheetHead(c ? 'Activity running' : 'What are you doing now?', '', '') + `
   ${c ? `<div class="curbox"><span class="ce">${c.e}</span><span class="ct"><b>${esc(c.n)}${S.cur.note ? ' · ' + esc(S.cur.note) : ''}</b><span>Since ${fmtClock(S.cur.s)}, ${fmtMins((Date.now() - S.cur.s) / 6e4)} so far</span></span><button class="btn danger" id="nwStop">Stop</button></div><p class="sub" style="margin:10px 0 6px">Or switch to something else:</p>` : `<p class="sub" style="margin:8px 0 6px">Tap what you are starting. It keeps running until you stop it or pick something else.</p>`}
   <div class="catgrid">${CATS.map(x => `<button class="catb${S.cur && S.cur.cat === x.k ? ' on' : ''}" data-k="${x.k}"><em>${x.e}</em>${esc(x.n)}</button>`).join('')}</div>
-  <div class="field"><label for="nwNote">Note (optional)</label><input class="inp" id="nwNote" placeholder="e.g. Fusion proposal" autocomplete="off" value="${S.cur ? esc(S.cur.note || '') : ''}"></div>
+  <div class="field"><label for="nwNote">Note (optional)</label><textarea class="inp one" rows="1" id="nwNote" placeholder="e.g. Fusion proposal" autocomplete="off" data-form-type="other">${S.cur ? esc(S.cur.note || '') : ''}</textarea></div>
   <div class="btnrow"><button class="btn sec" data-act="logpast">${I.clock}Add earlier time</button><a class="btn sec" href="#review/today" id="nwRev">Day review</a></div>`);
   $$('#sheet .catb').forEach(b => b.onclick = () => { const n = $('#nwNote').value.trim(); closeSheet(true); nowSwitch(b.dataset.k, n); });
   const st = $('#nwStop'); if (st) st.onclick = () => { closeSheet(true); nowSwitch(null); };
@@ -2160,7 +2164,7 @@ function logSheet(edit) {
   let sel = L ? L.cat : '';
   openSheet(sheetHead(L ? 'Edit time' : 'What did you do?', 'Save', 'lgOk') + `<div class="grid2" style="grid-template-columns:1.2fr 1fr 1fr;margin-top:8px"><div class="field" style="margin:0"><label for="lgD">Day</label><input class="inp" type="date" id="lgD" value="${ymd(sDef)}"></div><div class="field" style="margin:0"><label for="lgS">From</label><input class="inp" type="time" id="lgS" value="${hm(sDef)}"></div><div class="field" style="margin:0"><label for="lgE">To</label><input class="inp" type="time" id="lgE" value="${hm(eDef)}"></div></div>
   <div class="catgrid" style="margin-top:14px">${CATS.map(c => `<button class="catb${sel === c.k ? ' on' : ''}" data-k="${c.k}"><em>${c.e}</em>${esc(c.n)}</button>`).join('')}</div>
-  <div class="field"><label for="lgN">Note (optional)</label><input class="inp" id="lgN" value="${L ? esc(L.note || '') : ''}" placeholder="What exactly?" autocomplete="off"></div>
+  <div class="field"><label for="lgN">Note (optional)</label><textarea class="inp one" rows="1" id="lgN" placeholder="What exactly?" autocomplete="off" data-form-type="other">${L ? esc(L.note || '') : ''}</textarea></div>
   ${L ? `<div class="btnrow"><button class="btn danger" id="lgDel">${I.trash}Delete</button></div>` : ''}`);
   $$('#sheet .catb').forEach(b => b.onclick = () => { sel = b.dataset.k; $$('#sheet .catb').forEach(x => x.classList.toggle('on', x === b)); });
   $('#lgOk').onclick = () => {
@@ -2333,7 +2337,7 @@ function vSettings(arg) {
   <div class="setrow"><span class="l"><b>Installed as an app</b><span>${standalone() ? 'Yes' : 'Not yet. Installing gives full screen and steadier reminders.'}</span></span>${standalone() ? '' : `<button class="pill ghost" data-act="install">Install</button>`}</div>
   <div class="setrow"><span class="l"><b>Fingerprint lock</b><span>${lockId() ? 'On. Asked when you open Sankalp or come back after a minute.' : 'Ask for your fingerprint or screen lock to open Sankalp.'}</span></span><button class="switch${lockId() ? ' on' : ''}" data-act="lockon" role="switch" aria-checked="${!!lockId()}" aria-label="Fingerprint lock"></button></div></div>`;
   if (!isWide() || Object.keys(S.phone || {}).length) h += `<div class="sechead" id="phoneapp"><h2 class="sec">Android app: screen time, calls, alarms</h2></div><div class="setsec">${phonePanel()}</div>`;
-  if (/Windows/i.test(navigator.userAgent)) h += `<div class="sechead" id="hotkey"><h2 class="sec">Add from any app</h2></div><div class="setsec">${hotkeyPanel()}</div>`;
+  if (isWide() || !matchMedia('(pointer:coarse)').matches) h += `<div class="sechead" id="keys"><h2 class="sec">Keyboard shortcuts</h2></div><div class="setsec">${keysPanel()}</div>`;
   h += `<div class="sechead" id="coach"><h2 class="sec">Coach</h2></div><div class="setsec">${coachPanel()}</div>`;
   h += `<div class="sechead" id="gcal"><h2 class="sec">Calendar</h2></div><div class="setsec">${gCalPanel()}</div>`;
   h += `<div class="sechead"><h2 class="sec">Look and feel</h2></div><div class="setsec"><div class="seg" role="group" aria-label="Mode">${['light', 'dark', 'auto'].map(m => `<button class="${st.mode === m ? 'on' : ''}" data-act="mode" data-m="${m}">${cap(m)}</button>`).join('')}</div><p class="hint">Auto follows your phone.</p>
@@ -2362,7 +2366,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.9</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.9.2</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -2372,7 +2376,7 @@ function projectForm(id) {
   const pe = ['', '💼', '🎯', '📞', '📊', '🧲', '🏠', '💪', '❤️', '📚', '✈️', '💰', '🛒', '🌱', '🙏', '👨‍👩‍👧'];
   let col = p.color, emo = p.emoji || '';
   openSheet(sheetHead(id ? 'Edit project' : 'New project', 'Save', 'pSave') + `
-  <div class="field"><label for="pName">Name</label><input class="inp" id="pName" value="${esc(p.name)}" placeholder="Client demos"></div>
+  <div class="field"><label for="pName">Name</label><textarea class="inp one" rows="1" id="pName" placeholder="Client demos" data-form-type="other">${esc(p.name)}</textarea></div>
   <div class="field"><label for="pArea">Area</label><input class="inp" id="pArea" value="${esc(p.area)}" list="areaList"><datalist id="areaList">${areas().map(a => `<option value="${esc(a)}">`).join('')}</datalist></div>
   <div class="field"><span class="flabel">Icon</span><div class="emojis" id="pEmo">${pe.map(e => `<button type="button" data-e="${e}" class="${e === emo ? 'on' : ''}" aria-label="${e || 'Colour dot'}">${e || '●'}</button>`).join('')}</div></div>
   <div class="field"><span class="flabel">Colour</span><div class="swatches" id="pCol">${colors.map(c => `<button type="button" data-c="${c}" class="${c === col ? 'on' : ''}" style="background:${c}" aria-label="Colour ${c}"></button>`).join('')}</div></div>
@@ -2385,8 +2389,8 @@ function projectForm(id) {
 function tplForm(id, fromTask) {
   const t = id ? S.templates.find(x => x.id === id) : fromTask ? { emoji: '📋', name: fromTask.title, title: fromTask.title, notes: fromTask.notes, subs: fromTask.subs.map(s => s.t), priority: fromTask.priority, project: proj(fromTask.projectId)?.name || '' } : { emoji: '📋', name: '', title: '', notes: '', subs: [], priority: 4, project: '' };
   openSheet(sheetHead(id ? 'Edit template' : 'New template', 'Save', 'tpSave') + `
-  <div class="grid2" style="grid-template-columns:90px 1fr"><div class="field" style="margin:0"><label for="tpEmo">Emoji</label><input class="inp" id="tpEmo" value="${esc(t.emoji)}" maxlength="8" style="font-size:22px;text-align:center"></div><div class="field" style="margin:0"><label for="tpName">Template name</label><input class="inp" id="tpName" value="${esc(t.name)}" placeholder="Lead"></div></div>
-  <div class="field"><label for="tpTitle">Task title starts with</label><input class="inp" id="tpTitle" value="${esc(t.title)}" placeholder="Lead: "></div>
+  <div class="grid2" style="grid-template-columns:90px 1fr"><div class="field" style="margin:0"><label for="tpEmo">Emoji</label><input class="inp" id="tpEmo" value="${esc(t.emoji)}" maxlength="8" style="font-size:22px;text-align:center"></div><div class="field" style="margin:0"><label for="tpName">Template name</label><textarea class="inp one" rows="1" id="tpName" placeholder="Lead" data-form-type="other">${esc(t.name)}</textarea></div></div>
+  <div class="field"><label for="tpTitle">Task title starts with</label><textarea class="inp one" rows="1" id="tpTitle" placeholder="Lead: " data-form-type="other">${esc(t.title)}</textarea></div>
   <div class="field"><span class="flabel">Notes (your fields)</span><div style="border:1px solid var(--line);border-radius:12px;padding:0 10px">${toolbarHtml()}<div class="notes" id="tpNotes" contenteditable="true" data-ph="Contact Name - &#10;Designation - " style="min-height:180px">${cleanHtml(t.notes)}</div></div></div>
   <div class="field"><label for="tpSubs">Steps, one per line</label><textarea class="inp" id="tpSubs" placeholder="Schedule demo&#10;Send commercials&#10;Follow up">${esc(t.subs.join('\n'))}</textarea></div>
   <div class="grid2"><div class="field" style="margin:0"><label for="tpProj">Project</label><select class="inp" id="tpProj"><option value="">None</option>${S.projects.map(p => `<option${p.name === t.project ? ' selected' : ''}>${esc(p.name)}</option>`).join('')}</select></div><div class="field" style="margin:0"><label for="tpPri">Priority</label><select class="inp" id="tpPri">${[1, 2, 3, 4].map(p => `<option value="${p}"${t.priority === p ? ' selected' : ''}>${p === 4 ? 'None' : 'P' + p}</option>`).join('')}</select></div></div>
@@ -2415,14 +2419,48 @@ function closeSheet(silent, fromPop) { // silent = saved, do not run cancel hand
   const f = sheetClose; sheetClose = null; if (!silent && f) f();
 }
 $('#scrim').onclick = () => closeSheet();
+/* One-line text boxes (textareas, so Android's password bar stays away): Enter never makes a new line */
+document.addEventListener('keydown', e => { const t = e.target; if (t && t.tagName === 'TEXTAREA' && t.classList.contains('one') && e.key === 'Enter') { e.preventDefault(); const ok = t.closest('#sheet')?.querySelector('.shead .ok'); if (ok && !ok.disabled && t.id !== 'sIn') ok.click(); else t.blur(); } });
+document.addEventListener('input', e => { const t = e.target; if (t && t.tagName === 'TEXTAREA' && t.classList.contains('one') && /\n/.test(t.value)) { t.value = t.value.replace(/\n/g, ' ').trim(); t.dispatchEvent(new Event('input')); } });
+/* ================= keyboard shortcuts (your own keys, Settings > Keyboard shortcuts) ================= */
+const KEY_ACTS = [
+  ['add', 'New task', 'Ctrl+Space', () => quickAdd()], ['search', 'Search', 'Ctrl+K', () => searchSheet()],
+  ['today', 'Today', 'Alt+1', () => go('today')], ['inbox', 'Inbox', 'Alt+2', () => go('inbox')], ['week', 'Week board', 'Alt+3', () => go('week')],
+  ['calendar', 'Calendar', 'Alt+4', () => go('calendar')], ['upcoming', 'Next 7 days', 'Alt+5', () => go('upcoming')], ['habits', 'Habits', 'Alt+6', () => go('habits')],
+  ['review', 'Day review', 'Alt+7', () => go('review/today')], ['focus', 'Focus timer', 'Alt+8', () => go('focus')], ['log', 'Log activity', 'Alt+L', () => nowPick()],
+  ['settings', 'Settings', 'Alt+9', () => go('settings')]];
+const keyMap = () => { const m = {}; KEY_ACTS.forEach(([k, , d]) => m[k] = d); return { ...m, ...(S.settings.keys || {}) }; };
+function comboOf(e) {
+  if (['Control', 'Alt', 'Shift', 'Meta', 'AltGraph', 'CapsLock'].includes(e.key)) return '';
+  const c = e.code || ''; let k = c === 'Space' ? 'Space' : /^Key[A-Z]$/.test(c) ? c.slice(3) : /^Digit\d$/.test(c) ? c.slice(5) : /^Numpad\d$/.test(c) ? c.slice(6) : /^F\d{1,2}$/.test(c) ? c : e.key.length === 1 ? e.key.toUpperCase() : e.key;
+  if (k === ' ') k = 'Space';
+  return [e.ctrlKey && 'Ctrl', e.altKey && 'Alt', e.shiftKey && 'Shift', e.metaKey && 'Win', k].filter(Boolean).join('+');
+}
+let keyRec = null;
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { if ($('#viewer').classList.contains('on')) $('#vClose').click(); else if ($('#sheet').classList.contains('on')) closeSheet(); else closePage(); }
+  if (keyRec) { e.preventDefault(); e.stopPropagation(); const k = keyRec, cb = comboOf(e); if (e.key === 'Escape') { keyRec = null; render(); return; } if (!cb) return; const km = { ...(S.settings.keys || {}) }; if (e.key === 'Backspace' || e.key === 'Delete') km[k] = ''; else { const all = keyMap(); Object.keys(all).forEach(o => { if (o !== k && all[o] === cb) km[o] = ''; }); km[k] = cb; } S.settings.keys = km; keyRec = null; save(); render(); return; }
+  if (e.key === 'Escape') { const pk = $('#qaPick'); if (pk && !pk.hidden) return; if ($('#viewer').classList.contains('on')) $('#vClose').click(); else if ($('#sheet').classList.contains('on')) closeSheet(); else closePage(); return; }
   const typing = /input|textarea|select/i.test(document.activeElement.tagName) || document.activeElement.isContentEditable;
-  if (!typing && !e.metaKey && !e.ctrlKey && !$('#sheet').classList.contains('on')) {
+  const cb = comboOf(e); if (!cb) return; const plain = !/Ctrl|Alt|Win/.test(cb);
+  const km = keyMap(); const hit = KEY_ACTS.find(([k]) => km[k] && km[k] === cb);
+  if (hit) {
+    if (plain && typing) return;
+    if ($('#sheet').classList.contains('on')) { if (hit[0] === 'add' && $('#qaIn')) { e.preventDefault(); return; } closeSheet(true); }
+    if ($('#page').classList.contains('on') && hit[0] !== 'add' && hit[0] !== 'search') closePage();
+    e.preventDefault(); hit[3](); return;
+  }
+  if (!typing && !e.metaKey && !e.ctrlKey && !e.altKey && !$('#sheet').classList.contains('on')) {
     if (e.key.toLowerCase() === 'n') { e.preventDefault(); quickAdd(); }
     if (e.key === '/') { e.preventDefault(); searchSheet(); }
   }
-});
+}, true);
+function keysPanel() {
+  const km = keyMap();
+  return `<div class="hint" style="margin:0 0 10px;line-height:1.5"><b>From Outlook or any app:</b> pin Sankalp to the taskbar as the first icon. Then <kbd>Win</kbd> + <kbd>1</kbd> brings it up from anywhere, and <kbd>${esc(km.add || 'Ctrl+Space')}</kbd> opens New task.</div>
+  ${KEY_ACTS.map(([k, l]) => `<div class="setrow"><span class="l"><b>${l}</b></span><button type="button" class="keyb${keyRec === k ? ' rec' : ''}" data-act="keyrec" data-k="${k}">${keyRec === k ? 'Press keys…' : km[k] ? km[k].split('+').map(x => `<kbd>${esc(x)}</kbd>`).join('+') : '<span class="muted">Not set</span>'}</button></div>`).join('')}
+  <p class="sub" style="margin:8px 0 0">Click a shortcut, then press the keys you want. Backspace clears it, Esc cancels. <b>N</b> and <b>/</b> also work for New task and Search.</p>
+  <div class="btnrow" style="margin-top:10px"><button class="btn sec" data-act="keyreset">Reset to defaults</button></div>`;
+}
 
 /* Windows: a desktop shortcut with a Ctrl+Alt key opens a small add box from any app. */
 const QK_URL = () => location.origin + location.pathname + '?quick=1';
@@ -2725,7 +2763,7 @@ function pickProject(t) {
   $$('.menu button').forEach(b => b.onclick = () => { t.projectId = b.dataset.p || null; applyAndRefresh(t); });
 }
 function pickTags(t) {
-  openSheet(sheetHead('Tags', 'Done', 'gOk') + `<div class="field"><label for="gIn">Tags, separated by commas</label><input class="inp" id="gIn" value="${esc(t.tags.join(', '))}" placeholder="calls, errands"></div>`);
+  openSheet(sheetHead('Tags', 'Done', 'gOk') + `<div class="field"><label for="gIn">Tags, separated by commas</label><textarea class="inp one" rows="1" id="gIn" placeholder="calls, errands" data-form-type="other">${esc(t.tags.join(', '))}</textarea></div>`);
   $('#gOk').onclick = () => { t.tags = $('#gIn').value.split(',').map(x => x.trim().replace(/^@/, '').toLowerCase()).filter(Boolean); applyAndRefresh(t); };
   setTimeout(() => $('#gIn').focus(), 250);
 }
@@ -2766,11 +2804,11 @@ function subFromText(v) {
 }
 function subRemind(t, c) {
   const td = today(); const [d0, t0] = (c.at || '').split('T');
-  openSheet(sheetHead('Subtask', 'Done', 'srOk') + `<div class="field"><label for="srN">Subtask</label><input class="inp" id="srN" value="${esc(c.t)}" autocomplete="off"></div>
+  openSheet(sheetHead('Subtask', 'Done', 'srOk') + `<div class="field"><label for="srN">Subtask</label><textarea class="inp one" rows="1" id="srN" autocomplete="off" data-form-type="other">${esc(c.t)}</textarea></div>
   <div class="field"><label>Priority</label><div class="seg" id="srP">${[1, 2, 3, 4].map(p => `<button type="button" data-p="${p}" class="${(c.p || 4) === p ? 'on' : ''}">${p === 4 ? 'None' : 'P' + p}</button>`).join('')}</div></div>
   <div class="optchips" id="srQ">${[['30', 'In 30 min'], ['60', 'In 1 hour'], ['eve', 'Today 6 PM'], ['tm', 'Tomorrow 9 AM']].map(([k, l]) => `<button type="button" data-q="${k}">${l}</button>`).join('')}</div>
   <div class="grid2" style="margin-top:12px"><div class="field" style="margin:0"><label for="srD">Date</label><input class="inp" type="date" id="srD" value="${d0 || c.due || ''}"></div><div class="field" style="margin:0"><label for="srT">Time (reminds you)</label><input class="inp" type="time" id="srT" value="${t0 || ''}"></div></div>
-  <div class="field" style="margin-top:12px"><label for="srG">Tags</label><input class="inp" id="srG" value="${esc((c.tags || []).join(', '))}" placeholder="call, email" autocomplete="off"></div>
+  <div class="field" style="margin-top:12px"><label for="srG">Tags</label><textarea class="inp one" rows="1" id="srG" placeholder="call, email" autocomplete="off" data-form-type="other">${esc((c.tags || []).join(', '))}</textarea></div>
   ${c.at || c.due ? `<div class="btnrow"><button class="btn sec" id="srDel">${I.x}Clear date and time</button></div>` : ''}`);
   let pr = c.p || 4;
   $$('#srP button').forEach(b => b.onclick = () => { pr = +b.dataset.p; $$('#srP button').forEach(x => x.classList.toggle('on', x === b)); });
@@ -2814,7 +2852,7 @@ function impactPicker() {
   const c = $('#impClear'); if (c) c.onclick = () => { delete dayRec(td).impactId; save(); closeSheet(true); render(); };
 }
 function searchSheet() {
-  openSheet(`<div class="shead"><button class="cx" data-close>Cancel</button><span class="ttl">Search</span><span></span></div><label class="srch">${I.search}<input id="sIn" type="search" placeholder="Tasks, notes, projects, habits, people" aria-label="Search"></label><div class="sres" id="sRes"><p class="hint">Search titles, notes, subtasks, tags, projects, habits and birthdays.</p></div>`);
+  openSheet(`<div class="shead"><button class="cx" data-close>Cancel</button><span class="ttl">Search</span><span></span></div><label class="srch">${I.search}<textarea id="sIn" class="one" rows="1" placeholder="Tasks, notes, projects, habits, people" aria-label="Search" autocomplete="off" data-form-type="other" enterkeyhint="search"></textarea></label><div class="sres" id="sRes"><p class="hint">Search titles, notes, subtasks, tags, projects, habits and birthdays.</p></div>`);
   const inp = $('#sIn');
   inp.oninput = () => {
     const q = inp.value.trim().toLowerCase(); if (!q) { $('#sRes').innerHTML = '<p class="hint">Search titles, notes, subtasks, tags, projects, habits and birthdays.</p>'; return; }
@@ -3264,7 +3302,7 @@ document.addEventListener('click', e => {
     ics: importICS, clearics: () => { Object.keys(S.meetLog).forEach(k => { if (S.meetLog[k].src === 'ics') delete S.meetLog[k]; }); save(); render(); toast('Imported meetings cleared'); },
     import: () => importSheet(), newtpl: () => tplForm(), edittpl: () => tplForm(id), usetpl: () => quickAdd({ tpl: S.templates.find(x => x.id === id) }),
     gconnect: () => gConnect(true),
-    qkdl: () => hotkeyFile(),
+    qkdl: () => hotkeyFile(), keyrec: () => { keyRec = keyRec === b.dataset.k ? null : b.dataset.k; render(); }, keyreset: () => { S.settings.keys = {}; keyRec = null; save(); render(); toast('Shortcuts reset'); },
     hidebanner: () => { S.settings['hide_' + b.dataset.k] = true; save(); render(); }, gconnectid: () => { const v = $('#gcid')?.value.trim(); if (v) { S.settings.gcid = v; save(); } gConnect(true, true); }, gref: () => gConnect(false), gsync: () => gSync(true), gout: gDisconnect,
     fbin: fbSignIn, fbout: () => { firebase.auth().signOut(); toast('Signed out. Data stays on this device.'); },
     export: exportData, restore: restoreData,
