@@ -610,6 +610,35 @@ body.kb .tabbar,body.kb .fab{display:none!important}
 #tl .tlh{cursor:pointer}
 .tlghost{position:absolute;left:58px;right:14px;height:24px;border-radius:8px;border:1.5px dashed color-mix(in srgb,var(--accent) 60%,transparent);color:var(--accent-text,var(--accent));font-size:12px;font-weight:700;padding:3px 8px;pointer-events:none;background:color-mix(in srgb,var(--accent) 8%,transparent)}
 .tlghost[hidden]{display:none}
+.areab{display:flex;align-items:center;justify-content:space-between;width:calc(100% - 34px);background:none;border:0;cursor:pointer;font-family:var(--fd);font-size:20px;font-weight:700;text-align:left;color:inherit;padding:0}
+.side .areab{width:calc(100% - 16px);font-size:16px}
+.areab .chev{display:flex;transition:transform .15s;transform:rotate(90deg);opacity:.6}.areab .chev svg{width:14px;height:14px}.areab .chev.shut{transform:none}
+.calsw{max-width:260px;margin:4px 0 6px}.calsw a{flex:1;min-width:0;height:36px;padding:0 10px;border-radius:9px;font-size:13.5px;font-weight:600;color:var(--muted);text-decoration:none;display:flex;align-items:center;justify-content:center}
+.calsw a.on{background:var(--card);color:var(--ink);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+#main.slideout{transform:translateX(-24px);opacity:.6;transition:transform .12s,opacity .12s}
+/* life list */
+.lstat{display:flex;gap:8px;overflow-x:auto;padding:4px 24px 2px;scrollbar-width:none}
+.lstat div{flex:1;min-width:76px;background:var(--surface);border-radius:14px;padding:10px 12px}
+.lstat b{display:block;font-size:22px;font-family:var(--fd,inherit)}.lstat span{font-size:12px;color:var(--muted);font-weight:600}
+.lquick{display:flex;gap:8px;margin:12px 24px 4px}
+.lquick textarea{flex:1}
+.lcat{margin:18px 24px 6px;font-size:13px;font-weight:800;color:var(--muted);letter-spacing:.02em;display:flex;gap:8px;align-items:center}
+.lcard{display:block;width:calc(100% - 48px);margin:0 24px 8px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;cursor:pointer;color:var(--ink);font:inherit}
+.lcard:hover{border-color:var(--ring)}
+.lcard .lt{display:flex;gap:10px;align-items:flex-start}.lcard .lt b{flex:1;font-size:15.5px;line-height:1.35}
+.lcard .ls{font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:10px;white-space:nowrap}
+.ls.dream{background:color-mix(in srgb,#8B5CF6 16%,var(--bg));color:#8B5CF6}.ls.plan{background:color-mix(in srgb,#2F7BEA 16%,var(--bg));color:#2F7BEA}.ls.doing{background:color-mix(in srgb,#E8930C 18%,var(--bg));color:#C77A06}.ls.done{background:color-mix(in srgb,#1F8A3B 16%,var(--bg));color:#1F8A3B}
+.lcard .lm{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:6px;font-size:12.5px;color:var(--muted);font-weight:600}
+.lcard .lnext{margin-top:8px;font-size:13px;color:var(--soft)}.lcard .lnext b{color:var(--accent-text,var(--accent))}
+.lbar{height:6px;border-radius:3px;background:var(--surface);margin-top:8px;overflow:hidden}.lbar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.lcard.stale{border-style:dashed}
+.gsec{margin-top:14px}.gsec>label,.gsec>.flabel{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.gstep{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.gstep input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent);flex:none}
+.gstep span{flex:1;font-size:14.5px}.gstep.d span{text-decoration:line-through;opacity:.55}
+.gstep small{display:block;color:var(--muted);font-size:12px;font-weight:600}
+.gmoney{background:var(--surface);border-radius:14px;padding:12px 14px;margin-top:8px;font-size:14px;line-height:1.5}
+.gmoney b{font-size:18px}
 .mcal2 button i.t{background:var(--accent)!important}
 .mcal2 button i+i.t{margin-left:3px}
 .mcal2 button i:has(+i.t){margin-left:-7px}
@@ -1073,7 +1102,7 @@ function seed() {
   const P = (name, area, color, emoji) => ({ id: uid(), name, area, color, emoji });
   const s = {
     v: 2, tasks: [], projects: [P('Sales', 'Work', '#F2A33A', '💼'), P('Client demos', 'Work', '#14B8A6', '🎯'), P('Home', 'Personal', '#C2367A', '🏠'), P('Health', 'Personal', '#4D9A2A', '💪')],
-    logs: [], cur: null, phone: {}, habits: [], habitSections: HSECTIONS.map(x => ({ ...x })), focus: [], plan: {}, meetLog: {}, fired: {}, days: {}, dates: [], templates: defaultTemplates(),
+    logs: [], cur: null, phone: {}, habits: [], habitSections: HSECTIONS.map(x => ({ ...x })), focus: [], plan: {}, meetLog: {}, fired: {}, days: {}, dates: [], goals: [], templates: defaultTemplates(),
     timer: { mode: 'work', running: false, endAt: 0, left: 25 * 60, taskId: '' }, settings: { ...DEF_SETTINGS }
   };
   s.tasks.push(newTask({ title: 'Tap Add and type: Call mom kal 5pm p2, home' }));
@@ -1092,7 +1121,7 @@ function migrate(s) {
     s.v = 2;
   }
   s.logs ||= []; s.cur ??= null; s.phone ||= {}; s.pcal ??= null; s.fired ||= {}; s.meetLog ||= {}; s.plan ||= {}; s.focus ||= []; s.habits ||= []; s.days ||= {}; s.dates ||= [];
-  s.habitSections ||= HSECTIONS.map(x => ({ ...x })); s.templates ||= defaultTemplates();
+  s.habitSections ||= HSECTIONS.map(x => ({ ...x })); s.templates ||= defaultTemplates(); s.goals ||= [];
   s.timer ||= { mode: 'work', running: false, endAt: 0, left: 25 * 60, taskId: '' };
   s.settings = Object.assign({ ...DEF_SETTINGS }, s.settings || {});
   s.tasks.forEach(t => { t.subs ||= []; t.reminders ||= []; t.firedKeys ||= []; t.tags ||= []; t.imgs ||= []; if (!t.nh) { t.notes = textToHtml(t.notes || ''); t.nh = true; } });
@@ -1416,7 +1445,7 @@ function toast(msg, undo) {
 /* ================= routing ================= */
 const isWide = () => matchMedia('(min-width:900px)').matches;
 function route() { const h = location.hash.replace(/^#\/?/, ''); const [view, ...rest] = h.split('/'); return { view: view || 'today', arg: decodeURIComponent(rest.join('/')) }; }
-const TABS = ['today', 'week', 'calendar', 'habits', 'home'];
+const TABS = ['today', 'week', 'calendar', 'review', 'habits', 'home'];
 let popPending = 0;
 function go(h) { if (popPending) { setTimeout(() => go(h), 80); return; } if (location.hash === '#' + h) render(); else location.hash = '#' + h; }
 window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); try { if (!history.state) history.replaceState({ sk: 'app' }, ''); } catch (e) { } });
@@ -1463,6 +1492,7 @@ function listsNav(cur) {
   h += navItem('upcoming', I.cal, '#A78BFA', 'Next 7 days', n7 || '', cur === 'upcoming');
   h += navItem('someday', I.box, '#C9A66B', 'Someday', open().filter(t => t.someday).length || '', cur === 'someday');
   h += navItem('habits', I.drop, '#EC4899', 'Habits', hab ? hab + ' left' : '', cur === 'habits');
+  h += navItem('life', I.target, '#10B981', 'Life list', (S.goals || []).filter(g => g.status === 'doing').length ? (S.goals || []).filter(g => g.status === 'doing').length + ' active' : '', cur === 'life');
   h += navItem('dates', I.gift, '#FB7185', 'Birthdays and dates', nextD === 0 ? 'today' : nextD != null ? nextD + 'd' : '', cur === 'dates');
   h += navItem('templates', I.layers, '#8B5CF6', 'Templates', S.templates.length, cur === 'templates');
   h += navItem('focus', I.timer, '#F97316', 'Focus timer', S.timer.running ? 'running' : '', cur === 'focus');
@@ -1473,13 +1503,16 @@ function listsNav(cur) {
 }
 function renderTabs() {
   const v = route().view; const D = todayData();
-  const tb = [['today', I.star, 'Today', D.openCount], ['week', I.cols, 'Week'], ['calendar', I.grid, 'Calendar'], ['habits', I.drop, 'Habits'], ['home', I.menu, 'More']];
-  $('#tabbar').innerHTML = tb.map(([k, ic, l]) => `<a href="#${k}" class="${v === k || (k === 'home' && !TABS.includes(v)) ? 'on' : ''}" aria-current="${v === k ? 'page' : 'false'}"><i>${ic}</i>${l}</a>`).join('');
+  const tb = [['today', I.star, 'Today', D.openCount], ['calendar', I.grid, 'Calendar'], ['review/today', I.clock, 'Review'], ['habits', I.drop, 'Habits'], ['home', I.menu, 'More']];
+  const isOn = k => { const b = k.split('/')[0]; return v === b || (b === 'calendar' && v === 'week') || (b === 'home' && !TABS.includes(v)); };
+  $('#tabbar').innerHTML = tb.map(([k, ic, l]) => `<a href="#${k}" class="${isOn(k) ? 'on' : ''}" aria-current="${isOn(k) ? 'page' : 'false'}"><i>${ic}</i>${l}</a>`).join('');
 }
 function projectsNav(cur, arg) {
   let h = '';
   areas().forEach(a => {
-    h += `<div class="area">${esc(a)}</div>`;
+    const shut = (S.settings.shut || {})[a];
+    h += `<button type="button" class="area areab" data-act="areatog" data-a="${esc(a)}" aria-expanded="${!shut}"><span>${esc(a)}</span><i class="chev${shut ? ' shut' : ''}">${I.next}</i></button>`;
+    if (shut) return;
     S.projects.filter(p => p.area === a).forEach(p => {
       const n = S.tasks.filter(t => t.projectId === p.id && !t.done).length;
       h += `<a class="navi${cur === 'project' && arg === p.id ? ' on' : ''}" href="#project/${p.id}"><span class="pe">${p.emoji || `<i class="dot" style="width:10px;height:10px;border-radius:5px;background:${p.color}"></i>`}</span><span class="nm" style="font-weight:500">${esc(p.name)}</span><span class="c">${n || ''}</span></a>`;
@@ -1570,7 +1603,7 @@ function loadHtml() {
 
 /* ---------- week board (Sunsama-style) ---------- */
 function vWeek() {
-  const td = today(); let h = topbar(eyeBtn()) + `<div class="pad"><h1 class="title">Week</h1><p class="sub" style="margin:6px 0 10px">${isWide() ? 'Drag a card to another day, or onto an hour in the calendar to give it a time.' : 'Swipe across days. Swipe a card left to move it.'}</p></div><div class="board" id="board">`;
+  const td = today(); let h = topbar(eyeBtn()) + `<div class="pad">${calSwitch('week')}</div><div class="board" id="board">`;
   for (let i = 0; i < 7; i++) {
     const d = addDays(td, i), dd = pYmd(d); let ts = S.tasks.filter(t => t.date === d && !t.someday && (!t.orig || t.done));
     if (i === 0) ts = [...open().filter(t => t.date && t.date < td), ...ts];
@@ -1759,10 +1792,11 @@ function vDone() {
 
 /* ---------- calendar ---------- */
 let calMonth = null, calSel = null;
+const calSwitch = cur => `<div class="seg calsw" role="tablist" aria-label="Calendar view"><a href="#calendar" class="${cur === 'calendar' ? 'on' : ''}" role="tab" aria-selected="${cur === 'calendar'}">Month</a><a href="#week" class="${cur === 'week' ? 'on' : ''}" role="tab" aria-selected="${cur === 'week'}">Week</a></div>`;
 function vCalendar() {
   const td = today(); calSel ||= td; if (!calMonth) calMonth = td.slice(0, 7);
   const [y, m] = calMonth.split('-').map(Number); const first = new Date(y, m - 1, 1); const off = (first.getDay() + 6) % 7;
-  let h = topbar(eyeBtn()) + `<div class="calhead"><b>${MONSL[m - 1]} ${y}</b><div><button class="iconbtn" data-act="calnav" data-dir="-1" aria-label="Previous month">${I.back}</button><button class="pill ghost" data-act="caltoday" style="height:32px">Today</button><button class="iconbtn" data-act="calnav" data-dir="1" aria-label="Next month">${I.next}</button></div></div>`;
+  let h = topbar(eyeBtn()) + `<div class="pad" style="padding-bottom:0">${calSwitch('calendar')}</div><div class="calhead"><b>${MONSL[m - 1]} ${y}</b><div><button class="iconbtn" data-act="calnav" data-dir="-1" aria-label="Previous month">${I.back}</button><button class="pill ghost" data-act="caltoday" style="height:32px">Today</button><button class="iconbtn" data-act="calnav" data-dir="1" aria-label="Next month">${I.next}</button></div></div>`;
   if (S.pcal) h += `<a class="calsrc" href="#settings/gcal" style="display:block;text-decoration:none;margin:0 24px 8px">From your phone: ${esc(calShort().join(', ') || 'no calendars yet')} · updated ${fmtClock(S.pcal.at)}</a>`;
   else if (!S.settings.gOn) h += `<a class="gnote" href="#settings/gcal" style="text-decoration:none;margin-bottom:8px">${I.gcal}Connect Google Calendar to see your meetings here</a>`; else if (!gValid()) h += `<button class="gnote" data-act="gref" style="margin-bottom:8px">${I.gcal}Google Calendar needs a tap to refresh</button>`;
   h += `<div class="calgrid">${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(x => `<span class="wd">${x}</span>`).join('')}`;
@@ -2385,6 +2419,9 @@ function vSettings(arg) {
   Object.entries(THEMES).forEach(([n, t]) => { h += `<button class="th${st.theme === n ? ' on' : ''}" data-act="theme" data-t="${n}" aria-pressed="${st.theme === n}"><span class="pv" style="background:${t.bg};border:1px solid ${t.line}"><span style="display:flex;justify-content:space-between;align-items:center"><b style="font-family:var(--fd);font-size:22px;color:${t.ink}">${new Date().getDate()}</b><i style="width:22px;height:22px;border-radius:11px;background:${t.accent}"></i></span><i style="display:block;height:10px;border-radius:4px;background:${t.surface};position:relative"><i style="position:absolute;left:20%;width:18%;top:2px;bottom:2px;border-radius:2px;background:${t.meet}"></i><i style="position:absolute;left:48%;width:14%;top:2px;bottom:2px;border-radius:2px;background:${t.accent}"></i></i><i style="display:flex;gap:6px;align-items:center"><i style="width:10px;height:10px;border-radius:5px;background:${t.accent}"></i><i style="flex:1;height:6px;border-radius:3px;background:${t.line}"></i></i></span><span class="nm"><span>${n}</span>${st.theme === n ? I.check : ''}</span></button>`; });
   h += `</div><div class="field"><span class="flabel">Accent colour</span><div class="swatches">${ACCENTS.map(c => `<button data-act="accent" data-c="${c}" class="${st.accent === c ? 'on' : ''}" style="background:${c || 'conic-gradient(#F2A33A,#0F9D8A,#5B5BD6,#DB2777,#F2A33A)'}" aria-label="${c ? 'Accent ' + c : 'Theme default'}"></button>`).join('')}</div><span class="hint">The first one keeps the theme's own colour.</span></div>
   <div class="field"><span class="flabel">Font style</span><div class="fonts">${Object.entries(FONTS).map(([n, f]) => `<button class="fontopt${st.font === n ? ' on' : ''}" data-act="font" data-f="${n}"><b style="font-family:${f.d},system-ui">${n}</b><span>${f.note}</span></button>`).join('')}</div></div></div>`;
+  h += `<div class="sechead" id="swipes"><h2 class="sec">Swipe a task</h2></div><div class="setsec">
+  <div class="setrow"><span class="l"><b>Swipe right →</b></span><select class="inp" data-set="swR" style="width:auto;min-width:170px">${SWIPE_ACTS.map(([k, l]) => `<option value="${k}"${(st.swR || 'done') === k ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
+  <div class="setrow"><span class="l"><b>← Swipe left</b></span><select class="inp" data-set="swL" style="width:auto;min-width:170px">${SWIPE_ACTS.map(([k, l]) => `<option value="${k}"${(st.swL || 'move') === k ? ' selected' : ''}>${l}</option>`).join('')}</select></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Today and reminders</h2></div><div class="setsec">
   <div class="setrow"><span class="l"><b>Morning plan</b><span>Summary of the day and a nudge to set your objective</span></span><input class="inp" type="time" data-set="morning" value="${st.morning}" style="width:130px"></div>
   <div class="setrow"><span class="l"><b>Evening wrap-up</b><span>What got done, move the rest, set tomorrow's focus</span></span><input class="inp" type="time" data-set="shutdown" value="${st.shutdown}" style="width:130px"></div>
@@ -2404,7 +2441,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 3.9.8</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.0</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -2460,6 +2497,108 @@ $('#scrim').onclick = () => closeSheet();
 /* One-line text boxes (textareas, so Android's password bar stays away): Enter never makes a new line */
 document.addEventListener('keydown', e => { const t = e.target; if (t && t.tagName === 'TEXTAREA' && t.classList.contains('one') && e.key === 'Enter') { e.preventDefault(); const ok = t.closest('#sheet')?.querySelector('.shead .ok'); if (ok && !ok.disabled && t.id !== 'sIn') ok.click(); else t.blur(); } });
 document.addEventListener('input', e => { const t = e.target; if (t && t.tagName === 'TEXTAREA' && t.classList.contains('one') && /\n/.test(t.value)) { t.value = t.value.replace(/\n/g, ' ').trim(); t.dispatchEvent(new Event('input')); } });
+/* ================= life list ================= */
+const LCATS = [['travel', '✈️', 'Travel'], ['spirit', '🙏', 'Spiritual'], ['family', '❤️', 'Family'], ['money', '💰', 'Money'], ['health', '💪', 'Health'], ['learn', '📚', 'Learning'], ['career', '💼', 'Career'], ['home', '🏠', 'Home'], ['give', '🤲', 'Giving back'], ['fun', '✨', 'Experiences']];
+const LSTAT = [['dream', 'Dream'], ['plan', 'Planning'], ['doing', 'Doing'], ['done', 'Achieved']];
+const lcat = k => LCATS.find(c => c[0] === k) || LCATS[LCATS.length - 1];
+let lifeFilter = 'all';
+function lifeGuess(text) {
+  const t = text.toLowerCase(); const g = { cat: 'fun', amt: null, target: '' };
+  if (/yatra|dham|temple|mandir|vrindavan|tirth|pilgrim|darshan|kedar|badri|kashi|puja|meditat|spiritual|satsang/.test(t)) g.cat = 'spirit';
+  else if (/\b(save|saving|invest|sip|mutual fund|fd|loan|emi|debt|corpus|lakh|crore|₹|rs\.?|inr|earn|income)\b/.test(t)) g.cat = 'money';
+  else if (/trip|travel|visit|go to|tour|kashmir|goa|abroad|europe|holiday|vacation|trek|beach|ladakh/.test(t)) g.cat = 'travel';
+  else if (/weight|kg|run|marathon|gym|fit|yoga|health|walk|diet|sugar|sleep/.test(t)) g.cat = 'health';
+  else if (/learn|course|read|book|certif|language|degree|skill|study/.test(t)) g.cat = 'learn';
+  else if (/promot|business|career|job|client|revenue|startup|company/.test(t)) g.cat = 'career';
+  else if (/house|home|flat|car|renovat|interior|furniture/.test(t)) g.cat = 'home';
+  else if (/donat|charity|help|teach|volunteer|seva|give/.test(t)) g.cat = 'give';
+  else if (/family|kids|children|parents|wife|husband|son|daughter|mom|dad|anniversary/.test(t)) g.cat = 'family';
+  if (/family|parents|kids|children|wife|husband/.test(t) && g.cat === 'fun') g.cat = 'family';
+  const m = t.match(/(?:₹|rs\.?\s*|inr\s*)?(\d+(?:[.,]\d+)?)\s*(k|thousand|l|lakh|lakhs|lac|cr|crore)?\b/);
+  if (m && (g.cat === 'money' || /₹|rs|lakh|k\b/.test(t))) { let v = parseFloat(m[1].replace(/,/g, '')); const u = (m[2] || '').toLowerCase(); v *= u === 'k' || u === 'thousand' ? 1e3 : /^l/.test(u) ? 1e5 : /^cr/.test(u) ? 1e7 : 1; if (v >= 100) { g.amt = Math.round(v); if (g.cat === 'fun') g.cat = 'money'; } }
+  let mm;
+  if ((mm = t.match(/\bin\s+(\d+)\s*(months?|years?|yrs?)\b/))) { const d = new Date(); if (/^m/.test(mm[2])) d.setMonth(d.getMonth() + +mm[1]); else d.setFullYear(d.getFullYear() + +mm[1]); g.target = ymd(d); }
+  else if (/\bthis year\b/.test(t)) g.target = new Date().getFullYear() + '-12-31';
+  else if (/\bnext year\b/.test(t)) g.target = (new Date().getFullYear() + 1) + '-12-31';
+  else if ((mm = t.match(new RegExp('\\bby\\s+(' + DATEPAT + ')', 'i')))) { let d = dateFrom(mm[1]); if (d && new RegExp('^' + MONRE + "\\s+(\\d{4}|'\\d{2})$", 'i').test(mm[1].trim())) { const x = pYmd(d); d = ymd(new Date(x.getFullYear(), x.getMonth() + 1, 0)); } if (d) g.target = d; }
+  else if ((mm = t.match(/\bby\s+(20\d\d)\b/))) g.target = mm[1] + '-12-31';
+  return g;
+}
+const inr = n => '₹' + Math.round(n).toLocaleString('en-IN');
+const stepDone = st => !!(st.d || (st.taskId && getTask(st.taskId)?.done));
+function monthsLeft(target) { if (!target) return null; const a = new Date(), b = pYmd(target); return Math.max(0, (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth()) + (b.getDate() >= a.getDate() ? 0 : -1)); }
+function goalWhen(g) {
+  if (g.status === 'done') return g.doneAt ? 'Achieved ' + fmtDate(ymd(new Date(g.doneAt))) : 'Achieved';
+  if (!g.target) return 'Someday';
+  const d = dayDiff(today(), g.target), ml = monthsLeft(g.target), dt = pYmd(g.target);
+  const by = `by ${MONS[dt.getMonth()]} ${dt.getFullYear()}`;
+  return d < 0 ? by + ' · overdue' : d < 45 ? `${by} · ${d} days left` : ml < 24 ? `${by} · ${ml} months left` : `${by} · ${Math.floor(ml / 12)}y ${ml % 12}m left`;
+}
+function goalMoney(g) {
+  if (!g.amt) return null; const saved = g.saved || 0, left = Math.max(0, g.amt - saved), ml = monthsLeft(g.target);
+  return { saved, left, pct: Math.min(100, Math.round(saved / g.amt * 100)), per: g.target && ml != null && left > 0 ? Math.ceil(left / Math.max(1, ml)) : null };
+}
+function lifeCard(g) {
+  const c = lcat(g.cat), steps = g.steps || [], sd = steps.filter(stepDone).length, mon = goalMoney(g);
+  const next = steps.find(st => !stepDone(st)); const stale = (g.status === 'plan' || g.status === 'doing') && Date.now() - (g.touched || g.createdAt || 0) > 30 * 864e5;
+  const pct = mon ? mon.pct : steps.length ? Math.round(sd / steps.length * 100) : null;
+  return `<button class="lcard${stale ? ' stale' : ''}" data-act="lifeopen" data-id="${g.id}"><div class="lt"><span style="font-size:20px">${c[1]}</span><b>${esc(g.title)}</b><span class="ls ${g.status}">${LSTAT.find(x => x[0] === g.status)[1]}</span></div>
+  <div class="lm"><span>${esc(goalWhen(g))}</span>${mon ? `<span>${inr(mon.saved)} of ${inr(g.amt)}${mon.per ? ` · save ${inr(mon.per)}/month` : ''}</span>` : ''}${steps.length ? `<span>${sd}/${steps.length} steps</span>` : ''}${stale ? '<span style="color:var(--danger)">Not touched for a month</span>' : ''}</div>
+  ${pct != null && g.status !== 'dream' ? `<div class="lbar"><i style="width:${g.status === 'done' ? 100 : pct}%"></i></div>` : ''}
+  ${next && g.status !== 'done' ? `<div class="lnext"><b>Next:</b> ${esc(next.t)}</div>` : !steps.length && g.status !== 'done' && g.status !== 'dream' ? `<div class="lnext"><b>Next:</b> add the first small step</div>` : ''}</button>`;
+}
+function vLife() {
+  const G = S.goals || []; const cnt = k => G.filter(g => g.status === k).length;
+  let h = topbar(`<button class="iconbtn" data-act="lifenew" aria-label="Add to life list">${I.plus}</button>`) + `<div class="pad"><h1 class="title">Life list</h1></div>`;
+  h += `<div class="lstat">${LSTAT.map(([k, l]) => `<div><b>${cnt(k)}</b><span>${l}</span></div>`).join('')}</div>`;
+  h += `<div class="lquick"><textarea class="inp one" rows="1" id="lifeIn" placeholder="Something you want to do in life" autocomplete="off" data-form-type="other"></textarea><button class="btn" id="lifeAdd">Add</button></div>`;
+  if (!G.length) return h + `<div class="empty">Your life list is empty.</div>`;
+  h += `<div class="filters optchips" style="padding:8px 24px 0">${[['all', 'All'], ['active', 'Active'], ['dream', 'Dreams'], ['done', 'Achieved']].map(([k, l]) => `<button class="${lifeFilter === k ? 'on' : ''}" data-act="lifefilter" data-f="${k}">${l}</button>`).join('')}</div>`;
+  if (cnt('doing') > 3) h += `<p class="sub" style="margin:10px 24px 0">${cnt('doing')} goals in Doing. Three at a time is easier to finish.</p>`;
+  const shown = G.filter(g => lifeFilter === 'all' ? true : lifeFilter === 'active' ? (g.status === 'plan' || g.status === 'doing') : g.status === lifeFilter);
+  const ord = { doing: 0, plan: 1, dream: 2, done: 3 };
+  LCATS.forEach(([k, e, l]) => { const list = shown.filter(g => (g.cat || 'fun') === k).sort((a, b) => ord[a.status] - ord[b.status] || (a.target || '9') .localeCompare(b.target || '9')); if (!list.length) return; h += `<div class="lcat">${e} ${l} <span style="font-weight:600">${list.length}</span></div>` + list.map(lifeCard).join(''); });
+  if (!shown.length) h += `<div class="empty">Nothing here.</div>`;
+  return h + '<div style="height:24px"></div>';
+}
+function addGoalFromText(v) {
+  const t = v.replace(/^\s*(i\s+(want|wish|would like|need)\s+to|i\s+will|to)\s+/i, '').trim(); if (!t) return null;
+  const gs = lifeGuess(v); const g = { id: uid(), title: t.charAt(0).toUpperCase() + t.slice(1), cat: gs.cat, status: 'dream', target: gs.target, why: '', amt: gs.amt, saved: 0, steps: [], memory: '', createdAt: Date.now(), touched: Date.now() };
+  (S.goals ||= []).push(g); save(); return g;
+}
+function goalSheet(id) {
+  const ex = id ? (S.goals || []).find(g => g.id === id) : null; if (id && !ex) return;
+  const g = ex ? JSON.parse(JSON.stringify(ex)) : { id: uid(), title: '', cat: 'fun', status: 'dream', target: '', why: '', amt: null, saved: 0, steps: [], memory: '', createdAt: Date.now() };
+  const draw = () => {
+    const mon = goalMoney(g);
+    openSheet(sheetHead(ex ? 'Life goal' : 'Add to life list', 'Done', 'gOk') + `
+    <div class="field"><label for="gT">What you want</label><textarea class="inp one" rows="1" id="gT" autocomplete="off" data-form-type="other">${esc(g.title)}</textarea></div>
+    <div class="gsec"><span class="flabel">Area of life</span><div class="optchips" id="gCat">${LCATS.map(([k, e, l]) => `<button type="button" data-k="${k}" class="${g.cat === k ? 'on' : ''}">${e} ${l}</button>`).join('')}</div></div>
+    <div class="gsec"><span class="flabel">Where it stands</span><div class="seg" id="gSt">${LSTAT.map(([k, l]) => `<button type="button" data-k="${k}" class="${g.status === k ? 'on' : ''}">${l}</button>`).join('')}</div></div>
+    <div class="gsec"><label for="gD">Target date</label><div class="optchips" id="gQ">${[['y', 'This year'], ['6', 'In 6 months'], ['12', 'In 1 year'], ['36', 'In 3 years'], ['', 'Someday']].map(([k, l]) => `<button type="button" data-q="${k}">${l}</button>`).join('')}</div><input class="inp" type="date" id="gD" value="${g.target || ''}" style="margin-top:8px"></div>
+    <div class="gsec"><label for="gW">Why it matters to you</label><textarea class="inp" id="gW" style="min-height:64px">${esc(g.why || '')}</textarea></div>
+    <div class="gsec"><span class="flabel">Money needed (optional)</span><div class="grid2"><div class="field" style="margin:0"><label for="gA">Target ₹</label><input class="inp" type="number" inputmode="numeric" id="gA" value="${g.amt || ''}" min="0"></div><div class="field" style="margin:0"><label for="gS">Saved so far ₹</label><input class="inp" type="number" inputmode="numeric" id="gS" value="${g.saved || ''}" min="0"></div></div>
+    ${mon ? `<div class="gmoney"><b>${mon.pct}%</b> there · ${inr(mon.left)} to go${mon.per ? `<br>Put aside <b>${inr(mon.per)}</b> a month to reach it ${g.target ? 'by ' + fmtDate(g.target) : ''}.` : g.target ? '' : '<br>Add a target date to see how much to put aside each month.'}</div><div class="optchips" style="margin-top:8px">${[1000, 5000, 10000].map(v => `<button type="button" data-add="${v}">+ ${inr(v)} saved</button>`).join('')}</div>` : ''}</div>
+    <div class="gsec"><span class="flabel">Steps to get there</span><div id="gSteps">${(g.steps || []).map((st, i) => { const tk = st.taskId && getTask(st.taskId); return `<div class="gstep${stepDone(st) ? ' d' : ''}"><input type="checkbox" data-i="${i}"${stepDone(st) ? ' checked' : ''} aria-label="Step done"><span>${esc(st.t)}${tk ? `<small>Task${tk.date ? ' · ' + fmtDate(tk.date) : ''}${tk.done ? ' · done' : ''}</small>` : ''}</span>${!tk && !stepDone(st) ? `<button type="button" class="pill ghost" data-task="${i}">Make it a task</button>` : ''}<button type="button" class="iconbtn" data-rm="${i}" aria-label="Remove step">${I.x}</button></div>`; }).join('')}</div>
+    <div class="lquick" style="margin:8px 0 0"><textarea class="inp one" rows="1" id="gNew" placeholder="Add a small step" autocomplete="off" data-form-type="other"></textarea><button type="button" class="btn sec" id="gNewB">Add</button></div></div>
+    ${g.status === 'done' ? `<div class="gsec"><label for="gM">A memory from it</label><textarea class="inp" id="gM" style="min-height:64px">${esc(g.memory || '')}</textarea></div>` : ''}
+    ${ex ? `<div class="btnrow" style="margin-top:16px"><button class="btn danger" id="gDel">${I.trash}Delete</button></div>` : ''}`);
+    const grab = () => { g.title = $('#gT').value.trim() || g.title; g.target = $('#gD').value || ''; g.why = $('#gW').value; g.amt = +$('#gA').value || null; g.saved = +$('#gS').value || 0; const mm = $('#gM'); if (mm) g.memory = mm.value; };
+    $$('#gCat button').forEach(b => b.onclick = () => { grab(); g.cat = b.dataset.k; draw(); });
+    $$('#gSt button').forEach(b => b.onclick = () => { grab(); g.status = b.dataset.k; if (g.status === 'done' && !g.doneAt) g.doneAt = Date.now(); if (g.status !== 'done') g.doneAt = null; draw(); });
+    $$('#gQ button').forEach(b => b.onclick = () => { const q = b.dataset.q, d = new Date(); $('#gD').value = q === '' ? '' : q === 'y' ? d.getFullYear() + '-12-31' : (d.setMonth(d.getMonth() + +q), ymd(d)); grab(); draw(); });
+    ['#gA', '#gS', '#gD'].forEach(k => $(k).onchange = () => { grab(); draw(); });
+    $$('[data-add]').forEach(b => b.onclick = () => { grab(); g.saved = (g.saved || 0) + +b.dataset.add; draw(); });
+    $$('#gSteps input[type=checkbox]').forEach(c => c.onchange = () => { grab(); const st = g.steps[+c.dataset.i]; st.d = c.checked; const tk = st.taskId && getTask(st.taskId); if (tk && c.checked && !tk.done) { tk.done = true; tk.doneAt = Date.now(); } draw(); });
+    $$('#gSteps [data-rm]').forEach(b => b.onclick = () => { grab(); g.steps.splice(+b.dataset.rm, 1); draw(); });
+    $$('#gSteps [data-task]').forEach(b => b.onclick = () => { grab(); const st = g.steps[+b.dataset.task]; const t = newTask({ title: st.t, date: addDays(today(), 1), priority: 2, notes: textToHtml('For: ' + g.title), nh: true, goalId: g.id }); S.tasks.push(t); st.taskId = t.id; save(); toast('Added for tomorrow'); draw(); });
+    const addStep = () => { const v = $('#gNew').value.replace(/\n/g, ' ').trim(); if (!v) return; grab(); (g.steps ||= []).push({ id: uid(), t: v, d: false }); if (g.status === 'dream') g.status = 'plan'; draw(); setTimeout(() => $('#gNew')?.focus(), 50); };
+    $('#gNewB').onclick = addStep; $('#gNew').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); addStep(); } }, true);
+    $('#gOk').onclick = () => { grab(); if (!g.title) { $('#gT').focus(); return; } g.touched = Date.now(); const L = (S.goals ||= []); const i = L.findIndex(x => x.id === g.id); if (i >= 0) L[i] = g; else L.push(g); save(); closeSheet(true); render(); };
+    const del = $('#gDel'); if (del) del.onclick = () => { if (confirm('Delete this from your life list?')) { S.goals = S.goals.filter(x => x.id !== g.id); save(); closeSheet(true); render(); } };
+  };
+  draw(); if (!ex) setTimeout(() => $('#gT')?.focus(), 250);
+}
 /* ================= keyboard shortcuts (your own keys, Settings > Keyboard shortcuts) ================= */
 const KEY_ACTS = [
   ['add', 'New task', 'Ctrl+Space', () => quickAdd()], ['search', 'Search', 'Ctrl+K', () => searchSheet()],
@@ -3205,7 +3344,7 @@ const ekey = k => encodeURIComponent(k).replace(/\./g, '%2E');
 const dkey = k => decodeURIComponent(k);
 function entities() {
   const o = {}; S.tasks.forEach(t => o['task:' + t.id] = t); S.projects.forEach(p => o['project:' + p.id] = p); S.habits.forEach(h => o['habit:' + h.id] = h);
-  S.focus.forEach(f => o['focus:' + f.id] = f); S.dates.forEach(d => o['date:' + d.id] = d); S.templates.forEach(t => o['tpl:' + t.id] = t); Object.values(S.meetLog).forEach(m => { if (m.src !== 'pcal') o['meet:' + m.id] = m; }); if (S.pcal) o['pcal:' + (S.pcal.id || 'all')] = S.pcal; o['meta:coach'] = coachBrief(); Object.keys(IMGS).forEach(id => o['img:' + id] = { id, data: IMGS[id] }); (S.logs || []).forEach(l => o['log:' + l.id] = l); Object.values(S.phone || {}).forEach(p => o['phone:' + p.id] = p); o['meta:cur'] = { c: S.cur || null }; o['meta:rv'] = { v: remSig() }; if (S.remAck) o['meta:ack'] = S.remAck;
+  S.focus.forEach(f => o['focus:' + f.id] = f); S.dates.forEach(d => o['date:' + d.id] = d); (S.goals || []).forEach(g => o['goal:' + g.id] = g); S.templates.forEach(t => o['tpl:' + t.id] = t); Object.values(S.meetLog).forEach(m => { if (m.src !== 'pcal') o['meet:' + m.id] = m; }); if (S.pcal) o['pcal:' + (S.pcal.id || 'all')] = S.pcal; o['meta:coach'] = coachBrief(); Object.keys(IMGS).forEach(id => o['img:' + id] = { id, data: IMGS[id] }); (S.logs || []).forEach(l => o['log:' + l.id] = l); Object.values(S.phone || {}).forEach(p => o['phone:' + p.id] = p); o['meta:cur'] = { c: S.cur || null }; o['meta:rv'] = { v: remSig() }; if (S.remAck) o['meta:ack'] = S.remAck;
   const st = S.settings; o['meta:days'] = S.days; o['meta:plan'] = S.plan; o['meta:hsec'] = S.habitSections;
   o['meta:prefs'] = { coach: coachSet(), appmap: st.appmap, nagDef: st.nagDef, workStart: st.workStart, checkin: st.checkin, catv: st.catv, aiModel: st.aiModel, aiPrivate: st.aiPrivate, logo: st.logo, darkStyle: st.darkStyle, gcid: st.gcid, theme: st.theme, mode: st.mode, accent: st.accent, font: st.font, pomo: st.pomo, brk: st.brk, morning: st.morning, shutdown: st.shutdown, meetBefore: st.meetBefore, quietOn: st.quietOn, quietStart: st.quietStart, quietEnd: st.quietEnd, shield: st.shield, showDone: st.showDone, todayGroup: st.todayGroup };
   return o;
@@ -3213,7 +3352,7 @@ function entities() {
 function setEntity(key, val) {
   const [kind, ...rest] = key.split(':'); const id = rest.join(':');
   const put = (arr) => { const i = arr.findIndex(x => x.id === id); if (i >= 0) arr[i] = val; else arr.push(val); };
-  if (kind === 'task') put(S.tasks); else if (kind === 'project') put(S.projects); else if (kind === 'habit') put(S.habits); else if (kind === 'focus') put(S.focus); else if (kind === 'date') put(S.dates); else if (kind === 'tpl') put(S.templates); else if (kind === 'log') put(S.logs ||= []); else if (kind === 'phone') (S.phone ||= {})[id] = val; else if (kind === 'pcal') { S.pcal = val; applyPcal(); }
+  if (kind === 'task') put(S.tasks); else if (kind === 'project') put(S.projects); else if (kind === 'habit') put(S.habits); else if (kind === 'focus') put(S.focus); else if (kind === 'date') put(S.dates); else if (kind === 'goal') put(S.goals ||= []); else if (kind === 'tpl') put(S.templates); else if (kind === 'log') put(S.logs ||= []); else if (kind === 'phone') (S.phone ||= {})[id] = val; else if (kind === 'pcal') { S.pcal = val; applyPcal(); }
   else if (key === 'meta:cur') S.cur = val.c || null;
   else if (kind === 'meet') S.meetLog[id] = val;
   else if (kind === 'img') { IMGS[id] = val.data; idb.put(id, val.data).catch(() => { }); }
@@ -3221,7 +3360,7 @@ function setEntity(key, val) {
 }
 function removeEntity(key) {
   const [kind, ...rest] = key.split(':'); const id = rest.join(':'); const rm = n => { S[n] = S[n].filter(x => x.id !== id); };
-  if (kind === 'task') rm('tasks'); else if (kind === 'project') rm('projects'); else if (kind === 'habit') rm('habits'); else if (kind === 'focus') rm('focus'); else if (kind === 'date') rm('dates'); else if (kind === 'tpl') rm('templates'); else if (kind === 'log') rm('logs'); else if (kind === 'phone') delete (S.phone || {})[id]; else if (kind === 'meet') delete S.meetLog[id]; else if (kind === 'img') { delete IMGS[id]; idb.del(id).catch(() => { }); }
+  if (kind === 'task') rm('tasks'); else if (kind === 'project') rm('projects'); else if (kind === 'habit') rm('habits'); else if (kind === 'focus') rm('focus'); else if (kind === 'date') rm('dates'); else if (kind === 'goal') S.goals = (S.goals || []).filter(x => x.id !== id); else if (kind === 'tpl') rm('templates'); else if (kind === 'log') rm('logs'); else if (kind === 'phone') delete (S.phone || {})[id]; else if (kind === 'meet') delete S.meetLog[id]; else if (kind === 'img') { delete IMGS[id]; idb.del(id).catch(() => { }); }
 }
 function startSync() {
   stopSync(); const colRef = firebase.firestore().collection('users').doc(fbUser.uid).collection('items'); let first = true;
@@ -3265,17 +3404,18 @@ function pokePhone() {
 /* ================= render ================= */
 function viewHtml() {
   const { view, arg } = route();
-  const V = { review: () => vReview(arg), home: vHome, today: vToday, plan: () => vPlan(arg || 'today'), week: vWeek, inbox: vInbox, upcoming: vUpcoming, someday: vSomeday, calendar: vCalendar, project: () => vProject(arg), done: vDone, habits: vHabits, dates: vDates, templates: vTemplates, focus: vFocus, insights: () => vInsights(arg), settings: () => vSettings(arg) };
+  const V = { life: vLife, review: () => vReview(arg), home: vHome, today: vToday, plan: () => vPlan(arg || 'today'), week: vWeek, inbox: vInbox, upcoming: vUpcoming, someday: vSomeday, calendar: vCalendar, project: () => vProject(arg), done: vDone, habits: vHabits, dates: vDates, templates: vTemplates, focus: vFocus, insights: () => vInsights(arg), settings: () => vSettings(arg) };
   return (view === 'home' && isWide()) ? vToday() : (V[view] || vToday)();
 }
 function renderMainOnly() { const v = route().view; $('#main').innerHTML = viewHtml(); $('#main').classList.toggle('wide', v === 'week'); renderSide(); renderTabs(); renderRail(); wire(v); }
 function render() {
   const { view } = route(); renderMainOnly();
-  $('#fab').style.display = ['settings', 'focus', 'insights', 'habits', 'dates', 'templates', 'home', 'review'].includes(view) ? 'none' : '';
+  $('#fab').style.display = ['settings', 'focus', 'insights', 'habits', 'dates', 'templates', 'home', 'review', 'life'].includes(view) ? 'none' : '';
 }
 function wire(view) {
   if (view === 'focus') { const s = $('#tTask'); if (s) s.onchange = () => { S.timer.taskId = s.value; save(); }; }
   if (view === 'review') $$('[data-appmap]').forEach(el => el.onchange = () => { S.settings.appmap = { ...(S.settings.appmap || {}), [el.dataset.appmap]: el.value }; if (!el.value) delete S.settings.appmap[el.dataset.appmap]; save(); render(); });
+  if (view === 'life') { const li = $('#lifeIn'), la = $('#lifeAdd'); if (li) { const add = () => { const v = li.value.trim(); if (!v) return; const g = addGoalFromText(v); li.value = ''; render(); if (g) toast(lcat(g.cat)[1] + ' Added to ' + lcat(g.cat)[2]); }; la.onclick = add; li.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); add(); } }, true); } }
   if (view === 'settings') { const qk = $('#qkKey'), qb = $('#qkBr'); if (qk) qk.onchange = () => { S.settings.qkey2 = qk.value; save(); render(); }; const qm = $('#qkMod'); if (qm) qm.onchange = () => { S.settings.qmod = qm.value; save(); render(); }; if (qb) qb.onchange = () => { S.settings.qbr = qb.value; save(); render(); }; }
   if (view === 'settings') $$('[data-coach]').forEach(el => el.onchange = () => { const k = el.dataset.coach; S.settings.coach = { ...coachSet(), [k]: k === 'p1At' ? el.value : +el.value }; save(); });
   if (view === 'settings' || view === 'review') {
@@ -3284,6 +3424,22 @@ function wire(view) {
   $$('.row').forEach(swipe);
 }
 let swipedAt = 0;
+const SWIPE_ACTS = [['done', 'Done'], ['move', 'Move or pin menu'], ['tomorrow', 'Move to tomorrow'], ['date', 'Pick a date'], ['pin', 'Pin to top'], ['someday', 'Someday'], ['focus', 'Start focus'], ['delete', 'Delete'], ['none', 'Nothing']];
+function swipeAct(a, id) {
+  const t = getTask(id); if (!t) return;
+  if (a === 'done') { if (!t.done) toggleDone(id); }
+  else if (a === 'move') scheduleMenu(id);
+  else if (a === 'tomorrow') { setDate(t, addDays(today(), 1)); save(); render(); toast('Moved to tomorrow', () => { }); }
+  else if (a === 'date') { taskSheet(id); setTimeout(() => typeof pickWhen === 'function' && pickWhen(t), 260); }
+  else if (a === 'pin') { t.pinned = !t.pinned; save(); render(); toast(t.pinned ? 'Pinned' : 'Unpinned'); }
+  else if (a === 'someday') { t.someday = true; t.date = null; save(); render(); toast('Moved to Someday'); }
+  else if (a === 'focus') { S.timer.taskId = id; resetTimer('work'); startTimer(); go('focus'); }
+  else if (a === 'delete') deleteTask(id);
+}
+// Swipe the Today page left (not on a task) to open the menu
+(() => { let x0 = 0, y0 = 0, ok = false;
+  document.addEventListener('touchstart', e => { const v = route().view; ok = (v === 'today') && !e.target.closest('.row,.board,input,textarea,[contenteditable=true],#sheet,#page,.tl') && e.touches.length === 1; if (ok) { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; } }, { passive: true });
+  document.addEventListener('touchend', e => { if (!ok) return; ok = false; const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0; if (dx < -80 && Math.abs(dy) < 60) { $('#main').classList.add('slideout'); setTimeout(() => { go('home'); $('#main').classList.remove('slideout'); }, 120); } }, { passive: true }); })();
 function swipe(el) {
   let x0 = 0, y0 = 0, dx = 0, on = false, locked = false;
   el.addEventListener('touchstart', e => { const t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; dx = 0; on = true; locked = false; }, { passive: true });
@@ -3292,7 +3448,7 @@ function swipe(el) {
     if (!locked) { if (Math.abs(ddy) > 10 && Math.abs(ddy) > Math.abs(ddx)) { on = false; return; } if (Math.abs(ddx) > 10) locked = true; else return; }
     dx = ddx; el.classList.add('dragging'); el.style.transform = `translateX(${dx}px)`; el.style.background = dx > 0 ? 'color-mix(in srgb,var(--accent) 22%,var(--bg))' : 'color-mix(in srgb,var(--meet) 14%,var(--bg))';
   }, { passive: true });
-  el.addEventListener('touchend', e => { if (!on) return; on = false; el.classList.remove('dragging'); el.style.transform = ''; el.style.background = ''; const id = el.dataset.id; if (Math.abs(dx) > 12) { swipedAt = Date.now(); if (e.cancelable) e.preventDefault(); } if (dx > 90) { const t = getTask(id); if (t && !t.done) toggleDone(id); } else if (dx < -90) scheduleMenu(id); });
+  el.addEventListener('touchend', e => { if (!on) return; on = false; el.classList.remove('dragging'); el.style.transform = ''; el.style.background = ''; const id = el.dataset.id; if (Math.abs(dx) > 12) { swipedAt = Date.now(); if (e.cancelable) e.preventDefault(); } if (dx > 90) swipeAct(S.settings.swR || 'done', id); else if (dx < -90) swipeAct(S.settings.swL || 'move', id); });
 }
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if (!b) return;
@@ -3300,7 +3456,9 @@ document.addEventListener('click', e => {
   const a = b.dataset.act, id = b.dataset.id, td = today();
   const A = {
     done: () => { e.preventDefault(); const insheet = b.closest('#sheet'); if (insheet) closeSheet(true); toggleDone(id); },
-    open: () => taskSheet(id), meet: () => meetSheet(id), nav: () => go(b.dataset.to), delete: () => deleteTask(id), search: searchSheet,
+    open: () => taskSheet(id), meet: () => meetSheet(id),
+    areatog: () => { const a = b.dataset.a; S.settings.shut = { ...(S.settings.shut || {}), [a]: !(S.settings.shut || {})[a] }; save(); render(); },
+    lifenew: () => goalSheet(), lifeopen: () => goalSheet(id), lifefilter: () => { lifeFilter = b.dataset.f; render(); }, nav: () => go(b.dataset.to), delete: () => deleteTask(id), search: searchSheet,
     subs: () => { openSubs.has(id) ? openSubs.delete(id) : openSubs.add(id); renderMainOnly(); },
     subdone: () => { const t = getTask(id); const c = t.subs.find(x => x.id === b.dataset.s); c.d = !c.d; save(); renderMainOnly(); if (t.subs.every(x => x.d) && !t.done) toast('All subtasks done. Finish the task?', () => toggleDone(id)); },
     toggledone: () => { S.settings.showDone = !S.settings.showDone; save(); render(); },
