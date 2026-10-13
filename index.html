@@ -2441,7 +2441,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.0</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.0.1</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -2532,7 +2532,7 @@ function goalWhen(g) {
   if (!g.target) return 'Someday';
   const d = dayDiff(today(), g.target), ml = monthsLeft(g.target), dt = pYmd(g.target);
   const by = `by ${MONS[dt.getMonth()]} ${dt.getFullYear()}`;
-  return d < 0 ? by + ' · overdue' : d < 45 ? `${by} · ${d} days left` : ml < 24 ? `${by} · ${ml} months left` : `${by} · ${Math.floor(ml / 12)}y ${ml % 12}m left`;
+  return d < 0 ? by + ' · overdue' : d < 45 ? `${by} · ${d} days left` : ml < 24 ? `${by} · ${ml} months left` : `${by} · ${Math.floor(ml / 12)} years${ml % 12 ? ' ' + (ml % 12) + ' months' : ''} left`;
 }
 function goalMoney(g) {
   if (!g.amt) return null; const saved = g.saved || 0, left = Math.max(0, g.amt - saved), ml = monthsLeft(g.target);
@@ -3407,7 +3407,14 @@ function viewHtml() {
   const V = { life: vLife, review: () => vReview(arg), home: vHome, today: vToday, plan: () => vPlan(arg || 'today'), week: vWeek, inbox: vInbox, upcoming: vUpcoming, someday: vSomeday, calendar: vCalendar, project: () => vProject(arg), done: vDone, habits: vHabits, dates: vDates, templates: vTemplates, focus: vFocus, insights: () => vInsights(arg), settings: () => vSettings(arg) };
   return (view === 'home' && isWide()) ? vToday() : (V[view] || vToday)();
 }
-function renderMainOnly() { const v = route().view; $('#main').innerHTML = viewHtml(); $('#main').classList.toggle('wide', v === 'week'); renderSide(); renderTabs(); renderRail(); wire(v); }
+function renderMainOnly() {
+  // Keep anything you are typing on the page when it redraws (sync can redraw at any moment)
+  const keep = {}; let act = null, a0 = 0, a1 = 0; $$('#main input[id], #main textarea[id]').forEach(el => { if (el.type !== 'checkbox' && el.type !== 'radio' && el.value) keep[el.id] = el.value; }); const ae = document.activeElement; if (ae && ae.id && $('#main').contains(ae)) { act = ae.id; try { a0 = ae.selectionStart; a1 = ae.selectionEnd; } catch (e) { } }
+  renderMainCore();
+  Object.entries(keep).forEach(([id, v]) => { const el = document.getElementById(id); if (el && !el.value) el.value = v; });
+  if (act) { const el = document.getElementById(act); if (el) { el.focus({ preventScroll: true }); try { el.setSelectionRange(a0, a1); } catch (e) { } } }
+}
+function renderMainCore() { const v = route().view; $('#main').innerHTML = viewHtml(); $('#main').classList.toggle('wide', v === 'week'); renderSide(); renderTabs(); renderRail(); wire(v); }
 function render() {
   const { view } = route(); renderMainOnly();
   $('#fab').style.display = ['settings', 'focus', 'insights', 'habits', 'dates', 'templates', 'home', 'review', 'life'].includes(view) ? 'none' : '';
