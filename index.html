@@ -802,41 +802,35 @@ textarea.inp.one{resize:none;overflow:hidden;white-space:nowrap;line-height:20px
 .qmsaved{position:fixed;inset:0;display:grid;place-items:center;font-size:18px;font-weight:700;color:var(--ink);background:var(--bg)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
-/* calendar 4.1 */
+/* calendar 4.2 */
+.oncal .rail{display:none!important}
 main.calw{max-width:800px}
-@media (min-width:1100px){main.calw{max-width:1160px}.calwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,400px);gap:8px;align-items:start}.calR{position:sticky;top:12px}}
+@media (min-width:1100px){main.calw{max-width:1180px}.calwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,420px);gap:12px;align-items:start;padding-right:12px}.calR{position:sticky;top:12px}}
 .calhead b span{color:var(--muted);font-weight:600}
-.cins{display:flex;gap:10px;overflow-x:auto;padding:4px 20px 14px;scrollbar-width:none;scroll-snap-type:x proximity}.cins::-webkit-scrollbar{display:none}
-.ci{flex:none;min-width:132px;max-width:180px;scroll-snap-align:start;text-align:left;display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-radius:18px;background:var(--surface);border:1px solid var(--line);text-decoration:none;color:var(--ink)}
-.ci small{font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.02em;white-space:nowrap}
-.ci b{font-family:var(--fd);font-size:22px;font-weight:800;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ci b.nm{font-size:18px}
-.ci span{font-size:12.5px;color:var(--muted);white-space:nowrap}
-.ci-a{background:linear-gradient(135deg,color-mix(in srgb,var(--meet) 88%,#000),color-mix(in srgb,var(--meet) 60%,var(--accent)));border:0;color:#fff;min-width:150px}.ci-a small,.ci-a span{color:rgba(255,255,255,.82)}
-.ci-g b{color:color-mix(in srgb,#1F8A3B 85%,var(--ink))}.ci-r b{color:var(--danger)}
-.calgrid.hm{gap:5px;padding:0 16px}
-.calgrid.hm .wd{font-size:11px;letter-spacing:.03em}
-.hm .cd{position:relative;height:54px;border-radius:14px;padding:7px 0 0;gap:0;justify-content:space-between;align-items:stretch;background:var(--surface);border:1.5px solid transparent;transition:transform .12s}
-.hm .cd:active{transform:scale(.95)}
-@media (min-width:900px){.hm .cd{height:64px}}
-.hm .cd .n{font-size:14.5px;font-weight:700;text-align:left;padding-left:8px;line-height:20px}
-.hm .cd.l1{background:color-mix(in srgb,var(--meet) 12%,var(--surface))}.hm .cd.l2{background:color-mix(in srgb,var(--meet) 24%,var(--surface))}.hm .cd.l3{background:color-mix(in srgb,var(--meet) 40%,var(--surface))}.hm .cd.l4{background:color-mix(in srgb,var(--meet) 58%,var(--surface))}
-.hm .cd.l4 .n,.hm .cd.l3 .n{color:var(--ink)}
-.hm .cd.past{opacity:.55}.hm .cd.om{opacity:.3}
-.hm .cd.td .n span,.hm .cd.td .n{color:var(--accent-text)}.hm .cd.td{border-color:var(--accent)}
-.hm .cd.td .n{background:none;padding-left:8px}
-.hm .cd.sel{background:var(--ink);color:var(--bg);border-color:var(--ink);opacity:1}.hm .cd.sel .n{color:var(--bg)}
-.hm .cd .bd{position:absolute;top:5px;right:5px;font-size:11px}
-.hm .cd .dots{display:flex;gap:3px;height:auto;padding:0 6px 6px;justify-content:flex-start;flex-wrap:wrap}
-.hm .cd .dots i{min-width:7px;height:7px;border-radius:4px;font-size:9.5px;font-style:normal;font-weight:800;line-height:14px;color:#fff;display:flex;align-items:center;justify-content:center}
-.hm .cd .dots i:not(:empty){height:14px;min-width:14px;padding:0 3px;border-radius:7px}
-.hm .cd .dots i.m{background:var(--meet)}.hm .cd .dots i.t{background:var(--accent);color:var(--on-accent)}
-.hm .cd.sel .dots i.m{background:color-mix(in srgb,var(--meet) 70%,#fff)}
-.hmleg{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:10px 20px 6px;font-size:11.5px;color:var(--muted);font-weight:600}
-.hmleg span{display:flex;align-items:center;gap:5px}.hmleg i{width:9px;height:9px;border-radius:5px;display:inline-block}
-.hmleg i.m{background:var(--meet)}.hmleg i.t{background:var(--accent)}
-.hmleg .sc{margin-left:auto;gap:3px}.hmleg .sc i{width:12px;height:12px;border-radius:4px}
-.hmleg .sc i.l1{background:color-mix(in srgb,var(--meet) 12%,var(--surface))}.hmleg .sc i.l2{background:color-mix(in srgb,var(--meet) 24%,var(--surface))}.hmleg .sc i.l3{background:color-mix(in srgb,var(--meet) 40%,var(--surface))}.hmleg .sc i.l4{background:color-mix(in srgb,var(--meet) 58%,var(--surface))}
-.ag{margin:10px 12px 0;padding:16px 4px 8px;border-radius:22px;background:var(--surface);border:1px solid var(--line)}
+.cstats{display:flex;margin:4px 20px 16px;border:1px solid var(--line);border-radius:16px;overflow-x:auto;scrollbar-width:none}.cstats::-webkit-scrollbar{display:none}
+.cs{flex:1 0 auto;min-width:104px;text-align:left;display:flex;flex-direction:column;gap:1px;padding:10px 14px;text-decoration:none;color:var(--ink)}
+.cs+.cs{border-left:1px solid var(--line)}
+.cs b{font-family:var(--fd);font-size:17px;font-weight:800;white-space:nowrap}
+.cs span{font-size:11.5px;color:var(--muted);font-weight:600;white-space:nowrap}
+.cs.bad b{color:var(--danger)}
+.calgrid.hm{gap:2px;padding:0 14px}
+.calgrid.hm .wd{font-size:11px;letter-spacing:.04em;text-transform:uppercase;padding:2px 0 6px}
+.hm .cd{position:relative;height:52px;border-radius:12px;padding:6px 0 0;gap:5px;align-items:center;justify-content:flex-start;background:none;transition:background .12s}
+@media (hover:hover){.hm .cd:hover{background:var(--surface)}}
+@media (min-width:900px){.hm .cd{height:60px}}
+.hm .cd .n{width:32px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600}
+.hm .cd.past .n{color:var(--muted)}.hm .cd.om{opacity:.35}
+.hm .cd.busy .n{box-shadow:inset 0 -2.5px 0 color-mix(in srgb,var(--meet) 70%,transparent);border-radius:0}
+.hm .cd.td .n{color:var(--accent-text);font-weight:800;background:none;padding:0}
+.hm .cd.sel .n{background:var(--ink);color:var(--bg);font-weight:800;box-shadow:none;border-radius:16px}
+.hm .cd.td.sel .n{background:var(--accent);color:var(--on-accent)}
+.hm .cd .dots{display:flex;gap:3px;height:5px;padding:0}
+.hm .cd .dots i{width:5px;height:5px;border-radius:3px}
+.dots i.m,.hmleg i.m{background:var(--meet)}.dots i.t,.hmleg i.t{background:var(--accent)}.dots i.b,.hmleg i.b{background:var(--danger)}
+.hmleg{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:8px 22px 6px;font-size:11.5px;color:var(--muted);font-weight:600}
+.hmleg span{display:flex;align-items:center;gap:5px}.hmleg i{width:7px;height:7px;border-radius:4px;display:inline-block}
+.hmleg u{width:12px;height:2.5px;border-radius:2px;background:color-mix(in srgb,var(--meet) 70%,transparent);display:inline-block}
+.ag{margin:14px 12px 0;padding:16px 4px 8px;border-radius:20px;background:var(--surface)}
 @media (min-width:1100px){.ag{margin-top:0}}
 .aghead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:0 14px}
 .aghead h2{margin:0;font-size:22px;font-weight:800;display:flex;align-items:baseline;gap:8px}.aghead h2 span{font-size:14px;color:var(--muted);font-weight:600;font-family:var(--fb)}
@@ -850,8 +844,8 @@ main.calw{max-width:800px}
 .agl{position:relative;padding:12px 10px 4px 10px}
 .agi{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:14px;position:relative}
 .agi .agt{flex:none;width:66px;white-space:nowrap;display:flex;flex-direction:column;font-size:13px;line-height:1.2}.agi .agt b{font-weight:800}.agi .agt small{color:var(--muted);font-size:11px;font-weight:600}
-.agi .agb{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:8px 10px 8px 12px;border-radius:12px;background:var(--bg);border-left:4px solid var(--accent)}
-.agi.m .agb{border-left-color:var(--meet);background:color-mix(in srgb,var(--meet) 9%,var(--bg))}
+.agi .agb{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:8px 10px 8px 12px;border-radius:12px;background:var(--bg);border-left:3px solid var(--accent)}
+.agi.m .agb{border-left-color:var(--meet)}
 .agi.live .agb{box-shadow:0 0 0 2px var(--meet)}
 .agi .tt{font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.agi .sb{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .agi .agbb{flex:1;min-width:0;text-align:left;display:flex;flex-direction:column;gap:1px}.agi .agb .chk{width:22px;height:22px}
@@ -1870,12 +1864,11 @@ function calInsights() {
   const wk0 = pYmd(td); wk0.setDate(wk0.getDate() - ((wk0.getDay() + 6) % 7)); const done7 = S.tasks.filter(t => t.done && t.doneAt && t.doneAt >= wk0.getTime()).length;
   let nx = null; for (let i = 0; i < 45 && !nx; i++) { const k = addDays(td, i), b = datesOn(k); if (b.length) nx = { k, i, x: b[0] }; }
   const c = [];
-  c.push(`<div class="ci ci-a"><small>Next 7 days</small><b>${mm ? fmtMins(mm) : '0h'}</b><span>in ${plural(mn, 'meeting')} · ${plural(tn, 'task')}</span></div>`);
-  if (busy && busy.load) c.push(`<button class="ci" data-act="calday" data-d="${busy.k}"><small>Busiest</small><b>${dn(busy.k)}</b><span>${fmtMins(busy.load)} booked</span></button>`);
-  if (calm) c.push(`<button class="ci ci-g" data-act="calday" data-d="${calm.k}"><small>Best for deep work</small><b>${dn(calm.k)}</b><span>${fmtMins(calm.free)} free</span></button>`);
-  c.push(over ? `<a class="ci ci-r" href="#today"><small>Overdue</small><b>${over}</b><span>Move them to today</span></a>` : `<div class="ci"><small>Done this week</small><b>${done7}</b><span>${done7 ? 'tasks completed' : 'Nothing yet'}</span></div>`);
-  if (nx) c.push(`<button class="ci" data-act="calday" data-d="${nx.k}"><small>${nx.x.kind === 'birthday' ? '🎂 Birthday' : nx.x.kind === 'anniversary' ? '💍 Anniversary' : '📌 Date'}</small><b class="nm">${esc(nx.x.name)}</b><span>${nx.i === 0 ? 'Today' : nx.i === 1 ? 'Tomorrow' : 'in ' + nx.i + ' days'}</span></button>`);
-  return `<div class="cins">${c.join('')}</div>`;
+  c.push(`<div class="cs"><b>${mm ? fmtMins(mm) : '0h'}</b><span>meetings, next 7 days</span></div>`);
+  if (busy && busy.load) c.push(`<button class="cs" data-act="calday" data-d="${busy.k}"><b>${dn(busy.k)}</b><span>busiest, ${fmtMins(busy.load)}</span></button>`);
+  if (calm) c.push(`<button class="cs" data-act="calday" data-d="${calm.k}"><b>${dn(calm.k)}</b><span>most free, ${fmtMins(calm.free)}</span></button>`);
+  if (over) c.push(`<a class="cs bad" href="#today"><b>${over}</b><span>overdue</span></a>`);
+  return `<div class="cstats">${c.join('')}</div>`;
 }
 function calAgenda(k) {
   const td = today(), now = Date.now(), D = calDay(k), sd = pYmd(k);
@@ -1892,7 +1885,7 @@ function calAgenda(k) {
       if (prev != null && x.s - prev >= 45) h += `<div class="agfree"><span>${fmtMins(x.s - prev)} free</span></div>`;
       if (!nowShown && x.s > nowM) { h += `<div class="agnow"><span>Now ${fmtClock(now)}</span></div>`; nowShown = true; }
       const tm = `<span class="agt"><b>${x.m ? fmtClock(x.m.s) : fmtTime(x.t.time)}</b>${x.e > x.s ? `<small>${fmtMins(x.e - x.s)}</small>` : ''}</span>`;
-      if (x.m) { const m = x.m, live = m.s <= now && m.e > now, past = m.e <= now; h += `<div class="agi m${past ? ' past' : ''}${live ? ' live' : ''}">${tm}<div class="agb"><button class="agbb" data-act="meet" data-id="${esc(m.id)}"><span class="tt">${esc(m.t)}</span><span class="sb">${live ? 'Happening now' : m.org ? esc(m.org) : 'Meeting'}</span></button>${m.join && !past ? `<a class="pill meet" href="${esc(m.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div></div>`; }
+      if (x.m) { const m = x.m, live = m.s <= now && m.e > now, past = m.e <= now; h += `<div class="agi m${past ? ' past' : ''}${live ? ' live' : ''}">${tm}<div class="agb"><button class="agbb" data-act="meet" data-id="${esc(m.id)}"><span class="tt">${esc(m.t)}</span><span class="sb">${live ? 'Happening now' : 'Meeting'}</span></button>${m.join && !past ? `<a class="pill meet" href="${esc(m.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div></div>`; }
       else { const t = x.t, p = proj(t.projectId); h += `<div class="agi t${t.done ? ' past' : ''}">${tm}<div class="agb"><button class="chk p${t.priority}" data-act="done" data-id="${t.id}" aria-label="${t.done ? 'Mark not done' : 'Complete'}: ${esc(t.title)}">${t.done ? I.check : ''}</button><button class="agbb" data-act="open" data-id="${t.id}"><span class="tt">${esc(t.title)}</span><span class="sb">${t.repeat ? 'Repeats' : p ? esc(p.name) : 'Task'}</span></button></div></div>`; }
       prev = Math.max(prev || 0, x.e);
     });
@@ -1914,9 +1907,9 @@ function vCalendar() {
     const d = new Date(y, m - 1, 1 - off + i); const k = ymd(d);
     if (i >= 35 && d.getMonth() !== m - 1) break;
     const D = calDay(k), lv = calLvl(D.load), nt = D.ts.filter(t => !t.done).length, nm = D.ms.length + D.ad.length;
-    g += `<button class="cd l${lv}${d.getMonth() !== m - 1 ? ' om' : ''}${k === td ? ' td' : ''}${k === calSel ? ' sel' : ''}${k < td ? ' past' : ''}" data-act="calday" data-d="${k}" aria-label="${d.getDate()} ${MONSL[d.getMonth()]}${nm ? ', ' + plural(nm, 'meeting') : ''}${nt ? ', ' + plural(nt, 'task') : ''}"><span class="n">${d.getDate()}</span>${D.bd.length ? '<span class="bd">🎂</span>' : ''}<span class="dots">${nm ? `<i class="m">${nm > 1 ? nm : ''}</i>` : ''}${nt ? `<i class="t">${nt > 1 ? nt : ''}</i>` : ''}</span></button>`;
+    g += `<button class="cd${lv >= 3 ? ' busy' : ''}${d.getMonth() !== m - 1 ? ' om' : ''}${k === td ? ' td' : ''}${k === calSel ? ' sel' : ''}${k < td ? ' past' : ''}" data-act="calday" data-d="${k}" aria-label="${d.getDate()} ${MONSL[d.getMonth()]}${nm ? ', ' + plural(nm, 'meeting') : ''}${nt ? ', ' + plural(nt, 'task') : ''}"><span class="n">${d.getDate()}</span><span class="dots">${nm ? '<i class="m"></i>' : ''}${nt ? '<i class="t"></i>' : ''}${D.bd.length ? '<i class="b"></i>' : ''}</span></button>`;
   }
-  g += `</div><div class="hmleg"><span><i class="m"></i>Meetings</span><span><i class="t"></i>Tasks</span><span class="sc">Light<i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i>Packed</span></div>`;
+  g += `</div><div class="hmleg"><span><i class="m"></i>Meeting</span><span><i class="t"></i>Task</span><span><i class="b"></i>Birthday</span><span><u></u>Busy day</span></div>`;
   h += `<div class="calwrap"><div class="calL">${g}</div><div class="calR">${calAgenda(calSel)}</div></div>`;
   return h;
 }
@@ -2539,7 +2532,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.1.1</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.2</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -3512,7 +3505,7 @@ function renderMainOnly() {
   Object.entries(keep).forEach(([id, v]) => { const el = document.getElementById(id); if (el && !el.value) el.value = v; });
   if (act) { const el = document.getElementById(act); if (el) { el.focus({ preventScroll: true }); try { el.setSelectionRange(a0, a1); } catch (e) { } } }
 }
-function renderMainCore() { const v = route().view; $('#main').innerHTML = viewHtml(); $('#main').classList.toggle('calw', v === 'calendar' || v === 'week'); renderSide(); renderTabs(); renderRail(); wire(v); }
+function renderMainCore() { const v = route().view; $('#main').innerHTML = viewHtml(); $('#main').classList.toggle('calw', v === 'calendar' || v === 'week'); document.body.classList.toggle('oncal', v === 'calendar' || v === 'week'); renderSide(); renderTabs(); renderRail(); wire(v); }
 function render() {
   const { view } = route(); renderMainOnly();
   $('#fab').style.display = ['settings', 'focus', 'insights', 'habits', 'dates', 'templates', 'home', 'review', 'life'].includes(view) ? 'none' : '';
