@@ -219,6 +219,15 @@ final class Alarms {
         } catch (Exception ignored) { }
     }
 
+    /** Phone locked or screen off. Only then the big card comes up; while you are using the phone you get just the notification. */
+    static boolean idle(Context ctx) {
+        try {
+            android.os.PowerManager pm = (android.os.PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
+            android.app.KeyguardManager km = (android.app.KeyguardManager) ctx.getSystemService(Context.KEYGUARD_SERVICE);
+            return !pm.isInteractive() || (km != null && km.isKeyguardLocked());
+        } catch (Exception e) { return true; }
+    }
+
     /** Whether Android lets us show the reminder card on the lock screen (Android 14+ asks you once). */
     static boolean cardOn(Context ctx) {
         if (Build.VERSION.SDK_INT < 34) return true;
@@ -255,8 +264,7 @@ final class Alarms {
                 .setCategory(Notification.CATEGORY_REMINDER)
                 .setContentIntent(openPi)
                 .setAutoCancel(true)
-                .addAction(new Notification.Action.Builder(ic, "Done", donePi).build())
-                .addAction(new Notification.Action.Builder(ic, "Reschedule", reschedPi(ctx, a, nid + 4)).build());
+;
         try {
             android.widget.RemoteViews rv = new android.widget.RemoteViews(ctx.getPackageName(), R.layout.notif_rem);
             rv.setTextViewText(R.id.n_title, (a.optInt("prio") == 1 ? "P1 · " : "") + a.optString("title"));
@@ -264,9 +272,14 @@ final class Alarms {
             rv.setOnClickPendingIntent(R.id.n_s10, snoozePi(ctx, a, 10, nid + 10));
             rv.setOnClickPendingIntent(R.id.n_s30, snoozePi(ctx, a, 30, nid + 30));
             rv.setOnClickPendingIntent(R.id.n_s60, snoozePi(ctx, a, 60, nid + 60));
+            rv.setOnClickPendingIntent(R.id.n_rs, reschedPi(ctx, a, nid + 5));
+            rv.setOnClickPendingIntent(R.id.n_done, donePi);
             b.setStyle(new Notification.DecoratedCustomViewStyle()).setCustomBigContentView(rv).setCustomHeadsUpContentView(rv);
-        } catch (Exception ignored) { }
-        if (cardOn(ctx)) b.setFullScreenIntent(ReminderActivity.pending(ctx, a, nid + 3), true);
+        } catch (Exception e) {
+            b.addAction(new Notification.Action.Builder(ic, "Done", donePi).build())
+             .addAction(new Notification.Action.Builder(ic, "Reschedule", reschedPi(ctx, a, nid + 4)).build());
+        }
+        if (cardOn(ctx) && idle(ctx)) b.setFullScreenIntent(ReminderActivity.pending(ctx, a, nid + 3), true);
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         try { nm.notify(nid, b.build()); } catch (SecurityException ignored) { }
         openCard(ctx, a);
@@ -283,7 +296,7 @@ final class Alarms {
                 .setContentTitle(a.optString("title")).setContentText(a.optString("body"))
                 .setCategory(Notification.CATEGORY_EVENT).setContentIntent(pi).setAutoCancel(true);
         if (!join.isEmpty()) b.addAction(new Notification.Action.Builder(Icon.createWithResource(ctx, R.drawable.ic_stat), "Join", pi).build());
-        if (cardOn(ctx)) b.setFullScreenIntent(ReminderActivity.pending(ctx, a, nid + 3), true);
+        if (cardOn(ctx) && idle(ctx)) b.setFullScreenIntent(ReminderActivity.pending(ctx, a, nid + 3), true);
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         try { nm.notify(nid, b.build()); } catch (SecurityException ignored) { }
         openCard(ctx, a);
