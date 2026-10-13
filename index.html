@@ -1210,7 +1210,7 @@ const pslug = x => (x || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').repl
 function findProject(name) { const n = name.trim().toLowerCase(), g = pslug(name); return S.projects.find(p => p.name.toLowerCase() === n) || (g && S.projects.find(p => pslug(p.name) === g)); }
 function ensureProject(name, area) { if (!name) return null; let p = findProject(name); if (!p) { const cols = ['#F2A33A', '#14B8A6', '#5B5BD6', '#C2367A', '#4D9A2A', '#1F6FEB', '#E0482A', '#8B5CF6']; p = { id: uid(), name: name.trim(), area: area || 'Personal', color: cols[S.projects.length % cols.length], emoji: '' }; S.projects.push(p); } return p; }
 function addPlan(t) { if (!t.date || t.done) return; (S.plan[t.date] ||= []); if (!S.plan[t.date].includes(t.id)) S.plan[t.date].push(t.id); }
-function setDate(t, date) { const old = t.date; if (old && date && date > old && old <= today()) t.pushed = (t.pushed || 0) + 1; t.date = date; t.firedKeys = []; if (date) t.someday = false; addPlan(t); }
+function setDate(t, date) { t.nagAt = 0; t.nagN = 0; t.snoozeUntil = 0; const old = t.date; if (old && date && date > old && old <= today()) t.pushed = (t.pushed || 0) + 1; t.date = date; t.firedKeys = []; if (date) t.someday = false; addPlan(t); }
 function areas() { return areasSorted(); }
 const dayRec = d => (S.days[d] ||= {});
 
@@ -2597,7 +2597,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.3.4</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.3.5</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -3046,7 +3046,7 @@ function renderPage(fresh) {
   nw.oninput = () => { if (nw.value.includes('\n')) addSub(); };
   const ab = $('#pClAdd'); if (ab) { ab.onpointerdown = e => e.preventDefault(); ab.onclick = addSub; }
 }
-function applyAndRefresh(t) { t.firedKeys = []; save(); closeSheet(true); renderPage(); render(); }
+function applyAndRefresh(t) { t.firedKeys = []; t.nagAt = 0; t.nagN = 0; if (t.snoozeUntil && t.date && pYmd(t.date).getTime() + hm2m(t.time || '09:00') * 6e4 > Date.now()) t.snoozeUntil = 0; save(); closeSheet(true); renderPage(); render(); }
 function pickWhen(t) {
   const td = today(); let date = t.date, some = t.someday;
   const sel = () => some ? 'someday' : !date ? 'none' : date === td ? 'today' : date === addDays(td, 1) ? 'tomorrow' : date === nextWeekday(1, false) ? 'nextweek' : 'date';
@@ -3774,6 +3774,9 @@ function tick() {
   S.tasks.forEach(t => {
     if (t.done || nativeRem) return; const hold = (quiet || shield) && t.priority !== 1;
     const nag = nagOf(t);
+    // Moved to later (or no date any more): stop "still not done" and old snoozes for it
+    { const due = t.date && !t.someday ? pYmd(t.date).getTime() + hm2m(t.time || '09:00') * 6e4 : Infinity; if (due > now + 6e4 && (t.nagAt || t.snoozeUntil)) { t.nagAt = 0; t.nagN = 0; t.snoozeUntil = 0; changed = true; } }
+    t.subs.forEach(c => { if (!c.d && c.at && new Date(c.at).getTime() > now + 6e4 && (c.nagAt || c.snoozeUntil)) { c.nagAt = 0; c.nagN = 0; c.snoozeUntil = 0; changed = true; } });
     if (t.snoozeUntil && now >= t.snoozeUntil && !hold) { t.snoozeUntil = 0; startNag(t, nag); changed = true; notify(t.title, 'Snoozed reminder', 't' + t.id, { id: t.id }, true); return; }
     if (t.nagAt && now >= t.nagAt && !hold) { t.nagN = (t.nagN || 0) + 1; t.nagAt = nag && t.nagN < NAG_MAX ? now + nag * 6e4 : 0; changed = true; notify(t.title, 'Still not done', 't' + t.id, { id: t.id }, true); }
     t.subs.forEach(c => {
