@@ -1490,7 +1490,7 @@ function listsNav(cur) {
   h += navItem('week', I.cols, '#2BB5A6', 'Week board', '', cur === 'week');
   h += navItem('calendar', I.grid, '#E5484D', 'Calendar', '', cur === 'calendar');
   h += navItem('upcoming', I.cal, '#A78BFA', 'Next 7 days', n7 || '', cur === 'upcoming');
-  h += navItem('someday', I.box, '#C9A66B', 'Someday', open().filter(t => t.someday).length || '', cur === 'someday');
+  { const sc = open().filter(t => t.someday).length; if (sc || cur === 'someday') h += navItem('someday', I.box, '#C9A66B', 'Someday', sc || '', cur === 'someday'); }
   h += navItem('habits', I.drop, '#EC4899', 'Habits', hab ? hab + ' left' : '', cur === 'habits');
   h += navItem('life', I.target, '#10B981', 'Life list', (S.goals || []).filter(g => g.status === 'doing').length ? (S.goals || []).filter(g => g.status === 'doing').length + ' active' : '', cur === 'life');
   h += navItem('dates', I.gift, '#FB7185', 'Birthdays and dates', nextD === 0 ? 'today' : nextD != null ? nextD + 'd' : '', cur === 'dates');
@@ -1498,7 +1498,6 @@ function listsNav(cur) {
   h += navItem('focus', I.timer, '#F97316', 'Focus timer', S.timer.running ? 'running' : '', cur === 'focus');
   h += navItem('review', I.clock, '#F97316', 'Day review', S.cur ? catOf(S.cur.cat).e : '', cur === 'review');
   h += navItem('insights', I.chart, '#22B8D9', 'Insights', '', cur === 'insights');
-  h += navItem('done', I.done, '#34C759', 'Done', '', cur === 'done');
   return h;
 }
 function renderTabs() {
@@ -2441,7 +2440,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.0.4</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.0.5</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
