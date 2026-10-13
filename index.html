@@ -801,6 +801,66 @@ textarea.inp.one{resize:none;overflow:hidden;white-space:nowrap;line-height:20px
 .tplrow[hidden]{display:none!important}
 .qmsaved{position:fixed;inset:0;display:grid;place-items:center;font-size:18px;font-weight:700;color:var(--ink);background:var(--bg)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* calendar 4.1 */
+main.calw{max-width:800px}
+@media (min-width:1100px){main.calw{max-width:1160px}.calwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,400px);gap:8px;align-items:start}.calR{position:sticky;top:12px}}
+.calhead b span{color:var(--muted);font-weight:600}
+.cins{display:flex;gap:10px;overflow-x:auto;padding:4px 20px 14px;scrollbar-width:none;scroll-snap-type:x proximity}.cins::-webkit-scrollbar{display:none}
+.ci{flex:none;min-width:132px;max-width:180px;scroll-snap-align:start;text-align:left;display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-radius:18px;background:var(--surface);border:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.ci small{font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.02em;white-space:nowrap}
+.ci b{font-family:var(--fd);font-size:22px;font-weight:800;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ci b.nm{font-size:18px}
+.ci span{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.ci-a{background:linear-gradient(135deg,color-mix(in srgb,var(--meet) 88%,#000),color-mix(in srgb,var(--meet) 60%,var(--accent)));border:0;color:#fff;min-width:150px}.ci-a small,.ci-a span{color:rgba(255,255,255,.82)}
+.ci-g b{color:color-mix(in srgb,#1F8A3B 85%,var(--ink))}.ci-r b{color:var(--danger)}
+.calgrid.hm{gap:5px;padding:0 16px}
+.calgrid.hm .wd{font-size:11px;letter-spacing:.03em}
+.hm .cd{position:relative;height:54px;border-radius:14px;padding:7px 0 0;gap:0;justify-content:space-between;align-items:stretch;background:var(--surface);border:1.5px solid transparent;transition:transform .12s}
+.hm .cd:active{transform:scale(.95)}
+@media (min-width:900px){.hm .cd{height:64px}}
+.hm .cd .n{font-size:14.5px;font-weight:700;text-align:left;padding-left:8px;line-height:20px}
+.hm .cd.l1{background:color-mix(in srgb,var(--meet) 12%,var(--surface))}.hm .cd.l2{background:color-mix(in srgb,var(--meet) 24%,var(--surface))}.hm .cd.l3{background:color-mix(in srgb,var(--meet) 40%,var(--surface))}.hm .cd.l4{background:color-mix(in srgb,var(--meet) 58%,var(--surface))}
+.hm .cd.l4 .n,.hm .cd.l3 .n{color:var(--ink)}
+.hm .cd.past{opacity:.55}.hm .cd.om{opacity:.3}
+.hm .cd.td .n span,.hm .cd.td .n{color:var(--accent-text)}.hm .cd.td{border-color:var(--accent)}
+.hm .cd.td .n{background:none;padding-left:8px}
+.hm .cd.sel{background:var(--ink);color:var(--bg);border-color:var(--ink);opacity:1}.hm .cd.sel .n{color:var(--bg)}
+.hm .cd .bd{position:absolute;top:5px;right:5px;font-size:11px}
+.hm .cd .dots{display:flex;gap:3px;height:auto;padding:0 6px 6px;justify-content:flex-start;flex-wrap:wrap}
+.hm .cd .dots i{min-width:7px;height:7px;border-radius:4px;font-size:9.5px;font-style:normal;font-weight:800;line-height:14px;color:#fff;display:flex;align-items:center;justify-content:center}
+.hm .cd .dots i:not(:empty){height:14px;min-width:14px;padding:0 3px;border-radius:7px}
+.hm .cd .dots i.m{background:var(--meet)}.hm .cd .dots i.t{background:var(--accent);color:var(--on-accent)}
+.hm .cd.sel .dots i.m{background:color-mix(in srgb,var(--meet) 70%,#fff)}
+.hmleg{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:10px 20px 6px;font-size:11.5px;color:var(--muted);font-weight:600}
+.hmleg span{display:flex;align-items:center;gap:5px}.hmleg i{width:9px;height:9px;border-radius:5px;display:inline-block}
+.hmleg i.m{background:var(--meet)}.hmleg i.t{background:var(--accent)}
+.hmleg .sc{margin-left:auto;gap:3px}.hmleg .sc i{width:12px;height:12px;border-radius:4px}
+.hmleg .sc i.l1{background:color-mix(in srgb,var(--meet) 12%,var(--surface))}.hmleg .sc i.l2{background:color-mix(in srgb,var(--meet) 24%,var(--surface))}.hmleg .sc i.l3{background:color-mix(in srgb,var(--meet) 40%,var(--surface))}.hmleg .sc i.l4{background:color-mix(in srgb,var(--meet) 58%,var(--surface))}
+.ag{margin:10px 12px 0;padding:16px 4px 8px;border-radius:22px;background:var(--surface);border:1px solid var(--line)}
+@media (min-width:1100px){.ag{margin-top:0}}
+.aghead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:0 14px}
+.aghead h2{margin:0;font-size:22px;font-weight:800;display:flex;align-items:baseline;gap:8px}.aghead h2 span{font-size:14px;color:var(--muted);font-weight:600;font-family:var(--fb)}
+.aghead p{margin:3px 0 0;font-size:12.5px;color:var(--muted);font-weight:600}
+.aghead .pill{flex:none;height:34px;gap:4px}.aghead .pill svg{width:16px;height:16px}
+.agbar{position:relative;height:10px;margin:14px 14px 0;border-radius:5px;background:color-mix(in srgb,var(--ink) 8%,transparent);overflow:hidden}
+.agbar i{position:absolute;top:0;bottom:0;border-radius:3px}.agbar i.m{background:var(--meet)}.agbar i.t{background:var(--accent)}
+.agbar b{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--danger)}
+.agax{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);font-weight:600;padding:3px 14px 0}
+.agchips{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px 0}.agchips span{font-size:12.5px;font-weight:700;padding:5px 10px;border-radius:999px;background:color-mix(in srgb,var(--meet) 14%,var(--bg))}.agchips .ch-d{background:color-mix(in srgb,var(--danger) 12%,var(--bg));color:var(--danger)}
+.agl{position:relative;padding:12px 10px 4px 10px}
+.agi{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:14px;position:relative}
+.agi .agt{flex:none;width:66px;white-space:nowrap;display:flex;flex-direction:column;font-size:13px;line-height:1.2}.agi .agt b{font-weight:800}.agi .agt small{color:var(--muted);font-size:11px;font-weight:600}
+.agi .agb{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:8px 10px 8px 12px;border-radius:12px;background:var(--bg);border-left:4px solid var(--accent)}
+.agi.m .agb{border-left-color:var(--meet);background:color-mix(in srgb,var(--meet) 9%,var(--bg))}
+.agi.live .agb{box-shadow:0 0 0 2px var(--meet)}
+.agi .tt{font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.agi .sb{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agi .agbb{flex:1;min-width:0;text-align:left;display:flex;flex-direction:column;gap:1px}.agi .agb .chk{width:22px;height:22px}
+.agi.past{opacity:.5}.agi .chk{flex:none}
+.agi .pill.meet{flex:none;height:32px}
+.agfree{display:flex;align-items:center;gap:8px;padding:2px 6px 2px 82px}.agfree span{font-size:11.5px;font-weight:700;color:color-mix(in srgb,#1F8A3B 80%,var(--ink));padding:4px 10px;border:1.5px dashed color-mix(in srgb,#1F8A3B 45%,transparent);border-radius:999px}
+.agnow{display:flex;align-items:center;gap:8px;padding:4px 6px;color:var(--danger);font-size:11.5px;font-weight:800}.agnow::after{content:'';flex:1;height:2px;background:var(--danger);border-radius:2px}
+.ag .grouph{padding-left:16px}.ag .list{margin:0}
+.agempty{display:flex;flex-direction:column;align-items:center;gap:4px;padding:28px 10px 22px;text-align:center}.agempty b{font-family:var(--fd);font-size:18px}.agempty span{font-size:13px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -1487,9 +1547,7 @@ function listsNav(cur) {
   const nextD = S.dates.map(x => dayDiff(td, occOf(x))).filter(n => n >= 0).sort((a, b) => a - b)[0];
   let h = navItem('inbox', I.inbox, '#3B9EFF', 'Inbox', inboxTasks().length || '', cur === 'inbox');
   h += navItem('today', I.star, '#F5B800', 'Today', D.openCount || '', cur === 'today', D.overdue.length ? `<span class="bad" aria-label="${D.overdue.length} overdue">${D.overdue.length}</span>` : '');
-  h += navItem('week', I.cols, '#2BB5A6', 'Week board', '', cur === 'week');
   h += navItem('calendar', I.grid, '#E5484D', 'Calendar', '', cur === 'calendar');
-  h += navItem('upcoming', I.cal, '#A78BFA', 'Next 7 days', n7 || '', cur === 'upcoming');
   { const sc = open().filter(t => t.someday).length; if (sc || cur === 'someday') h += navItem('someday', I.box, '#C9A66B', 'Someday', sc || '', cur === 'someday'); }
   h += navItem('habits', I.drop, '#EC4899', 'Habits', hab ? hab + ' left' : '', cur === 'habits');
   h += navItem('life', I.target, '#10B981', 'Life list', (S.goals || []).filter(g => g.status === 'doing').length ? (S.goals || []).filter(g => g.status === 'doing').length + ' active' : '', cur === 'life');
@@ -1792,33 +1850,74 @@ function vDone() {
 /* ---------- calendar ---------- */
 let calMonth = null, calSel = null;
 const calSwitch = cur => `<div class="seg calsw" role="tablist" aria-label="Calendar view"><a href="#calendar" class="${cur === 'calendar' ? 'on' : ''}" role="tab" aria-selected="${cur === 'calendar'}">Month</a><a href="#week" class="${cur === 'week' ? 'on' : ''}" role="tab" aria-selected="${cur === 'week'}">Week</a></div>`;
+function calDay(k) {
+  const td = today(); const rep = k >= td ? open().filter(t => t.repeat && t.date && t.date !== k && occursOn(t, k)) : [];
+  const ts = S.tasks.filter(t => t.date === k && !t.someday && (!t.orig || t.done) && (!t.done || S.settings.showDone));
+  const all = [...ts, ...rep]; const ms = meetingsOn(k);
+  const mm = ms.reduce((a, m) => a + Math.max(0, Math.round((m.e - m.s) / 6e4)), 0);
+  const tm = all.filter(t => !t.done).reduce((a, t) => a + (+t.duration || 15), 0);
+  const [w0, w1] = workWin(); const free = Math.max(0, (w1 - w0) - mm - all.filter(t => !t.done).reduce((a, t) => a + (+t.duration || 0), 0));
+  return { ts: all, ms, mm, tm, load: mm + tm, free, ad: allDayOn(k), bd: datesOn(k) };
+}
+const calLvl = l => l <= 0 ? 0 : l < 60 ? 1 : l < 180 ? 2 : l < 300 ? 3 : 4;
+function calInsights() {
+  const td = today(); const days = Array.from({ length: 7 }, (_, i) => { const k = addDays(td, i); return { k, ...calDay(k) }; });
+  const mm = days.reduce((a, d) => a + d.mm, 0), mn = days.reduce((a, d) => a + d.ms.length, 0), tn = days.reduce((a, d) => a + d.ts.filter(t => !t.done).length, 0);
+  const work = days.filter(d => { const w = pYmd(d.k).getDay(); return w !== 0 && w !== 6; });
+  const busy = [...days].sort((a, b) => b.load - a.load)[0]; const calm = [...(work.length ? work : days)].sort((a, b) => a.load - b.load)[0];
+  const dn = k => k === td ? 'Today' : k === addDays(td, 1) ? 'Tomorrow' : DAYSL[pYmd(k).getDay()];
+  const over = open().filter(t => t.date && t.date < td && !t.someday).length;
+  const wk0 = pYmd(td); wk0.setDate(wk0.getDate() - ((wk0.getDay() + 6) % 7)); const done7 = S.tasks.filter(t => t.done && t.doneAt && t.doneAt >= wk0.getTime()).length;
+  let nx = null; for (let i = 0; i < 45 && !nx; i++) { const k = addDays(td, i), b = datesOn(k); if (b.length) nx = { k, i, x: b[0] }; }
+  const c = [];
+  c.push(`<div class="ci ci-a"><small>Next 7 days</small><b>${mm ? fmtMins(mm) : '0h'}</b><span>in ${plural(mn, 'meeting')} · ${plural(tn, 'task')}</span></div>`);
+  if (busy && busy.load) c.push(`<button class="ci" data-act="calday" data-d="${busy.k}"><small>Busiest</small><b>${dn(busy.k)}</b><span>${fmtMins(busy.load)} booked</span></button>`);
+  if (calm) c.push(`<button class="ci ci-g" data-act="calday" data-d="${calm.k}"><small>Best for deep work</small><b>${dn(calm.k)}</b><span>${fmtMins(calm.free)} free</span></button>`);
+  c.push(over ? `<a class="ci ci-r" href="#today"><small>Overdue</small><b>${over}</b><span>Move them to today</span></a>` : `<div class="ci"><small>Done this week</small><b>${done7}</b><span>${done7 ? 'tasks completed' : 'Nothing yet'}</span></div>`);
+  if (nx) c.push(`<button class="ci" data-act="calday" data-d="${nx.k}"><small>${nx.x.kind === 'birthday' ? '🎂 Birthday' : nx.x.kind === 'anniversary' ? '💍 Anniversary' : '📌 Date'}</small><b class="nm">${esc(nx.x.name)}</b><span>${nx.i === 0 ? 'Today' : nx.i === 1 ? 'Tomorrow' : 'in ' + nx.i + ' days'}</span></button>`);
+  return `<div class="cins">${c.join('')}</div>`;
+}
+function calAgenda(k) {
+  const td = today(), now = Date.now(), D = calDay(k), sd = pYmd(k);
+  const items = [...D.ms.map(m => ({ s: minOf(m.s), e: minOf(m.e) || 1440, m })), ...D.ts.filter(t => t.time).map(t => { const s = hm2m(t.time); return { s, e: s + (+t.duration || 0), t }; })].sort((a, b) => a.s - b.s);
+  const un = D.ts.filter(t => !t.time).sort(sortTasks);
+  const nowM = k === td ? minOf(now) : -1; const [w0, w1] = workWin();
+  let h = `<div class="ag"><div class="aghead"><div><h2>${k === td ? 'Today' : k === addDays(td, 1) ? 'Tomorrow' : DAYSL[sd.getDay()]}<span>${sd.getDate()} ${MONS[sd.getMonth()]}</span></h2><p>${[D.ms.length ? `${plural(D.ms.length, 'meeting')}, ${fmtMins(D.mm)}` : '', D.ts.length ? plural(D.ts.length, 'task') : '', `${fmtMins(D.free)} free`].filter(Boolean).join(' · ')}</p></div><button class="pill" data-act="addon" data-d="${k}">${I.plus}Add</button></div>`;
+  h += `<div class="agbar" aria-hidden="true">${(() => { const span = w1 - w0; return items.filter(x => x.e > w0 && x.s < w1).map(x => `<i class="${x.m ? 'm' : 't'}" style="left:${Math.max(0, (x.s - w0) / span * 100)}%;width:${Math.max(1.2, (Math.min(x.e, w1) - Math.max(x.s, w0)) / span * 100)}%"></i>`).join('') + (nowM >= w0 && nowM <= w1 ? `<b style="left:${(nowM - w0) / span * 100}%"></b>` : ''); })()}</div><div class="agax"><span>${fmtTime(S.settings.workStart || '09:30')}</span><span>${fmtTime(S.settings.shutdown || '19:00')}</span></div>`;
+  const chips = [...D.bd.map(x => `<span class="ch-d">${x.kind === 'anniversary' ? '💍' : x.kind === 'birthday' ? '🎂' : '📌'} ${esc(x.name)}</span>`), ...D.ad.map(m => `<span>${esc(m.t)}</span>`)];
+  if (chips.length) h += `<div class="agchips">${chips.join('')}</div>`;
+  if (items.length) {
+    h += `<div class="agl">`; let prev = null, nowShown = nowM < 0;
+    items.forEach(x => {
+      if (prev != null && x.s - prev >= 45) h += `<div class="agfree"><span>${fmtMins(x.s - prev)} free</span></div>`;
+      if (!nowShown && x.s > nowM) { h += `<div class="agnow"><span>Now ${fmtClock(now)}</span></div>`; nowShown = true; }
+      const tm = `<span class="agt"><b>${x.m ? fmtClock(x.m.s) : fmtTime(x.t.time)}</b>${x.e > x.s ? `<small>${fmtMins(x.e - x.s)}</small>` : ''}</span>`;
+      if (x.m) { const m = x.m, live = m.s <= now && m.e > now, past = m.e <= now; h += `<div class="agi m${past ? ' past' : ''}${live ? ' live' : ''}">${tm}<div class="agb"><button class="agbb" data-act="meet" data-id="${esc(m.id)}"><span class="tt">${esc(m.t)}</span><span class="sb">${live ? 'Happening now' : m.org ? esc(m.org) : 'Meeting'}</span></button>${m.join && !past ? `<a class="pill meet" href="${esc(m.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div></div>`; }
+      else { const t = x.t, p = proj(t.projectId); h += `<div class="agi t${t.done ? ' past' : ''}">${tm}<div class="agb"><button class="chk p${t.priority}" data-act="done" data-id="${t.id}" aria-label="${t.done ? 'Mark not done' : 'Complete'}: ${esc(t.title)}">${t.done ? I.check : ''}</button><button class="agbb" data-act="open" data-id="${t.id}"><span class="tt">${esc(t.title)}</span><span class="sb">${t.repeat ? 'Repeats' : p ? esc(p.name) : 'Task'}</span></button></div></div>`; }
+      prev = Math.max(prev || 0, x.e);
+    });
+    if (!nowShown) h += `<div class="agnow"><span>Now ${fmtClock(now)}</span></div>`;
+    h += `</div>`;
+  }
+  if (un.length) h += `<div class="grouph">Anytime</div>` + rows(un);
+  if (!items.length && !un.length && !chips.length) h += `<div class="agempty"><b>Free day</b><span>Nothing planned. Tap Add to plan it.</span></div>`;
+  return h + `</div>`;
+}
 function vCalendar() {
   const td = today(); calSel ||= td; if (!calMonth) calMonth = td.slice(0, 7);
   const [y, m] = calMonth.split('-').map(Number); const first = new Date(y, m - 1, 1); const off = (first.getDay() + 6) % 7;
-  let h = topbar(eyeBtn()) + `<div class="pad" style="padding-bottom:0">${calSwitch('calendar')}</div><div class="calhead"><b>${MONSL[m - 1]} ${y}</b><div><button class="iconbtn" data-act="calnav" data-dir="-1" aria-label="Previous month">${I.back}</button><button class="pill ghost" data-act="caltoday" style="height:32px">Today</button><button class="iconbtn" data-act="calnav" data-dir="1" aria-label="Next month">${I.next}</button></div></div>`;
-  if (S.pcal) h += `<a class="calsrc" href="#settings/gcal" style="display:block;text-decoration:none;margin:0 24px 8px">From your phone: ${esc(calShort().join(', ') || 'no calendars yet')} · updated ${fmtClock(S.pcal.at)}</a>`;
-  else if (!S.settings.gOn) h += `<a class="gnote" href="#settings/gcal" style="text-decoration:none;margin-bottom:8px">${I.gcal}Connect Google Calendar to see your meetings here</a>`; else if (!gValid()) h += `<button class="gnote" data-act="gref" style="margin-bottom:8px">${I.gcal}Google Calendar needs a tap to refresh</button>`;
-  h += `<div class="calgrid">${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(x => `<span class="wd">${x}</span>`).join('')}`;
-  const repeating = open().filter(t => t.repeat && t.date);
+  let h = topbar(eyeBtn()) + `<div class="calhead"><b>${MONSL[m - 1]} <span>${y}</span></b><div><button class="iconbtn" data-act="calnav" data-dir="-1" aria-label="Previous month">${I.back}</button><button class="pill ghost" data-act="caltoday" style="height:32px">Today</button><button class="iconbtn" data-act="calnav" data-dir="1" aria-label="Next month">${I.next}</button></div></div>`;
+  if (!S.pcal && !S.settings.gOn) h += `<a class="gnote" href="#settings/gcal" style="text-decoration:none;margin-bottom:8px">${I.gcal}Connect a calendar to see your meetings here</a>`; else if (!S.pcal && !gValid()) h += `<button class="gnote" data-act="gref" style="margin-bottom:8px">${I.gcal}Google Calendar needs a tap to refresh</button>`;
+  h += calInsights();
+  let g = `<div class="calgrid hm">${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(x => `<span class="wd">${x}</span>`).join('')}`;
   for (let i = 0; i < 42; i++) {
     const d = new Date(y, m - 1, 1 - off + i); const k = ymd(d);
     if (i >= 35 && d.getMonth() !== m - 1) break;
-    const nt = S.tasks.filter(t => t.date === k && (!t.done || S.settings.showDone)).length + repeating.filter(t => t.date !== k && occursOn(t, k)).length;
-    const nm = meetingsOn(k).length + allDayOn(k).length, nd = datesOn(k).length;
-    const dots = (nt ? '<i style="background:var(--accent)"></i>' : '') + (nm ? '<i style="background:var(--meet)"></i>' : '') + (nd ? '<i style="background:var(--danger)"></i>' : '');
-    h += `<button class="cd${d.getMonth() !== m - 1 ? ' om' : ''}${k === td ? ' td' : ''}${k === calSel ? ' sel' : ''}" data-act="calday" data-d="${k}" aria-label="${d.getDate()} ${MONSL[d.getMonth()]}${nt ? ', ' + plural(nt, 'task') : ''}"><span>${d.getDate()}</span><span class="dots">${dots}</span></button>`;
+    const D = calDay(k), lv = calLvl(D.load), nt = D.ts.filter(t => !t.done).length, nm = D.ms.length + D.ad.length;
+    g += `<button class="cd l${lv}${d.getMonth() !== m - 1 ? ' om' : ''}${k === td ? ' td' : ''}${k === calSel ? ' sel' : ''}${k < td ? ' past' : ''}" data-act="calday" data-d="${k}" aria-label="${d.getDate()} ${MONSL[d.getMonth()]}${nm ? ', ' + plural(nm, 'meeting') : ''}${nt ? ', ' + plural(nt, 'task') : ''}"><span class="n">${d.getDate()}</span>${D.bd.length ? '<span class="bd">🎂</span>' : ''}<span class="dots">${nm ? `<i class="m">${nm > 1 ? nm : ''}</i>` : ''}${nt ? `<i class="t">${nt > 1 ? nt : ''}</i>` : ''}</span></button>`;
   }
-  h += `</div>`;
-  const sd = pYmd(calSel); const ts = S.tasks.filter(t => t.date === calSel && (!t.done || S.settings.showDone)).sort(sortTasks);
-  const rep = repeating.filter(t => t.date !== calSel && occursOn(t, calSel));
-  const ms = meetingsOn(calSel), bd = datesOn(calSel);
-  h += `<div class="sechead"><h2 class="sec">${fmtDate(calSel) === 'Today' ? 'Today' : DAYSL[sd.getDay()] + ', ' + sd.getDate() + ' ' + MONS[sd.getMonth()]}</h2><span class="muted">${calSel === td ? '' : 'Tap Add to plan this day'}</span></div>`;
-  const adc = allDayOn(calSel); if (adc.length) h += `<div class="adchips" style="padding:0 24px 4px">${adc.map(m => `<span>${esc(m.t)}</span>`).join('')}</div>`;
-  if (bd.length) h += bd.map(x => `<div class="mini" style="color:var(--danger);padding-top:4px">${x.kind === 'anniversary' ? '💍' : x.kind === 'birthday' ? '🎂' : '📌'} ${esc(x.name)}</div>`).join('');
-  if (ms.length) h += `<div class="mlist" style="padding:0 24px">${ms.map(x => `<div class="mrow${x.e < Date.now() ? ' past' : ''}"><span class="tm">${fmtClock(x.s)}</span><span class="tt">${esc(x.t)}</span><button class="iconbtn" data-act="delmeet" data-id="${esc(x.id)}" aria-label="Remove meeting">${I.x}</button></div>`).join('')}</div>`;
-  h += ts.length ? rows(ts) : '';
-  if (rep.length) h += `<div class="grouph">${I.repeat} Repeating</div>` + rows(rep);
-  if (!ts.length && !rep.length && !ms.length && !bd.length && !adc.length) h += `<div class="empty">Free day.</div>`;
+  g += `</div><div class="hmleg"><span><i class="m"></i>Meetings</span><span><i class="t"></i>Tasks</span><span class="sc">Light<i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i>Packed</span></div>`;
+  h += `<div class="calwrap"><div class="calL">${g}</div><div class="calR">${calAgenda(calSel)}</div></div>`;
   return h;
 }
 
@@ -2440,7 +2539,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.0.5</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.1.1</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -2601,8 +2700,8 @@ function goalSheet(id) {
 /* ================= keyboard shortcuts (your own keys, Settings > Keyboard shortcuts) ================= */
 const KEY_ACTS = [
   ['add', 'New task', 'Ctrl+Space', () => quickAdd()], ['search', 'Search', 'Ctrl+K', () => searchSheet()],
-  ['today', 'Today', 'Alt+1', () => go('today')], ['inbox', 'Inbox', 'Alt+2', () => go('inbox')], ['week', 'Week board', 'Alt+3', () => go('week')],
-  ['calendar', 'Calendar', 'Alt+4', () => go('calendar')], ['upcoming', 'Next 7 days', 'Alt+5', () => go('upcoming')], ['habits', 'Habits', 'Alt+6', () => go('habits')],
+  ['today', 'Today', 'Alt+1', () => go('today')], ['inbox', 'Inbox', 'Alt+2', () => go('inbox')],
+  ['calendar', 'Calendar', 'Alt+4', () => go('calendar')], ['habits', 'Habits', 'Alt+6', () => go('habits')],
   ['review', 'Day review', 'Alt+7', () => go('review/today')], ['focus', 'Focus timer', 'Alt+8', () => go('focus')], ['log', 'Log activity', 'Alt+L', () => nowPick()],
   ['settings', 'Settings', 'Alt+9', () => go('settings')]];
 const keyMap = () => { const m = {}; KEY_ACTS.forEach(([k, , d]) => m[k] = d); return { ...m, ...(S.settings.keys || {}) }; };
@@ -3250,7 +3349,7 @@ function gCalSteps(cfg) {
   const st = S.settings;
   const s1 = !!(cfg && fbUser);
   const apiUrl = `https://console.cloud.google.com/apis/library/calendar-json.googleapis.com${cfg ? '?project=' + encodeURIComponent(cfg.projectId) : ''}`;
-  return `<p class="sub" style="line-height:1.5;margin:0 0 10px">See your personal Google Calendar meetings on Today, the Week board and Calendar. Read-only. Three steps, once:</p>
+  return `<p class="sub" style="line-height:1.5;margin:0 0 10px">See your personal Google Calendar meetings on Today and Calendar. Read-only. Three steps, once:</p>
   <ol class="steps">
    <li class="${s1 ? 'ok' : ''}"><i>${s1 ? I.check : '1'}</i><span><b>Turn on Sync with your Gmail</b>${s1 ? 'Done, signed in as ' + esc(fbUser.email || '') : 'Calendar uses the same Google sign-in. Set it up in "Sync phone and laptop" below.'}${s1 ? '' : `<br><a class="pill ghost" href="#settings/sync">Go to Sync</a>`}</span></li>
    <li><i>2</i><span><b>Allow Calendar for your Sankalp project</b>Opens Google Cloud with your project picked. Tap <b>Enable</b>, then come back.<br><a class="pill ghost" href="${apiUrl}" target="_blank" rel="noopener">Open and tap Enable</a></span></li>
@@ -3403,7 +3502,7 @@ function pokePhone() {
 /* ================= render ================= */
 function viewHtml() {
   const { view, arg } = route();
-  const V = { life: vLife, review: () => vReview(arg), home: vHome, today: vToday, plan: () => vPlan(arg || 'today'), week: vWeek, inbox: vInbox, upcoming: vUpcoming, someday: vSomeday, calendar: vCalendar, project: () => vProject(arg), done: vDone, habits: vHabits, dates: vDates, templates: vTemplates, focus: vFocus, insights: () => vInsights(arg), settings: () => vSettings(arg) };
+  const V = { life: vLife, review: () => vReview(arg), home: vHome, today: vToday, plan: () => vPlan(arg || 'today'), week: vCalendar, inbox: vInbox, upcoming: vUpcoming, someday: vSomeday, calendar: vCalendar, project: () => vProject(arg), done: vDone, habits: vHabits, dates: vDates, templates: vTemplates, focus: vFocus, insights: () => vInsights(arg), settings: () => vSettings(arg) };
   return (view === 'home' && isWide()) ? vToday() : (V[view] || vToday)();
 }
 function renderMainOnly() {
@@ -3413,7 +3512,7 @@ function renderMainOnly() {
   Object.entries(keep).forEach(([id, v]) => { const el = document.getElementById(id); if (el && !el.value) el.value = v; });
   if (act) { const el = document.getElementById(act); if (el) { el.focus({ preventScroll: true }); try { el.setSelectionRange(a0, a1); } catch (e) { } } }
 }
-function renderMainCore() { const v = route().view; $('#main').innerHTML = viewHtml(); $('#main').classList.toggle('wide', v === 'week'); renderSide(); renderTabs(); renderRail(); wire(v); }
+function renderMainCore() { const v = route().view; $('#main').innerHTML = viewHtml(); $('#main').classList.toggle('calw', v === 'calendar' || v === 'week'); renderSide(); renderTabs(); renderRail(); wire(v); }
 function render() {
   const { view } = route(); renderMainOnly();
   $('#fab').style.display = ['settings', 'focus', 'insights', 'habits', 'dates', 'templates', 'home', 'review', 'life'].includes(view) ? 'none' : '';
