@@ -1899,21 +1899,29 @@ function calDay(k) {
   const all = [...ts, ...rep]; const ms = meetingsOn(k);
   const mm = ms.reduce((a, m) => a + Math.max(0, Math.round((m.e - m.s) / 6e4)), 0);
   const tm = all.filter(t => !t.done).reduce((a, t) => a + (+t.duration || 15), 0);
-  const [w0, w1] = workWin(); const free = Math.max(0, (w1 - w0) - mm - all.filter(t => !t.done).reduce((a, t) => a + (+t.duration || 0), 0));
+  const [w0, w1] = workWin(); if (k < td) return { ts: all, ms, mm, tm, load: mm + tm, free: 0, ad: allDayOn(k), bd: datesOn(k) };
+  // Today: only the time still ahead counts. What is gone is gone.
+  const from = k === td ? Math.max(w0, minOf(Date.now())) : w0;
+  const busyAhead = ms.reduce((a, m) => { const s0 = Math.max(minOf(m.s), from), e0 = Math.min(minOf(m.e) || 1440, w1); return a + Math.max(0, e0 - s0); }, 0);
+  const free = Math.max(0, (w1 - from) - busyAhead - all.filter(t => !t.done).reduce((a, t) => a + (+t.duration || 0), 0));
   return { ts: all, ms, mm, tm, load: mm + tm, free, ad: allDayOn(k), bd: datesOn(k) };
 }
 const calLvl = l => l <= 0 ? 0 : l < 60 ? 1 : l < 180 ? 2 : l < 300 ? 3 : 4;
 function calInsights() {
-  const td = today(); const days = Array.from({ length: 7 }, (_, i) => { const k = addDays(td, i); return { k, ...calDay(k) }; });
+  const td = today(); const wd = pYmd(td).getDay();
+  // Rest of this week (to Sunday). On Saturday or Sunday, look at the coming week instead.
+  const left = wd === 0 ? 0 : 7 - wd; const span = wd === 6 || wd === 0 ? left + 8 : left + 1;
+  const days = Array.from({ length: span }, (_, i) => { const k = addDays(td, i); return { k, ...calDay(k) }; });
+  const wkLabel = wd === 6 || wd === 0 ? 'meetings, till next Sunday' : wd === 1 ? 'meetings this week' : 'meetings, rest of week';
   const mm = days.reduce((a, d) => a + d.mm, 0), mn = days.reduce((a, d) => a + d.ms.length, 0), tn = days.reduce((a, d) => a + d.ts.filter(t => !t.done).length, 0);
-  const work = days.filter(d => { const w = pYmd(d.k).getDay(); return w !== 0 && w !== 6; });
-  const busy = [...days].sort((a, b) => b.load - a.load)[0]; const calm = [...(work.length ? work : days)].sort((a, b) => a.load - b.load)[0];
+  const work = days.filter(d => { const w = pYmd(d.k).getDay(); return w !== 0 && w !== 6 && (d.k !== td || d.free > 0); });
+  const busy = [...days].sort((a, b) => b.load - a.load)[0]; const calm = [...(work.length ? work : days)].sort((a, b) => b.free - a.free || a.k.localeCompare(b.k))[0];
   const dn = k => k === td ? 'Today' : k === addDays(td, 1) ? 'Tomorrow' : DAYSL[pYmd(k).getDay()];
   const over = open().filter(t => t.date && t.date < td && !t.someday).length;
   const wk0 = pYmd(td); wk0.setDate(wk0.getDate() - ((wk0.getDay() + 6) % 7)); const done7 = S.tasks.filter(t => t.done && t.doneAt && t.doneAt >= wk0.getTime()).length;
   let nx = null; for (let i = 0; i < 45 && !nx; i++) { const k = addDays(td, i), b = datesOn(k); if (b.length) nx = { k, i, x: b[0] }; }
   const c = [];
-  c.push(`<div class="cs"><b>${mm ? fmtMins(mm) : '0h'}</b><span>meetings, next 7 days</span></div>`);
+  c.push(`<div class="cs"><b>${mm ? fmtMins(mm) : '0h'}</b><span>${wkLabel}</span></div>`);
   if (busy && busy.load) c.push(`<button class="cs" data-act="calday" data-d="${busy.k}"><b>${dn(busy.k)}</b><span>busiest, ${fmtMins(busy.load)}</span></button>`);
   if (calm) c.push(`<button class="cs" data-act="calday" data-d="${calm.k}"><b>${dn(calm.k)}</b><span>most free, ${fmtMins(calm.free)}</span></button>`);
   if (over) c.push(`<a class="cs bad" href="#today"><b>${over}</b><span>overdue</span></a>`);
@@ -2581,7 +2589,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.3</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.3.1</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
