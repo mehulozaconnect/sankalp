@@ -57,6 +57,7 @@ public class ReminderActivity extends Activity {
         chip = dark ? 0xFF2E333B : 0xFFF2F4F7;
         line = dark ? 0xFF3A404A : 0xFFE3E6EB;
         build();
+        if (i.getBooleanExtra("resched", false) && !a.optBoolean("meet")) getWindow().getDecorView().post(this::reschedule);
     }
 
     private static int prioColor(int p) {
@@ -160,9 +161,14 @@ public class ReminderActivity extends Activity {
             LinearLayout.LayoutParams sp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1);
             sp.setMargins(0, dp(14), 0, dp(14));
             box.addView(sep, sp);
+            LinearLayout last = new LinearLayout(this);
+            TextView rs = pill("Reschedule", chip, ink, v -> reschedule());
+            rs.setTextSize(16);
+            last.addView(rs, weight(54, 0));
             TextView done = pill("✓  Mark done", 0xFF1F8A3B, Color.WHITE, v -> done());
             done.setTextSize(16);
-            box.addView(done, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(54)));
+            last.addView(done, weight(54, 10));
+            box.addView(last);
         }
         setContentView(root);
         box.setTranslationY(dp(220));
@@ -204,6 +210,62 @@ public class ReminderActivity extends Activity {
         Intent i = new Intent(this, ActionReceiver.class).setAction("snooze").putExtra("a", a.toString()).putExtra("mins", mins);
         sendBroadcast(i);
         dismiss();
+    }
+
+    /** Pick a new date, then a new time; the task moves there and its reminder follows. */
+    private void reschedule() {
+        final java.util.Calendar c = java.util.Calendar.getInstance();
+        long at = a.optLong("at", System.currentTimeMillis());
+        if (at > System.currentTimeMillis()) c.setTimeInMillis(at);
+        int theme = dark ? android.R.style.Theme_Material_Dialog : android.R.style.Theme_Material_Light_Dialog;
+        android.app.DatePickerDialog dd = new android.app.DatePickerDialog(this, theme, (dp, y, m, d) -> {
+            final java.util.Calendar pick = java.util.Calendar.getInstance();
+            pick.set(y, m, d);
+            android.app.TimePickerDialog td = new android.app.TimePickerDialog(this, theme, (tp, hh, mm) -> {
+                pick.set(java.util.Calendar.HOUR_OF_DAY, hh); pick.set(java.util.Calendar.MINUTE, mm); pick.set(java.util.Calendar.SECOND, 0);
+                saveNewTime(pick);
+            }, c.get(java.util.Calendar.HOUR_OF_DAY), c.get(java.util.Calendar.MINUTE), android.text.format.DateFormat.is24HourFormat(this));
+            td.setTitle("New time");
+            td.show();
+        }, c.get(java.util.Calendar.YEAR), c.get(java.util.Calendar.MONTH), c.get(java.util.Calendar.DAY_OF_MONTH));
+        dd.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
+        dd.show();
+    }
+
+    private void saveNewTime(java.util.Calendar pick) {
+        final String date = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(pick.getTime());
+        final String time = new SimpleDateFormat("HH:mm", Locale.US).format(pick.getTime());
+        final String label = new SimpleDateFormat("EEE d MMM, h:mm a", Locale.US).format(pick.getTime());
+        if (a.optBoolean("test")) { android.widget.Toast.makeText(this, "Works. Real tasks move to " + label + ".", android.widget.Toast.LENGTH_SHORT).show(); dismiss(); return; }
+        final android.content.Context ctx = getApplicationContext();
+        final JSONObject ja = a;
+        final android.os.Handler ui = new android.os.Handler(android.os.Looper.getMainLooper());
+        Alarms.cancelNag(ctx, ja);
+        dismiss();
+        new Thread(() -> {
+            try {
+                String name = ja.optString("name");
+                JSONObject t = Api.getD(ctx, name);
+                if (t == null) throw new IllegalStateException("task not found");
+                if (ja.has("sub")) {
+                    org.json.JSONArray subs = t.optJSONArray("subs");
+                    if (subs != null) for (int k = 0; k < subs.length(); k++) {
+                        JSONObject c = subs.getJSONObject(k);
+                        if (ja.optString("sub").equals(c.optString("id"))) { c.put("at", date + "T" + time); c.put("nagAt", 0); c.put("snoozeUntil", 0); }
+                    }
+                } else {
+                    t.put("date", date).put("time", time).put("someday", false).put("snoozeUntil", 0).put("nagAt", 0).put("firedKeys", new org.json.JSONArray());
+                    org.json.JSONArray rem = t.optJSONArray("reminders");
+                    if (rem == null || rem.length() == 0) t.put("reminders", new org.json.JSONArray().put(0));
+                }
+                Api.commit(ctx, new org.json.JSONArray().put(Api.write(name, t.toString(), "task")));
+                try { Sync.replan(ctx); } catch (Exception ignored) { }
+                ui.post(() -> android.widget.Toast.makeText(ctx, "Moved to " + label, android.widget.Toast.LENGTH_SHORT).show());
+            } catch (Exception e) {
+                Api.p(ctx).edit().putString("lastErr", "Could not reschedule: " + e.getMessage()).apply();
+                ui.post(() -> android.widget.Toast.makeText(ctx, "Could not reschedule. Check internet and try again.", android.widget.Toast.LENGTH_LONG).show());
+            }
+        }).start();
     }
 
     private void done() {

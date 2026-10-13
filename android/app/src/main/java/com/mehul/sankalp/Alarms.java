@@ -243,7 +243,6 @@ final class Alarms {
         } else {
             donePi = action(ctx, "done", a, nid + 1);
         }
-        PendingIntent snzPi = action(ctx, "snooze", a, nid + 2);
         Icon ic = Icon.createWithResource(ctx, R.drawable.ic_stat);
         int n = a.optInt("n", 0);
         String text = n > 0 ? "Still not done" : a.optString("body");
@@ -257,7 +256,16 @@ final class Alarms {
                 .setContentIntent(openPi)
                 .setAutoCancel(true)
                 .addAction(new Notification.Action.Builder(ic, "Done", donePi).build())
-                .addAction(new Notification.Action.Builder(ic, "Snooze 10 min", snzPi).build());
+                .addAction(new Notification.Action.Builder(ic, "Reschedule", reschedPi(ctx, a, nid + 4)).build());
+        try {
+            android.widget.RemoteViews rv = new android.widget.RemoteViews(ctx.getPackageName(), R.layout.notif_rem);
+            rv.setTextViewText(R.id.n_title, (a.optInt("prio") == 1 ? "P1 · " : "") + a.optString("title"));
+            rv.setTextViewText(R.id.n_text, text);
+            rv.setOnClickPendingIntent(R.id.n_s10, snoozePi(ctx, a, 10, nid + 10));
+            rv.setOnClickPendingIntent(R.id.n_s30, snoozePi(ctx, a, 30, nid + 30));
+            rv.setOnClickPendingIntent(R.id.n_s60, snoozePi(ctx, a, 60, nid + 60));
+            b.setStyle(new Notification.DecoratedCustomViewStyle()).setCustomBigContentView(rv).setCustomHeadsUpContentView(rv);
+        } catch (Exception ignored) { }
         if (cardOn(ctx)) b.setFullScreenIntent(ReminderActivity.pending(ctx, a, nid + 3), true);
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         try { nm.notify(nid, b.build()); } catch (SecurityException ignored) { }
@@ -279,6 +287,21 @@ final class Alarms {
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         try { nm.notify(nid, b.build()); } catch (SecurityException ignored) { }
         openCard(ctx, a);
+    }
+
+    static PendingIntent snoozePi(Context ctx, JSONObject a, int mins, int req) {
+        Intent i = new Intent(ctx, ActionReceiver.class).setAction("snooze").setData(Uri.parse("sankalp://act/snooze/" + mins + "/" + Uri.encode(a.optString("id"))));
+        i.putExtra("a", a.toString()).putExtra("mins", mins);
+        return PendingIntent.getBroadcast(ctx, req, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    /** Opens the reminder card straight into the date and time picker. */
+    static PendingIntent reschedPi(Context ctx, JSONObject a, int req) {
+        Intent i = new Intent(ctx, ReminderActivity.class)
+                .setData(Uri.parse("sankalp://resched/" + Uri.encode(a.optString("id"))))
+                .putExtra("a", a.toString()).putExtra("resched", true)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+        return PendingIntent.getActivity(ctx, req, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     static PendingIntent action(Context ctx, String act, JSONObject a, int req) {

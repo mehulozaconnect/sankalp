@@ -102,6 +102,19 @@ final class Sync {
         ack(ctx, v);
     }
 
+    /** Re-plans alarms right away after the phone itself changed a task (for example Reschedule). */
+    static void replan(Context ctx) throws Exception {
+        SharedPreferences p = Api.p(ctx);
+        JSONArray tasks = Api.list(ctx, "task");
+        JSONObject prefs = null, cal = null;
+        try { prefs = new JSONObject(p.getString("prefsJson", "{}")); } catch (Exception ignored) { }
+        try { cal = new JSONObject(p.getString("pcal", "{}")); } catch (Exception ignored) { }
+        JSONArray dates = null;
+        try { dates = Api.list(ctx, "date"); } catch (Exception ignored) { }
+        Alarms.plan(ctx, tasks, dates, prefs, cal);
+        p.edit().putString("brief", brief(tasks).toString()).apply();
+    }
+
     /** Tells Sankalp the phone now has these reminders, so the web app stops sending its own. */
     static void ack(Context ctx, String v) throws Exception {
         if (v == null || v.isEmpty()) return;

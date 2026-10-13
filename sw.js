@@ -1,5 +1,5 @@
 // Sankalp service worker: offline app shell + notification buttons
-const CACHE = 'sankalp-v48';
+const CACHE = 'sankalp-v49';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -38,14 +38,14 @@ self.addEventListener('notificationclick', e => {
   const n = e.notification;
   const data = n.data || {};
   n.close();
-  const type = e.action === 'done' ? 'done' : e.action === 'snooze' ? 'snooze' : 'open';
+  const type = e.action === 'done' ? 'done' : e.action === 'snooze' ? 'snooze' : e.action === 'resched' ? 'resched' : 'open';
   e.waitUntil((async () => {
     if (type === 'open' && data.url) { await self.clients.openWindow(data.url); return; }
     const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     if (all.length) {
       const c = all[0];
       c.postMessage({ type, id: data.id, sub: data.sub });
-      if (type === 'open') { try { await c.focus(); } catch (err) { } }
+      if (type === 'open' || type === 'resched') { try { await c.focus(); } catch (err) { } }
       return;
     }
     const q = data.id ? `?${type}=${encodeURIComponent(data.id)}${data.sub ? '&sub=' + encodeURIComponent(data.sub) : ''}` : '';
