@@ -2441,7 +2441,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.0.3</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.0.4</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -2854,12 +2854,12 @@ function renderPage(fresh) {
   if (t.duration) props.push(`<button class="prop" data-pp="dur">${I.hour}${fmtMins(t.duration)}</button>`);
   props.push(`<button class="prop more" data-pp="more">${I.plus}More</button>`);
   const sd = t.subs.filter(c => c.d).length;
-  pg.innerHTML = `<div class="pbar"><button class="back" id="pBack" aria-label="Back">${I.back}<span>Back</span></button><div class="acts"><button class="iconbtn${t.pinned ? ' on' : ''}" id="pPin" aria-pressed="${t.pinned}" aria-label="${t.pinned ? 'Unpin' : 'Pin to top'}">${I.pin}</button><button class="iconbtn" id="pImgB" aria-label="Attach image">${I.img}</button><button class="iconbtn" id="pMore" aria-label="More actions">${I.more}</button></div></div>
+  pg.innerHTML = `<div class="pbar"><button class="back" id="pBack" aria-label="Back">${I.back}<span>Back</span></button><div class="acts"><button class="iconbtn${t.pinned ? ' on' : ''}" id="pPin" aria-pressed="${t.pinned}" aria-label="${t.pinned ? 'Unpin' : 'Pin to top'}">${I.pin}</button><button class="iconbtn" id="pImgB" aria-label="Attach image">${I.img}</button><button class="iconbtn" id="pMore" aria-label="More actions">${I.more}</button><button class="iconbtn" id="pClose" aria-label="Close" title="Close (Esc)">${I.x}</button></div></div>
   <div class="ptitle${t.done ? ' done' : ''}"><button class="chk p${t.priority}${t.done ? ' isdone' : ''}" id="pChk" aria-label="${t.done ? 'Mark not done' : 'Complete task'}" style="${t.done ? '--x:1' : ''}">${t.done ? I.check : ''}</button><label for="pTitle" class="sr">Title</label><textarea id="pTitle" rows="1">${esc(t.title)}</textarea></div>
   <div class="props">${props.join('')}</div>
   ${t.pushed >= 2 ? `<div class="psec" style="padding-top:8px"><div class="warn">Moved ${t.pushed} times. Add a small first step below, or drop it from the menu.</div></div>` : ''}
   <div class="psec"><h3><span>Subtasks${t.subs.length ? ` ${sd}/${t.subs.length}` : ''}</span></h3><div id="pCl">${t.subs.map(c => clRow(c, true)).join('')}</div><div class="cl"><button type="button" id="pClAdd" class="iconbtn" style="width:24px;color:var(--muted)" aria-label="Add subtask">${I.plus}</button><textarea class="clt" id="pClNew" rows="1" placeholder="Add a subtask" aria-label="Add a subtask" enterkeyhint="enter" autocomplete="off"></textarea></div></div>
-  <div class="psec"><h3><span>Notes</span></h3>${toolbarHtml()}<div class="notes" id="pNotes" contenteditable="true" data-ph="Write notes, call points, links. Use the bar above for bold and highlight." role="textbox" aria-multiline="true" aria-label="Notes">${cleanHtml(t.notes)}</div></div>
+  <div class="psec"><h3><span>Notes</span></h3>${toolbarHtml()}<div class="notes" id="pNotes" contenteditable="true" data-ph="Notes" role="textbox" aria-multiline="true" aria-label="Notes">${cleanHtml(t.notes)}</div></div>
   <div class="psec"><h3><span>Images${t.imgs.length ? ' ' + t.imgs.length : ''}</span></h3><div class="imgs">${t.imgs.map(id => IMGS[id] ? `<button class="im" data-img="${id}" aria-label="Open image"><img src="${IMGS[id]}" alt="Attached image"></button>` : '').join('')}<button class="addimg" id="pAddImg">${I.img}<span>Add image</span></button></div></div>
   <div class="pfoot">Created ${fmtDate(ymd(new Date(t.createdAt)))}${t.done && t.doneAt ? `. Done ${fmtDate(ymd(new Date(t.doneAt)))}` : ''}${t.pushed ? `. Moved ${plural(t.pushed, 'time')}` : ''}.</div>`;
   pg.classList.add('on'); document.body.style.overflow = 'hidden'; pg.scrollTop = y;
@@ -2867,6 +2867,7 @@ function renderPage(fresh) {
   ta.oninput = () => { fit(); t.title = ta.value.replace(/\n/g, ' '); save(); };
   ta.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); ta.blur(); } };
   $('#pBack').onclick = () => closePage();
+  $('#pClose').onclick = () => closePage();
   $('#pChk').onclick = () => { toggleDone(t.id); renderPage(); };
   $('#pPin').onclick = () => { t.pinned = !t.pinned; save(); renderPage(); toast(t.pinned ? 'Pinned to the top' : 'Unpinned'); };
   const fi = $('#imgIn'); fi.onchange = () => { const f = [...fi.files]; fi.value = ''; addImages(t, f); }; const pickImg = () => fi.click();
