@@ -872,6 +872,17 @@ main.calw{max-width:800px}
 .cdet>summary{list-style:none;cursor:pointer}.cdet>summary::-webkit-details-marker{display:none}
 .csrc{padding:4px 0 10px 38px;border-bottom:1px solid var(--line)}.csrc div{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:4px 0;color:var(--soft)}.csrc span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.csrc b{font-weight:700;color:var(--ink)}
 .cdet[open]>summary{border-bottom:0}
+.ctx{position:fixed;z-index:80;width:236px;background:var(--bg);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 36px var(--shadow);padding:8px 6px;font-size:14px}
+.ctx .cxl{font-size:11.5px;font-weight:700;color:var(--muted);padding:4px 10px 4px}
+.ctx .cxi{display:flex;gap:2px;padding:0 4px 4px}.ctx .cxi button{flex:1;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center}.ctx .cxi button svg{width:19px;height:19px}
+.ctx .cxi button:hover,.ctx .cxb:hover{background:var(--surface)}.ctx .cxi button.on{background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line)}
+.ctx .cxs{height:1px;background:var(--line);margin:5px 4px}
+.ctx .cxb{width:100%;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;text-align:left;font-weight:500}.ctx .cxb svg{width:17px;height:17px;flex:none;color:var(--soft)}
+.ctx .cxb.on{font-weight:700}.ctx .cxb.danger,.ctx .cxb.danger svg{color:var(--danger)}
+.ctx .cxa{margin-left:auto;color:var(--muted);font-size:12px;display:flex;max-width:90px;overflow:hidden;white-space:nowrap}.ctx .cxa svg{width:14px;height:14px}
+.ctx .cxe{width:17px;text-align:center}
+.ctx .cxsub{position:relative}.ctx .cxp{display:none;position:absolute;left:100%;top:-8px;width:210px;max-height:60vh;overflow-y:auto;background:var(--bg);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 36px var(--shadow);padding:6px}
+.ctx .cxp.left{left:auto;right:100%}.ctx .cxsub:hover .cxp,.ctx .cxsub:focus-within .cxp{display:block}
 </style>
 </head>
 <body>
@@ -2613,7 +2624,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.3.8</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.3.9</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -3602,6 +3613,55 @@ function wire(view) {
   }
   $$('.row').forEach(swipe);
 }
+
+/* ---------- right-click menu on a task (laptop) ---------- */
+function closeCtx() { const m = $('#ctx'); if (m) m.remove(); }
+function ctxMenu(x, y, id) {
+  closeCtx(); const t = getTask(id); if (!t) return; const td = today();
+  const dates = [['today', I.sun, 'Today', td], ['tom', I.arrow || I.next, 'Tomorrow', addDays(td, 1)], ['nw', I.cal, 'Next week', nextWeekday(1, false)], ['pick', I.clock, 'Pick date and time', null], ['none', I.x, 'No date', null]];
+  const pc = { 1: '#E5484D', 2: '#F2A33A', 3: '#2F7BEA', 4: 'var(--muted)' };
+  const projs = projSorted();
+  const m = document.createElement('div'); m.id = 'ctx'; m.className = 'ctx'; m.setAttribute('role', 'menu');
+  m.innerHTML = `<div class="cxl">Date</div><div class="cxi">${dates.map(([k, ic, l, d]) => `<button data-cd="${k}" title="${l}" aria-label="${l}" class="${d && t.date === d && !t.someday ? 'on' : ''}">${ic}</button>`).join('')}</div>
+  <div class="cxl">Priority</div><div class="cxi">${[1, 2, 3, 4].map(p => `<button data-cp="${p}" title="${p < 4 ? 'P' + p : 'No priority'}" aria-label="${p < 4 ? 'Priority ' + p : 'No priority'}" class="${t.priority === p ? 'on' : ''}" style="color:${pc[p]}">${p < 4 ? I.flagw || I.flag : I.flag}</button>`).join('')}</div>
+  <div class="cxs"></div>
+  <button class="cxb" data-cm="sub">${I.plus}Add subtask</button>
+  <button class="cxb" data-cm="pin">${I.pin}${t.pinned ? 'Unpin' : 'Pin to top'}</button>
+  <div class="cxsub"><button class="cxb" data-cm="move">${I.folder}Move to<span class="cxa">${I.next}</span></button><div class="cxp">${projs.map(p => `<button class="cxb${t.projectId === p.id ? ' on' : ''}" data-mp="${p.id}">${p.emoji ? `<span class="cxe">${p.emoji}</span>` : I.folder}${esc(p.name)}</button>`).join('')}<button class="cxb${!t.projectId ? ' on' : ''}" data-mp="">${I.inbox}Inbox</button></div></div>
+  <button class="cxb" data-cm="tags">${I.tag}Tags<span class="cxa">${t.tags.length ? t.tags.map(x => '@' + esc(x)).join(' ') : ''}</span></button>
+  <div class="cxs"></div>
+  <button class="cxb" data-cm="focus">${I.timer}Start focus</button>
+  <button class="cxb" data-cm="dup">${I.layers}Duplicate</button>
+  <button class="cxb" data-cm="copy">${I.note}Copy title</button>
+  <div class="cxs"></div>
+  <button class="cxb danger" data-cm="del">${I.trash}Delete</button>`;
+  document.body.appendChild(m);
+  const W = m.offsetWidth, H = m.offsetHeight; m.style.left = Math.max(8, Math.min(x, innerWidth - W - 8)) + 'px'; m.style.top = Math.max(8, Math.min(y, innerHeight - H - 8)) + 'px';
+  const sub = m.querySelector('.cxsub'); sub.onmouseenter = () => { const r = sub.getBoundingClientRect(), P = sub.querySelector('.cxp'); P.classList.toggle('left', r.right + 220 > innerWidth); };
+  const done = msg => { closeCtx(); save(); render(); if (pageId === t.id) renderPage(); if (msg) toast(msg); };
+  m.querySelectorAll('[data-cd]').forEach(b => b.onclick = () => { const k = b.dataset.cd; if (k === 'pick') { closeCtx(); pickWhen(t); return; } if (k === 'none') { t.date = null; t.someday = false; t.time = null; t.firedKeys = []; t.nagAt = 0; t.snoozeUntil = 0; return done('Date removed'); } const d = dates.find(z => z[0] === k)[3]; setDate(t, d); t.someday = false; done('Moved to ' + fmtDate(d)); });
+  m.querySelectorAll('[data-cp]').forEach(b => b.onclick = () => { t.priority = +b.dataset.cp; done(t.priority < 4 ? 'Priority ' + t.priority : 'Priority removed'); });
+  m.querySelectorAll('[data-mp]').forEach(b => b.onclick = () => { t.projectId = b.dataset.mp || null; const p = proj(t.projectId); done('Moved to ' + (p ? p.name : 'Inbox')); });
+  m.querySelectorAll('[data-cm]').forEach(b => b.onclick = () => {
+    const a = b.dataset.cm; if (a === 'move') return;
+    if (a === 'sub') { closeCtx(); taskSheet(t.id); setTimeout(() => { const n = $('#pClNew'); if (n) n.focus(); }, 300); }
+    else if (a === 'pin') { t.pinned = !t.pinned; done(t.pinned ? 'Pinned' : 'Unpinned'); }
+    else if (a === 'tags') { closeCtx(); pickTags(t); }
+    else if (a === 'focus') { closeCtx(); S.timer.taskId = t.id; resetTimer('work'); startTimer(); go('focus'); }
+    else if (a === 'dup') { const c = newTask({ ...JSON.parse(JSON.stringify(t)), id: uid(), done: false, doneAt: null, createdAt: Date.now(), pushed: 0, firedKeys: [], title: t.title + ' (copy)' }); delete c.orig; S.tasks.push(c); addPlan(c); done('Duplicated'); }
+    else if (a === 'copy') { closeCtx(); try { navigator.clipboard.writeText(t.title); toast('Title copied'); } catch (e) { } }
+    else if (a === 'del') { closeCtx(); deleteTask(t.id); }
+  });
+}
+document.addEventListener('contextmenu', e => {
+  if (e.target.closest('input,textarea,[contenteditable=true],#sheet')) return;
+  const el = e.target.closest('[data-id],[data-tid]'); const id = el && (el.dataset.tid || el.dataset.id);
+  if (!id || !getTask(id)) { closeCtx(); return; }
+  e.preventDefault(); ctxMenu(e.clientX, e.clientY, id);
+});
+document.addEventListener('mousedown', e => { if (!e.target.closest('#ctx')) closeCtx(); }, true);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#ctx')) { e.stopPropagation(); closeCtx(); } }, true);
+addEventListener('scroll', closeCtx, true); addEventListener('resize', closeCtx);
 let swipedAt = 0;
 const SWIPE_ACTS = [['done', 'Done'], ['move', 'Move or pin menu'], ['tomorrow', 'Move to tomorrow'], ['date', 'Pick a date'], ['pin', 'Pin to top'], ['someday', 'Someday'], ['focus', 'Start focus'], ['delete', 'Delete'], ['none', 'Nothing']];
 function swipeAct(a, id) {
