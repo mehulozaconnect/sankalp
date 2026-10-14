@@ -869,6 +869,9 @@ main.calw{max-width:800px}
 .lt-row button svg{width:18px;height:18px}
 .lt-last{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}.lt-last .ok{background:#1F8A3B;color:#fff}
 @media (min-width:700px){.sheet.ltw{width:400px;margin-left:-200px;top:auto;bottom:24px}}
+.cdet>summary{list-style:none;cursor:pointer}.cdet>summary::-webkit-details-marker{display:none}
+.csrc{padding:4px 0 10px 38px;border-bottom:1px solid var(--line)}.csrc div{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:4px 0;color:var(--soft)}.csrc span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.csrc b{font-weight:700;color:var(--ink)}
+.cdet[open]>summary{border-bottom:0}
 </style>
 </head>
 <body>
@@ -1478,7 +1481,10 @@ function todayData() {
 }
 const inboxTasks = () => open().filter(t => !t.projectId && !t.date && !t.someday).sort(sortTasks);
 function meetingsOn(d) { const seen = new Set(); return Object.values(S.meetLog).filter(m => !m.allDay && ymd(new Date(m.s)) === d).sort((a, b) => a.s - b.s).filter(m => { const k = (m.t || '').trim().toLowerCase() + '|' + m.s; if (seen.has(k)) return false; seen.add(k); return true; }); }
-function allDayOn(d) { const d0 = pYmd(d).getTime(), d1 = d0 + 864e5; const seen = new Set(); return Object.values(S.meetLog).filter(m => m.allDay && m.s < d1 && (m.e || m.s + 1) > d0).filter(m => { const k = (m.t || '').toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }); }
+/* All-day events are calendar dates, not times. Phone calendars store them as midnight UTC, which is 5:30 am here, so read the date in UTC. */
+function adDay(ms, src) { const x = new Date(ms); return src === 'pcal' && x.getUTCHours() === 0 && x.getUTCMinutes() === 0 ? `${x.getUTCFullYear()}-${pad(x.getUTCMonth() + 1)}-${pad(x.getUTCDate())}` : ymd(x); }
+function adSpan(m) { const sd = adDay(m.s, m.src); let ed = m.e ? adDay(m.e, m.src) : sd; if (ed <= sd || /birthday|anniversary/i.test(m.t || '') || /birthday|contacts/i.test(m.cal || '')) ed = addDays(sd, 1); return [sd, ed]; }
+function allDayOn(d) { const seen = new Set(); return Object.values(S.meetLog).filter(m => { if (!m.allDay) return false; const [sd, ed] = adSpan(m); return d >= sd && d < ed; }).filter(m => { const k = (m.t || '').toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }); }
 function calShort() { const out = new Set(); ((S.pcal || {}).ev || []).forEach(e => { const c = e[5] || ''; if (pcSkip(c, 0)) return; const m = c.match(/\(([^)]+)\)/); const mail = m ? m[1] : c; out.add(/gmail\.com$/i.test(mail) ? 'Gmail' : /@/.test(mail) ? 'Work (' + mail.split('@')[1].split('.')[0] + ')' : c.replace(/\s*\(.*\)$/, '')); }); return [...out]; }
 function calSources() {
   const pc = S.pcal; if (!pc) return '';
@@ -1763,7 +1769,7 @@ function meetSheet(id) {
   const app = /teams\.microsoft/.test(m.join || '') ? 'Teams' : /zoom\.us/.test(m.join || '') ? 'Zoom' : /meet\.google/.test(m.join || '') ? 'Google Meet' : /webex/.test(m.join || '') ? 'Webex' : 'meeting';
   const att = (m.att || []).filter(Boolean);
   openSheet(sheetHead('Meeting', '', '') + `<div class="mtcard">
-  <h2>${esc(m.t)}</h2><div class="when">${m.allDay ? fmtDate(ymd(new Date(m.s))) + ', all day' : `${fmtDate(ymd(new Date(m.s)))}, ${fmtClock(m.s)} to ${fmtClock(m.e)} (${fmtMins(mins)})`}</div><span class="st${live ? ' live' : ''}">${st}</span>
+  <h2>${esc(m.t)}</h2><div class="when">${m.allDay ? fmtDate(adSpan(m)[0]) + ', all day' : `${fmtDate(ymd(new Date(m.s)))}, ${fmtClock(m.s)} to ${fmtClock(m.e)} (${fmtMins(mins)})`}</div><span class="st${live ? ' live' : ''}">${st}</span>
   ${m.join && !past ? `<div class="btnrow" style="margin:14px 0 4px"><a class="btn" href="${esc(m.join)}" target="_blank" rel="noopener" style="background:var(--meet);color:#fff">Join ${app}</a><button class="btn sec" id="mtCopy">Copy link</button></div>` : ''}
   ${m.loc && !/^https?:/.test(m.loc) && !/^(microsoft teams meeting|zoom|google meet)$/i.test(m.loc.trim()) ? `<div class="mi">${I.pin}<span><small>Where</small>${esc(m.loc)}</span></div>` : ''}
   ${m.org ? `<div class="mi">${I.star}<span><small>Organiser</small>${esc(m.org)}</span></div>` : ''}
@@ -2251,23 +2257,25 @@ const VLAB = { p: 'Productive', n: 'Neutral', w: 'Wasted' };
 const hm2m = s => { const [h, m] = (s || '0:0').split(':').map(Number); return h * 60 + m; };
 function workWin() { return [hm2m(S.settings.workStart || '09:30'), hm2m(S.settings.shutdown || '19:00')]; }
 function dayMap(d) {
-  const a = new Array(1440).fill(null); const d0 = pYmd(d).getTime(), d1 = d0 + 864e5; const now = Date.now();
-  const paint = (sMs, eMs, k) => { const s0 = Math.max(sMs, d0), e0 = Math.min(eMs, d1, now); if (e0 <= s0) return; const i0 = Math.floor((s0 - d0) / 6e4), i1 = Math.ceil((e0 - d0) / 6e4); for (let i = i0; i < i1 && i < 1440; i++) a[i] = k; };
-  Object.values(S.meetLog).forEach(m => { if (!m.allDay && m.e > d0 && m.s < d1) paint(m.s, m.e, 'meet'); });
-  S.focus.forEach(f => { if (f.start < d1 && f.start + f.mins * 6e4 > d0) paint(f.start, f.start + f.mins * 6e4, 'deep'); });
-  (S.logs || []).forEach(l => { if (l.e > d0 && l.s < d1) paint(l.s, l.e, l.cat); });
-  if (S.cur) paint(S.cur.s, now, S.cur.cat);
-  [addDays(d, -1), d].forEach(pd => { const P = phoneDay(pd); if (!P) return; (P.ses || []).forEach(([pkg, s0, e0]) => { const c = appCat(pkg); if (c && e0 > d0 && s0 < d1) paint(s0, e0, c); }); (P.calls || []).forEach(([s0, sec]) => { if (sec > 0 && s0 < d1 && s0 + sec * 1000 > d0) paint(s0, s0 + sec * 1000, 'calls'); }); });
+  const a = new Array(1440).fill(null), src = new Array(1440).fill(null); const d0 = pYmd(d).getTime(), d1 = d0 + 864e5; const now = Date.now();
+  // Minutes are rounded, not stretched: a 10-second app check no longer counts as a full minute.
+  const paint = (sMs, eMs, k, lab) => { const s0 = Math.max(sMs, d0), e0 = Math.min(eMs, d1, now); if (e0 <= s0) return; const i0 = Math.round((s0 - d0) / 6e4), i1 = Math.round((e0 - d0) / 6e4); for (let i = i0; i < i1 && i < 1440; i++) { a[i] = k; src[i] = lab; } };
+  Object.values(S.meetLog).forEach(m => { if (!m.allDay && m.e > d0 && m.s < d1) paint(m.s, m.e, 'meet', m.t || 'Meeting'); });
+  S.focus.forEach(f => { if (f.start < d1 && f.start + f.mins * 6e4 > d0) { const t = f.taskId && getTask(f.taskId); paint(f.start, f.start + f.mins * 6e4, 'deep', 'Focus: ' + (t ? t.title : 'session')); } });
+  (S.logs || []).forEach(l => { if (l.e > d0 && l.s < d1) paint(l.s, l.e, l.cat, l.note ? 'You logged: ' + l.note : 'Logged by you'); });
+  if (S.cur) paint(S.cur.s, now, S.cur.cat, S.cur.note ? 'Now doing: ' + S.cur.note : 'Now doing');
+  [addDays(d, -1), d].forEach(pd => { const P = phoneDay(pd); if (!P) return; (P.ses || []).forEach(([pkg, s0, e0]) => { const c = appCat(pkg); if (c && e0 > d0 && s0 < d1) paint(s0, e0, c, ((P.apps || {})[pkg] || pkg) + ' (phone)'); }); (P.calls || []).forEach(([s0, sec]) => { if (sec > 0 && s0 < d1 && s0 + sec * 1000 > d0) paint(s0, s0 + sec * 1000, 'calls', 'Phone calls'); }); });
+  a.src = src;
   return a;
 }
 function analyse(from, to) {
   const days = []; for (let d = from; d <= to; d = addDays(d, 1)) days.push(d);
   const [ws, we] = workWin(); const td = today(); const nowM = minOf(Date.now());
-  const cat = {}, wasteH = Array(24).fill(0), prodH = Array(24).fill(0); let unl = 0, workMins = 0, switches = 0, longest = 0, loggedDays = 0;
+  const cat = {}, catSrc = {}, wasteH = Array(24).fill(0), prodH = Array(24).fill(0); let unl = 0, workMins = 0, switches = 0, longest = 0, loggedDays = 0;
   days.forEach(d => {
     const a = dayMap(d); let prev = null, run = 0, any = false; const end = d === td ? Math.min(we, nowM) : we;
     for (let i = 0; i < 1440; i++) {
-      const k = a[i]; if (k) { any = true; cat[k] = (cat[k] || 0) + 1; const v = catV(k); if (v === 'w') wasteH[Math.floor(i / 60)]++; if (v === 'p') prodH[Math.floor(i / 60)]++; }
+      const k = a[i]; if (k) { any = true; cat[k] = (cat[k] || 0) + 1; const sl = a.src[i] || 'Other'; (catSrc[k] ||= {})[sl] = (catSrc[k][sl] || 0) + 1; const v = catV(k); if (v === 'w') wasteH[Math.floor(i / 60)]++; if (v === 'p') prodH[Math.floor(i / 60)]++; }
       if (i >= ws && i < end) { workMins++; if (!k) unl++; if (k && prev && k !== prev) switches++; if (k) prev = k; }
       if (k && catV(k) === 'p') { run++; longest = Math.max(longest, run); } else run = 0;
     }
@@ -2282,7 +2290,7 @@ function analyse(from, to) {
   const moved = S.tasks.filter(t => t.pushed > 0 && ((t.date && t.date >= from) || (t.done && inR(t.doneAt)))).sort((a, b) => b.pushed - a.pushed);
   const meets = Object.values(S.meetLog).filter(m => !m.allDay && inR(m.s) && m.s < Date.now());
   const doneH = Array(24).fill(0); done.forEach(t => doneH[new Date(t.doneAt).getHours()]++);
-  return { from, to, days, cat, prod, neu, waste, tracked, unl, workMins, switches, longest, loggedDays, wasteH, prodH, doneH, done, planned: planned.size, p1: p1.length, p1d, moved, meets };
+  return { from, to, days, cat, catSrc, prod, neu, waste, tracked, unl, workMins, switches, longest, loggedDays, wasteH, prodH, doneH, done, planned: planned.size, p1: p1.length, p1d, moved, meets };
 }
 const hrLabel = h => h === 0 ? '12 AM' : h < 12 ? h + ' AM' : h === 12 ? '12 PM' : (h - 12) + ' PM';
 function peakRange(arr) { let best = -1, bi = -1; for (let i = 6; i < 23; i++) { const v = arr[i] + arr[i + 1]; if (v > best) { best = v; bi = i; } } return best > 0 ? `${hrLabel(bi)} to ${hrLabel(bi + 2)}` : ''; }
@@ -2426,7 +2434,7 @@ function vReview(arg) {
   const fix = F.find(f => f.k === 'w'); if (!single && fix) h += `<div class="find w" style="margin:14px 20px 0"><span class="fi">🎯</span><span><b>One thing to fix ${sc === 'week' ? 'next week' : 'this month'}</b>${esc(fix.t)}. ${esc(fix.d)}</span></div>`;
   h += `<section class="isec"><h2>Findings<span>${F.length}</span></h2>${F.map(f => `<div class="find ${f.k}"><span class="fi">${f.i}</span><span><b>${esc(f.t)}</b>${esc(f.d)}</span></div>`).join('')}</section>`;
   const cats = Object.entries(A.cat).sort((a, b) => b[1] - a[1]); const mx = Math.max(1, ...cats.map(c => c[1]));
-  h += `<section class="isec"><h2>Where the time went<span>${fmtMins(A.tracked)}</span></h2>${cats.length ? cats.map(([k, m]) => { const c = catOf(k), v = catV(k); return `<div class="crow"><span class="ce">${c.e}</span><span class="cn">${esc(c.n)}<i style="width:${m / mx * 100}%;background:${c.c}"></i></span><span class="cv">${fmtMins(m)}</span><button class="rate ${v}" data-act="catrate" data-k="${k}" aria-label="${esc(c.n)} counts as ${VLAB[v]}. Tap to change">${VLAB[v]}</button></div>`; }).join('') + `<p class="hint">Tap Productive, Neutral or Wasted to change how a category counts.</p>` : `<p class="sub">Nothing logged ${single ? 'for this day' : 'in this period'} yet. Meetings and focus sessions are added automatically.</p>`}</section>`;
+  h += `<section class="isec"><h2>Where the time went<span>${fmtMins(A.tracked)}</span></h2>${cats.length ? cats.map(([k, m]) => { const c = catOf(k), v = catV(k); const sr = Object.entries((A.catSrc || {})[k] || {}).sort((x, y) => y[1] - x[1]); return `<details class="cdet"><summary class="crow"><span class="ce">${c.e}</span><span class="cn">${esc(c.n)}<i style="width:${m / mx * 100}%;background:${c.c}"></i></span><span class="cv">${fmtMins(m)}</span><button class="rate ${v}" data-act="catrate" data-k="${k}" onclick="event.preventDefault()" aria-label="${esc(c.n)} counts as ${VLAB[v]}. Tap to change">${VLAB[v]}</button></summary><div class="csrc">${sr.map(([l, mm]) => `<div><span>${esc(l)}</span><b>${fmtMins(mm)}</b></div>`).join('')}</div></details>`; }).join('') + `<p class="hint">Tap a row to see what made up the time. Tap Productive, Neutral or Wasted to change how it counts.</p>` : `<p class="sub">Nothing logged ${single ? 'for this day' : 'in this period'} yet. Meetings and focus sessions are added automatically.</p>`}</section>`;
   if (single) h += phoneSection(from); else if (!Object.keys(S.phone || {}).length) h += `<section class="isec"><h2>Phone screen time</h2><a class="banner" href="#settings/phoneapp" style="text-decoration:none;color:inherit;margin:0">${I.bolt}<span class="bt"><b>Get real phone data</b>Install the Sankalp Android app to add Instagram, WhatsApp and call time automatically.</span>${I.next}</a></section>`;
   h += `<section class="isec"><h2>AI review<span>${aiKey() ? esc(S.settings.aiModel || AI_MODELS[0][0]) : 'optional'}</span></h2>${aiPanel(sc, A)}</section>`;
   if (single) {
@@ -2597,7 +2605,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.3.5</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.3.7</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
