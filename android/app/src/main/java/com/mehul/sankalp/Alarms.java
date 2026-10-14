@@ -173,8 +173,14 @@ final class Alarms {
         String id = a.optString("id");
         long at = a.optLong("at");
         PendingIntent pi = alarmPi(ctx, id, a.toString());
-        if (Build.VERSION.SDK_INT >= 31 && !am.canScheduleExactAlarms()) am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
-        else am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+        if (Build.VERSION.SDK_INT >= 31 && !am.canScheduleExactAlarms()) { am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi); return; }
+        // Alarm-clock alarms ring on the exact minute: Android and phone makers (Realme, OPPO, Xiaomi) never delay them for battery saving.
+        try {
+            PendingIntent show = PendingIntent.getActivity(ctx, 7, new Intent(ctx, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            am.setAlarmClock(new AlarmManager.AlarmClockInfo(at, show), pi);
+        } catch (Exception e) {
+            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+        }
     }
 
     static void cancel(Context ctx, String id) {
