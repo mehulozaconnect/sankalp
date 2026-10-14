@@ -884,6 +884,8 @@ main.calw{max-width:800px}
 .ctx .cxsub{position:relative}.ctx .cxp{display:none;position:absolute;left:100%;top:-8px;width:210px;max-height:60vh;overflow-y:auto;background:var(--bg);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 36px var(--shadow);padding:6px}
 .ctx .cxp.left{left:auto;right:100%}.ctx .cxsub:hover .cxp,.ctx .cxsub:focus-within .cxp{display:block}
 .tlb.narrow{white-space:nowrap;font-size:11.5px;padding:4px 6px}.tlb.narrow small{display:block;margin-left:0;overflow:hidden;text-overflow:ellipsis}
+.nxb{display:inline-flex;align-items:center;gap:6px;font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0;text-align:left}
+.nxb .chev{display:inline-flex;transform:rotate(90deg);transition:transform .15s;opacity:.6}.nxb .chev svg{width:15px;height:15px}.nxb .chev.shut{transform:rotate(0deg)}
 </style>
 </head>
 <body>
@@ -1853,8 +1855,11 @@ function dayBand() {
   bars += ticks.map(t => { const [hh, mi] = t.time.split(':').map(Number); return `<i style="left:${pos(hh * 60 + mi)}%;width:4px;top:3px;bottom:3px;background:${t.priority === 1 ? 'var(--danger)' : 'var(--ink)'}"></i>`; }).join('');
   let nx = ms.length ? `${plural(ms.length, 'meeting')}${ms.length ? `, ${fmtMins(ms.reduce((a, m) => a + (m.e - m.s) / 6e4, 0))}` : ''}` : 'Your day';
   if (next && next.s > now) { const inMin = Math.round((next.s - now) / 6e4); if (inMin < 60) nx += ` · next in ${inMin} min`; }
-  const list = ms.length ? `<div class="mt2">${ms.map(m => { const live = m.s <= now && m.e > now, past = m.e <= now; return `<div class="mr${past ? ' past' : ''}${live ? ' live' : ''}"><span class="tm">${live ? 'Now' : fmtClock(m.s)}</span><span class="tt" data-act="meet" data-id="${esc(m.id)}">${esc(m.t)}${m.dec ? ' <small class="muted">· declined?</small>' : ''}</span>${m.join && !past ? `<a class="pill meet" href="${esc(m.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>`; }).join('')}</div>` : '';
-  return `<div class="slim"><div class="sl1"><span class="nx">${nx}</span>${loadHtml()}${nowChip}</div><div class="trk2" role="img" aria-label="Your day from 8 AM to 10 PM">${bars}<span class="nw" style="left:${pos(minOf(now))}%"></span></div>${list}${adH}</div>`;
+  const mini = !!S.settings.meetMin; const nextUp = ms.find(m => m.e > now);
+  const shown = mini ? (nextUp ? [nextUp] : []) : ms;
+  const list = shown.length ? `<div class="mt2">${shown.map(m => { const live = m.s <= now && m.e > now, past = m.e <= now; return `<div class="mr${past ? ' past' : ''}${live ? ' live' : ''}"><span class="tm">${live ? 'Now' : fmtClock(m.s)}</span><span class="tt" data-act="meet" data-id="${esc(m.id)}">${esc(m.t)}${m.dec ? ' <small class="muted">· declined?</small>' : ''}</span>${m.join && !past ? `<a class="pill meet" href="${esc(m.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>`; }).join('')}</div>` : '';
+  const nxB = ms.length ? `<button class="nx nxb" data-act="meetmin" aria-expanded="${!mini}" title="${mini ? 'Show all meetings' : 'Show only the next meeting'}">${nx}<i class="chev${mini ? ' shut' : ''}">${I.next}</i></button>` : `<span class="nx">${nx}</span>`;
+  return `<div class="slim${mini ? ' mini' : ''}"><div class="sl1">${nxB}${loadHtml()}${nowChip}</div><div class="trk2" role="img" aria-label="Your day from 8 AM to 10 PM">${bars}<span class="nw" style="left:${pos(minOf(now))}%"></span></div>${list}${adH}</div>`;
 }
 function groupBy(list, mode) {
   if (mode === 'priority') { return [1, 2, 3, 4].map(p => ({ k: p === 4 ? 'No priority' : 'Priority ' + p, color: p === 1 ? 'var(--danger)' : p === 2 ? 'var(--accent-text)' : p === 3 ? 'var(--meet)' : 'var(--ring)', items: list.filter(t => t.priority === p).sort(sortTasks) })).filter(g => g.items.length); }
@@ -2632,7 +2637,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.3.10</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.3.11</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -3731,7 +3736,7 @@ document.addEventListener('click', e => {
     airun: () => aiRun(b.dataset.sc), aiask: () => aiAsk(b.dataset.sc),
     ekfocus: () => { S.timer.taskId = id; resetTimer('work'); closeSheet(true); startTimer(); go('focus'); },
     ekdone: () => { toggleDone(id); ekSheet(); }, eknext: () => { ekIdx++; ekSheet(); },
-    newproject: () => projectForm(), editmenu: () => menuEditor(), editproject: () => projectForm(id), newhabit: () => habitForm(), edithabit: () => habitForm(id), habitstats: () => habitStats(id),
+    newproject: () => projectForm(), editmenu: () => menuEditor(), meetmin: () => { S.settings.meetMin = !S.settings.meetMin; save(); render(); }, editproject: () => projectForm(id), newhabit: () => habitForm(), edithabit: () => habitForm(id), habitstats: () => habitStats(id),
     hday: () => { cycleHabit(S.habits.find(h => h.id === id), b.dataset.k); },
     habit: () => { const x = S.habits.find(h => h.id === id); if (x.log[td] === 1) delete x.log[td]; else { x.log[td] = 1; const tot = habitTotal(x); if (MILESTONES.includes(tot)) toast(`${x.emoji} ${tot} check-ins. Milestone!`); } save(); render(); },
     newdate: () => dateForm(), editdate: () => dateForm(id), dfilter: () => { dateFilter = b.dataset.f; render(); },
