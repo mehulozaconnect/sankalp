@@ -604,7 +604,7 @@ body.kb .tabbar,body.kb .fab{display:none!important}
 .rday b{font-size:14px}
 .rday span{font-size:12px;color:var(--muted);font-weight:600}
 .tl{flex:1;overflow-y:auto;position:relative;padding:0 12px 40px 0}
-.tlh{position:relative;height:52px;border-top:1px solid var(--line);margin-left:54px}
+.tlh{position:relative;height:64px;border-top:1px solid var(--line);margin-left:54px}
 .tlh>span{position:absolute;left:-48px;top:-8px;font-size:11px;font-weight:700;color:var(--muted);width:42px;text-align:right}
 .tlh.over{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 #tl .tlh{cursor:pointer}
@@ -886,6 +886,27 @@ main.calw{max-width:800px}
 .tlb.narrow{white-space:nowrap;font-size:11.5px;padding:4px 6px}.tlb.narrow small{display:block;margin-left:0;overflow:hidden;text-overflow:ellipsis}
 .nxb{display:inline-flex;align-items:center;gap:6px;font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0;text-align:left}
 .nxb .chev{display:inline-flex;transform:rotate(90deg);transition:transform .15s;opacity:.6}.nxb .chev svg{width:15px;height:15px}.nxb .chev.shut{transform:rotate(0deg)}
+.tlb.short{display:flex;align-items:center;white-space:nowrap;padding-top:0;padding-bottom:0}.tlb.short small{display:none}.tlb.short:not(.narrow) small{display:inline}
+.tlb .bt{min-width:0}.tlb.short .bt,.tlb.narrow .bt{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tlb.short small{flex:none}
+.ragenda{flex:1;overflow-y:auto;padding:4px 12px 40px}
+.rai{display:flex;align-items:flex-start;gap:8px;padding:7px 6px;border-radius:12px}
+.rai .rt{flex:none;width:62px;display:flex;flex-direction:column;font-size:12.5px;font-weight:700;color:var(--soft);padding-top:2px;line-height:1.25}.rai .rt small{font-size:11px;font-weight:600;color:var(--muted)}
+.rai .rb{flex:1;min-width:0;text-align:left;display:flex;flex-direction:column;gap:2px;padding:6px 10px;border-radius:10px;border-left:3px solid var(--meet);background:color-mix(in srgb,var(--meet) 9%,var(--bg));cursor:pointer;font:inherit;color:var(--ink)}
+.rai.t .rb{border-left-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--bg))}
+.rai .rn{font-size:13.5px;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.rai .rn .pdot{display:inline-block;width:9px;height:9px;border-radius:50%;border:2px solid var(--muted);margin-right:6px;vertical-align:1px}.rai .rn .pdot.p1{border-color:#E5484D}.rai .rn .pdot.p2{border-color:#E8930C}.rai .rn .pdot.p3{border-color:#2F7BEA}
+.rai .rs{font-size:11.5px;color:var(--muted);font-weight:600}
+.rai.live .rb{box-shadow:0 0 0 1.5px var(--meet)}.rai.live .rs{color:var(--meet)}
+.rai.past{opacity:.5}.rai .pill.meet{flex:none;height:28px;padding:0 12px;font-size:12.5px;align-self:center}
+.rai .rb:hover{filter:brightness(.97)}
+.ragap{width:100%;display:flex;align-items:center;gap:8px;margin:2px 0;padding:4px 6px 4px 76px;background:none;border:0;font:inherit;cursor:pointer;color:var(--muted);height:auto;border-top:0}
+.ragap span{font-size:11.5px;font-weight:700;padding:3px 10px;border:1.5px dashed var(--line);border-radius:999px}
+.ragap b{display:inline-flex;align-items:center;gap:3px;font-size:11.5px;color:var(--accent-text);opacity:0;transition:opacity .15s}.ragap b svg{width:12px;height:12px}
+.ragap:hover b,.ragap.over b{opacity:1}.ragap:hover span,.ragap.over span{border-color:var(--accent)}
+.ranow{display:flex;align-items:center;gap:8px;padding:2px 6px;color:var(--danger);font-size:11px;font-weight:800}.ranow::after{content:'';flex:1;height:2px;background:var(--danger);border-radius:2px}
+.rah{font-size:12px;font-weight:700;color:var(--muted);padding:12px 6px 4px}
+.raempty{padding:20px 6px;color:var(--muted);font-size:13px}
+#rail .rtasks{margin:0}
 </style>
 </head>
 <body>
@@ -1769,25 +1790,28 @@ function renderRail() {
   for (let i = 0; i < 42; i++) { const d = new Date(y, m - 1, 1 - off + i); const k = ymd(d); if (i >= 35 && d.getMonth() !== m - 1) break; cal += `<button class="${d.getMonth() !== m - 1 ? 'om' : ''}${k === td ? ' td' : ''}${k === railDay ? ' sel' : ''}" data-act="railday" data-d="${k}" aria-label="${d.getDate()} ${MONSL[d.getMonth()]}">${d.getDate()}${meetingsOn(k).length ? '<i></i>' : ''}${railHasTask(k) ? '<i class="t"></i>' : ''}</button>`; }
   const dd = pYmd(railDay); const ms = meetingsOn(railDay); const ts = S.tasks.filter(t => t.time && ((t.date === railDay && (!t.orig || t.done) && (!t.done || S.settings.showDone)) || (!t.done && t.repeat && t.date !== railDay && occursOn(t, railDay))));
   const ut = S.tasks.filter(t => !t.time && !t.someday && ((t.date === railDay && (!t.done || S.settings.showDone)) || (!t.done && t.repeat && t.date !== railDay && occursOn(t, railDay)))).sort(sortTasks);
-  const H0 = 7, H1 = 23, PX = 52; const top = mins => (mins - H0 * 60) / 60 * PX;
-  let tl = ''; for (let hr = H0; hr < H1; hr++) tl += `<div class="tlh" data-hr="${hr}"><span>${hr === 12 ? '12 PM' : hr > 12 ? hr - 12 + ' PM' : hr + ' AM'}</span></div>`;
-  // Overlapping meetings and tasks sit side by side in columns, like Google Calendar
-  const its = [...ms.map(x => { const s = minOf(x.s); return { s, e: Math.max(minOf(x.e) || 1440, s + 15), m: x }; }), ...ts.map(t => { const [hh, mm] = t.time.split(':').map(Number); const s = hh * 60 + mm; return { s, e: s + Math.max(+t.duration || 30, 20), t }; })].sort((a, b) => a.s - b.s || b.e - a.e);
-  let grp = [], gEnd = -1; const lay = () => { const ends = []; grp.forEach(it => { let c = ends.findIndex(x => x <= it.s); if (c < 0) { c = ends.length; ends.push(0); } ends[c] = it.e; it.col = c; }); grp.forEach(it => it.cols = ends.length); grp = []; };
-  its.forEach(it => { if (grp.length && it.s >= gEnd) lay(); grp.push(it); gEnd = Math.max(gEnd, it.e); if (grp.length === 1) gEnd = it.e; }); lay();
+  // A clean agenda: meetings and timed tasks in one list by time, with the free time between them
+  const now = Date.now(), nowM = railDay === td ? minOf(now) : -1; const [w0, w1] = workWin();
+  const its = [...ms.map(x => { const s = minOf(x.s); return { s, e: Math.max(minOf(x.e) || 1440, s + 5), m: x }; }), ...ts.map(t => { const s = hm2m(t.time); return { s, e: s + (+t.duration || 0), t }; })].sort((a, b) => a.s - b.s || b.e - a.e);
+  const gap = (a, b) => { const len = b - a; if (len < 30) return ''; return `<button type="button" class="ragap tlh" data-hr="${Math.floor(a / 60)}" data-m="${a}" title="Add a task at ${fmtTime(pad(Math.floor(a / 60)) + ':' + pad(a % 60))}"><span>${fmtMins(len)} free</span><b>${I.plus}Add</b></button>`; };
+  let ag = '', prev = railDay === td ? Math.max(w0, Math.ceil(nowM / 15) * 15) : w0, nowDone = nowM < 0 || nowM > w1;
   its.forEach(it => {
-    const hgt = Math.max(top(it.e) - top(it.s) - 2, 20); const pos = `top:${top(it.s)}px;height:${hgt}px;left:calc(58px + (100% - 72px) * ${it.col / it.cols});width:calc((100% - 72px) / ${it.cols} - 3px);right:auto`;
-    if (it.m) { const x = it.m; tl += `<button type="button" class="tlb m${hgt >= 60 && it.cols === 1 ? ' tall' : ''}${it.cols > 1 ? ' narrow' : ''}" data-act="meet" data-id="${esc(x.id)}" style="${pos}" title="${esc(x.t)} · ${fmtClock(x.s)}">${esc(x.t)}<small>${fmtClock(x.s)}</small></button>`; }
-    else { const t = it.t; tl += `<button class="tlb t${t.done ? ' d' : ''}${it.cols > 1 ? ' narrow' : ''}" data-act="open" data-id="${t.id}" draggable="true" data-tid="${t.id}" style="${pos}" title="${esc(t.title)} · ${fmtTime(t.time)}">${esc(t.title)}<small>${fmtTime(t.time)}${t.duration ? ', ' + fmtMins(t.duration) : ''}</small></button>`; }
+    if (it.s > prev && (railDay !== td || it.s > nowM)) ag += gap(prev, it.s);
+    if (!nowDone && it.s >= nowM) { ag += `<div class="ranow"><span>Now</span></div>`; nowDone = true; }
+    const dur = it.e - it.s, tmL = fmtTime(pad(Math.floor(it.s / 60)) + ':' + pad(it.s % 60)).replace(' ', ' ');
+    if (it.m) { const x = it.m, live = x.s <= now && x.e > now, past = x.e <= now;
+      ag += `<div class="rai m${past ? ' past' : ''}${live ? ' live' : ''}"><span class="rt">${tmL}${dur ? `<small>${fmtMins(dur)}</small>` : ''}</span><button type="button" class="rb" data-act="meet" data-id="${esc(x.id)}" title="${esc(x.t)}"><span class="rn">${esc(x.t)}</span>${live ? '<span class="rs">Happening now</span>' : ''}</button>${x.join && !past ? `<a class="pill meet" href="${esc(x.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>`; }
+    else { const t = it.t;
+      ag += `<div class="rai t${t.done ? ' past' : ''}"><span class="rt">${tmL}${dur ? `<small>${fmtMins(dur)}</small>` : ''}</span><button type="button" class="rb" data-act="open" data-id="${t.id}" draggable="true" data-tid="${t.id}" title="${esc(t.title)}"><span class="rn"><span class="pdot p${t.priority}"></span>${esc(t.title)}</span>${t.repeat ? `<span class="rs">${esc(repeatLabel(t.repeat))}</span>` : ''}</button></div>`; }
+    prev = Math.max(prev, it.e);
   });
-  if (railDay === td) { const nm = minOf(Date.now()); if (nm >= H0 * 60 && nm < H1 * 60) tl += `<div class="tlnow" style="top:${top(nm)}px"></div>`; }
+  if (!nowDone) ag += `<div class="ranow"><span>Now</span></div>`;
+  if (prev < w1) ag += gap(prev, w1);
+  if (!ag) ag = `<div class="raempty">Nothing booked.</div>`;
   el.innerHTML = `<div class="rhead"><b>${MONSL[m - 1]} ${y}</b><div><button class="iconbtn" data-act="railmon" data-dir="-1" aria-label="Previous month">${I.back}</button><button class="iconbtn" data-act="railmon" data-dir="1" aria-label="Next month">${I.next}</button></div></div><div class="mcal2">${cal}</div>
   ${S.settings.gOn || S.pcal ? '' : `<a class="rnote" href="#settings/gcal">${I.gcal}<span>Connect a calendar to see your meetings here.</span></a>`}
-  <div class="rday"><b>${railDay === td ? 'Today' : DAYSL[dd.getDay()]}, ${dd.getDate()} ${MONS[dd.getMonth()]}</b><span>${plural(ms.length, 'meeting')}</span></div>
-  ${ms.length ? `<div class="mt2" style="margin:0 12px 8px">${ms.map(x => { const now = Date.now(), live = x.s <= now && x.e > now, past = x.e <= now; return `<div class="mr${past ? ' past' : ''}${live ? ' live' : ''}"><span class="tm">${live ? 'Now' : fmtClock(x.s)}</span><span class="tt" data-act="meet" data-id="${esc(x.id)}">${esc(x.t)}</span>${x.join && !past ? `<a class="pill meet" href="${esc(x.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>`; }).join('')}</div>` : ''}
-  ${ut.length ? `<div class="rtasks">${ut.map(t => `<button class="rtk${t.done ? ' d' : ''}" data-act="open" data-id="${t.id}"><span class="pdot p${t.priority}"></span><span class="tt">${esc(t.title)}</span>${t.repeat ? `<span class="rr">${I.repeat}</span>` : ''}</button>`).join('')}</div>` : ''}
-  <div class="tl" id="tl"><div style="position:relative;padding-top:8px">${tl}</div></div>`;
-  const tlEl = $('#tl'); if (railDay === td) tlEl.scrollTop = Math.max(0, top(minOf(Date.now())) - 120); else tlEl.scrollTop = top(9 * 60) - 10;
+  <div class="rday"><b>${railDay === td ? 'Today' : DAYSL[dd.getDay()]}, ${dd.getDate()} ${MONS[dd.getMonth()]}</b><span>${[ms.length ? plural(ms.length, 'meeting') : '', ts.length + ut.length ? plural(ts.length + ut.length, 'task') : ''].filter(Boolean).join(' · ')}</span></div>
+  <div class="ragenda" id="ragenda">${ag}${ut.length ? `<div class="rah">Anytime</div><div class="rtasks">${ut.map(t => `<button class="rtk${t.done ? ' d' : ''}" data-act="open" data-id="${t.id}" draggable="true" data-tid="${t.id}"><span class="pdot p${t.priority}"></span><span class="tt">${esc(t.title)}</span>${t.repeat ? `<span class="rr">${I.repeat}</span>` : ''}</button>`).join('')}</div>` : ''}</div>`;
 }
 /* Meeting details, like Teams or Google Calendar */
 function meetSheet(id) {
@@ -1809,10 +1833,11 @@ function meetSheet(id) {
   const cp = $('#mtCopy'); if (cp) cp.onclick = () => { navigator.clipboard?.writeText(m.join).then(() => toast('Link copied')).catch(() => { }); };
   $('#mtPrep').onclick = () => { closeSheet(true); const d = new Date(m.s - 30 * 6e4); setTimeout(() => quickAdd({ prefill: 'Prep: ' + m.t.slice(0, 120), date: ymd(d), time: pad(d.getHours()) + ':' + pad(d.getMinutes()) }), 220); };
 }
+document.addEventListener('click', e => { const g = e.target.closest?.('.ragap'); if (!g) return; const m = +g.dataset.m; quickAdd({ date: railDay || today(), time: pad(Math.floor(m / 60)) + ':' + pad(m % 60) }); });
 // click an empty slot on the day timeline to add a task at that time
-function tlSlot(e) { const inner = $('#tl > div'); if (!inner) return null; const y = e.clientY - inner.getBoundingClientRect().top - 8; const m = 7 * 60 + Math.floor(y / 26) * 30; return m < 7 * 60 || m >= 23 * 60 ? null : m; }
+function tlSlot(e) { const inner = $('#tl > div'); if (!inner) return null; const y = e.clientY - inner.getBoundingClientRect().top - 8; const m = 7 * 60 + Math.floor(y / 32) * 30; return m < 7 * 60 || m >= 23 * 60 ? null : m; }
 document.addEventListener('click', e => { const h = e.target.closest?.('#tl .tlh'); if (!h || e.target.closest('.tlb')) return; const m = tlSlot(e); if (m == null) return; quickAdd({ date: railDay || today(), time: pad(Math.floor(m / 60)) + ':' + pad(m % 60) }); });
-document.addEventListener('mousemove', e => { const tl = e.target.closest?.('#tl'); const g = $('#tlGhost'); if (!tl || e.target.closest('.tlb')) { if (g) g.hidden = true; return; } const m = tlSlot(e); const inner = $('#tl > div'); if (m == null || !inner) { if (g) g.hidden = true; return; } let gh = g; if (!gh) { inner.insertAdjacentHTML('beforeend', '<div id="tlGhost" class="tlghost"></div>'); gh = $('#tlGhost'); } gh.hidden = false; gh.style.top = (8 + (m - 7 * 60) / 60 * 52) + 'px'; gh.textContent = '+ Add task at ' + fmtTime(pad(Math.floor(m / 60)) + ':' + pad(m % 60)); });
+document.addEventListener('mousemove', e => { const tl = e.target.closest?.('#tl'); const g = $('#tlGhost'); if (!tl || e.target.closest('.tlb')) { if (g) g.hidden = true; return; } const m = tlSlot(e); const inner = $('#tl > div'); if (m == null || !inner) { if (g) g.hidden = true; return; } let gh = g; if (!gh) { inner.insertAdjacentHTML('beforeend', '<div id="tlGhost" class="tlghost"></div>'); gh = $('#tlGhost'); } gh.hidden = false; gh.style.top = (8 + (m - 7 * 60) / 60 * 64) + 'px'; gh.textContent = '+ Add task at ' + fmtTime(pad(Math.floor(m / 60)) + ':' + pad(m % 60)); });
 // drag and drop (desktop)
 let dragId = null;
 document.addEventListener('dragstart', e => { const el = e.target.closest?.('[draggable=true]'); if (!el) return; dragId = el.dataset.id || el.dataset.tid; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', dragId); } catch (x) { } });
@@ -1821,7 +1846,7 @@ document.addEventListener('dragleave', e => { const z = e.target.closest?.('.wco
 document.addEventListener('drop', e => {
   const t = getTask(dragId); const z = e.target.closest?.('.wcol,.tlh'); $$('.dropok,.tlh.over').forEach(x => x.classList.remove('dropok', 'over')); dragId = null; if (!t || !z) return; e.preventDefault();
   if (z.classList.contains('wcol')) { if (t.date !== z.dataset.day) { setDate(t, z.dataset.day); t.someday = false; save(); render(); toast(`Moved to ${fmtDate(z.dataset.day)}`); } return; }
-  const hr = +z.dataset.hr; const half = (e.offsetY || 0) > z.clientHeight / 2 ? 30 : 0; const tm = `${pad(hr)}:${pad(half)}`;
+  const hr = +z.dataset.hr; const half = (e.offsetY || 0) > z.clientHeight / 2 ? 30 : 0; const tm = z.dataset.m ? `${pad(Math.floor(+z.dataset.m / 60))}:${pad(+z.dataset.m % 60)}` : `${pad(hr)}:${pad(half)}`;
   if (t.date !== railDay) setDate(t, railDay); t.someday = false; t.time = tm; t.duration ||= 30; t.firedKeys = []; if (!t.reminders.length) t.reminders = [0]; save(); render(); toast(`${fmtDate(railDay)}, ${fmtTime(tm)}`);
 });
 document.addEventListener('dragend', () => { dragId = null; $$('.dropok,.tlh.over').forEach(x => x.classList.remove('dropok', 'over')); });
@@ -2637,7 +2662,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.3.11</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.3.13</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
