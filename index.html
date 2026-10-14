@@ -1321,8 +1321,12 @@ function parseTask(input) {
   // start / until
   take('(?:start(?:ing|s)?(?:\\s+from)?|from|beginning)\\s+(' + DATEPAT + ')', m => { const d = dateFrom(m[2]); if (!d) return false; r.start = d; r._sRaw = m[2].toLowerCase(); }) ||
     take('(' + DATEPAT + ')\\s+se', m => { const d = dateFrom(m[2]); if (!d) return false; r.start = d; });
-  take('(?:until|till|upto|up\\s+to|ending(?:\\s+on)?|ends(?:\\s+on)?)\\s+(' + DATEPAT + ')', m => { let d = dateFrom(m[2]); if (!d) return false; if (new RegExp("^" + MONRE + "\\s+(\\d{4}|'\\d{2})$", 'i').test(m[2].trim())) { const x = pYmd(d); d = ymd(new Date(x.getFullYear(), x.getMonth() + 1, 0)); } r.until = d; }) ||
+  take('(?:until|till|upto|up\\s+to|ending(?:\\s+on)?|ends(?:\\s+on)?)\\s+(' + DATEPAT + ')(?:\\s+(?:at\\s+)?(\\d{1,2})(?:[:.](\\d{2}))?\\s*(am|pm))?', m => { let d = dateFrom(m[2]); if (!d) return false; if (m[3]) { const v = toHM(m[3], m[4], m[5]); if (v) r._uTime = v; } if (new RegExp("^" + MONRE + "\\s+(\\d{4}|'\\d{2})$", 'i').test(m[2].trim())) { const x = pYmd(d); d = ymd(new Date(x.getFullYear(), x.getMonth() + 1, 0)); } r.until = d; }) ||
     take('(' + DATEPAT + ')\\s+tak', m => { const d = dateFrom(m[2]); if (!d) return false; r.until = d; });
+  // "from mon to fri"
+  if (r.start && !r.until) take('(?:to|–|-)\\s+(' + DATEPAT + ')', m => { let d = dateFrom(m[2]); if (!d) return false; let g = 0; while (d < r.start && new RegExp('^' + WDRE + '$', 'i').test(m[2].trim()) && g++ < 2) d = addDays(d, 7); if (d < r.start) return false; r.until = d; });
+  // "till dec": to the end of that month
+  if (!r.until) take('(?:until|till|upto|up\\s+to)\\s+(' + MONRE + ')', m => { const mi = monIndex(m[2]); if (mi == null || mi < 0) return false; const n = new Date(); let y = n.getFullYear(); if (mi < n.getMonth()) y++; r.until = ymd(new Date(y, mi + 1, 0)); });
   // repeat
   const lead = (m, rep) => { r.repeat = rep; return m.index === 0 ? false : undefined; };
   take('(?:every\\s+day|har\\s+din)', () => { r.repeat = { type: 'daily', n: 1 }; }) ||
@@ -1386,8 +1390,12 @@ function parseTask(input) {
   if (r.dom) { const b = pYmd(r.start || r.date || today()); let y = b.getFullYear(), mo = b.getMonth(); const at = (yy, mm) => new Date(yy, mm, Math.min(r.dom, new Date(yy, mm + 1, 0).getDate())); let d = at(y, mo); if (d < b) d = at(y, mo + 1); r.start = ymd(d); r.date = r.start; }
   delete r._sRaw;
   if (r.start && !r.date) r.date = r.start;
-  if (r.repeat) { r.date = firstDate(r.repeat, r.date || today()); if (r.until) r.repeat.until = r.until; }
+  // "start today 6pm till friday 6pm": every day from the start to the end date
+  if (!r.repeat && r.start && r.until && r.until > r.start) { r.repeat = { type: 'daily', n: 1 }; r.date ||= r.start || today(); r._range = true; }
+  if (r._uTime && !r.time) r.time = r._uTime; delete r._uTime;
+  if (r.repeat) { r.date = r._range ? r.date : firstDate(r.repeat, r.date || today()); if (r.until) r.repeat.until = r.until; }
   else if (r.until && !r.date) r.date = r.until;
+  delete r._range;
   if (r.time && !r.date && !r.someday) r.date = r.time < nowHM() ? addDays(today(), 1) : today();
   if (r.time && !r.reminders.length && !r.meeting) r.reminders = [0];
   if (r.time && r.time >= '18:00') r.evening = true;
@@ -2605,7 +2613,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.3.7</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.3.8</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
