@@ -177,6 +177,11 @@ public class MainActivity extends Activity {
         boolean notif = Build.VERSION.SDK_INT < 33 || checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
         row("Reminder notifications", notif, "Needed to show task reminders.", "Allow notifications",
                 v -> requestPermissions(new String[] { Manifest.permission.POST_NOTIFICATIONS }, 3));
+        Alarms.channel(this);
+        android.app.NotificationChannel rch = ((android.app.NotificationManager) getSystemService(NOTIFICATION_SERVICE)).getNotificationChannel(Alarms.CH);
+        boolean snd = rch != null && rch.getSound() != null && rch.getImportance() >= android.app.NotificationManager.IMPORTANCE_DEFAULT;
+        row("Reminder sound", snd, "Reminders ring on your alarm volume. Tap to pick a different tone or check the sound is on.", "Sound settings",
+                v -> startActivity(new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName()).putExtra(Settings.EXTRA_CHANNEL_ID, Alarms.CH)));
         AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
         boolean exact = Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms();
         row("On-time alarms", exact, "Lets reminders ring at the exact minute.", "Allow alarms",

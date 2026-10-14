@@ -25,7 +25,7 @@ final class Alarms {
     private Alarms() { }
 
     static final String SITE = "https://mehulozaconnect.github.io/sankalp/";
-    static final String CH = "reminders";
+    static final String CH = "reminders_ring";
     static final int NAG_MAX = 12;
 
     static long ts(String date, String hm) {
@@ -201,11 +201,16 @@ final class Alarms {
     static void channel(Context ctx) {
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm.getNotificationChannel(CH) == null) {
+            // Reminders always make a sound: they play on the alarm volume, so they are heard even when the ringer is on vibrate.
             NotificationChannel ch = new NotificationChannel(CH, "Task reminders", NotificationManager.IMPORTANCE_HIGH);
-            ch.setDescription("Reminders for your Sankalp tasks");
+            ch.setDescription("Reminders for your Sankalp tasks and meetings");
             ch.enableVibration(true);
-            ch.setVibrationPattern(new long[] { 0, 250, 150, 250 });
+            ch.setVibrationPattern(new long[] { 0, 300, 150, 300 });
+            android.net.Uri snd = android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION);
+            ch.setSound(snd, new android.media.AudioAttributes.Builder().setUsage(android.media.AudioAttributes.USAGE_ALARM).setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
+            ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             nm.createNotificationChannel(ch);
+            try { nm.deleteNotificationChannel("reminders"); } catch (Exception ignored) { }
         }
     }
 
