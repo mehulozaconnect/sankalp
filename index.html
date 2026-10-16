@@ -946,6 +946,17 @@ main.setw{max-width:1040px}
 .wnote{width:100%;min-height:120px;border:1px solid var(--line);border-radius:14px;padding:12px;font-size:15px;line-height:1.45;background:var(--bg);resize:vertical}
 .wmood{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.wmood button{font-size:13px;font-weight:700;padding:7px 12px;border-radius:999px;background:var(--surface);color:var(--soft)}.wmood button.on{background:var(--ink);color:var(--bg)}
 .wnav{display:flex;gap:8px;margin-top:22px}.wnav .btn{flex:1}.wnav .btn.sec{flex:0 0 auto}
+.ifix{padding:13px 14px;border-radius:16px;background:var(--surface);margin-bottom:9px}.ifix>b{font-size:15.5px;display:block}.ifix>small{display:block;font-size:12.5px;color:var(--muted);line-height:1.4;margin-top:2px}
+.ifrow{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.ifrow span{flex:1;min-width:0;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ifrow small{display:block;font-size:11.5px;color:var(--danger);font-weight:700}
+.ifrow button{font-size:12.5px;font-weight:700;padding:7px 10px;border-radius:9px;background:var(--bg);flex:none}.ifrow button.p{background:var(--ink);color:var(--bg)}
+.ifix .wbtns button{background:var(--bg)}.ifix .wbtns button.p{background:var(--ink);color:var(--bg)}.ifmore{font-size:12px;color:var(--muted);margin-top:8px;font-weight:600}
+.wbig em{font-style:normal;font-weight:800;margin-left:3px}.wbig em.up{color:#1F8A3B}.wbig em.dn{color:var(--danger)}
+.ibars{display:grid;gap:6px;margin:4px 0 2px}.ibars>div{display:flex;flex-direction:column;align-items:stretch;gap:3px}
+.ib{height:96px;position:relative;display:block}.ib i{position:absolute;left:0;right:0;bottom:0;border-radius:5px 5px 2px 2px;display:block}.ib .pl{background:color-mix(in srgb,var(--meet) 20%,var(--bg))}.ib .dn{background:var(--meet);left:22%;right:22%}
+.ibars em{font-style:normal;text-align:center;font-size:10.5px;color:var(--muted);font-weight:600}.ibars .lb{text-align:center;font-size:11px;color:var(--muted);font-weight:700}.ibars .on .lb{color:var(--ink)}
+.ileg{display:flex;gap:14px;font-size:11.5px;color:var(--muted);font-weight:600;margin:6px 0 2px}.ileg i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}.ileg .dn{background:var(--meet)}.ileg .pl{background:color-mix(in srgb,var(--meet) 20%,var(--bg))}
+.iwin{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}.iwin span{color:var(--muted);font-weight:600;flex:none}.iwin b{text-align:right;min-width:0}
+.ilink{width:100%;display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding:13px 14px;border-radius:14px;background:var(--surface);font-size:14px;font-weight:700;color:var(--ink);text-align:left}.ilink span{display:flex;align-items:center;gap:2px;font-size:12.5px;color:var(--muted)}.ilink svg{width:15px;height:15px}
 .wempty{padding:16px 4px;color:var(--muted);font-size:14px;line-height:1.45}
 .wnote-v{background:var(--surface);border-radius:14px;padding:12px 14px;font-size:14.5px;line-height:1.45;margin-bottom:6px}
 .wbars{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;height:120px;margin:6px 0 4px}.wbars div{display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;gap:4px}.wbars i{display:block;background:#1F8A3B;border-radius:5px 5px 2px 2px}.wbars span{text-align:center;font-size:11px;color:var(--muted);font-weight:700}
@@ -2290,62 +2301,71 @@ function ekSheet(reset) {
   $('#ekStep').onkeydown = e => { if (e.key === 'Enter' && e.target.value.trim()) { t.subs.push({ id: uid(), t: e.target.value.trim(), d: false }); save(); ekSheet(); setTimeout(() => $('#ekStep')?.focus(), 50); } };
 }
 
-/* ---------- insights ---------- */
+/* ---------- insights: what happened, what to fix, with one-tap fixes ---------- */
+function insData(N) {
+  const td = today(), now = Date.now(); const from = addDays(td, -(N - 1)), pfrom = addDays(from, -N), pto = addDays(from, -1);
+  const days = Array.from({ length: N }, (_, i) => addDays(from, i));
+  const dOf = ms => ymd(new Date(ms));
+  const doneIn = (a, b) => S.tasks.filter(t => t.done && t.doneAt && dOf(t.doneAt) >= a && dOf(t.doneAt) <= b);
+  const doneR = doneIn(from, td), doneP = doneIn(pfrom, pto);
+  const perDone = {}; doneR.forEach(t => { const k = dOf(t.doneAt); perDone[k] = (perDone[k] || 0) + 1; });
+  const dayPD = d => { const ids = S.plan[d] || []; const dn = S.tasks.filter(t => t.done && t.doneAt && dOf(t.doneAt) === d && (ids.includes(t.id) || ids.includes(t.orig))).length; return { p: Math.max(ids.length, dn), d: dn }; };
+  const past = days.filter(d => d < td); let pTot = 0, dTot = 0, pDays = 0; past.forEach(d => { const x = dayPD(d); if (x.p) { pTot += x.p; dTot += x.d; pDays++; } });
+  const rate = pTot ? Math.round(dTot / pTot * 100) : null; const avgP = pDays ? pTot / pDays : 0, avgD = pDays ? dTot / pDays : 0;
+  const meetPer = {}; let meetMins = 0, meetN = 0; days.forEach(d => { const ms = meetingsOn(d).filter(m => m.s <= now); const v = ms.reduce((a, m) => a + (Math.min(m.e, now) - m.s) / 6e4, 0); meetPer[d] = v; meetMins += v; meetN += ms.length; });
+  const [ws, we] = workWin(); const workDays = days.filter(d => { const g = pYmd(d).getDay(); return g > 0 && g < 6; }).length || 1;
+  const meetShare = Math.round(meetMins / (workDays * Math.max(60, we - ws)) * 100);
+  const wd = Array(7).fill(0); days.forEach(d => { wd[pYmd(d).getDay()] += meetPer[d]; }); const heavy = wd.indexOf(Math.max(...wd));
+  let topHit = 0, topAll = 0; days.forEach(d => { (S.days[d]?.top || []).forEach(id => { const t = getTask(id); if (!t) return; topAll++; if (t.done) topHit++; }); });
+  const slot = Array(6).fill(0); const hf = addDays(td, -27); doneIn(hf, td).forEach(t => { const h = new Date(t.doneAt).getHours(); slot[h < 10 ? 0 : h < 12 ? 1 : h < 14 ? 2 : h < 16 ? 3 : h < 18 ? 4 : 5]++; });
+  const sTot = slot.reduce((a, b) => a + b, 0), best = slot.indexOf(Math.max(...slot));
+  const SL = [[8, '8–10 AM'], [10, '10 AM–12 PM'], [12, '12–2 PM'], [14, '2–4 PM'], [16, '4–6 PM'], [18, 'after 6 PM']];
+  const power = sTot >= 8 ? SL[best] : null;
+  const projDone = {}; doneR.forEach(t => { if (t.projectId) projDone[t.projectId] = (projDone[t.projectId] || 0) + 1; }); const topP = Object.entries(projDone).sort((a, b) => b[1] - a[1])[0];
+  const bestDay = Object.entries(perDone).sort((a, b) => b[1] - a[1])[0];
+  const focusM = S.focus.filter(f => dOf(f.start) >= from && dOf(f.start) <= td).reduce((a, f) => a + f.mins, 0);
+  return { N, td, from, days, doneR, doneP, perDone, dayPD, rate, avgP, avgD, meetMins, meetN, meetShare, heavy, topHit, topAll, power, topP, bestDay, focusM };
+}
+function insFixes(X) {
+  const td = X.td, tom = addDays(td, 1), lab = X.N === 7 ? 'week' : 'month', F = [];
+  const stuck = open().filter(t => !t.someday && (t.pushed || 0) >= 3).sort((a, b) => b.pushed - a.pushed);
+  if (stuck.length) F.push({ t: `${plural(stuck.length, 'task')} ${stuck.length === 1 ? 'keeps' : 'keep'} slipping`, s: 'Moved 3+ times. Do it or drop it.', rows: stuck.slice(0, 3).map(t => `<div class="ifrow"><span>${esc(t.title)}<small>Moved ${t.pushed} times</small></span><button class="p" data-act="dotoday" data-id="${t.id}">Today</button><button data-act="wrappick" data-id="${t.id}">Date</button><button data-act="drop" data-id="${t.id}">Drop</button></div>`).join('') + (stuck.length > 3 ? `<div class="ifmore">+${stuck.length - 3} more</div>` : '') });
+  const over = open().filter(t => !t.someday && t.date && t.date < td && (t.pushed || 0) < 3);
+  if (over.length >= 2) F.push({ t: `${over.length} overdue`, s: 'Bring them into today, then drop what no longer matters.', b: [['insover', 'Move all to today', 1], ['nav', 'Open Today', 0, 'today']] });
+  if (X.rate !== null && X.rate < 60 && X.avgP - X.avgD >= 2) F.push({ t: 'You plan too much', s: `About ${Math.round(X.avgP)} planned a day, ${Math.round(X.avgD)} finished. Pick 3 that matter instead.`, b: [['instop', "Pick tomorrow's top 3", 1]] });
+  if (X.power) { const has = open().some(t => t.date === tom && t.focusBlock); if (!has) F.push({ t: `Protect ${X.power[1]}`, s: 'You finish the most in this slot. Keep meetings away from it.', b: [['insblock', 'Block it tomorrow', 1]] }); }
+  if (X.meetShare >= 35 && X.meetMins >= 120) F.push({ t: `Meetings took ${X.meetShare}% of work hours`, s: `${DAYSL[X.heavy]} is the heaviest. Keep it light next ${lab}.`, b: [['nav', 'Open calendar', 0, 'calendar']] });
+  const inb = inboxTasks().length; if (inb >= 8) F.push({ t: `${inb} in Inbox`, s: 'Give each a date or a project, or drop it.', b: [['nav', 'Sort Inbox', 1, 'inbox']] });
+  const ym = td.slice(0, 7); const slow = S.habits.map(h => ({ h, m: habitMonth(h, ym) })).filter(x => x.m.due >= 4 && x.m.rate < 50).sort((a, b) => a.m.rate - b.m.rate)[0];
+  if (slow) F.push({ t: `${slow.h.emoji || ''} ${slow.h.name} at ${slow.m.rate}%`.trim(), s: `Done ${slow.m.done} of ${slow.m.due} days this month.`, b: [['nav', 'Open habits', 0, 'habits']] });
+  return F.slice(0, 3);
+}
 function vInsights(arg) {
-  const N = arg === '365' ? 365 : arg === '30' ? 30 : 7; const label = N === 7 ? 'this week' : N === 30 ? 'this month' : 'this year';
-  const td = today(); const from = addDays(td, -(N - 1)); const pfrom = addDays(from, -N), pto = addDays(from, -1);
-  const inR = (ms, a, b) => { const d = ymd(new Date(ms)); return d >= a && d <= b; };
-  const doneR = S.tasks.filter(t => t.done && t.doneAt && inR(t.doneAt, from, td)), doneP = S.tasks.filter(t => t.done && t.doneAt && inR(t.doneAt, pfrom, pto));
-  const meets = Object.values(S.meetLog).filter(m => !m.allDay && inR(m.s, from, td) && m.s < Date.now());
-  const meetMins = meets.reduce((a, m) => a + Math.min(m.e, Date.now()) - m.s, 0) / 6e4;
-  const focusR = S.focus.filter(f => inR(f.start, from, td)), focusP = S.focus.filter(f => inR(f.start, pfrom, pto));
-  const byProj = {};
-  focusR.forEach(f => { const k = f.projectId || '_'; byProj[k] = (byProj[k] || 0) + f.mins; });
-  doneR.forEach(t => { if (t.duration && !focusR.some(f => f.taskId === t.id || f.taskId === t.orig)) { const k = t.projectId || '_'; byProj[k] = (byProj[k] || 0) + t.duration; } });
-  const tracked = meetMins + Object.values(byProj).reduce((a, b) => a + b, 0);
-  const heat = Array.from({ length: 7 }, () => Array(6).fill(0)); const hf = addDays(td, -(Math.max(N, 28) - 1));
-  S.tasks.filter(t => t.done && t.doneAt && inR(t.doneAt, hf, td)).forEach(t => { const d = new Date(t.doneAt); const h = d.getHours(); heat[(d.getDay() + 6) % 7][h < 10 ? 0 : h < 12 ? 1 : h < 14 ? 2 : h < 16 ? 3 : h < 18 ? 4 : 5]++; });
-  const hmax = Math.max(1, ...heat.flat()), htotal = heat.flat().reduce((a, b) => a + b, 0);
-  const slots = ['8 AM', '10 AM', '12 PM', '2 PM', '4 PM', '6 PM'], slotsEnd = ['10 AM', '12 PM', '2 PM', '4 PM', '6 PM', 'late'];
-  const colSum = [0, 1, 2, 3, 4, 5].map(c => heat.reduce((a, r) => a + r[c], 0)); const bestC = colSum.indexOf(Math.max(...colSum));
-  const power = htotal >= 8 ? (bestC === 5 ? 'after 6 PM' : `${slots[bestC]} to ${slotsEnd[bestC]}`) : '';
-  // planned vs done buckets
-  const dayPD = d => { const ids = S.plan[d] || []; const done = S.tasks.filter(t => t.done && t.doneAt && ymd(new Date(t.doneAt)) === d && (ids.includes(t.id) || ids.includes(t.orig))).length; return { p: Math.max(ids.length, done), d: done }; };
-  let buckets = [];
-  if (N === 7) for (let i = 6; i >= 0; i--) { const d = addDays(td, -i); const x = dayPD(d); buckets.push({ l: DAYS[pYmd(d).getDay()][0], ...x }); }
-  else if (N === 30) for (let w = 3; w >= 0; w--) { let p = 0, dn = 0; for (let i = 0; i < 7; i++) { const x = dayPD(addDays(td, -(w * 7 + i))); p += x.p; dn += x.d; } buckets.push({ l: w === 0 ? 'This wk' : `${w}w ago`, p, d: dn }); }
-  else { const now = new Date(); for (let mth = 11; mth >= 0; mth--) { const d0 = new Date(now.getFullYear(), now.getMonth() - mth, 1); let p = 0, dn = 0; const last = new Date(d0.getFullYear(), d0.getMonth() + 1, 0).getDate(); for (let i = 1; i <= last; i++) { const k = ymd(new Date(d0.getFullYear(), d0.getMonth(), i)); if (k > td) break; const x = dayPD(k); p += x.p; dn += x.d; } buckets.push({ l: MONS[d0.getMonth()][0], p, d: dn }); } }
-  const pTot = buckets.reduce((a, x) => a + x.p, 0), dTot = buckets.reduce((a, x) => a + x.d, 0); const rate = pTot ? Math.round(dTot / pTot * 100) : 0; const pmax = Math.max(1, ...buckets.map(x => x.p));
-  const daysPlanned = Object.keys(S.plan).filter(d => d >= from && d <= td && S.plan[d].length).length || 1; const avgP = pTot / daysPlanned, avgD = dTot / daysPlanned;
-  let head;
-  if (!doneR.length && !tracked) head = 'Finish a few tasks and this page starts showing where your time goes.';
-  else { head = meetMins && tracked ? `Meetings took ${Math.round(meetMins / tracked * 100)}% of your tracked time ${label}.` : `You finished ${plural(doneR.length, 'task')} ${label}.`; if (power) head += ` You get the most done ${power}, so keep that time free.`; else if (rate && rate < 70) head += ` You finish ${rate}% of what you plan.`; }
-  const delta = doneR.length - doneP.length;
-  let h = `<div class="topbar"><a class="back only-mobile" href="#home">${I.back}<span class="brand">${LOGO(26)}</span></a><span></span><div class="seg" style="margin-right:6px;width:220px">${[['7', 'Week'], ['30', 'Month'], ['365', 'Year']].map(([k, l]) => `<button class="${String(N) === k ? 'on' : ''}" data-act="nav" data-to="insights/${k}">${l}</button>`).join('')}</div></div>
-  <div class="pad" style="display:flex;align-items:baseline;justify-content:space-between;gap:8px"><h1 class="title">Insights</h1><span class="muted" style="font-size:13.5px;font-weight:600">${fmtShort(from)} to ${fmtShort(td)}</span></div>
-  <p class="headline">${esc(head)}</p><a class="banner" href="#review/${N === 7 ? 'week' : 'month'}" style="text-decoration:none;color:inherit">${I.clock}<span class="bt"><b>Day review</b>Where your time goes, what is wasted, and an AI review.</span>${I.next}</a>
-  <div class="stats"><div class="stat"><b>${doneR.length}</b><span>tasks done</span></div><div class="stat"><b>${tracked ? fmtMins(tracked) : '0h'}</b><span>time tracked</span></div><div class="stat"><b style="color:var(--accent-text)">${delta > 0 ? '+' : ''}${delta}</b><span>vs previous ${N === 365 ? 'year' : N + ' days'}</span></div></div>`;
-  const rowsT = []; if (meetMins) rowsT.push({ n: 'Meetings', sub: plural(meets.length, 'meeting'), v: meetMins, c: 'var(--meet)' });
-  Object.entries(byProj).sort((a, b) => b[1] - a[1]).forEach(([k, v]) => { const p = proj(k); const n = focusR.filter(f => (f.projectId || '_') === k).length; rowsT.push({ n: p ? (p.emoji ? p.emoji + ' ' : '') + p.name : 'No project', sub: n ? plural(n, 'focus session') : 'from task times', v, c: p ? p.color : 'var(--ring)' }); });
-  h += `<section class="isec"><h2>Where your time went<span>${tracked ? fmtMins(tracked) : ''}</span></h2>`;
-  h += rowsT.length ? `<div class="stack">${rowsT.map(r => `<span style="width:${r.v / tracked * 100}%;background:${r.c}"></span>`).join('')}</div>` + rowsT.map(r => `<div class="trow"><i class="dot" style="width:10px;height:10px;border-radius:3px;background:${r.c}"></i><span class="n">${esc(r.n)}<small>${esc(r.sub)}</small></span><span class="v">${fmtMins(r.v)}</span></div>`).join('') : `<p class="sub" style="line-height:1.5;margin:0 0 12px">Time is counted from meetings, Focus sessions, and time you add to tasks (type <b>30m</b> or <b>1h</b> when adding one).</p>`;
-  h += `</section>`;
-  const fm = focusR.reduce((a, f) => a + f.mins, 0), fpm = focusP.reduce((a, f) => a + f.mins, 0);
-  const projDone = {}; doneR.forEach(t => { const k = t.projectId || '_'; projDone[k] = (projDone[k] || 0) + 1; }); const topP = Object.entries(projDone).sort((a, b) => b[1] - a[1])[0];
-  h += `<div class="tiles"><div class="tile"><span>Deep focus</span><b>${fmtMins(fm)}</b><em style="color:${fm >= fpm ? '#2E7D4F' : 'var(--danger)'}">${fm === fpm ? 'Same as before' : (fm > fpm ? 'Up ' : 'Down ') + fmtMins(Math.abs(fm - fpm))}</em></div>
-  <div class="tile"><span>Most progress in</span><b style="font-size:20px">${topP ? esc(proj(topP[0])?.name || 'No project') : 'None yet'}</b><em style="color:var(--muted)">${topP ? plural(topP[1], 'task') + ' done' : ''}</em></div></div>`;
-  h += `<section class="isec"><h2>When you get things done<span>${N === 7 ? 'last 4 weeks' : label}</span></h2><div class="heat"><span></span>${['8a', '10a', '12p', '2p', '4p', '6p+'].map(x => `<span style="text-align:center">${x}</span>`).join('')}`;
-  const shades = ['var(--surface)', 'color-mix(in srgb,var(--accent) 28%,var(--bg))', 'color-mix(in srgb,var(--accent) 55%,var(--bg))', 'var(--accent)', 'color-mix(in srgb,var(--accent) 72%,#000)'];
-  ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach((dn, r) => { h += `<span>${dn}</span>` + heat[r].map(v => `<i style="background:${shades[v ? Math.min(4, Math.ceil(v / hmax * 4)) : 0]}" title="${v} done"></i>`).join(''); });
-  h += `</div>` + (power ? `<div class="tip a"><b>Best time: ${power}.</b> Put your impact task there and keep meetings away from it.</div>` : `<div class="tip a">Finish about 8 tasks to see your best hours.</div>`) + `</section>`;
-  const cols = `grid-template-columns:repeat(${buckets.length},minmax(0,1fr))`;
-  h += `<section class="isec"><h2>Planned vs done<span style="color:var(--meet)">${pTot ? rate + '% finished' : ''}</span></h2><div class="bars" style="${cols}">${buckets.map(x => `<div><i style="height:${x.p / pmax * 100}%;background:color-mix(in srgb,var(--meet) 22%,var(--bg))"></i><i style="height:${x.d / pmax * 100}%;background:var(--meet)"></i></div>`).join('')}</div><div class="blabels" style="${cols}">${buckets.map(x => `<span>${x.l}</span>`).join('')}</div>`;
-  h += pTot ? `<div class="tip m">You plan about ${Math.round(avgP)} ${Math.round(avgP) === 1 ? 'task' : 'tasks'} a day and finish ${Math.round(avgD)}.${rate < 80 && avgD >= 1 ? ` <b>Plan ${Math.max(1, Math.round(avgD) + 1)} a day and you will end more days at 100%.</b>` : ' <b>Nicely balanced.</b>'}</div>` : `<div class="tip m">Give tasks a date and this shows how much of your plan you finish.</div>`;
-  h += `</section>`;
-  const stuck = open().filter(t => t.pushed >= 3).sort((a, b) => b.pushed - a.pushed).slice(0, 6);
-  h += `<section class="isec"><h2>Stuck tasks<span>moved 3+ times</span></h2>` + (stuck.length ? stuck.map(t => `<div class="trow"><span class="n">${esc(t.title)}<small style="color:var(--danger);font-weight:700">Moved ${t.pushed} times</small></span><button class="pill ink" data-act="dotoday" data-id="${t.id}">Do today</button><button class="pill ghost" data-act="drop" data-id="${t.id}">Drop</button></div>`).join('') : `<p class="sub" style="margin:0 0 12px">Nothing stuck. Tasks you keep moving to later show up here.</p>`) + `</section>`;
-  if (S.habits.length) { const ym = td.slice(0, 7); h += `<section class="isec"><h2>Habits<span>${MONSL[new Date().getMonth()]}</span></h2>${S.habits.map(x => { const mo = habitMonth(x, ym); return `<div class="trow"><span style="font-size:20px">${x.emoji || '✅'}</span><span class="n">${esc(x.name)}<small>${habitStreak(x)}-day streak, ${habitTotal(x)} total</small></span><span class="v">${mo.rate}%</span></div>`; }).join('')}</section>`; }
-  return h;
+  const N = arg === '30' || arg === '28' || arg === '365' ? 28 : 7; const X = insData(N); const lab = N === 7 ? 'week' : '4 weeks';
+  const delta = X.doneR.length - X.doneP.length; const f = pYmd(X.from), e = pYmd(X.td);
+  let h = topbar('', 'Insights') + `<div class="pad wraph"><div class="seg" role="tablist">${[['7', 'Week'], ['30', '4 weeks']].map(([k, l]) => `<button class="${(k === '7') === (N === 7) ? 'on' : ''}" role="tab" data-act="nav" data-to="insights/${k}">${l}</button>`).join('')}</div></div>`;
+  h += `<div class="wrapc"><div class="wtop"><span>Insights · ${f.getDate()} ${MONS[f.getMonth()]} – ${e.getDate()} ${MONS[e.getMonth()]}</span></div>`;
+  const empty = !X.doneR.length && !X.meetN;
+  const head = empty ? 'Nothing to read yet' : X.rate === null ? (delta >= 0 ? `Good ${N === 7 ? 'week' : 'run'} so far` : 'Slower than before') : X.rate >= 80 ? `Strong ${N === 7 ? 'week' : 'run'}` : X.rate >= 55 ? `Steady ${N === 7 ? 'week' : 'run'}` : 'Too much on the plate';
+  h += `<h1 class="wh1">${head}</h1><p class="sub">${empty ? 'Finish a few tasks and this fills in.' : `${plural(X.doneR.length, 'task')} done, ${delta === 0 ? 'same as' : Math.abs(delta) + (delta > 0 ? ' more than' : ' fewer than')} the ${N === 7 ? 'week' : '4 weeks'} before.`}</p>`;
+  h += `<div class="wbig"><div><b>${X.doneR.length}</b><span>done <em class="${delta >= 0 ? 'up' : 'dn'}">${delta > 0 ? '▲' + delta : delta < 0 ? '▼' + -delta : ''}</em></span></div><div><b>${X.rate === null ? '–' : X.rate + '%'}</b><span>of plan finished</span></div><div><b>${X.meetMins ? fmtMins(X.meetMins) : '0h'}</b><span>meetings</span></div></div>`;
+  const F = insFixes(X);
+  h += `<div class="wsec">What to fix</div>` + (F.length ? F.map(x => `<div class="ifix"><b>${esc(x.t)}</b><small>${esc(x.s)}</small>${x.rows || ''}${x.b ? `<div class="wbtns">${x.b.map(([a, l, p, to]) => `<button class="${p ? 'p' : ''}" data-act="${a}"${to ? ` data-to="${to}"` : ''}>${l}</button>`).join('')}</div>` : ''}</div>`).join('') : `<div class="wempty">Nothing to fix. Keep going ✓</div>`);
+  let bars;
+  if (N === 7) bars = X.days.map(d => ({ l: 'SMTWTFS'[pYmd(d).getDay()], ...X.dayPD(d), on: d === X.td }));
+  else bars = [0, 1, 2, 3].map(w => { let p = 0, dn = 0; X.days.slice(w * 7, w * 7 + 7).forEach(d => { const x = X.dayPD(d); p += x.p; dn += x.d; }); return { l: w === 3 ? 'This wk' : `${3 - w}w ago`, p, d: dn, on: w === 3 }; });
+  const bmax = Math.max(1, ...bars.filter(x => !x.on || bars.length === 1).map(x => Math.max(x.p, x.d))); const hp = v => Math.min(100, v / bmax * 100);
+  h += `<div class="wsec">Planned vs done</div><div class="ibars" style="grid-template-columns:repeat(${bars.length},minmax(0,1fr))">${bars.map(x => `<div class="${x.on ? 'on' : ''}"><span class="ib"><i class="pl" style="height:${hp(x.p)}%"></i><i class="dn" style="height:${hp(x.d)}%"></i></span><em>${x.d}/${x.p}</em><span class="lb">${x.l}</span></div>`).join('')}</div><div class="ileg"><span><i class="dn"></i>Done</span><span><i class="pl"></i>Planned</span></div>`;
+  const W = [];
+  if (X.bestDay && X.bestDay[1] >= 2) { const d = pYmd(X.bestDay[0]); W.push(['Best day', `${DAYSL[d.getDay()]} ${d.getDate()} ${MONS[d.getMonth()]}, ${plural(X.bestDay[1], 'task')} done`]); }
+  if (X.topAll) W.push(['Top 3 picks', `${X.topHit} of ${X.topAll} finished`]);
+  if (X.topP) { const p = proj(X.topP[0]); if (p) W.push(['Most progress', `${p.emoji ? p.emoji + ' ' : ''}${p.name}, ${plural(X.topP[1], 'task')}`]); }
+  if (X.power) W.push(['Your best hours', X.power[1]]);
+  if (X.focusM >= 30) W.push(['Deep focus', fmtMins(X.focusM)]);
+  const hs = S.habits.map(x => [x, habitStreak(x)]).filter(([, n]) => n >= 3).sort((a, b) => b[1] - a[1])[0]; if (hs) W.push(['Longest streak', `${hs[0].emoji || ''} ${hs[0].name}, ${hs[1]} days`.trim()]);
+  if (W.length) h += `<div class="wsec">Went well</div>` + W.map(([k, v]) => `<div class="iwin"><span>${k}</span><b>${esc(v)}</b></div>`).join('');
+  h += `<button class="ilink" data-act="nav" data-to="review/week">Your daily lines and moods<span>Week review ${I.next}</span></button>`;
+  return h + `</div>`;
 }
 
 /* ================= day review: time tracking + analysis ================= */
@@ -2796,7 +2816,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '4.7';
+const APPV = '4.8';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -3934,6 +3954,9 @@ document.addEventListener('click', e => {
     ekdone: () => { toggleDone(id); ekSheet(); }, eknext: () => { ekIdx++; ekSheet(); },
     wrapnext: () => { const n = $('#wrapNote'); if (n) { const r = dayRec(today()); r.wrapDraft = { ...(r.wrapDraft || {}), note: n.value }; } wrapStep = Math.min(3, wrapStep + 1); save(); render(); scrollTo(0, 0); },
     wrapback: () => { const n = $('#wrapNote'); if (n) { const r = dayRec(today()); r.wrapDraft = { ...(r.wrapDraft || {}), note: n.value }; save(); } wrapStep = Math.max(0, wrapStep - 1); render(); scrollTo(0, 0); },
+    insover: () => { const ts = open().filter(t => !t.someday && t.date && t.date < td && (t.pushed || 0) < 3); ts.forEach(t => setDate(t, td)); save(); render(); toast(`Moved ${plural(ts.length, 'task')} to today`); },
+    instop: () => { wrapDay = td; wrapStep = 2; const r = S.days[td]; if (r && r.wrap) { r.wrapDraft = { note: r.wrap.note || '', mood: r.wrap.mood || '' }; delete r.wrap; save(); } go('review'); },
+    insblock: () => { const X = insData(7); if (!X.power) return; const tom = addDays(td, 1); if (open().some(t => t.date === tom && t.focusBlock)) { toast('Already blocked'); return; } const t = newTask({ title: 'Focus block', date: tom, time: pad(X.power[0]) + ':00', duration: 120, priority: 2, focusBlock: true }); S.tasks.push(t); addPlan(t); save(); render(); toast('Blocked ' + X.power[1] + ' tomorrow'); },
     wrapmove: () => { const t = getTask(b.dataset.id); if (!t) return; setDate(t, addDays(today(), 1)); t.someday = false; save(); render(); toast('Moved to tomorrow'); },
     wrappick: () => { const t = getTask(b.dataset.id); if (t) pickWhen(t); },
     wrapdrop: () => { deleteTask(b.dataset.id); },
