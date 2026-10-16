@@ -2870,7 +2870,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '4.9.4';
+const APPV = '4.9.5';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -3795,7 +3795,7 @@ async function fbInit() {
   const base = `https://www.gstatic.com/firebasejs/${FBV}/`;
   await loadScript(base + 'firebase-app-compat.js'); await loadScript(base + 'firebase-auth-compat.js'); await loadScript(base + 'firebase-firestore-compat.js');
   fbApp = firebase.initializeApp(cfg);
-  firebase.auth().onAuthStateChanged(u => { fbUser = u; if (u) startSync(); else stopSync(); if (route().view === 'settings') render(); });
+  firebase.auth().onAuthStateChanged(u => { fbUser = u; authKnown = true; if (u) startSync(); else stopSync(); if (route().view === 'settings') render(); });
   try { await firebase.auth().getRedirectResult(); } catch (e) { }
   return fbApp;
 }
@@ -4216,12 +4216,20 @@ function askNotify(explicit) {
   else if (explicit && Notification.permission === 'denied') toast('Notifications are blocked for this site in browser settings');
 }
 /* One reminder, one device: the first of your phone or laptop to ring it claims it, the other stays quiet */
+let authKnown = false;
 async function claimFire(key) {
-  if (!key || !fbUser || syncState !== 'on' || typeof firebase === 'undefined') return true;
+  if (!key || typeof firebase === 'undefined' || S.settings.syncOn === false) return true;
+  // Just woke up: give sign-in and sync a few seconds, so this device can see whether the other one already showed it
+  for (let i = 0; i < 16 && (!authKnown || (fbUser && syncState !== 'on')); i++) await new Promise(r => setTimeout(r, 500));
+  if (!fbUser || syncState !== 'on') return true;
+  for (let a = 0; a < 3; a++) { const r = await claimTry(key); if (r !== null) return r; await new Promise(r => setTimeout(r, 1500)); }
+  return true;
+}
+async function claimTry(key) {
   try {
     const ref = firebase.firestore().collection('users').doc(fbUser.uid).collection('items').doc(ekey('claim:' + key));
     return await firebase.firestore().runTransaction(async tx => { const d = await tx.get(ref); if (d.exists && Date.now() - (d.data().u || 0) < 6 * 3600e3) return false; tx.set(ref, { d: '1', u: Date.now(), x: false, k: 'claim' }); return true; });
-  } catch (e) { return true; }
+  } catch (e) { return null; }
 }
 /* You acted on a reminder on one device: close the same reminder on this one */
 async function closeNotifs(t) {
@@ -4239,9 +4247,13 @@ async function sweepNotifs() {
   } catch (e) { }
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') sweepSoon(); });
+const IS_PHONE = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
+let lastInput = Date.now(); ['pointerdown', 'keydown', 'mousemove', 'wheel', 'touchstart'].forEach(ev => addEventListener(ev, () => { lastInput = Date.now(); }, { passive: true, capture: true }));
 async function notify(title, body, tag, data = {}, actions, once) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (tag !== 'test' && actions && !IS_PHONE && !data._late && Date.now() - lastInput > 180000) { setTimeout(() => notify(title, body, tag, { ...data, _late: 1 }, actions, once), 90000); return; } // away from the laptop: the phone (and watch) gets first chance
   if (tag !== 'test' && !(await claimFire(once || (tag + '|' + title + '|' + Math.floor(Date.now() / 18e4))))) return;
+  if (data._late) { data = { ...data }; delete data._late; }
   const opts = { body, tag, data, icon: 'icon-192.png', badge: 'icon-192.png', renotify: true };
   if (actions) { const mx = Notification.maxActions || 2; opts.actions = mx >= 3 ? [{ action: 'done', title: 'Done' }, { action: 'snooze', title: 'Snooze 10 min' }, { action: 'later', title: 'Snooze…' }] : [{ action: 'done', title: 'Done' }, { action: 'later', title: 'Snooze…' }]; opts.vibrate = [200, 100, 200]; }
   try { const reg = swReg || await navigator.serviceWorker?.getRegistration(); if (reg) { await reg.showNotification(title, opts); return; } } catch (e) { }
