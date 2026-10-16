@@ -2870,7 +2870,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '4.9.5';
+const APPV = '4.9.6';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -3988,7 +3988,7 @@ function sideMenu(x, y, k, id) {
     else if (a === 'up' || a === 'down') sStep(k, id, a === 'up' ? -1 : 1); });
   m.querySelectorAll('[data-ma]').forEach(b => b.onclick = () => { closeCtx(); let a = b.dataset.ma; if (!a) { a = (prompt('New area name') || '').trim(); if (!a) return; } sMove({ k: 'p', id }, { area: a }); toast('Moved to ' + a); });
 }
-function pageMenu(x, y) {
+function blankMenu(x, y) {
   closeCtx(); const R = route(); const td = today(); const sel = String(getSelection() || '').trim().slice(0, 200);
   const here = R.view === 'today' ? 'for today' : R.view === 'inbox' ? 'to Inbox' : R.view === 'project' && proj(R.arg) ? 'to ' + proj(R.arg).name : R.view === 'calendar' ? 'on ' + fmtDate(calSel || td) : '';
   const m = document.createElement('div'); m.id = 'ctx'; m.className = 'ctx'; m.setAttribute('role', 'menu');
@@ -4022,7 +4022,7 @@ document.addEventListener('contextmenu', e => {
   if (id && getTask(id)) { e.preventDefault(); ctxMenu(e.clientX, e.clientY, id); return; }
   const sp = e.target.closest('[data-dp]'), sa = !sp && e.target.closest('[data-da]'); if (sp || sa) { e.preventDefault(); sideMenu(e.clientX, e.clientY, sp ? 'p' : 'a', sp ? sp.dataset.dp : sa.dataset.da); return; }
   if (e.shiftKey) { closeCtx(); return; } // Shift + right-click: the browser's own menu
-  e.preventDefault(); pageMenu(e.clientX, e.clientY);
+  e.preventDefault(); blankMenu(e.clientX, e.clientY);
 });
 document.addEventListener('mousedown', e => { if (!e.target.closest('#ctx')) closeCtx(); }, true);
 document.addEventListener('click', e => { if (!isWide() || e.button !== 0) return; if (!e.target.closest('#main') || e.target.closest('a,button,input,textarea,select,label,[data-act],[data-id],[data-tid],.row,[contenteditable=true],.addbar,.ab-prev')) return; const sel = getSelection(); if (sel && String(sel).trim()) return; const ab = $('#abIn'); if (ab) ab.focus(); });
