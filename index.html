@@ -1015,6 +1015,7 @@ const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const nowHM = () => { const d = new Date(); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
 const minOf = ms => { const d = new Date(ms); return d.getHours() * 60 + d.getMinutes(); };
+const snoozedTo = (t, day) => !t.done && t.time && t.snoozeUntil && t.date === day && ymd(new Date(t.snoozeUntil)) === day && minOf(t.snoozeUntil) > hm2m(t.time) ? minOf(t.snoozeUntil) : null;
 const plural = (n, w, ws) => `${n} ${n === 1 ? w : (ws || w + 's')}`;
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const DAYSL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -1692,7 +1693,7 @@ function row(t, o = {}) {
   if (t.pinned && !o.inPinned) meta.push(`<span class="mi">${I.pin}Pinned</span>`);
   if (o.showDate && t.date) meta.push(`<span class="mi">${I.cal}${fmtDate(t.date)}</span>`);
   if (t.someday && o.showDate) meta.push(`<span>Someday</span>`);
-  if (t.time) meta.push(`<span class="mi">${t.reminders.length ? I.bell : I.clock}${fmtTime(t.time)}</span>`);
+  if (t.time) { const z = snoozedTo(t, t.date); meta.push(`<span class="mi">${t.reminders.length ? I.bell : I.clock}${z != null ? `<s>${fmtTime(t.time)}</s>&nbsp;${fmtTime(pad(Math.floor(z / 60)) + ':' + pad(z % 60))}` : fmtTime(t.time)}</span>`); }
   else if (t.reminders.length && t.date) meta.push(`<span class="mi">${I.bell}${remLabel(Math.max(...t.reminders))}</span>`);
   if (!t.done && t.date && t.date < today()) meta.push(`<span class="late">Overdue</span>`);
   if (t.repeat) meta.push(`<span class="mi">${I.repeat}${esc(repeatLabel(t.repeat))}</span>`);
@@ -1905,7 +1906,7 @@ function renderRail() {
   const busy = ms.reduce((a, x) => a + (x.e - x.s) / 6e4, 0) + ts.reduce((a, t) => a + (+t.duration || 0), 0); const free = Math.max(0, (w1 - w0) - busy);
   // Hourly timeline: every half hour is a slot you can click (or drop a task on); meetings and timed tasks sit on top, side by side when they overlap
   const H = 48, px = m => m / 60 * H;
-  const its = [...ms.map(x => { const s = minOf(x.s); return { s, e: Math.min(1440, Math.max(minOf(x.e) || 1440, s + 15)), m: x }; }), ...ts.map(t => { const s = hm2m(t.time); return { s, e: Math.min(1440, s + Math.max(15, +t.duration || 30)), t }; })].sort((a, b) => a.s - b.s || b.e - a.e);
+  const its = [...ms.map(x => { const s = minOf(x.s); return { s, e: Math.min(1440, Math.max(minOf(x.e) || 1440, s + 15)), m: x }; }), ...ts.map(t => { const z = snoozedTo(t, railDay); const s = z ?? hm2m(t.time); return { s, e: Math.min(1440, s + Math.max(15, +t.duration || 30)), t, z: z != null }; })].sort((a, b) => a.s - b.s || b.e - a.e);
   let cl = [], clEnd = -1; const flush = () => { const lanes = []; cl.forEach(it => { let i = lanes.findIndex(e => e <= it.s); if (i < 0) { i = lanes.length; lanes.push(0); } lanes[i] = it.e; it.lane = i; }); cl.forEach(it => it.n = lanes.length); cl = []; };
   its.forEach(it => { if (it.s >= clEnd) { flush(); clEnd = it.e; } else clEnd = Math.max(clEnd, it.e); cl.push(it); }); flush();
   let g = '';
@@ -1917,7 +1918,7 @@ function renderRail() {
     if (it.m) { const x = it.m, live = x.s <= now && x.e > now, past = x.e <= now;
       g += `<div class="rev m${past ? ' past' : ''}${live ? ' live' : ''}${short}" style="${st}"><button type="button" data-act="meet" data-id="${esc(x.id)}" title="${esc(x.t)}, ${tm}"><b>${esc(x.t)}</b><small>${tm}</small></button>${x.join && !past && h >= 34 && it.n < 3 ? `<a class="rj" href="${esc(x.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>`; }
     else { const t = it.t;
-      g += `<div class="rev t${t.done ? ' past' : ''}${short}" style="${st}"><button type="button" data-act="open" data-id="${t.id}" draggable="true" data-tid="${t.id}" title="${esc(t.title)}, ${tm}"><b><i class="pdot p${t.priority}"></i>${esc(t.title)}</b><small>${tm}${t.duration ? ' · ' + fmtMins(t.duration) : ''}</small></button></div>`; }
+      g += `<div class="rev t${t.done ? ' past' : ''}${short}" style="${st}"><button type="button" data-act="open" data-id="${t.id}" draggable="true" data-tid="${t.id}" title="${esc(t.title)}, ${tm}"><b><i class="pdot p${t.priority}"></i>${esc(t.title)}</b><small>${it.z ? 'Snoozed to ' : ''}${tm}${t.duration ? ' · ' + fmtMins(t.duration) : ''}</small></button></div>`; }
   });
   if (nowM >= 0) g += `<div class="rnow" style="top:${px(nowM)}px"><i></i></div>`;
   const keep = railScroll.d === railDay ? railScroll.y : null;
@@ -1960,7 +1961,7 @@ document.addEventListener('drop', e => {
   const t = getTask(dragId); const z = e.target.closest?.('.wcol,.tlh'); $$('.dropok,.tlh.over').forEach(x => x.classList.remove('dropok', 'over')); dragId = null; if (!t || !z) return; e.preventDefault();
   if (z.classList.contains('wcol')) { if (t.date !== z.dataset.day) { setDate(t, z.dataset.day); t.someday = false; save(); render(); toast(`Moved to ${fmtDate(z.dataset.day)}`); } return; }
   const hr = +z.dataset.hr; const half = (e.offsetY || 0) > z.clientHeight / 2 ? 30 : 0; const tm = z.dataset.m ? `${pad(Math.floor(+z.dataset.m / 60))}:${pad(+z.dataset.m % 60)}` : `${pad(hr)}:${pad(half)}`;
-  if (t.date !== railDay) setDate(t, railDay); t.someday = false; t.time = tm; t.duration ||= 30; t.firedKeys = []; if (!t.reminders.length) t.reminders = [0]; save(); render(); toast(`${fmtDate(railDay)}, ${fmtTime(tm)}`);
+  if (t.date !== railDay) setDate(t, railDay); t.someday = false; t.time = tm; t.duration ||= 30; t.firedKeys = []; t.snoozeUntil = 0; t.nagAt = 0; if (!t.reminders.length) t.reminders = [0]; save(); render(); toast(`${fmtDate(railDay)}, ${fmtTime(tm)}`);
 });
 document.addEventListener('dragend', () => { dragId = null; $$('.dropok,.tlh.over').forEach(x => x.classList.remove('dropok', 'over')); });
 function intentHtml() {
@@ -2870,7 +2871,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '4.9.7';
+const APPV = '4.9.8';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
