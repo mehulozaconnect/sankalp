@@ -1966,10 +1966,10 @@ document.addEventListener('dragend', () => { dragId = null; $$('.dropok,.tlh.ove
 function intentHtml() {
   const td = today(), rec = S.days[td] || {}; const tm = S.days[addDays(td, 1)] || {}; const late = nowHM() >= (S.settings.shutdown || '19:00');
   let h = '';
-  if (rec.objective) h += `<button class="obj" data-act="objective"><span class="obj-k">Today's sankalp</span><span class="obj-v">${esc(rec.objective)}</span></button>`;
+  if (rec.objective) h += `<button class="obj" data-act="objective"><span class="obj-k">Today's objective</span><span class="obj-v">${esc(rec.objective)}</span></button>`;
   const chips = [];
   if (open().some(t => t.date && t.date <= td)) chips.push(`<button class="ichip ek" data-act="ek">${I.play}One thing now</button>`);
-  if (!rec.objective) chips.push(`<button class="ichip" data-act="objective">${I.target}Set today's sankalp</button>`);
+  if (!rec.objective) chips.push(`<button class="ichip" data-act="objective">${I.target}Set today's objective</button>`);
   if (!(rec.impactId && getTask(rec.impactId))) chips.push(`<button class="ichip" data-act="impact">${I.star}Pick most important</button>`);
   if (late || tm.objective) chips.push(`<button class="ichip${tm.objective ? ' set' : ''}" data-act="tomorrow">${I.moon}${tm.objective ? 'Tomorrow: ' + esc(tm.objective) : 'Plan tomorrow'}</button>`);
   return h + `<div class="ichips">${chips.join('')}</div>`;
@@ -2870,7 +2870,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '4.9.6';
+const APPV = '4.9.7';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -3166,9 +3166,9 @@ function hotkeyFile() {
     "Write-Host ''"].join('\r\n');
   const b64 = btoa(unescape(encodeURIComponent(setup)));
   const cmd = ['@echo off', 'title Dayline shortcut setup', 'echo.', 'echo   Setting up the Dayline shortcut, please wait...',
-    `powershell -NoProfile -ExecutionPolicy Bypass -Command "[IO.File]::WriteAllBytes((Join-Path $env:TEMP 'sankalp-setup.ps1'), [Convert]::FromBase64String('${b64}'))"`,
-    'powershell -NoProfile -ExecutionPolicy Bypass -File "%TEMP%\\sankalp-setup.ps1"',
-    'del "%TEMP%\\sankalp-setup.ps1" >nul 2>&1', 'echo   Press any key to close this window.', 'pause >nul'].join('\r\n') + '\r\n';
+    `powershell -NoProfile -ExecutionPolicy Bypass -Command "[IO.File]::WriteAllBytes((Join-Path $env:TEMP 'dayline-setup.ps1'), [Convert]::FromBase64String('${b64}'))"`,
+    'powershell -NoProfile -ExecutionPolicy Bypass -File "%TEMP%\\dayline-setup.ps1"',
+    'del "%TEMP%\\dayline-setup.ps1" >nul 2>&1', 'echo   Press any key to close this window.', 'pause >nul'].join('\r\n') + '\r\n';
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([cmd], { type: 'application/octet-stream' })); a.download = 'Dayline-shortcut-setup.cmd'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
 /* Quick-add window (opened by the desktop shortcut): save, make sure it reached the cloud, then close. */
@@ -4143,7 +4143,7 @@ async function lockToggle() {
   if (lockId()) { if (!confirm('Turn off fingerprint lock on this device?')) return; localStorage.removeItem(LOCKK); render(); toast('Fingerprint lock off'); return; }
   if (!await lockAvailable()) { toast('This device or browser has no fingerprint unlock for websites'); return; }
   try {
-    const cred = await navigator.credentials.create({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), rp: { name: 'Dayline', id: location.hostname }, user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'sankalp-lock', displayName: 'Dayline app lock' }, pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }], authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'discouraged' }, timeout: 60000, attestation: 'none' } });
+    const cred = await navigator.credentials.create({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), rp: { name: 'Dayline', id: location.hostname }, user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'dayline-lock', displayName: 'Dayline app lock' }, pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }], authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'discouraged' }, timeout: 60000, attestation: 'none' } });
     localStorage.setItem(LOCKK, b64(cred.rawId)); render(); toast('Fingerprint lock on. Dayline asks for it when you open it.');
   } catch (e) { toast(e.name === 'NotAllowedError' ? 'Cancelled' : 'Could not set up fingerprint: ' + (e.message || e.name)); }
 }
@@ -4159,7 +4159,7 @@ $('#lockBtn').onclick = unlock;
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') hiddenAt = Date.now(); else if (lockId() && hiddenAt && Date.now() - hiddenAt > 60000) showLock(); });
 
 /* ================= backup ================= */
-function exportData() { const blob = new Blob([JSON.stringify({ ...S, imgs: IMGS })], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `sankalp-backup-${today()}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+function exportData() { const blob = new Blob([JSON.stringify({ ...S, imgs: IMGS })], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `dayline-backup-${today()}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
 function restoreData() {
   const fi = $('#fileIn'); fi.accept = 'application/json,.json'; fi.multiple = false;
   fi.onchange = () => { const f = fi.files[0]; fi.value = ''; if (!f) return; const rd = new FileReader(); rd.onload = () => { try { const s = JSON.parse(rd.result); if (!s || !Array.isArray(s.tasks)) throw 0; if (!confirm('Replace everything on this device with this backup?')) return; const fb = S.settings.fb; if (s.imgs) { Object.entries(s.imgs).forEach(([k, v]) => { IMGS[k] = v; idb.put(k, v).catch(() => { }); }); delete s.imgs; } S = migrate(s); S.settings.fb ||= fb; save(); applyTheme(); render(); toast('Backup restored'); } catch (err) { toast('That file is not a Dayline backup'); } }; rd.readAsText(f); };
