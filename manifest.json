@@ -1,7 +1,7 @@
 {
- "name": "Sankalp",
- "short_name": "Sankalp",
- "description": "Tasks, habits, focus and insights in one calm app.",
+ "name": "Dayline",
+ "short_name": "Dayline",
+ "description": "Your day on one line: tasks, meetings and reminders.",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",

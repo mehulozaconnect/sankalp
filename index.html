@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<title>Sankalp</title>
-<meta name="description" content="Sankalp: tasks, habits, focus and insights in one calm app.">
+<title>Dayline</title>
+<meta name="description" content="Dayline: tasks, habits, focus and insights in one calm app.">
 <meta name="theme-color" content="#FFFFFF">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Sankalp">
+<meta name="apple-mobile-web-app-title" content="Dayline">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link id="fontlink" rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
@@ -519,7 +519,7 @@ ul.ls-arrow>li::before{content:'➤'}ul.ls-check>li::before{content:'☐'}ul.ls-
 
 /* ===== v3 ===== */
 .side{background:var(--side)!important}
-.logo .lb{fill:var(--logo-bg)} .logo .lf{fill:var(--logo-fg)} .logo .lc{stroke:var(--logo-bg)}
+.logo .lb{fill:var(--logo-bg)} .logo .lf{fill:var(--logo-fg)} .logo .lr{stroke:var(--logo-fg)}
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
 .tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0 4px;font-size:11.5px;font-weight:700;color:var(--muted);text-decoration:none;border-radius:12px}
 .tabbar a svg{width:23px;height:23px}
@@ -907,6 +907,7 @@ main.calw{max-width:800px}
 .rah{font-size:12px;font-weight:700;color:var(--muted);padding:12px 6px 4px}
 .raempty{padding:20px 6px;color:var(--muted);font-size:13px}
 #rail .rtasks{margin:0}
+.chip.nagt{cursor:pointer;border:1.5px dashed var(--line);background:none}.chip.nagt.on{border-style:solid;border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--bg))}
 </style>
 </head>
 <body>
@@ -916,7 +917,7 @@ main.calw{max-width:800px}
   <aside class="rail" id="rail" aria-label="Day calendar"></aside>
 </div>
 <nav class="tabbar" id="tabbar" aria-label="Main"></nav>
-<div class="lock" id="lock" role="dialog" aria-modal="true" aria-label="Sankalp is locked"><span id="lockLogo"></span><b>Sankalp is locked</b><p>Use your fingerprint or phone screen lock to open.</p><button class="btn acc" id="lockBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 11c0 3.5-1 6-2.5 8M8 6.5A6 6 0 0 1 18 11c0 2.2-.3 4.2-.9 6M6 9.5A7.9 7.9 0 0 0 5.5 12c0 2.5-.6 4.4-1.5 5.5M15 12c0 2.7-.5 5.2-1.5 7.5M9 11a3 3 0 0 1 6 0"/></svg>Unlock</button></div>
+<div class="lock" id="lock" role="dialog" aria-modal="true" aria-label="Dayline is locked"><span id="lockLogo"></span><b>Dayline is locked</b><p>Use your fingerprint or phone screen lock to open.</p><button class="btn acc" id="lockBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 11c0 3.5-1 6-2.5 8M8 6.5A6 6 0 0 1 18 11c0 2.2-.3 4.2-.9 6M6 9.5A7.9 7.9 0 0 0 5.5 12c0 2.5-.6 4.4-1.5 5.5M15 12c0 2.7-.5 5.2-1.5 7.5M9 11a3 3 0 0 1 6 0"/></svg>Unlock</button></div>
 <button class="fab" id="fab" aria-label="Add task"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Add</span></button>
 <div class="scrim" id="scrim"></div>
 <section class="page" id="page" role="dialog" aria-modal="true" aria-label="Task"></section>
@@ -1017,7 +1018,7 @@ const I = {
   more: sv('<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>', 2.4),
   gcal: sv('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M12 13v5M9.5 15.5h5"/>', 2)
 };
-const LOGO = (s = 32) => `<svg class="logo" width="${s}" height="${s}" viewBox="0 0 48 48" aria-hidden="true"><rect class="lb" width="48" height="48" rx="14"/><path class="lf" d="M24 6c3 6.5 11 10.5 11 21a11 11 0 0 1-22 0c0-5.5 3-8.5 5-11.5.6 3 1.8 4.5 3.5 5.5-.2-6 .5-10.5 2.5-15z"/><path class="lc" d="M18.6 28.2l3.7 3.7 7.3-7.5" fill="none" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const LOGO = (s = 32) => `<svg class="logo" width="${s}" height="${s}" viewBox="0 0 48 48" aria-hidden="true"><rect class="lb" width="48" height="48" rx="14"/><path class="lf" d="M15 29a9 9 0 0 1 18 0z"/><rect class="lf" x="8" y="32" width="32" height="3.6" rx="1.8"/><path class="lr" fill="none" stroke-width="3" stroke-linecap="round" d="M24 11.5v3.6M12.6 16.6l2.5 2.5M35.4 16.6l-2.5 2.5"/></svg>`;
 
 /* ================= themes + fonts ================= */
 const THEMES = {
@@ -1190,7 +1191,7 @@ $('#vDel').onclick = () => { if (!viewerCtx) return; if (!confirm('Remove this i
 
 /* ================= state ================= */
 const KEY = 'sankalp.v1';
-const DEF_SETTINGS = { appmap: {}, workStart: '09:30', checkin: 60, aiModel: 'claude-sonnet-5-5', aiPrivate: false, catv: {}, logo: 'sky', darkStyle: 'Slate', theme: 'Akash', mode: 'auto', accent: '', font: 'Modern', pomo: 25, brk: 5, morning: '08:30', shutdown: '19:00', meetBefore: 10, quietOn: true, quietStart: '22:00', quietEnd: '07:30', shield: true, showDone: false, todayGroup: 'time', lastSummary: '', lastShutdown: '', icsUsed: false, icsNudge: '', fb: '', nagDef: 10 };
+const DEF_SETTINGS = { appmap: {}, workStart: '09:30', checkin: 60, aiModel: 'claude-sonnet-5-5', aiPrivate: false, catv: {}, logo: 'sky', darkStyle: 'Slate', theme: 'Akash', mode: 'auto', accent: '', font: 'Modern', pomo: 25, brk: 5, morning: '08:30', shutdown: '19:00', meetBefore: 10, quietOn: true, quietStart: '22:00', quietEnd: '07:30', shield: true, showDone: false, todayGroup: 'time', lastSummary: '', lastShutdown: '', icsUsed: false, icsNudge: '', fb: '', nagDef: 0 };
 const HSECTIONS = [{ n: 'Morning', e: '🌅' }, { n: 'Work', e: '💼' }, { n: 'Health', e: '💪' }, { n: 'Spiritual', e: '🙏' }, { n: 'Night', e: '🌙' }];
 const LEAD_NOTES = 'Contact Name - \nDesignation - \nDemo Date - \nLead Source - \nSector - \nFunction - (Sales / Service / Support)\nCo Size - \nLead Rating - \nTool - \nVolume - \nExpected Timeline - \nPricing - \nLead Scoring - \n\nNotes - \n\n\nFollow-ups - \n';
 const LEAD_HTML = '<div>Contact Name - </div><div>Designation - </div><div>Demo Date - </div><div>Lead Source - </div><div>Sector - </div><div>Function - (Sales / Service / Support)</div><div>Co Size - </div><div><b>Lead Rating - </b></div><div>Tool - </div><div>Volume - </div><div><b>Expected Timeline - </b></div><div><b>Pricing - </b></div><div><b>Lead Scoring - </b></div><div><br></div><div><mark><b>Notes -</b></mark></div><div><br></div><div><br></div><div><mark><b>Follow-ups</b></mark></div><div><br></div>';
@@ -1233,7 +1234,9 @@ function migrate(s) {
   s.settings = Object.assign({ ...DEF_SETTINGS }, s.settings || {});
   s.tasks.forEach(t => { t.subs ||= []; t.reminders ||= []; t.firedKeys ||= []; t.tags ||= []; t.imgs ||= []; if (!t.nh) { t.notes = textToHtml(t.notes || ''); t.nh = true; } });
   s.templates.forEach(tp => { if (!tp.nh) { tp.notes = (tp.builtin && tp.name === 'Lead') ? LEAD_HTML : textToHtml(tp.notes || ''); tp.nh = true; } });
-  s.settings.gcid ??= ''; s.settings.gOn ??= false; s.settings.nagDef ??= 10; s.settings.logo ??= 'sky'; s.settings.darkStyle ??= 'Slate';
+  s.settings.gcid ??= ''; s.settings.gOn ??= false; s.settings.nagDef ??= 0; s.settings.logo ??= 'sky'; s.settings.darkStyle ??= 'Slate';
+  // 4.4: repeat reminders are off unless you switch them on for a task
+  if (!s.settings.nagOff1) { s.settings.nagOff1 = true; s.settings.nagDef = 0; s.tasks.forEach(t => { if (t.nag == null) { t.nagAt = 0; t.nagN = 0; } (t.subs || []).forEach(c => { c.nagAt = 0; }); }); }
   if (!s.settings.v3) { s.settings.v3 = true; if (s.settings.theme === 'Marigold') s.settings.theme = 'Akash'; if (s.settings.accent === '#F2A33A') s.settings.accent = ''; }
   return s;
 }
@@ -1332,7 +1335,7 @@ function toHM(h, mi, ap, ctxEvening) {
   return pad(h) + ':' + pad(mi);
 }
 function parseTask(input) {
-  const r = { title: '', date: null, time: null, endTime: null, evening: false, someday: false, priority: null, projectId: null, newProject: null, tags: [], repeat: null, reminders: [], duration: null, start: null, until: null, meeting: false, pinned: false };
+  const r = { nag: null, title: '', date: null, time: null, endTime: null, evening: false, someday: false, priority: null, projectId: null, newProject: null, tags: [], repeat: null, reminders: [], duration: null, start: null, until: null, meeting: false, pinned: false };
   const M = '\u0001';
   let s = ' ' + input.replace(/\s+/g, ' ') + ' ';
   const B = '(^|[\\s,\\u0001])', E = '(?=[\\s,.!?\\u0001]|$)';
@@ -1340,6 +1343,8 @@ function parseTask(input) {
   const setPart = w => { w = w.toLowerCase(); if (/morning|subah/.test(w)) r.time = '09:00'; else if (/afternoon|dopahar/.test(w)) r.time = '14:00'; else if (/evening|shaam|sham/.test(w)) { r.time = '19:00'; r.evening = true; } else if (/night|raat/.test(w)) { r.time = '21:00'; r.evening = true; } };
   // meeting
   if (/^\s*(meet|mtg|meeting)\b/i.test(input)) { r.meeting = true; take('(?:meet|mtg)', m => { if (m.index !== 0) return false; }); }
+  // keep reminding until done
+  take('(?:nag|keep\\s+reminding|remind\\s+(?:till|until)\\s+done|until\\s+done)', () => { r.nag = 10; });
   // pin
   take('(?:pin|pinned)', m => { if (m.index === 0) return false; r.pinned = true; });
   // reminders (up to 3)
@@ -1456,6 +1461,7 @@ function chipsFor(r) {
   r.tags.forEach(x => c.push(['tag', I.tag, '@' + x]));
   r.reminders.forEach(m => c.push(['remind', I.bell, m === 0 ? 'Remind on time' : 'Remind ' + remLabel(m)]));
   if (r.duration && !r.endTime) c.push(['dur', I.hour, fmtMins(r.duration)]);
+  if (r.nag && !r._edit) c.push(['remind', I.repeat, 'Keep reminding']);
   if (r._edit && !r.meeting && !r.someday) { if (!r.date) c.unshift(['date', I.cal, 'Date']); if (!r.time) c.splice(r.date ? 1 : 1, 0, ['time', I.clock, 'Time']); }
   return c.map(([k, i, l]) => r._edit && (k === 'date' || k === 'time') ? `<button type="button" class="chip k-${k} ed${(k === 'date' && !r.date) || (k === 'time' && !r.time) ? ' ghost' : ''}" data-chip="${k}">${i}${(k === 'date' && !r.date) || (k === 'time' && !r.time) ? '+ ' : ''}${esc(l)}</button>` : `<span class="chip k-${k}">${i}${esc(l)}</span>`).join('');
 }
@@ -1493,7 +1499,7 @@ function addFromText(text, ctx) {
   const r = parseTask(text); if (!r.title && !r.meeting) return null;
   if (r.meeting) return { meeting: addMeeting(r) };
   if (r.newProject) r.projectId = ensureProject(r.newProject).id;
-  const t = newTask({ title: r.title, date: r.date, time: r.time, evening: r.evening, someday: r.someday, priority: r.priority || 4, projectId: r.projectId, tags: r.tags, repeat: r.repeat, reminders: r.reminders, duration: r.duration, pinned: r.pinned });
+  const t = newTask({ title: r.title, date: r.date, time: r.time, evening: r.evening, someday: r.someday, priority: r.priority || 4, projectId: r.projectId, tags: r.tags, repeat: r.repeat, reminders: r.reminders, duration: r.duration, pinned: r.pinned, nag: r.nag ? 10 : null });
   if (!t.date && !t.someday) { if (ctx.view === 'today') t.date = today(); if (ctx.view === 'someday') t.someday = true; if (ctx.date) t.date = ctx.date; }
   if (ctx.time && !t.time && !t.someday) { t.time = ctx.time; t.duration ||= 30; if (!t.reminders.length) t.reminders = [0]; }
   if (!t.projectId && ctx.view === 'project') t.projectId = ctx.arg;
@@ -1536,8 +1542,8 @@ function calSources() {
   const now = Date.now(), until = pYmd(addDays(today(), 3)).getTime();
   const up = (pc.ev || []).filter(e => e[3] > now - 3600e3 && e[2] < until).sort((a, b) => a[2] - b[2]);
   const why = e => pcSkip(e[5], e[7]) ? 'skipped: holiday or birthday calendar' : e[7] === 2 ? 'shown, phone says declined' : e[4] ? 'all-day' : '';
-  return `<div class="calsrc" style="margin:10px 0 4px">Calendars Sankalp can see on your phone: ${names.length ? names.map(n => `<b>${esc(n)}</b> (${by[n]})`).join(', ') : '<b>none yet</b>'}.${outlook ? '' : ` <br>No work calendar here yet. In the Outlook app on your phone: Settings, your work account, switch on <b>Sync calendars</b>. Then in Sankalp Phone tap Sync now.`}</div>
-  <details style="margin:6px 0 8px"><summary class="sub" style="cursor:pointer">Events received for the next 3 days (${up.length})</summary>${up.length ? up.map(e => `<div class="logrow"><span class="lt">${fmtDate(ymd(new Date(e[2])))}${e[4] ? '' : ', ' + fmtClock(e[2])}</span><span class="ln">${esc(e[1])}<small>${esc(e[5] || '')}${why(e) ? ' · ' + why(e) : ''}</small></span></div>`).join('') : '<p class="sub">None. Tap Sync now in Sankalp Phone.</p>'}</details>${pc.calInfo ? `<details style="margin:0 0 8px"><summary class="sub" style="cursor:pointer">All calendars on your phone (${pc.calInfo.length})</summary>${pc.calInfo.map(c => `<div class="logrow"><span class="lt">${c[5]} events</span><span class="ln">${esc(c[0] || 'Calendar')}<small>${esc(c[1] || '')} · ${esc((c[2] || '').split('.').pop())}${c[3] ? '' : ' · hidden in calendar app'}${c[4] ? '' : ' · sync off'}</small></span></div>`).join('')}</details>` : ''}`;
+  return `<div class="calsrc" style="margin:10px 0 4px">Calendars Dayline can see on your phone: ${names.length ? names.map(n => `<b>${esc(n)}</b> (${by[n]})`).join(', ') : '<b>none yet</b>'}.${outlook ? '' : ` <br>No work calendar here yet. In the Outlook app on your phone: Settings, your work account, switch on <b>Sync calendars</b>. Then in Dayline Phone tap Sync now.`}</div>
+  <details style="margin:6px 0 8px"><summary class="sub" style="cursor:pointer">Events received for the next 3 days (${up.length})</summary>${up.length ? up.map(e => `<div class="logrow"><span class="lt">${fmtDate(ymd(new Date(e[2])))}${e[4] ? '' : ', ' + fmtClock(e[2])}</span><span class="ln">${esc(e[1])}<small>${esc(e[5] || '')}${why(e) ? ' · ' + why(e) : ''}</small></span></div>`).join('') : '<p class="sub">None. Tap Sync now in Dayline Phone.</p>'}</details>${pc.calInfo ? `<details style="margin:0 0 8px"><summary class="sub" style="cursor:pointer">All calendars on your phone (${pc.calInfo.length})</summary>${pc.calInfo.map(c => `<div class="logrow"><span class="lt">${c[5]} events</span><span class="ln">${esc(c[0] || 'Calendar')}<small>${esc(c[1] || '')} · ${esc((c[2] || '').split('.').pop())}${c[3] ? '' : ' · hidden in calendar app'}${c[4] ? '' : ' · sync off'}</small></span></div>`).join('')}</details>` : ''}`;
 }
 const pcSkip = (cal, st) => /holiday|birthday|contacts/i.test(cal || '');
 function applyPcal() { Object.keys(S.meetLog).forEach(k => { if (S.meetLog[k].src === 'pcal') delete S.meetLog[k]; }); ((S.pcal || {}).ev || []).forEach(([id, t, s0, e0, all, cal, join, st, loc, desc, org, att]) => { if (pcSkip(cal, st)) return; S.meetLog['pc-' + id + '-' + s0] = { id: 'pc-' + id + '-' + s0, t: t || 'Busy', s: s0, e: e0, allDay: !!all, join: join || '', src: 'pcal', cal: cal || '', dec: st === 2, loc: typeof loc === 'string' ? loc : '', desc: typeof desc === 'string' ? desc : '', org: typeof org === 'string' ? org : '', att: Array.isArray(att) ? att : [] }; }); }
@@ -1679,7 +1685,7 @@ function projectsNav(cur, arg) {
 }
 function renderSide() {
   const { view, arg } = route();
-  $('#side').innerHTML = `<div style="padding:0 6px 14px;display:flex;justify-content:space-between;align-items:center"><a class="brand" href="#today">${LOGO(32)}<b>Sankalp</b></a><a class="iconbtn" href="#settings" aria-label="Settings">${I.gear}</a></div>
+  $('#side').innerHTML = `<div style="padding:0 6px 14px;display:flex;justify-content:space-between;align-items:center"><a class="brand" href="#today">${LOGO(32)}<b>Dayline</b></a><a class="iconbtn" href="#settings" aria-label="Settings">${I.gear}</a></div>
   <button class="sidesearch" data-act="search">${I.search}Search<kbd>${esc(keyMap().search || '/')}</kbd></button>
   <div class="nav" style="padding:0">${listsNav(view)}</div><div class="nav" style="padding:0">${projectsNav(view, arg)}</div>
   <button class="navi" data-act="newproject" style="color:var(--muted);font-size:14px;margin-top:8px">${I.plus}<span class="nm">New project</span></button><button class="navi" data-act="editmenu" style="color:var(--muted);font-size:14px">${I.edit}<span class="nm">Edit menu</span></button>`;
@@ -1687,7 +1693,7 @@ function renderSide() {
 
 /* ================= views ================= */
 function vHome() {
-  return `<div class="topbar" style="padding-left:20px"><span class="brand">${LOGO(32)}<b>Sankalp</b></span><div class="acts"><button class="iconbtn" data-act="search" aria-label="Search">${I.search}</button><a class="iconbtn" href="#settings" aria-label="Settings">${I.gear}</a></div></div>
+  return `<div class="topbar" style="padding-left:20px"><span class="brand">${LOGO(32)}<b>Dayline</b></span><div class="acts"><button class="iconbtn" data-act="search" aria-label="Search">${I.search}</button><a class="iconbtn" href="#settings" aria-label="Settings">${I.gear}</a></div></div>
   <div style="height:8px"></div><div class="nav">${listsNav('')}</div>${projectsNav('', '')}
   <div style="padding:8px 24px;display:flex;flex-direction:column;gap:14px"><button class="navi" data-act="newproject" style="color:var(--muted);font-size:15px;padding:0">${I.plus}<span class="nm">New project</span></button><button class="navi" data-act="editmenu" style="color:var(--muted);font-size:15px;padding:0">${I.edit}<span class="nm">Edit menu</span></button></div>`;
 }
@@ -1728,9 +1734,9 @@ window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); instal
 const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone;
 function bannersHtml() {
   let h = ''; const perm = ('Notification' in window) ? Notification.permission : 'unsupported';
-  if (!standalone() && installEvt && !isWide()) h += `<div class="banner">${I.download || I.upload}<span class="bt"><b>Install Sankalp on this phone</b>Opens like an app, full screen, with reminders.</span><button class="pill acc" data-act="install">Install</button></div>`;
+  if (!standalone() && installEvt && !isWide()) h += `<div class="banner">${I.download || I.upload}<span class="bt"><b>Install Dayline on this phone</b>Opens like an app, full screen, with reminders.</span><button class="pill acc" data-act="install">Install</button></div>`;
   if (perm === 'default') h += `<div class="banner">${I.bell}<span class="bt"><b>Turn on reminders</b>So tasks can alert you on this ${isWide() ? 'computer' : 'phone'}.</span><button class="pill acc" data-act="asknotif">Turn on</button></div>`;
-  else if (perm === 'denied' && !S.settings.deniedSeen) h += `<div class="banner">${I.bell}<span class="bt"><b>Reminders are blocked</b>Long-press the Sankalp icon → App info → Notifications → Allow.</span><button class="iconbtn" data-act="hidedenied" aria-label="Dismiss">${I.x}</button></div>`;
+  else if (perm === 'denied' && !S.settings.deniedSeen) h += `<div class="banner">${I.bell}<span class="bt"><b>Reminders are blocked</b>Long-press the Dayline icon → App info → Notifications → Allow.</span><button class="iconbtn" data-act="hidedenied" aria-label="Dismiss">${I.x}</button></div>`;
   return h;
 }
 function vPlan(scope) {
@@ -2235,7 +2241,7 @@ function ekSheet(reset) {
   <div id="ekSubs" style="margin-top:12px">${t.subs.map(c => `<button class="subrow${c.d ? ' d' : ''}" data-s="${c.id}"><i>${c.d ? I.check : ''}</i><span>${esc(c.t)}</span></button>`).join('')}</div>
   <div class="cl" style="border:0"><span style="width:20px;display:flex;color:var(--muted)">${I.plus}</span><input class="clt" id="ekStep" placeholder="${t.subs.length ? 'Add another step' : 'First small step (press Enter)'}" aria-label="Add a step"></div>
   <div class="ekacts"><button class="btn acc wide" data-act="ekfocus" data-id="${t.id}">${I.play}Start ${S.settings.pomo}-min focus</button><button class="btn" data-act="ekdone" data-id="${t.id}">${I.check}Done</button><button class="btn sec" data-act="eknext">Not now${I.arrow}</button></div>
-  <p class="hint" style="margin-top:14px">Sankalp shows one task at a time so the rest of the list does not pull at you. ${S.settings.shield ? 'While you focus, other reminders wait except P1.' : ''}</p></div>`);
+  <p class="hint" style="margin-top:14px">Dayline shows one task at a time so the rest of the list does not pull at you. ${S.settings.shield ? 'While you focus, other reminders wait except P1.' : ''}</p></div>`);
   $$('#ekSubs .subrow').forEach(b => b.onclick = () => { const c = t.subs.find(z => z.id === b.dataset.s); c.d = !c.d; save(); ekSheet(); });
   $('#ekStep').onkeydown = e => { if (e.key === 'Enter' && e.target.value.trim()) { t.subs.push({ id: uid(), t: e.target.value.trim(), d: false }); save(); ekSheet(); setTimeout(() => $('#ekStep')?.focus(), 50); } };
 }
@@ -2378,7 +2384,7 @@ function findings(A) {
   if (A.prod / Math.max(1, A.tracked) >= 0.6) F.push({ k: 'g', i: '🌱', t: `${Math.round(A.prod / A.tracked * 100)}% of tracked time was productive`, d: 'Solid. Keep the same rhythm.' });
   return F;
 }
-/* ---------- phone screen time (from the Sankalp Android app) ---------- */
+/* ---------- phone screen time (from the Dayline Android app) ---------- */
 const APP_DEFAULTS = [
   [/instagram|facebook\.katana|facebook\.lite|youtube|snapchat|twitter|com\.x\.|reddit|sharechat|moj|josh|threads|pinterest|tiktok|netflix|hotstar|primevideo|amazon\.avod|jiocinema|zee5|sonyliv|mxplayer|dailyhunt|inshorts/i, 'social'],
   [/whatsapp|telegram|com\.google\.android\.gm|outlook|gmail|teams|slack|signal|android\.apps\.messaging|samsung.*messaging|truecaller/i, 'email'],
@@ -2401,20 +2407,26 @@ function phoneStats(d) {
   const late = (P.ses || []).filter(([, s0]) => { const h = new Date(s0).getHours(); return h >= 23 || h < 5; }).reduce((a, [, s0, e0]) => a + (e0 - s0) / 6e4, 0);
   return { apps: Object.values(per).sort((a, b) => b.mins - a.mins), total, opens: (P.ses || []).length, unlocks: P.unlocks || 0, calls, talk, late, at: P.at };
 }
-function phoneLinked() { try { return localStorage.getItem('sankalp.native') === '1'; } catch (e) { return false; } }
+function phoneLinked() { if (S.settings.phoneOff) return false; try { return localStorage.getItem('sankalp.native') === '1'; } catch (e) { return false; } }
 const APK_URL = 'https://github.com/mehulozaconnect/sankalp/releases/latest/download/sankalp.apk';
 function phoneLink() {
   if (!fbUser) { toast('Turn on Sync first (Settings, Sync phone and laptop)'); go('settings/sync'); return; }
   const c = fbConfig(); const q = new URLSearchParams({ k: c.apiKey, p: c.projectId, u: fbUser.uid, r: fbUser.refreshToken || '', n: fbUser.email || '' });
-  try { localStorage.setItem('sankalp.native', '1'); } catch (e) { }
+  try { localStorage.setItem('sankalp.native', '1'); } catch (e) { } S.settings.phoneOff = false; save();
   location.href = `intent://link?${q.toString()}#Intent;scheme=sankalp;package=com.mehul.sankalp;S.browser_fallback_url=${encodeURIComponent(APK_URL)};end`;
+}
+function phoneUnlink() {
+  if (!confirm('Disconnect the phone app? Dayline will send reminders itself again. Then uninstall Dayline Phone from your phone.')) return;
+  try { localStorage.removeItem('sankalp.native'); } catch (e) { }
+  S.pcal = null; applyPcal(); S.remAck = null; S.settings.phoneOff = true;
+  save(); render(); toast('Phone app disconnected');
 }
 function phonePanel() {
   const P = phoneStats(today()) || phoneStats(addDays(today(), -1)); const last = Math.max(0, ...Object.values(S.phone || {}).map(p => p.at || 0));
-  return `${last ? `<div class="setrow"><span class="l"><b><span class="syncdot"></span>Phone app connected</b><span>Last update ${fmtDate(ymd(new Date(last)))}, ${fmtClock(last)}${P ? `. Today: ${fmtMins(P.total)} screen time, ${plural(P.calls.length, 'call')}` : ''}</span></span><button class="pill ghost" data-act="phonelink">Re-link</button></div>` : ''}
-  <p class="sub" style="line-height:1.5;margin:6px 0 8px">The Sankalp Android app reads your screen time (the same data as Digital Wellbeing) and your call log, and adds them to Day review. It also rings task reminders like an alarm, even when Sankalp is closed.</p>
+  return `${last ? `<div class="setrow"><span class="l"><b><span class="syncdot"></span>Phone app connected</b><span>Last update ${fmtDate(ymd(new Date(last)))}, ${fmtClock(last)}${P ? `. Today: ${fmtMins(P.total)} screen time, ${plural(P.calls.length, 'call')}` : ''}</span></span><button class="pill ghost" data-act="phonelink">Re-link</button></div><div class="setrow"><span class="l"><b>Stop using the phone app</b><span>Dayline goes back to sending reminders itself. Your past screen time stays in Day review.</span></span><button class="pill ghost" data-act="phoneunlink" style="color:var(--danger)">Disconnect</button></div>` : ''}
+  <p class="sub" style="line-height:1.5;margin:6px 0 8px">The Dayline Android app reads your screen time (the same data as Digital Wellbeing) and your call log, and adds them to Day review. It also rings task reminders like an alarm, even when Dayline is closed.</p>
   <ol class="steps"><li class="${fbUser ? 'ok' : ''}"><i>${fbUser ? I.check : '1'}</i><span><b>Sync is on</b>${fbUser ? 'Signed in as ' + esc(fbUser.email || '') : 'Turn on Sync below first.'}</span></li>
-  <li><i>2</i><span><b>Install the Android app</b>Download, open the file, allow "Install unknown apps" for Chrome when asked.<br><a class="pill ghost" href="${APK_URL}">Download Sankalp for Android</a></span></li>
+  <li><i>2</i><span><b>Install the Android app</b>Download, open the file, allow "Install unknown apps" for Chrome when asked.<br><a class="pill ghost" href="${APK_URL}">Download Dayline for Android</a></span></li>
   <li class="${last ? 'ok' : ''}"><i>${last ? I.check : '3'}</i><span><b>Link it</b>Open this page on the same phone and tap Link. The app opens and asks for Usage access, Call log and Alarms.<br><button class="pill acc" data-act="phonelink" ${fbUser && !isWide() ? '' : 'disabled'}>Link phone app</button></span></li></ol>`;
 }
 function phoneSection(d) {
@@ -2492,7 +2504,7 @@ function vReview(arg) {
   h += `<section class="isec"><h2>Findings<span>${F.length}</span></h2>${F.map(f => `<div class="find ${f.k}"><span class="fi">${f.i}</span><span><b>${esc(f.t)}</b>${esc(f.d)}</span></div>`).join('')}</section>`;
   const cats = Object.entries(A.cat).sort((a, b) => b[1] - a[1]); const mx = Math.max(1, ...cats.map(c => c[1]));
   h += `<section class="isec"><h2>Where the time went<span>${fmtMins(A.tracked)}</span></h2>${cats.length ? cats.map(([k, m]) => { const c = catOf(k), v = catV(k); const sr = Object.entries((A.catSrc || {})[k] || {}).sort((x, y) => y[1] - x[1]); return `<details class="cdet"><summary class="crow"><span class="ce">${c.e}</span><span class="cn">${esc(c.n)}<i style="width:${m / mx * 100}%;background:${c.c}"></i></span><span class="cv">${fmtMins(m)}</span><button class="rate ${v}" data-act="catrate" data-k="${k}" onclick="event.preventDefault()" aria-label="${esc(c.n)} counts as ${VLAB[v]}. Tap to change">${VLAB[v]}</button></summary><div class="csrc">${sr.map(([l, mm]) => `<div><span>${esc(l)}</span><b>${fmtMins(mm)}</b></div>`).join('')}</div></details>`; }).join('') + `<p class="hint">Tap a row to see what made up the time. Tap Productive, Neutral or Wasted to change how it counts.</p>` : `<p class="sub">Nothing logged ${single ? 'for this day' : 'in this period'} yet. Meetings and focus sessions are added automatically.</p>`}</section>`;
-  if (single) h += phoneSection(from); else if (!Object.keys(S.phone || {}).length) h += `<section class="isec"><h2>Phone screen time</h2><a class="banner" href="#settings/phoneapp" style="text-decoration:none;color:inherit;margin:0">${I.bolt}<span class="bt"><b>Get real phone data</b>Install the Sankalp Android app to add Instagram, WhatsApp and call time automatically.</span>${I.next}</a></section>`;
+  if (single) h += phoneSection(from); else if (!Object.keys(S.phone || {}).length) h += `<section class="isec"><h2>Phone screen time</h2><a class="banner" href="#settings/phoneapp" style="text-decoration:none;color:inherit;margin:0">${I.bolt}<span class="bt"><b>Get real phone data</b>Install the Dayline Android app to add Instagram, WhatsApp and call time automatically.</span>${I.next}</a></section>`;
   h += `<section class="isec"><h2>AI review<span>${aiKey() ? esc(S.settings.aiModel || AI_MODELS[0][0]) : 'optional'}</span></h2>${aiPanel(sc, A)}</section>`;
   if (single) {
     const L = (S.logs || []).filter(l => ymd(new Date(l.s)) === from).sort((a, b) => a.s - b.s);
@@ -2526,7 +2538,7 @@ function aiRender(r) { if (r && r.text && !r.headline && /^\s*\{/.test(r.text)) 
   const li = a => `<ul>${(a || []).map(x => `<li>${typeof x === 'string' ? esc(x) : `<b>${esc(x.title || '')}</b>${x.minutes ? ` (${fmtMins(x.minutes)})` : ''}. ${esc(x.detail || x.how || '')}`}</li>`).join('')}</ul>`;
   return `${r.score != null ? `<span class="aiscore" title="Day score">${r.score}</span>` : ''}<div class="ahl">${esc(r.headline || '')}</div><div style="clear:both"></div>
   ${r.where?.length ? `<h3>Where your time went</h3>${li(r.where)}` : ''}${r.leaks?.length ? `<h3>Time leaks</h3>${li(r.leaks)}` : ''}${r.wins?.length ? `<h3>What worked</h3>${li(r.wins)}` : ''}${r.changes?.length ? `<h3>Change this</h3>${li(r.changes)}` : ''}${r.tomorrow?.length ? `<h3>Plan for ${r.next || 'tomorrow'}</h3>${li(r.tomorrow)}` : ''}
-  <p class="hint" style="margin-top:10px">Written by Claude at ${r.at ? fmtClock(r.at) : ''} from your Sankalp data.</p>`;
+  <p class="hint" style="margin-top:10px">Written by Claude at ${r.at ? fmtClock(r.at) : ''} from your Dayline data.</p>`;
 }
 function aiPayload(sc) {
   const td = today(); const from = sc === 'today' ? td : sc === 'yesterday' ? addDays(td, -1) : sc === 'week' ? addDays(td, -6) : addDays(td, -29); const to = sc === 'yesterday' ? addDays(td, -1) : td;
@@ -2555,7 +2567,7 @@ async function aiCall(system, user, maxTok) {
   if (!r.ok) throw new Error(r.status === 401 ? 'The API key was not accepted. Check it in console.anthropic.com.' : r.status === 429 ? 'Too many requests or no credit left on your Anthropic account.' : r.status === 404 ? 'That model is not available on your key. Pick another model.' : (j.error?.message || 'HTTP ' + r.status));
   return (j.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
 }
-const AI_SYS = `You are a sharp, warm productivity analyst reviewing one person's day using data from their task app Sankalp. They work in B2B sales and business development, with client calls, proposals, follow-ups and meetings. Be specific: name times, categories, minutes and task names from the data. No generic advice, no lecturing, no filler. If data is thin (much time not logged), say so briefly and still give the best read possible. Times are local (India).`;
+const AI_SYS = `You are a sharp, warm productivity analyst reviewing one person's day using data from their task app Dayline. They work in B2B sales and business development, with client calls, proposals, follow-ups and meetings. Be specific: name times, categories, minutes and task names from the data. No generic advice, no lecturing, no filler. If data is thin (much time not logged), say so briefly and still give the best read possible. Times are local (India).`;
 /* Reads the AI's JSON even if it was wrapped in prose or cut off part-way: keeps every complete item and closes the rest. */
 function jsonLoose(txt) {
   const i = txt.indexOf('{'); if (i < 0) return null; const src = txt.slice(i);
@@ -2610,7 +2622,7 @@ function coachBrief() {
 }
 function coachPanel() {
   const c = coachSet(); const sw = (k, label, sub) => `<div class="setrow"><span class="l"><b>${label}</b><span>${sub}</span></span><button class="switch${c[k] ? ' on' : ''}" data-act="coachsw" data-k="${k}" role="switch" aria-checked="${!!c[k]}" aria-label="${label}"></button></div>`;
-  return `<p class="sub" style="line-height:1.5;margin:0 0 6px">Gentle pushes so the review actually changes your day. ${phoneLinked() ? 'The phone app sends them, even when Sankalp is closed.' : 'Install the Android app for live nudges; the rest also work while Sankalp is open.'}</p>
+  return `<p class="sub" style="line-height:1.5;margin:0 0 6px">Gentle pushes so the review actually changes your day. ${phoneLinked() ? 'The phone app sends them, even when Dayline is closed.' : 'Install the Android app for live nudges; the rest also work while Dayline is open.'}</p>
   ${sw('nudge', 'Live nudges', `When you spend ${c.nudgeMin} minutes straight on social media or games in work hours (phone app)`)}
   <div class="setrow"><span class="l"><b>Nudge after</b><span>Minutes on one distracting app</span></span><select class="inp" data-coach="nudgeMin" style="width:110px">${[10, 15, 20, 30].map(v => `<option value="${v}"${c.nudgeMin == v ? ' selected' : ''}>${v} min</option>`).join('')}</select></div>
   <div class="setrow"><span class="l"><b>Daily social media limit</b><span>Warns at 80% and 100% (phone app)</span></span><select class="inp" data-coach="limit" style="width:110px">${[0, 30, 45, 60, 90, 120].map(v => `<option value="${v}"${c.limit == v ? ' selected' : ''}>${v ? fmtMins(v) : 'Off'}</option>`).join('')}</select></div>
@@ -2626,9 +2638,9 @@ function vSettings(arg) {
   const st = S.settings; const perm = ('Notification' in window) ? Notification.permission : 'unsupported';
   let h = topbar('', 'Settings') + `<div class="pad"><h1 class="title">Settings</h1></div>`;
   h += `<div class="sechead" id="phone"><h2 class="sec">This ${isWide() ? 'computer' : 'phone'}</h2></div><div class="setsec">
-  <div class="setrow"><span class="l"><b>Reminders</b><span>${perm === 'granted' ? 'On. Tap Test to see one.' : perm === 'denied' ? 'Blocked. Tap the icon left of the address bar, Permissions, Notifications, Allow. Installed app: long-press its icon, App info, Notifications.' : perm === 'unsupported' ? 'This browser cannot show reminders. Open Sankalp in Chrome.' : 'Off. Turn on to get task alerts.'}</span></span>${perm === 'granted' ? `<button class="pill ghost" data-act="testnotif">Test</button>` : perm === 'default' ? `<button class="pill acc" data-act="asknotif">Turn on</button>` : ''}</div>
+  <div class="setrow"><span class="l"><b>Reminders</b><span>${perm === 'granted' ? 'On. Tap Test to see one.' : perm === 'denied' ? 'Blocked. Tap the icon left of the address bar, Permissions, Notifications, Allow. Installed app: long-press its icon, App info, Notifications.' : perm === 'unsupported' ? 'This browser cannot show reminders. Open Dayline in Chrome.' : 'Off. Turn on to get task alerts.'}</span></span>${perm === 'granted' ? `<button class="pill ghost" data-act="testnotif">Test</button>` : perm === 'default' ? `<button class="pill acc" data-act="asknotif">Turn on</button>` : ''}</div>
   <div class="setrow"><span class="l"><b>Installed as an app</b><span>${standalone() ? 'Yes' : 'Not yet. Installing gives full screen and steadier reminders.'}</span></span>${standalone() ? '' : `<button class="pill ghost" data-act="install">Install</button>`}</div>
-  <div class="setrow"><span class="l"><b>Fingerprint lock</b><span>${lockId() ? 'On. Asked when you open Sankalp or come back after a minute.' : 'Ask for your fingerprint or screen lock to open Sankalp.'}</span></span><button class="switch${lockId() ? ' on' : ''}" data-act="lockon" role="switch" aria-checked="${!!lockId()}" aria-label="Fingerprint lock"></button></div></div>`;
+  <div class="setrow"><span class="l"><b>Fingerprint lock</b><span>${lockId() ? 'On. Asked when you open Dayline or come back after a minute.' : 'Ask for your fingerprint or screen lock to open Dayline.'}</span></span><button class="switch${lockId() ? ' on' : ''}" data-act="lockon" role="switch" aria-checked="${!!lockId()}" aria-label="Fingerprint lock"></button></div></div>`;
   if (!isWide() || Object.keys(S.phone || {}).length) h += `<div class="sechead" id="phoneapp"><h2 class="sec">Android app: screen time, calls, alarms</h2></div><div class="setsec">${phonePanel()}</div>`;
   if (isWide() || !matchMedia('(pointer:coarse)').matches) h += `<div class="sechead" id="keys"><h2 class="sec">Keyboard shortcuts</h2></div><div class="setsec">${keysPanel()}</div>`;
   h += `<div class="sechead" id="coach"><h2 class="sec">Coach</h2></div><div class="setsec">${coachPanel()}</div>`;
@@ -2649,9 +2661,9 @@ function vSettings(arg) {
   <div class="setrow"><span class="l"><b>Focus shield</b><span>While a focus session runs, only P1 reminders come through</span></span><button class="switch${st.shield ? ' on' : ''}" data-act="sw" data-k="shield" role="switch" aria-checked="${st.shield}" aria-label="Focus shield"></button></div>
   <div class="setrow"><span class="l"><b>Quiet hours</b><span>No reminders between these times, except P1</span></span><button class="switch${st.quietOn ? ' on' : ''}" data-act="sw" data-k="quietOn" role="switch" aria-checked="${st.quietOn}" aria-label="Quiet hours"></button></div>
   ${st.quietOn ? `<div class="grid2" style="margin:10px 0"><input class="inp" type="time" data-set="quietStart" value="${st.quietStart}" aria-label="Quiet from"><input class="inp" type="time" data-set="quietEnd" value="${st.quietEnd}" aria-label="Quiet until"></div>` : ''}
-  <div class="setrow"><span class="l"><b>Remind again until done</b><span>If you miss a reminder, it repeats until you tick Done or snooze it</span></span><select class="inp" data-set="nagDef" style="width:110px">${[0, 5, 10, 15, 30].map(v => `<option value="${v}"${st.nagDef == v ? ' selected' : ''}>${v ? 'Every ' + v + ' min' : 'Off'}</option>`).join('')}</select></div>
+  <div class="setrow"><span class="l"><b>Keep reminding until done (all tasks)</b><span>Off is best. Switch it on only for the tasks that need it: type "nag", tap Keep reminding in the add box, or right-click a task</span></span><select class="inp" data-set="nagDef" style="width:110px">${[0, 5, 10, 15, 30].map(v => `<option value="${v}"${st.nagDef == v ? ' selected' : ''}>${v ? 'Every ' + v + ' min' : 'Off'}</option>`).join('')}</select></div>
   <div class="setrow"><span class="l"><b>Meeting heads-up</b><span>Minutes before a meeting</span></span><select class="inp" data-set="meetBefore" style="width:110px">${[0, 5, 10, 15].map(v => `<option value="${v}"${st.meetBefore == v ? ' selected' : ''}>${v ? v + ' min' : 'Off'}</option>`).join('')}</select></div>
-  <p class="hint">Reminders fire while Sankalp is open or in the background. Keep it on your Home Screen and do not swipe it away.</p></div>`;
+  <p class="hint">Reminders fire while Dayline is open or in the background. Keep it on your Home Screen and do not swipe it away.</p></div>`;
   h += `<div class="sechead" id="meetings"><h2 class="sec">Meetings</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 6px">Your work calendar stays private: nothing signs in to your company account.</p>
   <ol class="howto"><li>In Outlook on your laptop: <b>File, Save Calendar</b>, pick a date range (next 30 days), and save.</li><li>Tap <b>Import calendar file</b> and choose that file. Re-import any time; old entries are replaced.</li><li>For a meeting that comes up during the day, type it like a task: <b>meet Client call 3pm-4pm</b>.</li></ol>
   <div class="btnrow" style="margin-top:6px"><button class="btn" data-act="ics">${I.upload}Import calendar file</button><button class="btn sec" data-act="clearics">Clear imported</button></div>
@@ -2662,7 +2674,7 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Sankalp 4.3.13</div>`;
+  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Dayline 4.4.2</div>`;
   if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
   return h;
 }
@@ -2854,7 +2866,7 @@ document.addEventListener('keydown', e => {
 }, true);
 function keysPanel() {
   const km = keyMap();
-  return `<div class="hint" style="margin:0 0 10px;line-height:1.5"><b>From Outlook or any app:</b> pin Sankalp to the taskbar as the first icon. Then <kbd>Win</kbd> + <kbd>1</kbd> brings it up from anywhere, and <kbd>${esc(km.add || 'Ctrl+Space')}</kbd> opens New task.</div>
+  return `<div class="hint" style="margin:0 0 10px;line-height:1.5"><b>From Outlook or any app:</b> pin Dayline to the taskbar as the first icon. Then <kbd>Win</kbd> + <kbd>1</kbd> brings it up from anywhere, and <kbd>${esc(km.add || 'Ctrl+Space')}</kbd> opens New task.</div>
   ${KEY_ACTS.map(([k, l]) => `<div class="setrow"><span class="l"><b>${l}</b></span><button type="button" class="keyb${keyRec === k ? ' rec' : ''}" data-act="keyrec" data-k="${k}">${keyRec === k ? 'Press keys…' : km[k] ? km[k].split('+').map(x => `<kbd>${esc(x)}</kbd>`).join('+') : '<span class="muted">Not set</span>'}</button></div>`).join('')}
   <p class="sub" style="margin:8px 0 0">Click a shortcut, then press the keys you want. Backspace clears it, Esc cancels. <b>N</b> and <b>/</b> also work for New task and Search.</p>
   <div class="btnrow" style="margin-top:10px"><button class="btn sec" data-act="keyreset">Reset to defaults</button></div>`;
@@ -2872,7 +2884,7 @@ function hotkeyPanel() {
   return `<p class="sub" style="margin:0 0 10px">Press <b>${qkLabel()}</b> in any app, type, Enter. Saved and closed.</p>
   <div class="grid2"><div class="field" style="margin:0"><label for="qkMod">Hold</label><select class="inp" id="qkMod">${Object.entries(QK_MODS).map(([v, x]) => `<option value="${v}"${v === m ? ' selected' : ''}>${x[0]}</option>`).join('')}</select></div>
   <div class="field" style="margin:0"><label for="qkKey">and press</label><select class="inp" id="qkKey">${QK_KEYS.map(x => `<option${x === k ? ' selected' : ''}>${x}</option>`).join('')}</select></div></div>
-  <div class="field" style="margin:10px 0 0"><label for="qkBr">Browser you use Sankalp in</label><select class="inp" id="qkBr"><option value="chrome"${br === 'chrome' ? ' selected' : ''}>Chrome</option><option value="edge"${br === 'edge' ? ' selected' : ''}>Edge</option></select></div>
+  <div class="field" style="margin:10px 0 0"><label for="qkBr">Browser you use Dayline in</label><select class="inp" id="qkBr"><option value="chrome"${br === 'chrome' ? ' selected' : ''}>Chrome</option><option value="edge"${br === 'edge' ? ' selected' : ''}>Edge</option></select></div>
   <div class="btnrow" style="margin-top:12px"><button class="btn" data-act="qkdl">Download setup</button></div>
   <p class="sub" style="margin:8px 0 0">Open the downloaded file once; a small window shows if it worked. It starts with Windows from then on. If Windows says it protected your PC, click <b>More info</b>, then <b>Run anyway</b>.</p>`;
 }
@@ -2882,7 +2894,7 @@ function hotkeyFile() {
   const exes = br === 'edge' ? ['${env:ProgramFiles(x86)}\\Microsoft\\Edge\\Application\\msedge.exe', '$env:ProgramFiles\\Microsoft\\Edge\\Application\\msedge.exe']
     : ['$env:ProgramFiles\\Google\\Chrome\\Application\\chrome.exe', '${env:ProgramFiles(x86)}\\Google\\Chrome\\Application\\chrome.exe', '$env:LocalAppData\\Google\\Chrome\\Application\\chrome.exe'];
   const ps = [
-    '$log = "$env:APPDATA\\Sankalp\\hotkey.log"',
+    '$log = "$env:APPDATA\\Dayline\\hotkey.log"',
     'try {',
     '$exe = @(' + exes.map(e => `"${e}"`).join(', ') + ') | Where-Object { Test-Path $_ } | Select-Object -First 1',
     'if (-not $exe) { Set-Content $log "NOBROWSER"; exit }',
@@ -2902,30 +2914,30 @@ function hotkeyFile() {
   const hk = ps.join('\r\n');
   const setup = [
     "$ErrorActionPreference = 'SilentlyContinue'",
-    "$dir = Join-Path $env:APPDATA 'Sankalp'; New-Item -ItemType Directory -Force -Path $dir | Out-Null",
-    "Get-CimInstance Win32_Process -Filter \"Name='powershell.exe'\" | Where-Object { $_.CommandLine -like '*Sankalp\\hotkey.ps1*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }",
+    "$dir = Join-Path $env:APPDATA 'Dayline'; New-Item -ItemType Directory -Force -Path $dir | Out-Null",
+    "Get-CimInstance Win32_Process -Filter \"Name='powershell.exe'\" | Where-Object { $_.CommandLine -like '*Dayline\\hotkey.ps1*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }",
     "$hk = Join-Path $dir 'hotkey.ps1'",
     "$code = @'", hk, "'@",
     "Set-Content -Path $hk -Encoding UTF8 -Value $code",
     "$st = [Environment]::GetFolderPath('Startup')",
-    "Remove-Item (Join-Path $st 'Sankalp hotkey.lnk')",
-    "Set-Content -Path (Join-Path $st 'Sankalp hotkey.cmd') -Encoding ASCII -Value ('@start \"\" /min powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"' + $hk + '\"')",
+    "Remove-Item (Join-Path $st 'Dayline hotkey.lnk')",
+    "Set-Content -Path (Join-Path $st 'Dayline hotkey.cmd') -Encoding ASCII -Value ('@start \"\" /min powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"' + $hk + '\"')",
     "$log = Join-Path $dir 'hotkey.log'; Remove-Item $log",
     "Start-Process powershell -WindowStyle Hidden -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden', '-File', ('\"' + $hk + '\"'))",
     "$res = ''; for ($i = 0; $i -lt 30; $i++) { Start-Sleep -Milliseconds 500; if (Test-Path $log) { $res = ([string](Get-Content $log -Raw)).Trim(); if ($res) { break } } }",
     "Write-Host ''",
-    `if ($res -like 'OK*') { Write-Host '  READY. Press ${label} in any app to add a task to Sankalp.' -ForegroundColor Green; Write-Host '  It starts by itself whenever Windows starts.' }`,
-    `elseif ($res -like 'TAKEN*') { Write-Host '  ${label} is already used by Windows or another program.' -ForegroundColor Yellow; Write-Host '  In Sankalp Settings pick other keys (Alt + Space or Ctrl + Q), download the setup again and run it.' }`,
-    `elseif ($res -like 'NOBROWSER*') { Write-Host '  ${br === 'edge' ? 'Edge' : 'Chrome'} was not found. Pick the other browser in Sankalp Settings and run the new setup.' -ForegroundColor Yellow }`,
+    `if ($res -like 'OK*') { Write-Host '  READY. Press ${label} in any app to add a task to Dayline.' -ForegroundColor Green; Write-Host '  It starts by itself whenever Windows starts.' }`,
+    `elseif ($res -like 'TAKEN*') { Write-Host '  ${label} is already used by Windows or another program.' -ForegroundColor Yellow; Write-Host '  In Dayline Settings pick other keys (Alt + Space or Ctrl + Q), download the setup again and run it.' }`,
+    `elseif ($res -like 'NOBROWSER*') { Write-Host '  ${br === 'edge' ? 'Edge' : 'Chrome'} was not found. Pick the other browser in Dayline Settings and run the new setup.' -ForegroundColor Yellow }`,
     "elseif (-not $res) { Write-Host '  Your laptop blocked the shortcut helper. Send a photo of this window to Claude.' -ForegroundColor Red }",
     "else { Write-Host ('  Could not start: ' + $res) -ForegroundColor Red; Write-Host '  Send a photo of this window to Claude.' }",
     "Write-Host ''"].join('\r\n');
   const b64 = btoa(unescape(encodeURIComponent(setup)));
-  const cmd = ['@echo off', 'title Sankalp shortcut setup', 'echo.', 'echo   Setting up the Sankalp shortcut, please wait...',
+  const cmd = ['@echo off', 'title Dayline shortcut setup', 'echo.', 'echo   Setting up the Dayline shortcut, please wait...',
     `powershell -NoProfile -ExecutionPolicy Bypass -Command "[IO.File]::WriteAllBytes((Join-Path $env:TEMP 'sankalp-setup.ps1'), [Convert]::FromBase64String('${b64}'))"`,
     'powershell -NoProfile -ExecutionPolicy Bypass -File "%TEMP%\\sankalp-setup.ps1"',
     'del "%TEMP%\\sankalp-setup.ps1" >nul 2>&1', 'echo   Press any key to close this window.', 'pause >nul'].join('\r\n') + '\r\n';
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([cmd], { type: 'application/octet-stream' })); a.download = 'Sankalp-shortcut-setup.cmd'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([cmd], { type: 'application/octet-stream' })); a.download = 'Dayline-shortcut-setup.cmd'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
 /* Quick-add window (opened by the desktop shortcut): save, make sure it reached the cloud, then close. */
 async function quickDone() {
@@ -2946,12 +2958,12 @@ function quickAdd(ctxOverride) {
   `, ctx.quick ? () => window.close() : null, !!ctx.quick);
   const inp = $('#qaIn'), addB = $('#qaAdd');
   const ov = {};
-  const upd = () => { const v = inp.value.trim(); addB.disabled = !v; $('#qaExp').disabled = !v; if (!v) { $('#qaChips').innerHTML = ''; $('#qaPrev').innerHTML = ''; return; } const r = parseTask(v); if (ov.date) { r.date = ov.date; r.someday = false; } if (ov.time) { r.time = ov.time; if (!r.reminders.length) r.reminders = [0]; } r._edit = true; $('#qaChips').innerHTML = chipsFor(r); $$('#qaChips [data-chip]').forEach(b => { b.onpointerdown = e => e.preventDefault(); b.onclick = () => { const el = $(b.dataset.chip === 'date' ? '#qaD' : '#qaT'); el.value = b.dataset.chip === 'date' ? (r.date || today()) : (r.time || ''); try { el.showPicker(); } catch (x) { el.focus(); el.click(); } }; }); $('#qaPrev').innerHTML = r.title ? `${r.meeting ? 'Meeting' : 'Task'}: <b>${esc(r.title)}</b>` : ''; };
+  const upd = () => { const v = inp.value.trim(); addB.disabled = !v; $('#qaExp').disabled = !v; if (!v) { $('#qaChips').innerHTML = ''; $('#qaPrev').innerHTML = ''; return; } const r = parseTask(v); if (ov.date) { r.date = ov.date; r.someday = false; } if (ov.time) { r.time = ov.time; if (!r.reminders.length) r.reminders = [0]; } r._edit = true; const nagOn = ov.nag ?? !!r.nag; $('#qaChips').innerHTML = chipsFor(r) + (r.reminders.length || r.time ? `<button type="button" class="chip nagt${nagOn ? ' on' : ''}" data-nagt aria-pressed="${nagOn}" title="Repeat the reminder every 10 minutes until you tick Done">${I.repeat}${nagOn ? 'Keep reminding: on' : 'Keep reminding'}</button>` : ''); { const nb = $('#qaChips [data-nagt]'); if (nb) { nb.onpointerdown = e => e.preventDefault(); nb.onclick = () => { ov.nag = !nagOn; upd(); }; } } $$('#qaChips [data-chip]').forEach(b => { b.onpointerdown = e => e.preventDefault(); b.onclick = () => { const el = $(b.dataset.chip === 'date' ? '#qaD' : '#qaT'); el.value = b.dataset.chip === 'date' ? (r.date || today()) : (r.time || ''); try { el.showPicker(); } catch (x) { el.focus(); el.click(); } }; }); $('#qaPrev').innerHTML = r.title ? `${r.meeting ? 'Meeting' : 'Task'}: <b>${esc(r.title)}</b>` : ''; };
   const fit = () => { inp.style.height = 'auto'; inp.style.height = inp.scrollHeight + 'px'; };
   inp.addEventListener('input', () => { fit(); upd(); }); upd(); fit();
   $('#qaD').onchange = e => { if (e.target.value) { ov.date = e.target.value; upd(); inp.focus(); } };
   $('#qaT').onchange = e => { if (e.target.value) { ov.time = e.target.value; upd(); inp.focus(); } };
-  const applyOv = t => { if (!t || t.meeting) return; if (ov.date) { t.date = ov.date; t.someday = false; } if (ov.time) { t.time = ov.time; t.firedKeys = []; if (!t.reminders.length) t.reminders = [0]; } if (ov.date || ov.time) save(); };
+  const applyOv = t => { if (!t || t.meeting) return; if (ov.nag !== undefined) { t.nag = ov.nag ? 10 : null; save(); } if (ov.date) { t.date = ov.date; t.someday = false; } if (ov.time) { t.time = ov.time; t.firedKeys = []; if (!t.reminders.length) t.reminders = [0]; } if (ov.date || ov.time) save(); };
   // # projects and @ tags: a picker pops up while you type
   const note = $('#qaNote'), pick = $('#qaPick'); let pk = { items: [], i: 0, start: -1 };
   const fitN = () => { note.style.height = 'auto'; note.style.height = note.scrollHeight + 'px'; };
@@ -3049,7 +3061,7 @@ window.addEventListener('popstate', e => {
 });
 function askExit() {
   if (!isWide() && route().view !== 'today') { history.pushState({ sk: 'app' }, ''); go('today'); return; }
-  openSheet(sheetHead('Close Sankalp?', '', '') + `<p class="sub" style="margin:10px 0 18px;line-height:1.5">Your tasks are saved. Reminders keep working while the app is in the background.</p><div class="btnrow"><button class="btn acc" id="exStay">Stay</button><button class="btn sec" id="exGo">Close app</button></div>`, () => { history.pushState({ sk: 'app' }, ''); }, true);
+  openSheet(sheetHead('Close Dayline?', '', '') + `<p class="sub" style="margin:10px 0 18px;line-height:1.5">Your tasks are saved. Reminders keep working while the app is in the background.</p><div class="btnrow"><button class="btn acc" id="exStay">Stay</button><button class="btn sec" id="exGo">Close app</button></div>`, () => { history.pushState({ sk: 'app' }, ''); }, true);
   $('#sheet').dataset.exit = '1';
   $('#exStay').onclick = () => { $('#sheet').dataset.exit = ''; closeSheet(); history.pushState({ sk: 'app' }, ''); };
   $('#exGo').onclick = () => { $('#sheet').dataset.exit = ''; closeSheet(true); popPending = 0; history.back(); setTimeout(() => { try { window.close(); } catch (x) { } }, 300); };
@@ -3151,7 +3163,7 @@ function pickRemind(t) {
   const opts = [[0, 'On time'], [5, '5 min before'], [15, '15 min before'], [30, '30 min before'], [60, '1 hr before'], [120, '2 hrs before'], [1440, '1 day before'], [2880, '2 days before'], [10080, '1 week before']];
   let sel = [...t.reminders];
   openSheet(sheetHead('Reminders', 'Done', 'mOk') + `<p class="sub" style="margin:6px 0 10px">${t.time ? 'Based on ' + fmtTime(t.time) + (t.date ? ', ' + fmtDate(t.date) : '') : 'No time set, so reminders use 9:00 AM on the day'}. Pick as many as you like.</p><div class="optchips" id="mC">${opts.map(([v, l]) => `<button type="button" data-v="${v}" class="${sel.includes(v) ? 'on' : ''}">${l}</button>`).join('')}</div>
-  <h3 style="margin:20px 0 4px;font-size:15px">If I miss it, remind me again</h3><p class="sub" style="margin:0 0 10px">Keeps reminding until you tick Done or snooze it (up to ${NAG_MAX} times).</p>
+  <h3 style="margin:20px 0 4px;font-size:15px">Keep reminding until done</h3><p class="sub" style="margin:0 0 10px">Keeps reminding until you tick Done or snooze it (up to ${NAG_MAX} times).</p>
   <div class="optchips" id="mN">${[['', `Default (${+S.settings.nagDef ? 'every ' + S.settings.nagDef + ' min' : 'off'})`], ['0', 'Off'], ['5', 'Every 5 min'], ['10', 'Every 10 min'], ['15', 'Every 15 min'], ['30', 'Every 30 min']].map(([v, l]) => `<button type="button" data-n="${v}" class="${(t.nag == null ? '' : String(t.nag)) === v ? 'on' : ''}">${l}</button>`).join('')}</div>`);
   let nagSel = t.nag == null ? '' : String(t.nag);
   $$('#mN button').forEach(b => b.onclick = () => { nagSel = b.dataset.n; $$('#mN button').forEach(x => x.classList.toggle('on', x === b)); });
@@ -3462,7 +3474,7 @@ const gValid = () => !!(gTok && gTok.exp > Date.now() + 60000);
 function gCalPanel() {
   const st = S.settings; const cfg = fbConfig(); const on = st.gOn;
   const pc = S.pcal; const pcN = pc ? (pc.ev || []).filter(e => e[2] >= Date.now()).length : 0;
-  const tip = pc ? `<div class="setrow"><span class="l"><b><span class="syncdot"></span>Phone calendar connected</b><span>${pcN} upcoming events. Updated ${fmtDate(ymd(new Date(pc.at || Date.now())))}, ${fmtClock(pc.at || Date.now())}.</span></span></div>${calSources()}<p class="hint">This is the easiest way and needs nothing else. The Google sign-in below is only needed on a laptop without the phone app.</p>` : `<div class="banner" style="margin:0 0 10px">${I.bolt}<span class="bt"><b>Easiest: use your phone's calendar</b>The Sankalp Phone app reads the calendars on your phone (Google, and Outlook if the Outlook app syncs to your phone calendar). In Sankalp Phone, tap Allow calendar.</span></div>`;
+  const tip = pc ? `<div class="setrow"><span class="l"><b><span class="syncdot"></span>Phone calendar connected</b><span>${pcN} upcoming events. Updated ${fmtDate(ymd(new Date(pc.at || Date.now())))}, ${fmtClock(pc.at || Date.now())}.</span></span></div>${calSources()}<p class="hint">This is the easiest way and needs nothing else. The Google sign-in below is only needed on a laptop without the phone app.</p>` : `<div class="banner" style="margin:0 0 10px">${I.bolt}<span class="bt"><b>Easiest: use your phone's calendar</b>The Dayline Phone app reads the calendars on your phone (Google, and Outlook if the Outlook app syncs to your phone calendar). In Dayline Phone, tap Allow calendar.</span></div>`;
   if (on && pc) return tip + `<div class="setrow"><span class="l"><b>Google sign-in also on</b><span>Not needed with the phone app. Disconnect it to avoid the hourly refresh.</span></span><button class="pill ghost" data-act="gout">Disconnect</button></div>`;
   if (pc && !on) return tip + `<details><summary class="sub" style="cursor:pointer">Connect Google Calendar on a laptop instead</summary>${gCalSteps(cfg)}</details>`;
   if (on) return `<div class="setrow"><span class="l"><b><span class="syncdot" style="${gValid() ? '' : 'background:var(--accent)'}"></span>${gValid() ? 'Connected' : 'Connected, needs a tap'}</b><span>${st.gSynced ? 'Updated ' + fmtClock(st.gSynced) + '. ' : ''}${Object.values(S.meetLog).filter(m => m.src === 'gcal' && m.s >= Date.now()).length} upcoming events. Google signs web apps out every hour; one tap brings it back.</span></span><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="pill ${gValid() ? 'ghost' : 'acc'}" data-act="${gValid() ? 'gsync' : 'gref'}">Refresh</button><button class="pill ghost" data-act="gout">Disconnect</button></div></div>`;
@@ -3475,7 +3487,7 @@ function gCalSteps(cfg) {
   return `<p class="sub" style="line-height:1.5;margin:0 0 10px">See your personal Google Calendar meetings on Today and Calendar. Read-only. Three steps, once:</p>
   <ol class="steps">
    <li class="${s1 ? 'ok' : ''}"><i>${s1 ? I.check : '1'}</i><span><b>Turn on Sync with your Gmail</b>${s1 ? 'Done, signed in as ' + esc(fbUser.email || '') : 'Calendar uses the same Google sign-in. Set it up in "Sync phone and laptop" below.'}${s1 ? '' : `<br><a class="pill ghost" href="#settings/sync">Go to Sync</a>`}</span></li>
-   <li><i>2</i><span><b>Allow Calendar for your Sankalp project</b>Opens Google Cloud with your project picked. Tap <b>Enable</b>, then come back.<br><a class="pill ghost" href="${apiUrl}" target="_blank" rel="noopener">Open and tap Enable</a></span></li>
+   <li><i>2</i><span><b>Allow Calendar for your Dayline project</b>Opens Google Cloud with your project picked. Tap <b>Enable</b>, then come back.<br><a class="pill ghost" href="${apiUrl}" target="_blank" rel="noopener">Open and tap Enable</a></span></li>
    <li><i>3</i><span><b>Connect</b>Choose your Gmail. If Google says the app is not verified, tap <b>Continue</b>; it is your own app.<br><button class="pill acc" data-act="gconnect" ${cfg ? '' : 'disabled'}>${I.gcal}Connect Google Calendar</button></span></li>
   </ol>
   <details style="margin-top:10px"><summary class="sub" style="cursor:pointer">Advanced: use a Google client ID instead</summary><div class="field"><label for="gcid">Google client ID</label><input class="inp" id="gcid" value="${esc(st.gcid)}" placeholder="1234…apps.googleusercontent.com" autocomplete="off" spellcheck="false"></div><button class="pill ghost" data-act="gconnectid">Connect with client ID</button></details>`;
@@ -3567,7 +3579,7 @@ function entities() {
   const o = {}; S.tasks.forEach(t => o['task:' + t.id] = t); S.projects.forEach(p => o['project:' + p.id] = p); S.habits.forEach(h => o['habit:' + h.id] = h);
   S.focus.forEach(f => o['focus:' + f.id] = f); S.dates.forEach(d => o['date:' + d.id] = d); (S.goals || []).forEach(g => o['goal:' + g.id] = g); S.templates.forEach(t => o['tpl:' + t.id] = t); Object.values(S.meetLog).forEach(m => { if (m.src !== 'pcal') o['meet:' + m.id] = m; }); if (S.pcal) o['pcal:' + (S.pcal.id || 'all')] = S.pcal; o['meta:coach'] = coachBrief(); Object.keys(IMGS).forEach(id => o['img:' + id] = { id, data: IMGS[id] }); (S.logs || []).forEach(l => o['log:' + l.id] = l); Object.values(S.phone || {}).forEach(p => o['phone:' + p.id] = p); o['meta:cur'] = { c: S.cur || null }; o['meta:rv'] = { v: remSig() }; if (S.remAck) o['meta:ack'] = S.remAck;
   const st = S.settings; o['meta:days'] = S.days; o['meta:plan'] = S.plan; o['meta:hsec'] = S.habitSections;
-  o['meta:prefs'] = { coach: coachSet(), appmap: st.appmap, nagDef: st.nagDef, workStart: st.workStart, checkin: st.checkin, catv: st.catv, aiModel: st.aiModel, aiPrivate: st.aiPrivate, logo: st.logo, darkStyle: st.darkStyle, gcid: st.gcid, theme: st.theme, mode: st.mode, accent: st.accent, font: st.font, pomo: st.pomo, brk: st.brk, morning: st.morning, shutdown: st.shutdown, meetBefore: st.meetBefore, quietOn: st.quietOn, quietStart: st.quietStart, quietEnd: st.quietEnd, shield: st.shield, showDone: st.showDone, todayGroup: st.todayGroup };
+  o['meta:prefs'] = { phoneOff: !!st.phoneOff, coach: coachSet(), appmap: st.appmap, nagDef: st.nagDef, workStart: st.workStart, checkin: st.checkin, catv: st.catv, aiModel: st.aiModel, aiPrivate: st.aiPrivate, logo: st.logo, darkStyle: st.darkStyle, gcid: st.gcid, theme: st.theme, mode: st.mode, accent: st.accent, font: st.font, pomo: st.pomo, brk: st.brk, morning: st.morning, shutdown: st.shutdown, meetBefore: st.meetBefore, quietOn: st.quietOn, quietStart: st.quietStart, quietEnd: st.quietEnd, shield: st.shield, showDone: st.showDone, todayGroup: st.todayGroup };
   return o;
 }
 function setEntity(key, val) {
@@ -3666,6 +3678,7 @@ function ctxMenu(x, y, id) {
   <button class="cxb" data-cm="sub">${I.plus}Add subtask</button>
   <button class="cxb" data-cm="pin">${I.pin}${t.pinned ? 'Unpin' : 'Pin to top'}</button>
   <div class="cxsub"><button class="cxb" data-cm="move">${I.folder}Move to<span class="cxa">${I.next}</span></button><div class="cxp">${projs.map(p => `<button class="cxb${t.projectId === p.id ? ' on' : ''}" data-mp="${p.id}">${p.emoji ? `<span class="cxe">${p.emoji}</span>` : I.folder}${esc(p.name)}</button>`).join('')}<button class="cxb${!t.projectId ? ' on' : ''}" data-mp="">${I.inbox}Inbox</button></div></div>
+  <button class="cxb" data-cm="nag">${I.bell}${nagOf(t) ? 'Stop repeat reminders' : 'Keep reminding until done'}</button>
   <button class="cxb" data-cm="tags">${I.tag}Tags<span class="cxa">${t.tags.length ? t.tags.map(x => '@' + esc(x)).join(' ') : ''}</span></button>
   <div class="cxs"></div>
   <button class="cxb" data-cm="focus">${I.timer}Start focus</button>
@@ -3685,6 +3698,7 @@ function ctxMenu(x, y, id) {
     if (a === 'sub') { closeCtx(); taskSheet(t.id); setTimeout(() => { const n = $('#pClNew'); if (n) n.focus(); }, 300); }
     else if (a === 'pin') { t.pinned = !t.pinned; done(t.pinned ? 'Pinned' : 'Unpinned'); }
     else if (a === 'tags') { closeCtx(); pickTags(t); }
+    else if (a === 'nag') { const on = !nagOf(t); t.nag = on ? 10 : 0; if (!on) { t.nagAt = 0; t.nagN = 0; } if (on && !t.reminders.length) { t.reminders = [0]; if (!t.date) setDate(t, today()); } done(on ? 'Will remind every 10 min until done' : 'Repeat reminders off'); }
     else if (a === 'focus') { closeCtx(); S.timer.taskId = t.id; resetTimer('work'); startTimer(); go('focus'); }
     else if (a === 'dup') { const c = newTask({ ...JSON.parse(JSON.stringify(t)), id: uid(), done: false, doneAt: null, createdAt: Date.now(), pushed: 0, firedKeys: [], title: t.title + ' (copy)' }); delete c.orig; S.tasks.push(c); addPlan(c); done('Duplicated'); }
     else if (a === 'copy') { closeCtx(); try { navigator.clipboard.writeText(t.title); toast('Title copied'); } catch (e) { } }
@@ -3761,7 +3775,7 @@ document.addEventListener('click', e => {
     airun: () => aiRun(b.dataset.sc), aiask: () => aiAsk(b.dataset.sc),
     ekfocus: () => { S.timer.taskId = id; resetTimer('work'); closeSheet(true); startTimer(); go('focus'); },
     ekdone: () => { toggleDone(id); ekSheet(); }, eknext: () => { ekIdx++; ekSheet(); },
-    newproject: () => projectForm(), editmenu: () => menuEditor(), meetmin: () => { S.settings.meetMin = !S.settings.meetMin; save(); render(); }, editproject: () => projectForm(id), newhabit: () => habitForm(), edithabit: () => habitForm(id), habitstats: () => habitStats(id),
+    newproject: () => projectForm(), editmenu: () => menuEditor(), phoneunlink: () => phoneUnlink(), meetmin: () => { S.settings.meetMin = !S.settings.meetMin; save(); render(); }, editproject: () => projectForm(id), newhabit: () => habitForm(), edithabit: () => habitForm(id), habitstats: () => habitStats(id),
     hday: () => { cycleHabit(S.habits.find(h => h.id === id), b.dataset.k); },
     habit: () => { const x = S.habits.find(h => h.id === id); if (x.log[td] === 1) delete x.log[td]; else { x.log[td] = 1; const tot = habitTotal(x); if (MILESTONES.includes(tot)) toast(`${x.emoji} ${tot} check-ins. Milestone!`); } save(); render(); },
     newdate: () => dateForm(), editdate: () => dateForm(id), dfilter: () => { dateFilter = b.dataset.f; render(); },
@@ -3777,7 +3791,7 @@ document.addEventListener('click', e => {
     theme: () => { S.settings.theme = b.dataset.t; save(); applyTheme(); render(); }, mode: () => { S.settings.mode = b.dataset.m; save(); applyTheme(); render(); },
     accent: () => { S.settings.accent = b.dataset.c; save(); applyTheme(); render(); }, font: () => { S.settings.font = b.dataset.f; save(); applyTheme(); render(); },
     sw: () => { const k = b.dataset.k; S.settings[k] = !S.settings[k]; save(); render(); },
-    asknotif: () => askNotify(true), testnotif: () => notify('Sankalp reminders are on', 'This is how a task reminder looks.', 'test', { id: '' }, true),
+    asknotif: () => askNotify(true), testnotif: () => notify('Dayline reminders are on', 'This is how a task reminder looks.', 'test', { id: '' }, true),
     ics: importICS, clearics: () => { Object.keys(S.meetLog).forEach(k => { if (S.meetLog[k].src === 'ics') delete S.meetLog[k]; }); save(); render(); toast('Imported meetings cleared'); },
     import: () => importSheet(), newtpl: () => tplForm(), edittpl: () => tplForm(id), usetpl: () => quickAdd({ tpl: S.templates.find(x => x.id === id) }),
     gconnect: () => gConnect(true),
@@ -3802,8 +3816,8 @@ async function lockToggle() {
   if (lockId()) { if (!confirm('Turn off fingerprint lock on this device?')) return; localStorage.removeItem(LOCKK); render(); toast('Fingerprint lock off'); return; }
   if (!await lockAvailable()) { toast('This device or browser has no fingerprint unlock for websites'); return; }
   try {
-    const cred = await navigator.credentials.create({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), rp: { name: 'Sankalp', id: location.hostname }, user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'sankalp-lock', displayName: 'Sankalp app lock' }, pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }], authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'discouraged' }, timeout: 60000, attestation: 'none' } });
-    localStorage.setItem(LOCKK, b64(cred.rawId)); render(); toast('Fingerprint lock on. Sankalp asks for it when you open it.');
+    const cred = await navigator.credentials.create({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), rp: { name: 'Dayline', id: location.hostname }, user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'sankalp-lock', displayName: 'Dayline app lock' }, pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }], authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'discouraged' }, timeout: 60000, attestation: 'none' } });
+    localStorage.setItem(LOCKK, b64(cred.rawId)); render(); toast('Fingerprint lock on. Dayline asks for it when you open it.');
   } catch (e) { toast(e.name === 'NotAllowedError' ? 'Cancelled' : 'Could not set up fingerprint: ' + (e.message || e.name)); }
 }
 let unlocking = false, hiddenAt = 0;
@@ -3821,7 +3835,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 function exportData() { const blob = new Blob([JSON.stringify({ ...S, imgs: IMGS })], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `sankalp-backup-${today()}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
 function restoreData() {
   const fi = $('#fileIn'); fi.accept = 'application/json,.json'; fi.multiple = false;
-  fi.onchange = () => { const f = fi.files[0]; fi.value = ''; if (!f) return; const rd = new FileReader(); rd.onload = () => { try { const s = JSON.parse(rd.result); if (!s || !Array.isArray(s.tasks)) throw 0; if (!confirm('Replace everything on this device with this backup?')) return; const fb = S.settings.fb; if (s.imgs) { Object.entries(s.imgs).forEach(([k, v]) => { IMGS[k] = v; idb.put(k, v).catch(() => { }); }); delete s.imgs; } S = migrate(s); S.settings.fb ||= fb; save(); applyTheme(); render(); toast('Backup restored'); } catch (err) { toast('That file is not a Sankalp backup'); } }; rd.readAsText(f); };
+  fi.onchange = () => { const f = fi.files[0]; fi.value = ''; if (!f) return; const rd = new FileReader(); rd.onload = () => { try { const s = JSON.parse(rd.result); if (!s || !Array.isArray(s.tasks)) throw 0; if (!confirm('Replace everything on this device with this backup?')) return; const fb = S.settings.fb; if (s.imgs) { Object.entries(s.imgs).forEach(([k, v]) => { IMGS[k] = v; idb.put(k, v).catch(() => { }); }); delete s.imgs; } S = migrate(s); S.settings.fb ||= fb; save(); applyTheme(); render(); toast('Backup restored'); } catch (err) { toast('That file is not a Dayline backup'); } }; rd.readAsText(f); };
   fi.click();
 }
 
@@ -3851,7 +3865,7 @@ function handleAction(d) {
 /* From a laptop notification: snooze for a while, or move the task to a new date and time */
 function laterSheet(t, c) {
   const x = c || t; const pc = c ? null : ({ 1: '#E5484D', 2: '#F2A33A', 3: '#2F7BEA' })[t.priority];
-  openSheet(`<div class="lt"><div class="lt-top"><span>Sankalp · ${fmtClock(Date.now())}</span><button class="iconbtn" data-close aria-label="Close">${I.x}</button></div>
+  openSheet(`<div class="lt"><div class="lt-top"><span>Dayline · ${fmtClock(Date.now())}</span><button class="iconbtn" data-close aria-label="Close">${I.x}</button></div>
   <div class="lt-t"${pc ? ` style="border-color:${pc}"` : ''}>${!c && t.priority < 4 ? `<small style="color:${pc}">P${t.priority}</small>` : ''}<b>${esc(c ? c.t : t.title)}</b>${c ? `<span>Part of ${esc(t.title)}</span>` : t.time ? `<span>${fmtDate(t.date)}, ${fmtTime(t.time)}</span>` : ''}</div>
   <div class="lt-l">Snooze</div><div class="lt-row">${[[10, '10 min'], [30, '30 min'], [60, '1 hour']].map(([m, l]) => `<button data-snz="${m}">${l}</button>`).join('')}</div>
   <div class="lt-row lt-last"><button id="ltR">Reschedule</button><button id="ltD" class="ok">${I.check}Mark done</button></div></div>`);
@@ -3861,7 +3875,7 @@ function laterSheet(t, c) {
   $('#ltD').onclick = () => { closeSheet(true); handleAction({ type: 'done', id: t.id, sub: c ? c.id : undefined }); };
 }
 function askNotify(explicit) {
-  if (!('Notification' in window)) { if (explicit) toast('Add Sankalp to your Home Screen to get reminders'); return; }
+  if (!('Notification' in window)) { if (explicit) toast('Add Dayline to your Home Screen to get reminders'); return; }
   if (Notification.permission === 'default') Notification.requestPermission().then(() => { if (route().view === 'settings') render(); });
   else if (explicit && Notification.permission === 'denied') toast('Notifications are blocked for this site in browser settings');
 }
@@ -3878,7 +3892,7 @@ function remSig() {
 }
 function inQuiet() { const st = S.settings; if (!st.quietOn) return false; const hm = nowHM(); return st.quietStart <= st.quietEnd ? (hm >= st.quietStart && hm < st.quietEnd) : (hm >= st.quietStart || hm < st.quietEnd); }
 const shielded = () => S.settings.shield && S.timer.running && S.timer.mode === 'work';
-/* Only one open Sankalp window sends reminders, so you never get the same one twice */
+/* Only one open Dayline window sends reminders, so you never get the same one twice */
 let remLeader = !(navigator.locks && navigator.locks.request);
 try { if (!remLeader) navigator.locks.request('sankalp-reminders', () => { remLeader = true; return new Promise(() => { }); }); } catch (e) { remLeader = true; }
 function tick() {
@@ -3913,7 +3927,7 @@ function tick() {
       notify(t.title, (late ? 'Missed reminder. ' : '') + when + (p ? `. ${p.name}` : ''), 't' + t.id + mins, { id: t.id }, true);
     });
   });
-  if (missed) notify(missed === 1 ? '1 missed reminder' : `${missed} missed reminders`, 'While Sankalp was closed. Tap to see Today.', 'missed', { url: './#today' });
+  if (missed) notify(missed === 1 ? '1 missed reminder' : `${missed} missed reminders`, 'While Dayline was closed. Tap to see Today.', 'missed', { url: './#today' });
   const cs = coachSet(); const phoneDoes = phoneLinked() && Object.keys(S.phone || {}).length;
   if (cs.p1 && !phoneDoes && hm >= cs.p1At && hm < S.settings.shutdown && !quiet && !S.fired['p1' + td]) { const p1 = [...todayData().overdue, ...todayData().day].filter(t => t.priority === 1).sort(sortTasks)[0]; if (p1) { S.fired['p1' + td] = 1; changed = true; notify('P1 still open', `${p1.title}. Start a 25-minute focus on it now?`, 'p1', { url: './?focus=' + p1.id }); } }
   if (!quiet) meetingsOn(td).forEach(m => { const k = 'me' + m.id + m.s; if (m.e <= now && now - m.e < 10 * 6e4 && !S.fired[k]) { S.fired[k] = 1; changed = true; const nx = [...todayData().overdue, ...todayData().day].sort(sortTasks)[0]; if (nx) notify('Meeting done', `Next: ${nx.title}${nx.duration ? ' (' + fmtMins(nx.duration) + ')' : ''}`, k, { id: nx.id }, true); } });
@@ -3944,7 +3958,7 @@ function tick() {
     S.settings.lastShutdown = td; changed = true; const D = todayData(); const A = analyse(td, td);
     notify('Your day', `${D.doneToday.length} done${D.openCount ? `, ${D.openCount} left` : ''}.${A.tracked ? ` ${fmtMins(A.prod)} productive, ${fmtMins(A.waste)} wasted.` : ''} Tap for your review.`, 'shutdown', { url: './#review/today' });
   }
-  if (S.settings.icsUsed && wd === 1 && hm >= '09:00' && S.settings.icsNudge !== td && !quiet) { S.settings.icsNudge = td; changed = true; notify('Refresh your meetings', 'Save your Outlook calendar and import it in Sankalp, Settings, Meetings.', 'ics'); }
+  if (S.settings.icsUsed && wd === 1 && hm >= '09:00' && S.settings.icsNudge !== td && !quiet) { S.settings.icsNudge = td; changed = true; notify('Refresh your meetings', 'Save your Outlook calendar and import it in Dayline, Settings, Meetings.', 'ics'); }
   if (Math.random() < .03) { const cut = addDays(td, -5); Object.keys(S.fired).forEach(k => { const m = k.match(/\d{4}-\d{2}-\d{2}/); if (m && m[0] < cut) delete S.fired[k]; }); }
   if (changed) save();
 }
@@ -3968,7 +3982,7 @@ applyTheme();
   if (q.get('resched')) setTimeout(() => handleAction({ type: 'resched', id: q.get('resched'), sub }), 500);
   if (q.get('open')) setTimeout(() => handleAction({ type: 'open', id: q.get('open') }), 300);
   const shared = [q.get('title'), q.get('text'), q.get('url')].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
-  if (q.get('quick')) { window.QM = true; document.body.classList.add('qm'); document.title = 'Add to Sankalp'; setTimeout(() => quickAdd({ quick: true }), 120); }
+  if (q.get('quick')) { window.QM = true; document.body.classList.add('qm'); document.title = 'Add to Dayline'; setTimeout(() => quickAdd({ quick: true }), 120); }
   else if (q.get('add') || shared) setTimeout(() => quickAdd({ prefill: (q.get('prefill') || shared).slice(0, 200) }), 400);
   if (q.get('focus') && getTask(q.get('focus'))) setTimeout(() => { S.timer.taskId = q.get('focus'); resetTimer('work'); startTimer(); go('focus'); }, 400);
   if (q.toString()) history.replaceState({ sk: 'app' }, '', location.pathname + location.hash);
