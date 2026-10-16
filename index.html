@@ -594,13 +594,6 @@ body.kb .tabbar,body.kb .fab{display:none!important}
 .rhead{display:flex;align-items:center;justify-content:space-between;padding:16px 14px 6px 18px}
 .rhead b{font-family:var(--fd);font-size:17px;font-weight:800}
 .rhead .iconbtn{width:34px;height:34px}
-.mcal2{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:0 14px 8px}
-.mcal2 span{font-size:10.5px;font-weight:700;color:var(--muted);text-align:center;padding:2px 0}
-.mcal2 button{height:30px;border-radius:9px;font-size:12.5px;font-weight:600;position:relative}
-.mcal2 button.om{color:var(--muted);opacity:.6}
-.mcal2 button.td{color:var(--accent-text);font-weight:800}
-.mcal2 button.sel{background:var(--accent);color:var(--on-accent)}
-.mcal2 button i{position:absolute;bottom:3px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:2px;background:var(--meet)}
 .rday{display:flex;justify-content:space-between;align-items:center;padding:8px 18px 6px;border-top:1px solid var(--line)}
 .rday b{font-size:14px}
 .rday span{font-size:12px;color:var(--muted);font-weight:600}
@@ -640,9 +633,6 @@ body.kb .tabbar,body.kb .fab{display:none!important}
 .gstep small{display:block;color:var(--muted);font-size:12px;font-weight:600}
 .gmoney{background:var(--surface);border-radius:14px;padding:12px 14px;margin-top:8px;font-size:14px;line-height:1.5}
 .gmoney b{font-size:18px}
-.mcal2 button i.t{background:var(--accent)!important}
-.mcal2 button i+i.t{margin-left:3px}
-.mcal2 button i:has(+i.t){margin-left:-7px}
 .rtasks{margin:0 12px 8px;display:flex;flex-direction:column;gap:2px}
 .rtk{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:9px;background:none;border:0;color:var(--ink);font:inherit;font-size:13.5px;font-weight:600;text-align:left;cursor:pointer;min-width:0}
 .rtk:hover{background:var(--surface)}
@@ -755,13 +745,6 @@ textarea.inp.one{resize:none;overflow:hidden;white-space:nowrap;line-height:20px
 .thead h1{margin:0;font-size:30px;font-weight:800;letter-spacing:-.02em}
 .thead span{font-size:13.5px;font-weight:600;color:var(--muted);text-align:right}
 .thead span b{color:var(--danger)}
-.slim{margin:0 20px 6px;padding:8px 12px 10px;border-radius:14px;background:var(--surface)}
-.slim .sl1{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--soft);min-height:24px}
-.slim .sl1 .nx{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.slim .sl1 a.pill{height:26px;padding:0 10px;font-size:12px}
-.slim .trk2{position:relative;height:12px;border-radius:6px;background:var(--card);overflow:hidden;margin-top:6px}
-.slim .trk2 i{position:absolute;top:0;bottom:0;border-radius:3px}
-.slim .trk2 .nw{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--danger)}
 .nowmini{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:14px;background:var(--card);font-size:12.5px;font-weight:700;color:var(--soft);white-space:nowrap}
 .rbody{padding:9px 0 7px}
 .rt{font-size:16px}
@@ -959,6 +942,36 @@ main.setw{max-width:1040px}
 .ileg{display:flex;gap:14px;font-size:11.5px;color:var(--muted);font-weight:600;margin:6px 0 2px}.ileg i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}.ileg .dn{background:var(--meet)}.ileg .pl{background:color-mix(in srgb,var(--meet) 20%,var(--bg))}
 .iwin{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}.iwin span{color:var(--muted);font-weight:600;flex:none}.iwin b{text-align:right;min-width:0}
 .ilink{width:100%;display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding:13px 14px;border-radius:14px;background:var(--surface);font-size:14px;font-weight:700;color:var(--ink);text-align:left}.ilink span{display:flex;align-items:center;gap:2px;font-size:12.5px;color:var(--muted)}.ilink svg{width:15px;height:15px}
+.addbar{display:flex;align-items:center;gap:10px;margin:6px 16px 2px;padding:0 14px;height:46px;border-radius:14px;background:var(--surface);border:1.5px solid transparent;transition:border-color .15s,background .15s}
+.addbar:focus-within{border-color:var(--accent);background:var(--bg)}.addbar .ab-i{display:flex;color:var(--accent-text)}.addbar .ab-i svg{width:18px;height:18px}
+.addbar input{flex:1;min-width:0;border:0;background:none;font-size:15px;font-weight:500;color:var(--ink);outline:none;padding:0}.addbar input::placeholder{color:var(--muted);font-weight:500}
+.addbar .ab-k{font-size:11px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:2px 6px;opacity:0;transition:opacity .15s}.addbar:focus-within .ab-k{opacity:1}
+.ab-prev{margin:6px 18px 4px;display:flex;flex-wrap:wrap;gap:6px}.ab-prev:empty{display:none}
+.rweek{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:2px 12px 12px}
+.rweek button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 0 6px;border-radius:12px;color:var(--ink)}
+.rweek button span{font-size:10.5px;font-weight:700;color:var(--muted)}.rweek button b{font-size:15px;font-weight:700;line-height:1.2}
+.rweek button em{display:flex;gap:3px;height:5px}.rweek button em i{width:5px;height:5px;border-radius:3px;background:var(--meet)}.rweek button em i.t{background:var(--accent)}
+.rweek button.past b{color:var(--muted)}.rweek button.td b{color:var(--accent-text)}.rweek button:hover{background:var(--surface)}
+.rweek button.sel{background:var(--ink)}.rweek button.sel span,.rweek button.sel b{color:var(--bg)}.rweek button.sel em i{box-shadow:0 0 0 1.5px var(--ink)}
+.rhead .rtoday{height:28px;padding:0 10px;font-size:12px;margin-right:4px}
+.rsum{display:flex;gap:14px;padding:0 18px 8px;font-size:12px;color:var(--muted);font-weight:600}.rsum b{color:var(--ink);font-weight:800}
+.rconn{display:flex;align-items:center;gap:8px;margin:14px 18px;font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none}.rconn svg{width:15px;height:15px}.rconn:hover{color:var(--ink)}
+.mtb{margin:0 20px 8px;padding:12px 14px 10px;border-radius:16px;background:var(--surface)}.mtb.plain{padding:8px 12px}.mtb .mtbn{display:flex;justify-content:flex-end}
+.mtbh{display:flex;align-items:center;gap:12px}.mtbb{width:4px;align-self:stretch;border-radius:2px;background:var(--meet);flex:none}.mtbh.done .mtbb{background:var(--ring)}
+.mtbt{flex:1;min-width:0;display:flex;flex-direction:column;text-align:left;color:var(--ink);gap:1px}.mtbt small{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.mtbt b{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mtbt span{font-size:13px;font-weight:600;color:var(--soft)}
+.mtbh.live small,.mtbh.live .mtbt span{color:var(--meet)}.mtbh.soon .mtbt span{color:var(--accent-text)}.mtbh .pill.meet{height:32px;padding:0 14px;flex:none}
+.mtbf{display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);font-weight:600}.mtbf>span{flex:1;min-width:0}
+.mtbf button[data-act=meetopen]{display:flex;align-items:center;gap:4px;font-size:12.5px;font-weight:700;color:var(--ink)}.mtbf .chev{display:flex;transform:rotate(90deg);transition:transform .15s}.mtbf .chev svg{width:12px;height:12px}.mtbf .chev.shut{transform:none}
+.mtb .mt2{margin-top:8px;padding-left:16px}
+#main .nav .area{margin-left:10px}
+.areah{display:flex;align-items:center;gap:4px}.areah .areab{flex:1;width:auto}
+.areaadd{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);flex:none;opacity:0;transition:opacity .12s}.areaadd svg{width:15px;height:15px}
+.areah:hover .areaadd,.areaadd:focus-visible{opacity:1}.areaadd:hover{background:var(--sel);color:var(--ink)}@media (hover:none){.areaadd{opacity:1}}
+.sdrag{opacity:.4}.dropb{box-shadow:inset 0 2px 0 var(--accent)}.dropa{box-shadow:inset 0 -2px 0 var(--accent)}
+.achips{display:flex;flex-wrap:wrap;gap:8px}.achips button{height:34px;padding:0 14px;border-radius:17px;background:var(--surface);font-size:14px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:4px}
+.achips button.on{background:var(--ink);color:var(--bg)}.achips button.new{background:none;border:1.5px dashed var(--line);color:var(--muted)}.achips button svg{width:14px;height:14px}
+.ctx .cxb[disabled]{opacity:.35;pointer-events:none}
 .wempty{padding:16px 4px;color:var(--muted);font-size:14px;line-height:1.45}
 .wnote-v{background:var(--surface);border-radius:14px;padding:12px 14px;font-size:14.5px;line-height:1.45;margin-bottom:6px}
 .wbars{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;height:120px;margin:6px 0 4px}.wbars div{display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;gap:4px}.wbars i{display:block;background:#1F8A3B;border-radius:5px 5px 2px 2px}.wbars span{text-align:center;font-size:11px;color:var(--muted);font-weight:700}
@@ -1761,11 +1774,11 @@ function projectsNav(cur, arg) {
   let h = '';
   areas().forEach(a => {
     const shut = (S.settings.shut || {})[a];
-    h += `<button type="button" class="area areab" data-act="areatog" data-a="${esc(a)}" aria-expanded="${!shut}"><span>${esc(a)}</span><i class="chev${shut ? ' shut' : ''}">${I.next}</i></button>`;
+    h += `<div class="area areah" draggable="true" data-da="${esc(a)}"><button type="button" class="areab" data-act="areatog" data-a="${esc(a)}" aria-expanded="${!shut}"><span>${esc(a)}</span><i class="chev${shut ? ' shut' : ''}">${I.next}</i></button><button type="button" class="areaadd" data-act="newproject" data-area="${esc(a)}" aria-label="New project in ${esc(a)}" title="New project in ${esc(a)}">${I.plus}</button></div>`;
     if (shut) return;
     projSorted().filter(p => p.area === a).forEach(p => {
       const n = S.tasks.filter(t => t.projectId === p.id && !t.done).length;
-      h += `<a class="navi${cur === 'project' && arg === p.id ? ' on' : ''}" href="#project/${p.id}"><span class="pe">${p.emoji || `<i class="dot" style="width:10px;height:10px;border-radius:5px;background:${p.color}"></i>`}</span><span class="nm" style="font-weight:500">${esc(p.name)}</span><span class="c">${n || ''}</span></a>`;
+      h += `<a class="navi${cur === 'project' && arg === p.id ? ' on' : ''}" href="#project/${p.id}" draggable="true" data-dp="${p.id}"><span class="pe">${p.emoji || `<i class="dot" style="width:10px;height:10px;border-radius:5px;background:${p.color}"></i>`}</span><span class="nm" style="font-weight:500">${esc(p.name)}</span><span class="c">${n || ''}</span></a>`;
     });
   });
   return h;
@@ -1781,7 +1794,7 @@ function renderSide() {
 /* ================= views ================= */
 function vHome() {
   return `<div class="topbar" style="padding-left:20px"><span class="brand">${LOGO(32)}<b>Dayline</b></span><div class="acts"><button class="iconbtn" data-act="search" aria-label="Search">${I.search}</button><a class="iconbtn" href="#settings" aria-label="Settings">${I.gear}</a></div></div>
-  <div style="height:8px"></div><div class="nav">${listsNav('')}</div>${projectsNav('', '')}
+  <div style="height:8px"></div><div class="nav">${listsNav('')}</div><div class="nav">${projectsNav('', '')}</div>
   <div style="padding:8px 24px;display:flex;flex-direction:column;gap:14px"><button class="navi" data-act="newproject" style="color:var(--muted);font-size:15px;padding:0">${I.plus}<span class="nm">New project</span></button><button class="navi" data-act="editmenu" style="color:var(--muted);font-size:15px;padding:0">${I.edit}<span class="nm">Edit menu</span></button></div>`;
 }
 /* ---------- focus and goals (P1 = focus, P2 = objective) ---------- */
@@ -1873,14 +1886,14 @@ function wcard(t) {
 }
 
 /* ---------- right rail: day calendar with drag-to-schedule ---------- */
-let railDay = null, railMonth = null;
+let railDay = null;
 function railHasTask(k) { return S.tasks.some(t => !t.done && !t.someday && (t.date === k || (t.repeat && t.date !== k && occursOn(t, k)))); }
 function renderRail() {
   const el = $('#rail'); if (!el || !matchMedia('(min-width:1280px)').matches) { if (el) el.innerHTML = ''; return; }
-  const td = today(); railDay ||= td; railMonth ||= railDay.slice(0, 7);
-  const [y, m] = railMonth.split('-').map(Number); const first = new Date(y, m - 1, 1); const off = (first.getDay() + 6) % 7;
-  let cal = ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(x => `<span>${x}</span>`).join('');
-  for (let i = 0; i < 42; i++) { const d = new Date(y, m - 1, 1 - off + i); const k = ymd(d); if (i >= 35 && d.getMonth() !== m - 1) break; cal += `<button class="${d.getMonth() !== m - 1 ? 'om' : ''}${k === td ? ' td' : ''}${k === railDay ? ' sel' : ''}" data-act="railday" data-d="${k}" aria-label="${d.getDate()} ${MONSL[d.getMonth()]}">${d.getDate()}${meetingsOn(k).length ? '<i></i>' : ''}${railHasTask(k) ? '<i class="t"></i>' : ''}</button>`; }
+  const td = today(); railDay ||= td;
+  const ws = weekStart(railDay); const wkD = Array.from({ length: 7 }, (_, i) => addDays(ws, i)); const wsD = pYmd(ws), weD = pYmd(wkD[6]);
+  const wk = wkD.map((k, i) => { const d = pYmd(k); const mm = meetingsOn(k).length, tk = railHasTask(k); return `<button class="${k === td ? 'td' : ''}${k === railDay ? ' sel' : ''}${k < td ? ' past' : ''}" data-act="railday" data-d="${k}" aria-label="${DAYSL[d.getDay()]} ${d.getDate()} ${MONSL[d.getMonth()]}"><span>${'MTWTFSS'[i]}</span><b>${d.getDate()}</b><em>${mm ? '<i class="m"></i>' : ''}${tk ? '<i class="t"></i>' : ''}</em></button>`; }).join('');
+  const wkLbl = wsD.getMonth() === weD.getMonth() ? `${MONSL[wsD.getMonth()]} ${wsD.getFullYear()}` : `${MONS[wsD.getMonth()]} – ${MONS[weD.getMonth()]} ${weD.getFullYear()}`;
   const dd = pYmd(railDay); const ms = meetingsOn(railDay); const ts = S.tasks.filter(t => t.time && ((t.date === railDay && (!t.orig || t.done) && (!t.done || S.settings.showDone)) || (!t.done && t.repeat && t.date !== railDay && occursOn(t, railDay))));
   const ut = S.tasks.filter(t => !t.time && !t.someday && ((t.date === railDay && (!t.done || S.settings.showDone)) || (!t.done && t.repeat && t.date !== railDay && occursOn(t, railDay)))).sort(sortTasks);
   // A clean agenda: meetings and timed tasks in one list by time, with the free time between them
@@ -1901,10 +1914,11 @@ function renderRail() {
   if (!nowDone) ag += `<div class="ranow"><span>Now</span></div>`;
   if (prev < w1) ag += gap(prev, w1);
   if (!ag) ag = `<div class="raempty">Nothing booked.</div>`;
-  el.innerHTML = `<div class="rhead"><b>${MONSL[m - 1]} ${y}</b><div><button class="iconbtn" data-act="railmon" data-dir="-1" aria-label="Previous month">${I.back}</button><button class="iconbtn" data-act="railmon" data-dir="1" aria-label="Next month">${I.next}</button></div></div><div class="mcal2">${cal}</div>
-  ${S.settings.gOn || S.pcal ? '' : `<a class="rnote" href="#settings/gcal">${I.gcal}<span>Connect a calendar to see your meetings here.</span></a>`}
-  <div class="rday"><b>${railDay === td ? 'Today' : DAYSL[dd.getDay()]}, ${dd.getDate()} ${MONS[dd.getMonth()]}</b><span>${[ms.length ? plural(ms.length, 'meeting') : '', ts.length + ut.length ? plural(ts.length + ut.length, 'task') : ''].filter(Boolean).join(' · ')}</span></div>
-  <div class="ragenda" id="ragenda">${ag}${ut.length ? `<div class="rah">Anytime</div><div class="rtasks">${ut.map(t => `<button class="rtk${t.done ? ' d' : ''}" data-act="open" data-id="${t.id}" draggable="true" data-tid="${t.id}"><span class="pdot p${t.priority}"></span><span class="tt">${esc(t.title)}</span>${t.repeat ? `<span class="rr">${I.repeat}</span>` : ''}</button>`).join('')}</div>` : ''}</div>`;
+  const busy = ms.reduce((a, x) => a + (x.e - x.s) / 6e4, 0) + ts.reduce((a, t) => a + (+t.duration || 0), 0); const free = Math.max(0, (w1 - w0) - busy);
+  el.innerHTML = `<div class="rhead"><b>${wkLbl}</b><div>${railDay !== td ? `<button class="pill ghost rtoday" data-act="railday" data-d="${td}">Today</button>` : ''}<button class="iconbtn" data-act="railwk" data-dir="-1" aria-label="Previous week">${I.back}</button><button class="iconbtn" data-act="railwk" data-dir="1" aria-label="Next week">${I.next}</button></div></div><div class="rweek">${wk}</div>
+  <div class="rday"><b>${railDay === td ? 'Today' : DAYSL[dd.getDay()]}, ${dd.getDate()} ${MONS[dd.getMonth()]}</b><span>${[ms.length ? plural(ms.length, 'meeting') : '', ts.length + ut.length ? plural(ts.length + ut.length, 'task') : ''].filter(Boolean).join(' · ') || 'Free'}</span></div>
+  ${ms.length || ts.length ? `<div class="rsum"><span><b>${fmtMins(busy) || '0m'}</b> busy</span><span><b>${fmtMins(free) || '0m'}</b> free in work hours</span></div>` : ''}
+  <div class="ragenda" id="ragenda">${ag}${ut.length ? `<div class="rah">Anytime</div><div class="rtasks">${ut.map(t => `<button class="rtk${t.done ? ' d' : ''}" data-act="open" data-id="${t.id}" draggable="true" data-tid="${t.id}"><span class="pdot p${t.priority}"></span><span class="tt">${esc(t.title)}</span>${t.repeat ? `<span class="rr">${I.repeat}</span>` : ''}</button>`).join('')}</div>` : ''}</div>${S.settings.gOn || S.pcal ? '' : `<a class="rconn" href="#settings/gcal">${I.gcal}Show my meetings here</a>`}`;
 }
 /* Meeting details, like Teams or Google Calendar */
 function meetSheet(id) {
@@ -1959,25 +1973,22 @@ function impactHtml(D) {
   return `<section class="impact" aria-label="Most important task"><div class="impact-h"><span>${I.star}Most important today</span><button data-act="impact">Change</button></div>${rows([t], { showDate: !!(t.date && t.date < today()), isImpact: true })}${t.done ? '<div class="impact-done">Done. Everything else today is a bonus.</div>' : ''}</section>`;
 }
 function dayBand() {
-  const D = today(), start = 8 * 60, end = 22 * 60, span = end - start;
-  const pos = m => Math.max(0, Math.min(100, (m - start) / span * 100));
-  const ms = meetingsOn(D); const fs = S.focus.filter(f => ymd(new Date(f.start)) === D);
-  const ticks = open().filter(t => t.date === D && t.time);
-  const now = Date.now(); const next = ms.find(m => m.e > now);
+  const D = today(), now = Date.now(); const ms = meetingsOn(D); const ad = allDayOn(D);
   const cur = S.cur ? catOf(S.cur.cat) : null;
-  const nowChip = S.settings.track !== false ? `<button class="nowmini${cur ? ' run' : ''}" data-act="nowpick" aria-label="${cur ? 'Running: ' + esc(cur.n) + '. Tap to stop or switch' : 'Log what you are doing'}">${cur ? `<span class="nowdot"></span><span class="nl">${esc(cur.n.split(',')[0])}</span> · ${fmtMins((now - S.cur.s) / 6e4)}` : `${I.plus} Log activity`}</button>` : '';
-  const ad = allDayOn(D); const adH = ad.length ? `<div class="adchips">${ad.map(m => `<span>${esc(m.t)}</span>`).join('')}</div>` : '';
-  if (!ms.length && !fs.length && !ticks.length) return `<div class="slim"><div class="sl1"><span class="nx">No meetings today</span>${loadHtml()}${nowChip}</div>${adH}</div>`;
-  let bars = ms.map(m => { const s0 = minOf(m.s), e = Math.max(minOf(m.e) || 1440, s0 + 10); return `<i style="left:${pos(s0)}%;width:${Math.max(pos(e) - pos(s0), 1.2)}%;background:var(--meet)" title="${esc(m.t)}"></i>`; }).join('');
-  bars += fs.map(f => { const s0 = minOf(f.start); return `<i style="left:${pos(s0)}%;width:${Math.max(pos(s0 + f.mins) - pos(s0), 1.2)}%;background:var(--accent)"></i>`; }).join('');
-  bars += ticks.map(t => { const [hh, mi] = t.time.split(':').map(Number); return `<i style="left:${pos(hh * 60 + mi)}%;width:4px;top:3px;bottom:3px;background:${t.priority === 1 ? 'var(--danger)' : 'var(--ink)'}"></i>`; }).join('');
-  let nx = ms.length ? `${plural(ms.length, 'meeting')}${ms.length ? `, ${fmtMins(ms.reduce((a, m) => a + (m.e - m.s) / 6e4, 0))}` : ''}` : 'Your day';
-  if (next && next.s > now) { const inMin = Math.round((next.s - now) / 6e4); if (inMin < 60) nx += ` · next in ${inMin} min`; }
-  const mini = !!S.settings.meetMin; const nextUp = ms.find(m => m.e > now);
-  const shown = mini ? (nextUp ? [nextUp] : []) : ms;
-  const list = shown.length ? `<div class="mt2">${shown.map(m => { const live = m.s <= now && m.e > now, past = m.e <= now; return `<div class="mr${past ? ' past' : ''}${live ? ' live' : ''}"><span class="tm">${live ? 'Now' : fmtClock(m.s)}</span><span class="tt" data-act="meet" data-id="${esc(m.id)}">${esc(m.t)}${m.dec ? ' <small class="muted">· declined?</small>' : ''}</span>${m.join && !past ? `<a class="pill meet" href="${esc(m.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>`; }).join('')}</div>` : '';
-  const nxB = ms.length ? `<button class="nx nxb" data-act="meetmin" aria-expanded="${!mini}" title="${mini ? 'Show all meetings' : 'Show only the next meeting'}">${nx}<i class="chev${mini ? ' shut' : ''}">${I.next}</i></button>` : `<span class="nx">${nx}</span>`;
-  return `<div class="slim${mini ? ' mini' : ''}"><div class="sl1">${nxB}${loadHtml()}${nowChip}</div><div class="trk2" role="img" aria-label="Your day from 8 AM to 10 PM">${bars}<span class="nw" style="left:${pos(minOf(now))}%"></span></div>${list}${adH}</div>`;
+  const nowChip = S.settings.track === true || S.cur ? `<button class="nowmini${cur ? ' run' : ''}" data-act="nowpick" aria-label="${cur ? 'Running: ' + esc(cur.n) + '. Tap to stop or switch' : 'Log what you are doing'}">${cur ? `<span class="nowdot"></span><span class="nl">${esc(cur.n.split(',')[0])}</span> · ${fmtMins((now - S.cur.s) / 6e4)}` : `${I.plus} Log activity`}</button>` : '';
+  const adH = ad.length ? `<div class="adchips">${ad.map(m => `<span>${esc(m.t)}</span>`).join('')}</div>` : '';
+  if (!ms.length) return adH || nowChip ? `<div class="mtb plain">${adH}${nowChip ? `<div class="mtbn">${nowChip}</div>` : ''}</div>` : '';
+  const busy = ms.reduce((a, m) => a + (m.e - m.s) / 6e4, 0); const left = ms.filter(m => m.e > now); const nx = left[0];
+  const open_ = !!S.settings.meetOpen;
+  let head;
+  if (nx) { const live = nx.s <= now; const inMin = Math.round((nx.s - now) / 6e4);
+    const when = live ? `Now · ends ${fmtClock(nx.e)}` : inMin < 60 ? `In ${Math.max(1, inMin)} min · ${fmtClock(nx.s)}` : `${fmtClock(nx.s)} · ${fmtMins((nx.e - nx.s) / 6e4)}`;
+    head = `<div class="mtbh${live ? ' live' : inMin < 15 ? ' soon' : ''}"><span class="mtbb"></span><button class="mtbt" data-act="meet" data-id="${esc(nx.id)}"><small>${live ? 'In a meeting' : 'Next meeting'}</small><b>${esc(nx.t)}</b><span>${when}</span></button>${nx.join ? `<a class="pill meet" href="${esc(nx.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>`; }
+  else head = `<div class="mtbh done"><span class="mtbb"></span><div class="mtbt"><small>Meetings</small><b>All done for today</b></div></div>`;
+  const others = ms.filter(m => m !== nx);
+  const list = open_ && others.length ? `<div class="mt2">${others.map(m => { const live = m.s <= now && m.e > now, past = m.e <= now; return `<div class="mr${past ? ' past' : ''}${live ? ' live' : ''}"><span class="tm">${fmtClock(m.s)}</span><span class="tt" data-act="meet" data-id="${esc(m.id)}">${esc(m.t)}</span>${m.join && !past ? `<a class="pill meet" href="${esc(m.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>`; }).join('')}</div>` : '';
+  const foot = `<div class="mtbf"><span>${plural(ms.length, 'meeting')} · ${fmtMins(busy)}${left.length && nx ? ` · ${left.length - 1 ? left.length - 1 + ' more after this' : 'last one today'}` : ''}</span>${others.length ? `<button data-act="meetopen" aria-expanded="${open_}">${open_ ? 'Hide' : 'See all'}<i class="chev${open_ ? '' : ' shut'}">${I.next}</i></button>` : ''}${nowChip}</div>`;
+  return `<div class="mtb">${head}${list}${foot}${adH}</div>`;
 }
 function groupBy(list, mode) {
   if (mode === 'priority') { return [1, 2, 3, 4].map(p => ({ k: p === 4 ? 'No priority' : 'Priority ' + p, color: p === 1 ? 'var(--danger)' : p === 2 ? 'var(--accent-text)' : p === 3 ? 'var(--meet)' : 'var(--ring)', items: list.filter(t => t.priority === p).sort(sortTasks) })).filter(g => g.items.length); }
@@ -1987,6 +1998,7 @@ function groupBy(list, mode) {
   }
   return null;
 }
+const addBar = (lbl) => `<div class="addbar"><span class="ab-i">${I.plus}</span><input id="abIn" type="text" aria-label="${lbl}" placeholder="${lbl}" autocomplete="off" enterkeyhint="done" data-form-type="other"><span class="ab-k">Enter</span></div><div class="ab-prev" id="abPrev"></div>`;
 function vToday() {
   const d = new Date(); const D = todayData(); const st = S.settings;
   const total = D.day.length + D.evening.length + D.overdue.length + D.pinned.length + D.doneToday.length + (D.impact ? 1 : 0);
@@ -1999,6 +2011,7 @@ function vToday() {
   h += bannersHtml();
   if (S.settings.gOn && !gValid() && !S.pcal) h += `<button class="gnote" data-act="gref">${I.gcal}Google Calendar paused. Tap to refresh.</button>`;
   h += dayBand();
+  h += addBar('Add a task for today');
 
   { const top = ((S.days[today()] || {}).top || []).map(getTask).filter(t => t && !t.done); if (top.length) h += `<div class="grouph" style="color:var(--accent-text)">${I.star} Top 3 for today</div>` + rows(top); }
   if (D.pinned.length) h += `<div class="grouph">${I.pin} Pinned</div>` + rows(D.pinned, { inPinned: true });
@@ -2015,7 +2028,7 @@ function vToday() {
   if (D.doneToday.length && !st.showDone) h += `<button class="doneh" data-act="toggledone">${plural(D.doneToday.length, 'completed task')} hidden <span style="color:var(--accent-text)">Show</span></button>`;
   return h;
 }
-function vInbox() { const l = inboxTasks(); return topbar() + `<div class="pad"><h1 class="title">Inbox</h1></div><div style="height:8px"></div>` + (l.length ? rows(l) : `<div class="empty">Inbox is clear.</div>`); }
+function vInbox() { const l = inboxTasks(); return topbar() + `<div class="pad"><h1 class="title">Inbox</h1></div><div style="height:8px"></div>` + addBar('Add a task to Inbox') + (l.length ? rows(l) : `<div class="empty">Inbox is clear.</div>`); }
 function vUpcoming() {
   const td = today(); let h = topbar() + `<div class="pad"><h1 class="title">Next 7 days</h1></div>`;
   for (let i = 1; i <= 7; i++) {
@@ -2039,6 +2052,7 @@ function vProject(id) {
   const nod = ts.filter(t => !t.date && !t.someday && !t.pinned).sort(sortTasks), sd = ts.filter(t => t.someday && !t.pinned);
   let h = topbar(eyeBtn() + `<button class="iconbtn" data-act="editproject" data-id="${id}" aria-label="Edit project">${I.edit}</button>`);
   h += `<div class="pad" style="display:flex;align-items:center;gap:14px"><div style="width:52px;height:52px;border-radius:16px;background:var(--surface);display:grid;place-items:center;font-size:26px;flex:none">${p.emoji || `<i class="dot" style="width:16px;height:16px;border-radius:8px;background:${p.color}"></i>`}</div><div><h1 class="title" style="font-size:32px">${esc(p.name)}</h1><div class="sub">${esc(p.area)}, ${ts.length} open, ${Math.round(pct * 100)}% done</div></div></div>`;
+  h += addBar('Add a task to ' + p.name);
   if (pin.length) h += `<div class="grouph">${I.pin} Pinned</div>` + rows(pin, { hideProject: true, inPinned: true });
   if (dated.length) h += `<div class="sechead"><h2 class="sec">Scheduled</h2></div>` + rows(dated, { showDate: true, hideProject: true });
   if (nod.length) h += `<div class="sechead"><h2 class="sec">Anytime</h2></div>` + rows(nod, { hideProject: true });
@@ -2850,7 +2864,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '4.9.1';
+const APPV = '4.9.3';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -2888,20 +2902,22 @@ function vSettings(arg) {
   const c = SET_CATS.find(x => x[0] === cur);
   return `<div class="topbar"><a class="back" href="#settings" aria-label="Back to Settings">${I.back}<span>Settings</span></a><span></span><div class="acts"></div></div><div class="pad"><h1 class="title">${esc(c[1])}</h1></div>` + pane(cur);
 }
-function projectForm(id) {
-  const p = id ? proj(id) : { name: '', area: areas()[0] || 'Work', color: '#F2A33A', emoji: '' };
+function projectForm(id, area0) {
+  const p = id ? proj(id) : { name: '', area: area0 || areas()[0] || 'Personal', color: '#F2A33A', emoji: '' };
+  const alist = [...new Set([...areas(), 'Work', 'Personal'])]; let area = p.area;
   const colors = ['#F2A33A', '#E0482A', '#C2367A', '#8B5CF6', '#5B5BD6', '#2563EB', '#14B8A6', '#4D9A2A', '#9A7A45', '#5B6170'];
   const pe = ['', '💼', '🎯', '📞', '📊', '🧲', '🏠', '💪', '❤️', '📚', '✈️', '💰', '🛒', '🌱', '🙏', '👨‍👩‍👧'];
   let col = p.color, emo = p.emoji || '';
   openSheet(sheetHead(id ? 'Edit project' : 'New project', 'Save', 'pSave') + `
-  <div class="field"><label for="pName">Name</label><textarea class="inp one" rows="1" id="pName" placeholder="Client demos" data-form-type="other">${esc(p.name)}</textarea></div>
-  <div class="field"><label for="pArea">Area</label><input class="inp" id="pArea" value="${esc(p.area)}" list="areaList"><datalist id="areaList">${areas().map(a => `<option value="${esc(a)}">`).join('')}</datalist></div>
+  <div class="field"><label for="pName">Name</label><textarea class="inp one" rows="1" id="pName" placeholder="" data-form-type="other">${esc(p.name)}</textarea></div>
+  <div class="field"><span class="flabel">Area</span><div class="achips" id="pArea">${alist.map(a => `<button type="button" data-a="${esc(a)}" class="${a === area ? 'on' : ''}">${esc(a)}</button>`).join('')}<button type="button" data-a="" class="new">${I.plus}New area</button></div><input class="inp" id="pAreaNew" hidden placeholder="Area name" autocomplete="off" style="margin-top:8px"></div>
   <div class="field"><span class="flabel">Icon</span><div class="emojis" id="pEmo">${pe.map(e => `<button type="button" data-e="${e}" class="${e === emo ? 'on' : ''}" aria-label="${e || 'Colour dot'}">${e || '●'}</button>`).join('')}</div></div>
   <div class="field"><span class="flabel">Colour</span><div class="swatches" id="pCol">${colors.map(c => `<button type="button" data-c="${c}" class="${c === col ? 'on' : ''}" style="background:${c}" aria-label="Colour ${c}"></button>`).join('')}</div></div>
   ${id ? `<div class="btnrow"><button class="btn danger" id="pDel">${I.trash}Delete project</button></div>` : ''}`);
+  let newA = false; $$('#pArea button').forEach(b => b.onclick = () => { newA = !b.dataset.a; area = b.dataset.a; $$('#pArea button').forEach(z => z.classList.toggle('on', z === b)); const ni = $('#pAreaNew'); ni.hidden = !newA; if (newA) ni.focus(); });
   $$('#pEmo button').forEach(b => b.onclick = () => { emo = b.dataset.e; $$('#pEmo button').forEach(z => z.classList.toggle('on', z === b)); });
   $$('#pCol button').forEach(b => b.onclick = () => { col = b.dataset.c; $$('#pCol button').forEach(z => z.classList.toggle('on', z === b)); });
-  $('#pSave').onclick = () => { const name = $('#pName').value.trim(), area = $('#pArea').value.trim() || 'Personal'; if (!name) { $('#pName').focus(); return; } if (id) Object.assign(p, { name, area, color: col, emoji: emo }); else S.projects.push({ id: uid(), name, area, color: col, emoji: emo }); save(); closeSheet(true); render(); };
+  $('#pSave').onclick = () => { const name = $('#pName').value.trim(); if (newA) { area = $('#pAreaNew').value.trim(); if (!area) { $('#pAreaNew').focus(); return; } } area ||= 'Personal'; if (!name) { $('#pName').focus(); return; } if (id) Object.assign(p, { name, area, color: col, emoji: emo }); else S.projects.push({ id: uid(), name, area, color: col, emoji: emo }); save(); closeSheet(true); render(); };
   if (id) $('#pDel').onclick = () => { if (confirm(`Delete ${p.name}? Its tasks move to Inbox.`)) { S.tasks.forEach(t => { if (t.projectId === id) t.projectId = null; }); S.projects = S.projects.filter(x => x.id !== id); save(); closeSheet(true); go('home'); } };
 }
 function tplForm(id, fromTask) {
@@ -3863,6 +3879,12 @@ function render() {
   $('#fab').style.display = ['settings', 'focus', 'insights', 'habits', 'dates', 'templates', 'home', 'review', 'life'].includes(view) ? 'none' : '';
 }
 function wire(view) {
+  { const ab = $('#abIn'); if (ab) { const pv = $('#abPrev');
+    ab.oninput = () => { const v = ab.value.trim(); if (!v) { pv.innerHTML = ''; return; } const r = parseTask(v); r._edit = true; pv.innerHTML = (r.date || r.time || r.priority || r.projectId || r.repeat || r.tags.length) ? chipsFor(r) : ''; };
+    ab.onkeydown = e => { if (e.key === 'Escape') { ab.value = ''; pv.innerHTML = ''; ab.blur(); return; } if (e.key !== 'Enter' || e.isComposing) return; e.preventDefault(); const v = ab.value.trim(); if (!v) return;
+      const res = addFromText(v, route()); if (!res) { toast('Add a few words for the task name'); return; } if (res.meeting) { render(); toast(`Meeting added, ${fmtClock(res.meeting.s)}`); return; }
+      ab.value = ''; pv.innerHTML = ''; if (res.reminders.length) askNotify(); render(); const n = $('#abIn'); if (n) { n.value = ''; n.focus(); } const np = $('#abPrev'); if (np) np.innerHTML = '';
+      const where = res.someday ? 'Someday' : res.date === today() ? 'Today' : res.date ? fmtDate(res.date) : res.projectId ? proj(res.projectId).name : 'Inbox'; toast(`Added to ${where}`); }; } }
   if (view === 'focus') { const s = $('#tTask'); if (s) s.onchange = () => { S.timer.taskId = s.value; save(); }; }
   if (view === 'review') $$('[data-appmap]').forEach(el => el.onchange = () => { S.settings.appmap = { ...(S.settings.appmap || {}), [el.dataset.appmap]: el.value }; if (!el.value) delete S.settings.appmap[el.dataset.appmap]; save(); render(); });
   if (view === 'life') { const li = $('#lifeIn'), la = $('#lifeAdd'); if (li) { const add = () => { const v = li.value.trim(); if (!v) { goalSheet(); return; } const g = addGoalFromText(v); li.value = ''; render(); if (g) setTimeout(() => goalSheet(g.id), 60); }; la.onclick = add; li.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); add(); } }, true); } }
@@ -3916,13 +3938,88 @@ function ctxMenu(x, y, id) {
     else if (a === 'del') { closeCtx(); deleteTask(t.id); }
   });
 }
+/* Sidebar: drag projects (within or across areas) and areas to reorder */
+let sdnd = null;
+document.addEventListener('dragstart', e => { const p = e.target.closest?.('[data-dp]'), a = !p && e.target.closest?.('[data-da]'); if (!p && !a) return; sdnd = p ? { k: 'p', id: p.dataset.dp } : { k: 'a', id: a.dataset.da }; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', ''); } catch (x) { } (p || a).classList.add('sdrag'); });
+document.addEventListener('dragend', () => { sdnd = null; $$('.sdrag,.dropb,.dropa').forEach(x => x.classList.remove('sdrag', 'dropb', 'dropa')); });
+function sDropAt(e) {
+  const el = e.target.closest?.('[data-dp],[data-da]'); if (!el) return null; const r = el.getBoundingClientRect(); const after = e.clientY > r.top + r.height / 2;
+  if (sdnd.k === 'a') { const ah = el.dataset.da != null ? el : null; if (!ah || ah.dataset.da === sdnd.id) return null; return { el: ah, after, area: ah.dataset.da }; }
+  if (el.dataset.dp === sdnd.id) return null; return el.dataset.dp != null ? { el, after, pid: el.dataset.dp } : { el, after: true, area: el.dataset.da };
+}
+document.addEventListener('dragover', e => { if (!sdnd) return; const t = sDropAt(e); $$('.dropb,.dropa').forEach(x => x.classList.remove('dropb', 'dropa')); if (!t) return; e.preventDefault(); t.el.classList.add(t.after ? 'dropa' : 'dropb'); });
+document.addEventListener('drop', e => { if (!sdnd) return; const t = sDropAt(e); if (!t) return; e.preventDefault(); sMove(sdnd, t); sdnd = null; });
+function sMove(d, t) {
+  if (d.k === 'a') { const o = areasSorted().filter(x => x !== d.id); o.splice(o.indexOf(t.area) + (t.after ? 1 : 0), 0, d.id); S.settings.areaOrder = o; }
+  else { const p = proj(d.id); if (!p) return; const ids = projSorted().map(x => x.id).filter(x => x !== p.id);
+    if (t.pid) { const q = proj(t.pid); p.area = q.area; ids.splice(ids.indexOf(q.id) + (t.after ? 1 : 0), 0, p.id); }
+    else { p.area = t.area; const first = ids.find(x => proj(x).area === t.area); if (first) ids.splice(ids.indexOf(first), 0, p.id); else ids.push(p.id); if ((S.settings.shut || {})[t.area]) S.settings.shut = { ...S.settings.shut, [t.area]: false }; }
+    S.settings.projOrder = ids; }
+  save(); render();
+}
+function sStep(k, id, dir) {
+  if (k === 'a') { const o = areasSorted(); const i = o.indexOf(id), j = i + dir; if (j < 0 || j >= o.length) return; [o[i], o[j]] = [o[j], o[i]]; S.settings.areaOrder = o; }
+  else { const p = proj(id); const all = projSorted(); const grp = all.filter(x => x.area === p.area); const i = grp.indexOf(p), j = i + dir; if (j < 0 || j >= grp.length) return; const ids = all.map(x => x.id); const a = ids.indexOf(p.id), b = ids.indexOf(grp[j].id); [ids[a], ids[b]] = [ids[b], ids[a]]; S.settings.projOrder = ids; }
+  save(); render();
+}
+function renameArea(a) {
+  const n = (prompt('Rename area', a) || '').trim(); if (!n || n === a) return;
+  S.projects.forEach(p => { if (p.area === a) p.area = n; }); S.settings.areaOrder = (S.settings.areaOrder || []).map(x => x === a ? n : x);
+  if ((S.settings.shut || {})[a] != null) { S.settings.shut = { ...S.settings.shut, [n]: S.settings.shut[a] }; delete S.settings.shut[a]; } save(); render();
+}
+function sideMenu(x, y, k, id) {
+  closeCtx(); const m = document.createElement('div'); m.id = 'ctx'; m.className = 'ctx'; m.setAttribute('role', 'menu');
+  const p = k === 'p' ? proj(id) : null; if (k === 'p' && !p) return;
+  const grp = p ? projSorted().filter(z => z.area === p.area) : areasSorted(); const i = p ? grp.indexOf(p) : grp.indexOf(id);
+  let h = p ? `<button class="cxb" data-sm="open">${I.folder}Open</button><button class="cxb" data-sm="edit">${I.edit}Edit project</button><div class="cxs"></div>` : `<button class="cxb" data-sm="newp">${I.plus}New project in ${esc(id)}</button><button class="cxb" data-sm="ren">${I.edit}Rename area</button><div class="cxs"></div>`;
+  h += `<button class="cxb" data-sm="up"${i <= 0 ? ' disabled' : ''}>${I.up}Move up</button><button class="cxb" data-sm="down"${i >= grp.length - 1 ? ' disabled' : ''}>${I.down}Move down</button>`;
+  if (p) { const others = [...new Set([...areasSorted(), 'Work', 'Personal'])].filter(a => a !== p.area); h += `<div class="cxsub"><button class="cxb" data-sm="mv">${I.layers}Move to area<span class="cxa">${I.next}</span></button><div class="cxp">${others.map(a => `<button class="cxb" data-ma="${esc(a)}">${esc(a)}</button>`).join('')}<button class="cxb" data-ma="">${I.plus}New area</button></div></div>`; }
+  m.innerHTML = h; document.body.appendChild(m);
+  const W = m.offsetWidth, H = m.offsetHeight; m.style.left = Math.max(8, Math.min(x, innerWidth - W - 8)) + 'px'; m.style.top = Math.max(8, Math.min(y, innerHeight - H - 8)) + 'px';
+  const sub = m.querySelector('.cxsub'); if (sub) sub.onmouseenter = () => { const r = sub.getBoundingClientRect(); sub.querySelector('.cxp').classList.toggle('left', r.right + 220 > innerWidth); };
+  m.querySelectorAll('[data-sm]').forEach(b => b.onclick = () => { const a = b.dataset.sm; if (a === 'mv') return; closeCtx();
+    if (a === 'open') go('project/' + id); else if (a === 'edit') projectForm(id); else if (a === 'newp') projectForm(null, id); else if (a === 'ren') renameArea(id);
+    else if (a === 'up' || a === 'down') sStep(k, id, a === 'up' ? -1 : 1); });
+  m.querySelectorAll('[data-ma]').forEach(b => b.onclick = () => { closeCtx(); let a = b.dataset.ma; if (!a) { a = (prompt('New area name') || '').trim(); if (!a) return; } sMove({ k: 'p', id }, { area: a }); toast('Moved to ' + a); });
+}
+function pageMenu(x, y) {
+  closeCtx(); const R = route(); const td = today(); const sel = String(getSelection() || '').trim().slice(0, 200);
+  const here = R.view === 'today' ? 'for today' : R.view === 'inbox' ? 'to Inbox' : R.view === 'project' && proj(R.arg) ? 'to ' + proj(R.arg).name : R.view === 'calendar' ? 'on ' + fmtDate(calSel || td) : '';
+  const m = document.createElement('div'); m.id = 'ctx'; m.className = 'ctx'; m.setAttribute('role', 'menu');
+  let h = '';
+  if (sel) h += `<button class="cxb" data-pm="copy">${I.note}Copy</button><button class="cxb" data-pm="seltask">${I.plus}Add “${esc(sel.length > 28 ? sel.slice(0, 28) + '…' : sel)}” as a task</button><div class="cxs"></div>`;
+  h += `<button class="cxb" data-pm="new">${I.plus}New task${here ? ' ' + esc(here) : ''}<span class="cxa">N</span></button>`;
+  if (R.view !== 'today') h += `<button class="cxb" data-pm="newtd">${I.sun}New task for today</button>`;
+  h += `<button class="cxb" data-pm="newtm">${I.arrow || I.next}New task for tomorrow</button><button class="cxb" data-pm="paste">${I.layers}Paste as tasks<span class="cxa">one per line</span></button>`;
+  if (R.view === 'today') { const gl = { time: 'time', priority: 'priority', project: 'project' }[S.settings.todayGroup] || 'time'; h += `<div class="cxs"></div><button class="cxb" data-pm="group">${I.layers}Group by ${gl}<span class="cxa">change</span></button>`; }
+  if (['today', 'project'].includes(R.view)) h += `<button class="cxb" data-pm="showdone">${I.check}${S.settings.showDone ? 'Hide' : 'Show'} completed</button>`;
+  h += `<div class="cxs"></div><button class="cxb" data-pm="search">${I.search}Search<span class="cxa">Ctrl+K</span></button><button class="cxb" data-pm="sync">${I.sync}Refresh</button>`;
+  m.innerHTML = h; document.body.appendChild(m);
+  const W = m.offsetWidth, H = m.offsetHeight; m.style.left = Math.max(8, Math.min(x, innerWidth - W - 8)) + 'px'; m.style.top = Math.max(8, Math.min(y, innerHeight - H - 8)) + 'px';
+  const ctxFor = d => { const c = { ...R }; if (d) { c.date = d; if (c.view === 'today') c.view = 'x'; } return c; };
+  m.querySelectorAll('[data-pm]').forEach(b => b.onclick = async () => { const a = b.dataset.pm; closeCtx();
+    if (a === 'copy') { try { await navigator.clipboard.writeText(sel); toast('Copied'); } catch (e) { } }
+    else if (a === 'seltask') { const t = addFromText(sel, R); if (t && !t.meeting) { render(); toast('Added'); } }
+    else if (a === 'new') { const ab = $('#abIn'); if (ab) ab.focus(); else quickAdd(); }
+    else if (a === 'newtd') quickAdd(ctxFor(td));
+    else if (a === 'newtm') quickAdd(ctxFor(addDays(td, 1)));
+    else if (a === 'paste') { let txt = ''; try { txt = await navigator.clipboard.readText(); } catch (e) { toast('Allow clipboard access to paste'); return; } const lines = txt.split(/\r?\n/).map(l => l.replace(/^\s*([-*•]|\d+[.)]|\[ ?\])\s*/, '').trim()).filter(Boolean).slice(0, 50); if (!lines.length) { toast('Nothing to paste'); return; } let n = 0; lines.forEach(l => { const t = addFromText(l, R); if (t && !t.meeting) n++; }); render(); toast(`Added ${plural(n, 'task')}`); }
+    else if (a === 'group') { const o = ['time', 'priority', 'project']; S.settings.todayGroup = o[(o.indexOf(S.settings.todayGroup) + 1) % 3]; save(); render(); toast('Grouped by ' + S.settings.todayGroup); }
+    else if (a === 'showdone') { S.settings.showDone = !S.settings.showDone; save(); render(); }
+    else if (a === 'search') searchSheet();
+    else if (a === 'sync') { try { if (fbUser) await pushNow(); } catch (e) { } render(); toast('Up to date'); }
+  });
+}
 document.addEventListener('contextmenu', e => {
   if (e.target.closest('input,textarea,[contenteditable=true],#sheet')) return;
   const el = e.target.closest('[data-id],[data-tid]'); const id = el && (el.dataset.tid || el.dataset.id);
-  if (!id || !getTask(id)) { closeCtx(); return; }
-  e.preventDefault(); ctxMenu(e.clientX, e.clientY, id);
+  if (id && getTask(id)) { e.preventDefault(); ctxMenu(e.clientX, e.clientY, id); return; }
+  const sp = e.target.closest('[data-dp]'), sa = !sp && e.target.closest('[data-da]'); if (sp || sa) { e.preventDefault(); sideMenu(e.clientX, e.clientY, sp ? 'p' : 'a', sp ? sp.dataset.dp : sa.dataset.da); return; }
+  if (e.shiftKey) { closeCtx(); return; } // Shift + right-click: the browser's own menu
+  e.preventDefault(); pageMenu(e.clientX, e.clientY);
 });
 document.addEventListener('mousedown', e => { if (!e.target.closest('#ctx')) closeCtx(); }, true);
+document.addEventListener('click', e => { if (!isWide() || e.button !== 0) return; if (!e.target.closest('#main') || e.target.closest('a,button,input,textarea,select,label,[data-act],[data-id],[data-tid],.row,[contenteditable=true],.addbar,.ab-prev')) return; const sel = getSelection(); if (sel && String(sel).trim()) return; const ab = $('#abIn'); if (ab) ab.focus(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#ctx')) { e.stopPropagation(); closeCtx(); } }, true);
 addEventListener('scroll', closeCtx, true); addEventListener('resize', closeCtx);
 let swipedAt = 0;
@@ -3973,7 +4070,7 @@ document.addEventListener('click', e => {
     install: async () => { if (!installEvt) { toast('Use the browser menu, Add to Home screen'); return; } installEvt.prompt(); try { await installEvt.userChoice; } catch (x) { } installEvt = null; render(); },
     hidedenied: () => { S.settings.deniedSeen = true; save(); render(); },
     carrytm: () => { const tm = addDays(td, 1); const l = open().filter(t => t.date && t.date <= td && t.priority <= 3 && !t.someday); l.forEach(t => setDate(t, tm)); save(); render(); toast(`${plural(l.length, 'task')} moved to tomorrow`); },
-    railday: () => { railDay = b.dataset.d; renderRail(); }, railmon: () => { const [y, m] = railMonth.split('-').map(Number); const d = new Date(y, m - 1 + +b.dataset.dir, 1); railMonth = ymd(d).slice(0, 7); renderRail(); },
+    railday: () => { railDay = b.dataset.d; renderRail(); }, railwk: () => { railDay = addDays(railDay || today(), 7 * +b.dataset.dir); renderRail(); },
     fest: () => { S.settings.fest = b.dataset.k; save(); applyTheme(); render(); toast(b.dataset.k === 'off' ? 'Festive icon off' : b.dataset.k === 'auto' ? 'Festive icon: Auto' : 'Icon changed'); },
     logo: () => { S.settings.logo = b.dataset.k; save(); applyTheme(); render(); toast('Logo changed. Reinstall the app to update the Home Screen icon.'); },
     dark: () => { S.settings.darkStyle = b.dataset.k; if (S.settings.mode === 'light') S.settings.mode = 'dark'; save(); applyTheme(); render(); },
@@ -3999,7 +4096,7 @@ document.addEventListener('click', e => {
     wrapmood: () => { const r = dayRec(today()); const n = $('#wrapNote'); r.wrapDraft = { ...(r.wrapDraft || {}), note: n ? n.value : '', mood: (r.wrapDraft || {}).mood === b.dataset.k ? '' : b.dataset.k }; save(); render(); },
     wrapfinish: () => { const r = dayRec(today()); const n = $('#wrapNote'); r.wrap = { note: (n ? n.value : (r.wrapDraft || {}).note || '').trim(), mood: (r.wrapDraft || {}).mood || '', at: Date.now() }; delete r.wrapDraft; wrapStep = 0; save(); render(); toast('Day closed. See you tomorrow'); },
     wrapredo: () => { const r = dayRec(today()); r.wrapDraft = { note: (r.wrap || {}).note || '', mood: (r.wrap || {}).mood || '' }; delete r.wrap; wrapStep = 0; save(); render(); },
-    newproject: () => projectForm(), editmenu: () => menuEditor(), phoneunlink: () => phoneUnlink(), meetmin: () => { S.settings.meetMin = !S.settings.meetMin; save(); render(); }, editproject: () => projectForm(id), newhabit: () => habitForm(), edithabit: () => habitForm(id), habitstats: () => habitStats(id),
+    newproject: () => projectForm(null, b.dataset.area), editmenu: () => menuEditor(), phoneunlink: () => phoneUnlink(), meetopen: () => { S.settings.meetOpen = !S.settings.meetOpen; save(); render(); }, editproject: () => projectForm(id), newhabit: () => habitForm(), edithabit: () => habitForm(id), habitstats: () => habitStats(id),
     hday: () => { cycleHabit(S.habits.find(h => h.id === id), b.dataset.k); },
     habit: () => { const x = S.habits.find(h => h.id === id); if (x.log[td] === 1) delete x.log[td]; else { x.log[td] = 1; const tot = habitTotal(x); if (MILESTONES.includes(tot)) toast(`${x.emoji} ${tot} check-ins. Milestone!`); } save(); render(); },
     newdate: () => dateForm(), editdate: () => dateForm(id), dfilter: () => { dateFilter = b.dataset.f; render(); },

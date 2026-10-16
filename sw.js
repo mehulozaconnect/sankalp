@@ -1,5 +1,5 @@
 // Dayline service worker: offline app shell + notification buttons
-const CACHE = 'sankalp-v76';
+const CACHE = 'sankalp-v79';
 const ACTS = 'dayline-acts'; // taps on Done/Snooze waiting for the app (works even if the app was asleep or closed)
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
