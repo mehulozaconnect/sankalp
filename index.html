@@ -601,7 +601,6 @@ body.kb .tabbar,body.kb .fab{display:none!important}
 .tlh{position:relative;height:64px;border-top:1px solid var(--line);margin-left:54px}
 .tlh>span{position:absolute;left:-48px;top:-8px;font-size:11px;font-weight:700;color:var(--muted);width:42px;text-align:right}
 .tlh.over{background:color-mix(in srgb,var(--accent) 12%,transparent)}
-#tl .tlh{cursor:pointer}
 .tlghost{position:absolute;left:58px;right:14px;height:24px;border-radius:8px;border:1.5px dashed color-mix(in srgb,var(--accent) 60%,transparent);color:var(--accent-text,var(--accent));font-size:12px;font-weight:700;padding:3px 8px;pointer-events:none;background:color-mix(in srgb,var(--accent) 8%,transparent)}
 .tlghost[hidden]{display:none}
 .areab{display:flex;align-items:center;justify-content:space-between;width:calc(100% - 34px);background:none;border:0;cursor:pointer;font-family:var(--fd);font-size:20px;font-weight:700;text-align:left;color:inherit;padding:0}
@@ -645,9 +644,6 @@ textarea.inp.one{resize:none;overflow:hidden;white-space:nowrap;line-height:20px
 .keyb{min-width:110px;height:36px;padding:0 10px;border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:3px;border:1px solid var(--line)}
 .keyb.rec{border-color:var(--accent);color:var(--accent-text,var(--accent))}
 .keyb kbd,.hint kbd{font:inherit;font-size:12px;font-weight:700;background:var(--bg);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 6px}
-.tlb{position:absolute;left:58px;right:14px;border-radius:9px;padding:4px 8px;font-size:12px;font-weight:700;overflow:hidden;line-height:1.25;cursor:pointer;text-align:left;white-space:nowrap;text-overflow:ellipsis;font-family:inherit;border:0}
-.tlb small{display:inline;font-weight:600;opacity:.75;margin-left:6px}
-.tlb.tall{white-space:normal}.tlb.tall small{display:block;margin-left:0}
 .mt2 .tt[data-act]{cursor:pointer}.mt2 .tt[data-act]:hover{text-decoration:underline}
 .mtcard h2{font-size:20px;line-height:1.3;margin:6px 0 4px}
 .mtcard .when{font-size:14.5px;font-weight:600;color:var(--soft)}
@@ -659,9 +655,6 @@ textarea.inp.one{resize:none;overflow:hidden;white-space:nowrap;line-height:20px
 .mtcard .desc{white-space:pre-wrap;word-break:break-word;font-size:14px;color:var(--soft);max-height:220px;overflow:auto}
 .mtcard .ppl{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
 .mtcard .ppl span{background:var(--surface);border-radius:12px;padding:3px 10px;font-size:13px}
-.tlb.m{background:color-mix(in srgb,var(--meet) 22%,var(--bg));color:var(--ink);border-left:3px solid var(--meet)}
-.tlb.t{background:color-mix(in srgb,var(--accent) 22%,var(--bg));color:var(--ink);border-left:3px solid var(--accent)}
-.tlb.t.d{opacity:.5;text-decoration:line-through}
 .tlnow{position:absolute;left:54px;right:12px;height:2px;background:var(--danger);z-index:2}
 .tlnow::before{content:'';position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:4px;background:var(--danger)}
 .rnote{margin:6px 14px;padding:10px 12px;border-radius:12px;background:var(--card);font-size:12.5px;color:var(--soft);line-height:1.4;display:flex;gap:8px;align-items:center}
@@ -868,11 +861,8 @@ main.calw{max-width:800px}
 .ctx .cxe{width:17px;text-align:center}
 .ctx .cxsub{position:relative}.ctx .cxp{display:none;position:absolute;left:100%;top:-8px;width:210px;max-height:60vh;overflow-y:auto;background:var(--bg);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 36px var(--shadow);padding:6px}
 .ctx .cxp.left{left:auto;right:100%}.ctx .cxsub:hover .cxp,.ctx .cxsub:focus-within .cxp{display:block}
-.tlb.narrow{white-space:nowrap;font-size:11.5px;padding:4px 6px}.tlb.narrow small{display:block;margin-left:0;overflow:hidden;text-overflow:ellipsis}
 .nxb{display:inline-flex;align-items:center;gap:6px;font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0;text-align:left}
 .nxb .chev{display:inline-flex;transform:rotate(90deg);transition:transform .15s;opacity:.6}.nxb .chev svg{width:15px;height:15px}.nxb .chev.shut{transform:rotate(0deg)}
-.tlb.short{display:flex;align-items:center;white-space:nowrap;padding-top:0;padding-bottom:0}.tlb.short small{display:none}.tlb.short:not(.narrow) small{display:inline}
-.tlb .bt{min-width:0}.tlb.short .bt,.tlb.narrow .bt{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tlb.short small{flex:none}
 .ragenda{flex:1;overflow-y:auto;padding:4px 12px 40px}
 .rai{display:flex;align-items:flex-start;gap:8px;padding:7px 6px;border-radius:12px}
 .rai .rt{flex:none;width:62px;display:flex;flex-direction:column;font-size:12.5px;font-weight:700;color:var(--soft);padding-top:2px;line-height:1.25}.rai .rt small{font-size:11px;font-weight:600;color:var(--muted)}
@@ -884,13 +874,7 @@ main.calw{max-width:800px}
 .rai.live .rb{box-shadow:0 0 0 1.5px var(--meet)}.rai.live .rs{color:var(--meet)}
 .rai.past{opacity:.5}.rai .pill.meet{flex:none;height:28px;padding:0 12px;font-size:12.5px;align-self:center}
 .rai .rb:hover{filter:brightness(.97)}
-.ragap{width:100%;display:flex;align-items:center;gap:8px;margin:2px 0;padding:4px 6px 4px 76px;background:none;border:0;font:inherit;cursor:pointer;color:var(--muted);height:auto;border-top:0}
-.ragap span{font-size:11.5px;font-weight:700;padding:3px 10px;border:1.5px dashed var(--line);border-radius:999px}
-.ragap b{display:inline-flex;align-items:center;gap:3px;font-size:11.5px;color:var(--accent-text);opacity:0;transition:opacity .15s}.ragap b svg{width:12px;height:12px}
-.ragap:hover b,.ragap.over b{opacity:1}.ragap:hover span,.ragap.over span{border-color:var(--accent)}
-.ranow{display:flex;align-items:center;gap:8px;padding:2px 6px;color:var(--danger);font-size:11px;font-weight:800}.ranow::after{content:'';flex:1;height:2px;background:var(--danger);border-radius:2px}
 .rah{font-size:12px;font-weight:700;color:var(--muted);padding:12px 6px 4px}
-.raempty{padding:20px 6px;color:var(--muted);font-size:13px}
 #rail .rtasks{margin:0}
 .chip.nagt{cursor:pointer;border:1.5px dashed var(--line);background:none}.chip.nagt.on{border-style:solid;border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--bg))}
 .swrap{display:grid;grid-template-columns:230px minmax(0,1fr);gap:0;min-height:calc(100vh - 40px)}
@@ -972,6 +956,25 @@ main.setw{max-width:1040px}
 .achips{display:flex;flex-wrap:wrap;gap:8px}.achips button{height:34px;padding:0 14px;border-radius:17px;background:var(--surface);font-size:14px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:4px}
 .achips button.on{background:var(--ink);color:var(--bg)}.achips button.new{background:none;border:1.5px dashed var(--line);color:var(--muted)}.achips button svg{width:14px;height:14px}
 .ctx .cxb[disabled]{opacity:.35;pointer-events:none}
+#rail{min-height:0}
+.rany{padding:0 12px 6px;max-height:150px;overflow-y:auto;border-bottom:1px solid var(--line)}.rany .rah{padding:6px 6px 2px}
+.rtl{flex:1;min-height:0;overflow-y:auto;padding:6px 12px 24px}
+.rgrid{position:relative;margin-left:50px}
+.rhr{position:absolute;left:0;right:0;border-top:1px solid var(--line);pointer-events:none}.rhr span{position:absolute;left:-50px;top:-8px;width:42px;text-align:right;font-size:10.5px;font-weight:700;color:var(--muted)}
+#rail .rsl{position:absolute;left:0;right:0;margin:0;border:0;border-radius:8px;background:none;display:flex;align-items:center;padding:0 8px;cursor:pointer;z-index:1}
+#rail .rsl.wk{background:color-mix(in srgb,var(--ink) 2.5%,transparent);border-radius:0}
+#rail .rsl span{display:none;align-items:center;gap:4px;font-size:11.5px;font-weight:700;color:var(--accent-text)}#rail .rsl span svg{width:12px;height:12px}
+#rail .rsl:hover,#rail .rsl.over{background:color-mix(in srgb,var(--accent) 12%,transparent);border-radius:8px}#rail .rsl:hover span,#rail .rsl.over span{display:flex}
+.rev{position:absolute;z-index:2;border-radius:8px;overflow:hidden;display:flex;align-items:flex-start;gap:4px;background:color-mix(in srgb,var(--meet) 16%,var(--bg));border-left:3px solid var(--meet)}
+.rev.t{background:color-mix(in srgb,var(--accent) 14%,var(--bg));border-left-color:var(--accent)}
+.rev>button{flex:1;min-width:0;height:100%;text-align:left;padding:3px 7px;display:flex;flex-direction:column;color:var(--ink)}
+.rev b{font-size:12.5px;font-weight:700;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}.rev small{font-size:11px;font-weight:600;color:var(--soft);white-space:nowrap}
+.rev.short.narrow small{display:none}.rev.narrow>button{padding-left:5px;padding-right:4px}
+.rev.short>button{flex-direction:row;align-items:center;gap:6px;padding-top:0;padding-bottom:0}.rev.short b{flex:1;min-width:0}
+.rev .pdot{display:inline-block;width:8px;height:8px;border-radius:50%;border:2px solid var(--muted);margin-right:5px;vertical-align:0}.rev .pdot.p1{border-color:#E5484D}.rev .pdot.p2{border-color:#E8930C}.rev .pdot.p3{border-color:#2F7BEA}
+.rev.past{opacity:.5}.rev.live{box-shadow:0 0 0 1.5px var(--meet)}.rev .rj{flex:none;margin:4px 4px 0 0;font-size:11px;font-weight:800;color:#fff;background:var(--meet);border-radius:999px;padding:3px 9px;text-decoration:none}
+.rev>button:hover{background:color-mix(in srgb,var(--ink) 4%,transparent)}
+.rnow{position:absolute;left:-6px;right:0;height:2px;background:var(--danger);z-index:3;pointer-events:none}.rnow i{position:absolute;left:0;top:-4px;width:10px;height:10px;border-radius:5px;background:var(--danger)}
 .wempty{padding:16px 4px;color:var(--muted);font-size:14px;line-height:1.45}
 .wnote-v{background:var(--surface);border-radius:14px;padding:12px 14px;font-size:14.5px;line-height:1.45;margin-bottom:6px}
 .wbars{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;height:120px;margin:6px 0 4px}.wbars div{display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;gap:4px}.wbars i{display:block;background:#1F8A3B;border-radius:5px 5px 2px 2px}.wbars span{text-align:center;font-size:11px;color:var(--muted);font-weight:700}
@@ -1888,38 +1891,45 @@ function wcard(t) {
 /* ---------- right rail: day calendar with drag-to-schedule ---------- */
 let railDay = null;
 function railHasTask(k) { return S.tasks.some(t => !t.done && !t.someday && (t.date === k || (t.repeat && t.date !== k && occursOn(t, k)))); }
+let railScroll = { d: null, y: 0 };
 function renderRail() {
   const el = $('#rail'); if (!el || !matchMedia('(min-width:1280px)').matches) { if (el) el.innerHTML = ''; return; }
   const td = today(); railDay ||= td;
   const ws = weekStart(railDay); const wkD = Array.from({ length: 7 }, (_, i) => addDays(ws, i)); const wsD = pYmd(ws), weD = pYmd(wkD[6]);
   const wk = wkD.map((k, i) => { const d = pYmd(k); const mm = meetingsOn(k).length, tk = railHasTask(k); return `<button class="${k === td ? 'td' : ''}${k === railDay ? ' sel' : ''}${k < td ? ' past' : ''}" data-act="railday" data-d="${k}" aria-label="${DAYSL[d.getDay()]} ${d.getDate()} ${MONSL[d.getMonth()]}"><span>${'MTWTFSS'[i]}</span><b>${d.getDate()}</b><em>${mm ? '<i class="m"></i>' : ''}${tk ? '<i class="t"></i>' : ''}</em></button>`; }).join('');
   const wkLbl = wsD.getMonth() === weD.getMonth() ? `${MONSL[wsD.getMonth()]} ${wsD.getFullYear()}` : `${MONS[wsD.getMonth()]} – ${MONS[weD.getMonth()]} ${weD.getFullYear()}`;
-  const dd = pYmd(railDay); const ms = meetingsOn(railDay); const ts = S.tasks.filter(t => t.time && ((t.date === railDay && (!t.orig || t.done) && (!t.done || S.settings.showDone)) || (!t.done && t.repeat && t.date !== railDay && occursOn(t, railDay))));
+  const dd = pYmd(railDay); const ms = meetingsOn(railDay);
+  const ts = S.tasks.filter(t => t.time && ((t.date === railDay && (!t.orig || t.done) && (!t.done || S.settings.showDone)) || (!t.done && t.repeat && t.date !== railDay && occursOn(t, railDay))));
   const ut = S.tasks.filter(t => !t.time && !t.someday && ((t.date === railDay && (!t.done || S.settings.showDone)) || (!t.done && t.repeat && t.date !== railDay && occursOn(t, railDay)))).sort(sortTasks);
-  // A clean agenda: meetings and timed tasks in one list by time, with the free time between them
   const now = Date.now(), nowM = railDay === td ? minOf(now) : -1; const [w0, w1] = workWin();
-  const its = [...ms.map(x => { const s = minOf(x.s); return { s, e: Math.max(minOf(x.e) || 1440, s + 5), m: x }; }), ...ts.map(t => { const s = hm2m(t.time); return { s, e: s + (+t.duration || 0), t }; })].sort((a, b) => a.s - b.s || b.e - a.e);
-  const gap = (a, b) => { const len = b - a; if (len < 30) return ''; return `<button type="button" class="ragap tlh" data-hr="${Math.floor(a / 60)}" data-m="${a}" title="Add a task at ${fmtTime(pad(Math.floor(a / 60)) + ':' + pad(a % 60))}"><span>${fmtMins(len)} free</span><b>${I.plus}Add</b></button>`; };
-  let ag = '', prev = railDay === td ? Math.max(w0, Math.ceil(nowM / 15) * 15) : w0, nowDone = nowM < 0 || nowM > w1;
-  its.forEach(it => {
-    if (it.s > prev && (railDay !== td || it.s > nowM)) ag += gap(prev, it.s);
-    if (!nowDone && it.s >= nowM) { ag += `<div class="ranow"><span>Now</span></div>`; nowDone = true; }
-    const dur = it.e - it.s, tmL = fmtTime(pad(Math.floor(it.s / 60)) + ':' + pad(it.s % 60)).replace(' ', ' ');
-    if (it.m) { const x = it.m, live = x.s <= now && x.e > now, past = x.e <= now;
-      ag += `<div class="rai m${past ? ' past' : ''}${live ? ' live' : ''}"><span class="rt">${tmL}${dur ? `<small>${fmtMins(dur)}</small>` : ''}</span><button type="button" class="rb" data-act="meet" data-id="${esc(x.id)}" title="${esc(x.t)}"><span class="rn">${esc(x.t)}</span>${live ? '<span class="rs">Happening now</span>' : ''}</button>${x.join && !past ? `<a class="pill meet" href="${esc(x.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>`; }
-    else { const t = it.t;
-      ag += `<div class="rai t${t.done ? ' past' : ''}"><span class="rt">${tmL}${dur ? `<small>${fmtMins(dur)}</small>` : ''}</span><button type="button" class="rb" data-act="open" data-id="${t.id}" draggable="true" data-tid="${t.id}" title="${esc(t.title)}"><span class="rn"><span class="pdot p${t.priority}"></span>${esc(t.title)}</span>${t.repeat ? `<span class="rs">${esc(repeatLabel(t.repeat))}</span>` : ''}</button></div>`; }
-    prev = Math.max(prev, it.e);
-  });
-  if (!nowDone) ag += `<div class="ranow"><span>Now</span></div>`;
-  if (prev < w1) ag += gap(prev, w1);
-  if (!ag) ag = `<div class="raempty">Nothing booked.</div>`;
   const busy = ms.reduce((a, x) => a + (x.e - x.s) / 6e4, 0) + ts.reduce((a, t) => a + (+t.duration || 0), 0); const free = Math.max(0, (w1 - w0) - busy);
+  // Hourly timeline: every half hour is a slot you can click (or drop a task on); meetings and timed tasks sit on top, side by side when they overlap
+  const H = 48, px = m => m / 60 * H;
+  const its = [...ms.map(x => { const s = minOf(x.s); return { s, e: Math.min(1440, Math.max(minOf(x.e) || 1440, s + 15)), m: x }; }), ...ts.map(t => { const s = hm2m(t.time); return { s, e: Math.min(1440, s + Math.max(15, +t.duration || 30)), t }; })].sort((a, b) => a.s - b.s || b.e - a.e);
+  let cl = [], clEnd = -1; const flush = () => { const lanes = []; cl.forEach(it => { let i = lanes.findIndex(e => e <= it.s); if (i < 0) { i = lanes.length; lanes.push(0); } lanes[i] = it.e; it.lane = i; }); cl.forEach(it => it.n = lanes.length); cl = []; };
+  its.forEach(it => { if (it.s >= clEnd) { flush(); clEnd = it.e; } else clEnd = Math.max(clEnd, it.e); cl.push(it); }); flush();
+  let g = '';
+  for (let h = 0; h < 24; h++) g += `<div class="rhr" style="top:${px(h * 60)}px"><span>${h ? hrLabel(h).replace(' ', ' ') : ''}</span></div>`;
+  for (let m = 0; m < 1440; m += 30) g += `<button type="button" class="rsl tlh${m >= w0 && m < w1 ? ' wk' : ''}" data-hr="${Math.floor(m / 60)}" data-m="${m}" style="top:${px(m)}px;height:${px(30)}px" aria-label="Add a task at ${fmtTime(pad(Math.floor(m / 60)) + ':' + pad(m % 60))}"><span>${I.plus}${fmtTime(pad(Math.floor(m / 60)) + ':' + pad(m % 60))}</span></button>`;
+  its.forEach(it => {
+    const h = Math.max(px(it.e - it.s), 20), st = `top:${px(it.s) + 1}px;height:${h - 2}px;left:calc(${it.lane / it.n * 100}% + 2px);width:calc(${100 / it.n}% - 4px)`;
+    const tm = fmtTime(pad(Math.floor(it.s / 60)) + ':' + pad(it.s % 60)); const short = (h < 34 ? ' short' : '') + (it.n > 1 ? ' narrow' : '');
+    if (it.m) { const x = it.m, live = x.s <= now && x.e > now, past = x.e <= now;
+      g += `<div class="rev m${past ? ' past' : ''}${live ? ' live' : ''}${short}" style="${st}"><button type="button" data-act="meet" data-id="${esc(x.id)}" title="${esc(x.t)}, ${tm}"><b>${esc(x.t)}</b><small>${tm}</small></button>${x.join && !past && h >= 34 && it.n < 3 ? `<a class="rj" href="${esc(x.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div>`; }
+    else { const t = it.t;
+      g += `<div class="rev t${t.done ? ' past' : ''}${short}" style="${st}"><button type="button" data-act="open" data-id="${t.id}" draggable="true" data-tid="${t.id}" title="${esc(t.title)}, ${tm}"><b><i class="pdot p${t.priority}"></i>${esc(t.title)}</b><small>${tm}${t.duration ? ' · ' + fmtMins(t.duration) : ''}</small></button></div>`; }
+  });
+  if (nowM >= 0) g += `<div class="rnow" style="top:${px(nowM)}px"><i></i></div>`;
+  const keep = railScroll.d === railDay ? railScroll.y : null;
   el.innerHTML = `<div class="rhead"><b>${wkLbl}</b><div>${railDay !== td ? `<button class="pill ghost rtoday" data-act="railday" data-d="${td}">Today</button>` : ''}<button class="iconbtn" data-act="railwk" data-dir="-1" aria-label="Previous week">${I.back}</button><button class="iconbtn" data-act="railwk" data-dir="1" aria-label="Next week">${I.next}</button></div></div><div class="rweek">${wk}</div>
   <div class="rday"><b>${railDay === td ? 'Today' : DAYSL[dd.getDay()]}, ${dd.getDate()} ${MONS[dd.getMonth()]}</b><span>${[ms.length ? plural(ms.length, 'meeting') : '', ts.length + ut.length ? plural(ts.length + ut.length, 'task') : ''].filter(Boolean).join(' · ') || 'Free'}</span></div>
   ${ms.length || ts.length ? `<div class="rsum"><span><b>${fmtMins(busy) || '0m'}</b> busy</span><span><b>${fmtMins(free) || '0m'}</b> free in work hours</span></div>` : ''}
-  <div class="ragenda" id="ragenda">${ag}${ut.length ? `<div class="rah">Anytime</div><div class="rtasks">${ut.map(t => `<button class="rtk${t.done ? ' d' : ''}" data-act="open" data-id="${t.id}" draggable="true" data-tid="${t.id}"><span class="pdot p${t.priority}"></span><span class="tt">${esc(t.title)}</span>${t.repeat ? `<span class="rr">${I.repeat}</span>` : ''}</button>`).join('')}</div>` : ''}</div>${S.settings.gOn || S.pcal ? '' : `<a class="rconn" href="#settings/gcal">${I.gcal}Show my meetings here</a>`}`;
+  ${ut.length ? `<div class="rany"><div class="rah">Anytime</div><div class="rtasks">${ut.map(t => `<button class="rtk${t.done ? ' d' : ''}" data-act="open" data-id="${t.id}" draggable="true" data-tid="${t.id}" title="Drag onto the timeline to give it a time"><span class="pdot p${t.priority}"></span><span class="tt">${esc(t.title)}</span>${t.repeat ? `<span class="rr">${I.repeat}</span>` : ''}</button>`).join('')}</div></div>` : ''}
+  <div class="ragenda rtl" id="ragenda"><div class="rgrid" style="height:${px(1440)}px">${g}</div></div>${S.settings.gOn || S.pcal ? '' : `<a class="rconn" href="#settings/gcal">${I.gcal}Show my meetings here</a>`}`;
+  const sc = $('#ragenda'); sc.scrollTop = keep != null ? keep : Math.max(0, px((nowM >= 0 ? nowM : w0) - 60)); railScroll = { d: railDay, y: sc.scrollTop };
+  sc.onscroll = () => { railScroll.y = sc.scrollTop; };
 }
+document.addEventListener('click', e => { const g = e.target.closest?.('#rail .rsl'); if (!g) return; const m = +g.dataset.m; quickAdd({ date: railDay || today(), time: pad(Math.floor(m / 60)) + ':' + pad(m % 60) }); });
 /* Meeting details, like Teams or Google Calendar */
 function meetSheet(id) {
   const m = S.meetLog[id]; if (!m) return;
@@ -1940,11 +1950,7 @@ function meetSheet(id) {
   const cp = $('#mtCopy'); if (cp) cp.onclick = () => { navigator.clipboard?.writeText(m.join).then(() => toast('Link copied')).catch(() => { }); };
   $('#mtPrep').onclick = () => { closeSheet(true); const d = new Date(m.s - 30 * 6e4); setTimeout(() => quickAdd({ prefill: 'Prep: ' + m.t.slice(0, 120), date: ymd(d), time: pad(d.getHours()) + ':' + pad(d.getMinutes()) }), 220); };
 }
-document.addEventListener('click', e => { const g = e.target.closest?.('.ragap'); if (!g) return; const m = +g.dataset.m; quickAdd({ date: railDay || today(), time: pad(Math.floor(m / 60)) + ':' + pad(m % 60) }); });
 // click an empty slot on the day timeline to add a task at that time
-function tlSlot(e) { const inner = $('#tl > div'); if (!inner) return null; const y = e.clientY - inner.getBoundingClientRect().top - 8; const m = 7 * 60 + Math.floor(y / 32) * 30; return m < 7 * 60 || m >= 23 * 60 ? null : m; }
-document.addEventListener('click', e => { const h = e.target.closest?.('#tl .tlh'); if (!h || e.target.closest('.tlb')) return; const m = tlSlot(e); if (m == null) return; quickAdd({ date: railDay || today(), time: pad(Math.floor(m / 60)) + ':' + pad(m % 60) }); });
-document.addEventListener('mousemove', e => { const tl = e.target.closest?.('#tl'); const g = $('#tlGhost'); if (!tl || e.target.closest('.tlb')) { if (g) g.hidden = true; return; } const m = tlSlot(e); const inner = $('#tl > div'); if (m == null || !inner) { if (g) g.hidden = true; return; } let gh = g; if (!gh) { inner.insertAdjacentHTML('beforeend', '<div id="tlGhost" class="tlghost"></div>'); gh = $('#tlGhost'); } gh.hidden = false; gh.style.top = (8 + (m - 7 * 60) / 60 * 64) + 'px'; gh.textContent = '+ Add task at ' + fmtTime(pad(Math.floor(m / 60)) + ':' + pad(m % 60)); });
 // drag and drop (desktop)
 let dragId = null;
 document.addEventListener('dragstart', e => { const el = e.target.closest?.('[draggable=true]'); if (!el) return; dragId = el.dataset.id || el.dataset.tid; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', dragId); } catch (x) { } });
@@ -2864,7 +2870,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '4.9.3';
+const APPV = '4.9.4';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
