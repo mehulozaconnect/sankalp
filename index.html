@@ -2777,7 +2777,6 @@ function settingsAll(arg) {
   const st = S.settings; const perm = ('Notification' in window) ? Notification.permission : 'unsupported';
   let h = topbar('', 'Settings') + `<div class="pad"><h1 class="title">Settings</h1></div>`;
   h += `<div class="sechead" id="phone"><h2 class="sec">This ${isWide() ? 'computer' : 'phone'}</h2></div><div class="setsec">
-  <div class="setrow"><span class="l"><b>Reminders</b><span>${perm === 'granted' ? 'On. Tap Test to see one.' : perm === 'denied' ? 'Blocked. Tap the icon left of the address bar, Permissions, Notifications, Allow. Installed app: long-press its icon, App info, Notifications.' : perm === 'unsupported' ? 'This browser cannot show reminders. Open Dayline in Chrome.' : 'Off. Turn on to get task alerts.'}</span></span>${perm === 'granted' ? `<button class="pill ghost" data-act="testnotif">Test</button>` : perm === 'default' ? `<button class="pill acc" data-act="asknotif">Turn on</button>` : ''}</div>
   <div class="setrow"><span class="l"><b>Installed as an app</b><span>${standalone() ? 'Yes' : 'Not yet. Installing gives full screen and steadier reminders.'}</span></span>${standalone() ? '' : `<button class="pill ghost" data-act="install">Install</button>`}</div>
   <div class="setrow"><span class="l"><b>Fingerprint lock</b><span>${lockId() ? 'On. Asked when you open Dayline or come back after a minute.' : 'Ask for your fingerprint or screen lock to open Dayline.'}</span></span><button class="switch${lockId() ? ' on' : ''}" data-act="lockon" role="switch" aria-checked="${!!lockId()}" aria-label="Fingerprint lock"></button></div></div>`;
   if (!isWide() || Object.keys(S.phone || {}).length) h += `<div class="sechead" id="phoneapp"><h2 class="sec">Android app: screen time, calls, alarms</h2></div><div class="setsec">${phonePanel()}</div>`;
@@ -2795,6 +2794,7 @@ function settingsAll(arg) {
   <div class="setrow"><span class="l"><b>Swipe right →</b></span><select class="inp" data-set="swR" style="width:auto;min-width:170px">${SWIPE_ACTS.map(([k, l]) => `<option value="${k}"${(st.swR || 'done') === k ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
   <div class="setrow"><span class="l"><b>← Swipe left</b></span><select class="inp" data-set="swL" style="width:auto;min-width:170px">${SWIPE_ACTS.map(([k, l]) => `<option value="${k}"${(st.swL || 'move') === k ? ' selected' : ''}>${l}</option>`).join('')}</select></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Today and reminders</h2></div><div class="setsec">
+  <div class="setrow"><span class="l"><b>Reminders on this ${isWide() ? 'computer' : 'phone'}</b><span>${perm === 'granted' ? 'On. Tap Test to see one.' : perm === 'denied' ? 'Blocked. Tap the icon left of the address bar, Permissions, Notifications, Allow. Installed app: long-press its icon, App info, Notifications.' : perm === 'unsupported' ? 'This browser cannot show reminders. Open Dayline in Chrome.' : 'Off. Turn on to get task alerts.'}</span></span>${perm === 'granted' ? `<button class="pill ghost" data-act="testnotif">Test</button>` : perm === 'default' ? `<button class="pill acc" data-act="asknotif">Turn on</button>` : ''}</div>
   <div class="setrow"><span class="l"><b>Morning plan</b><span>Summary of the day and a nudge to set your objective</span></span><input class="inp" type="time" data-set="morning" value="${st.morning}" style="width:130px"></div>
   <div class="setrow"><span class="l"><b>Evening wrap-up</b><span>What got done, move the rest, set tomorrow's focus</span></span><input class="inp" type="time" data-set="shutdown" value="${st.shutdown}" style="width:130px"></div>
   <div class="setrow"><span class="l"><b>Focus shield</b><span>While a focus session runs, only P1 reminders come through</span></span><button class="switch${st.shield ? ' on' : ''}" data-act="sw" data-k="shield" role="switch" aria-checked="${st.shield}" aria-label="Focus shield"></button></div>
@@ -2816,7 +2816,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '4.8';
+const APPV = '4.8.3';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4033,21 +4033,29 @@ let swReg = null;
 if ('serviceWorker' in navigator && location.protocol !== 'file:') { navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(r => { swReg = r; r.update().catch(() => { }); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') r.update().catch(() => { }); }); }).catch(() => { });
   /* A new version was installed: switch to it when you're not in the middle of typing */
   let swHad = !!navigator.serviceWorker.controller, swReload = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!swHad) { swHad = true; return; } if (swReload || window.QM) return; const go = () => { if (swReload) return; if ($('#sheet').classList.contains('on') || $('#page').classList.contains('on') || /INPUT|TEXTAREA/.test(document.activeElement?.tagName || '') || document.activeElement?.isContentEditable) { setTimeout(go, 4000); return; } swReload = true; saveLocal(); location.reload(); }; go(); }); navigator.serviceWorker.addEventListener('message', e => handleAction(e.data)); }
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!swHad) { swHad = true; return; } if (swReload || window.QM) return; const go = () => { if (swReload) return; if ($('#sheet').classList.contains('on') || $('#page').classList.contains('on') || /INPUT|TEXTAREA/.test(document.activeElement?.tagName || '') || document.activeElement?.isContentEditable) { setTimeout(go, 4000); return; } swReload = true; saveLocal(); location.reload(); }; go(); }); navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'drain') drainActs(); else handleAction(e.data); }); }
+let draining = false;
+async function drainActs() {
+  if (draining || !('caches' in window)) return; draining = true;
+  try { const c = await caches.open('dayline-acts'); const ks = await c.keys(); ks.sort((a, b) => a.url < b.url ? -1 : 1);
+    for (const k of ks) { let d = null; try { d = await (await c.match(k)).json(); } catch (e) { } await c.delete(k); if (d) handleAction({ ...d, sub: d.sub || undefined }); } } catch (e) { }
+  draining = false;
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') drainActs(); });
 function handleAction(d) {
   if (!d || !d.type) return; const t = getTask(d.id);
   if (t) { t.seenAt = Date.now(); save(); closeNotifs(t); } if (d.type === 'seen') return;
   const c = t && d.sub ? t.subs.find(x => x.id === d.sub) : null;
   if (c) {
     if (d.type === 'done') { c.d = true; c.nagAt = 0; c.snoozeUntil = 0; save(); render(); if (pageId === t.id) renderPage(); toast('Subtask done'); }
-    if (d.type === 'snooze') { c.nagAt = 0; c.snoozeUntil = Date.now() + 10 * 6e4; save(); toast('Snoozed for 10 minutes'); }
+    if (d.type === 'snooze') { const mn = +d.mins || 10; c.nagAt = 0; c.snoozeUntil = (d.at || Date.now()) + mn * 6e4; save(); render(); toast(`Snoozed for ${mn} minutes`); }
     if (d.type === 'open') taskSheet(t.id);
     if (d.type === 'resched') { taskSheet(t.id); toast('Tap the subtask to change its time'); }
     if (d.type === 'later') laterSheet(t, c);
     return;
   }
   if (d.type === 'done' && t && !t.done) toggleDone(d.id);
-  if (d.type === 'snooze' && t) { t.nagAt = 0; t.snoozeUntil = Date.now() + 10 * 6e4; save(); toast('Snoozed for 10 minutes'); }
+  if (d.type === 'snooze' && t) { const mn = +d.mins || 10; t.nagAt = 0; t.snoozeUntil = (d.at || Date.now()) + mn * 6e4; save(); render(); toast(`Snoozed for ${mn} minutes`); }
   if (d.type === 'open' && t) taskSheet(d.id);
   if (d.type === 'resched' && t) { t.nagAt = 0; save(); pickWhen(t); }
   if (d.type === 'later' && t) laterSheet(t);
@@ -4085,7 +4093,7 @@ async function notify(title, body, tag, data = {}, actions, once) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   if (tag !== 'test' && !(await claimFire(once || (tag + '|' + title + '|' + Math.floor(Date.now() / 18e4))))) return;
   const opts = { body, tag, data, icon: 'icon-192.png', badge: 'icon-192.png', renotify: true };
-  if (actions) { const mx = Notification.maxActions || 2; opts.actions = mx >= 3 ? [{ action: 'done', title: 'Done' }, { action: 'snooze', title: 'Snooze 10 min' }, { action: 'later', title: 'Snooze or reschedule' }] : [{ action: 'done', title: 'Done' }, { action: 'later', title: 'Snooze or reschedule' }]; opts.requireInteraction = true; opts.vibrate = [200, 100, 200]; }
+  if (actions) { const mx = Notification.maxActions || 2; opts.actions = mx >= 3 ? [{ action: 'done', title: 'Done' }, { action: 'snooze', title: 'Snooze 10 min' }, { action: 'later', title: 'Snooze…' }] : [{ action: 'done', title: 'Done' }, { action: 'later', title: 'Snooze…' }]; opts.vibrate = [200, 100, 200]; }
   try { const reg = swReg || await navigator.serviceWorker?.getRegistration(); if (reg) { await reg.showNotification(title, opts); return; } } catch (e) { }
   try { new Notification(title, { body, tag }); } catch (e) { }
 }
@@ -4176,6 +4184,7 @@ setInterval(() => { if (document.visibilityState !== 'visible' || $('#sheet').cl
 
 /* ================= start ================= */
 applyTheme();
+setTimeout(drainActs, 400);
 (function handleUrl() {
   const q = new URLSearchParams(location.search);
   const sub = q.get('sub') || undefined;

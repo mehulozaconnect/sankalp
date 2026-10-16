@@ -1,5 +1,6 @@
 // Dayline service worker: offline app shell + notification buttons
-const CACHE = 'sankalp-v71';
+const CACHE = 'sankalp-v74';
+const ACTS = 'dayline-acts'; // taps on Done/Snooze waiting for the app (works even if the app was asleep or closed)
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -8,7 +9,7 @@ self.addEventListener('install', e => {
 
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE && k !== ACTS).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -43,10 +44,22 @@ self.addEventListener('notificationclick', e => {
   const n = e.notification;
   const data = n.data || {};
   n.close();
-  const type = e.action === 'done' ? 'done' : e.action === 'snooze' ? 'snooze' : e.action === 'resched' ? 'resched' : e.action === 'later' ? 'later' : 'open';
+  const sm = /^s(\d+)$/.exec(e.action || ''); // "10 min" / "30 min" buttons on the second card
+  const type = e.action === 'done' ? 'done' : (e.action === 'snooze' || sm) ? 'snooze' : e.action === 'resched' ? 'resched' : e.action === 'later' ? 'pick' : data.step === 'pick' ? 'later' : 'open';
   e.waitUntil((async () => {
+    if (type === 'pick') {
+      // Snooze… tapped (on the phone or the watch): swap the card for one with the times, so it works without opening the app
+      await self.registration.showNotification(n.title.replace(/^Snooze: /, '').replace(/^/, 'Snooze: '), { body: 'For how long? Tap the card for other times.', tag: n.tag, data: { ...data, step: 'pick' }, icon: 'icon-192.png', badge: 'icon-192.png', renotify: true, vibrate: [80], actions: [{ action: 's10', title: '10 min' }, { action: 's30', title: '30 min' }] });
+      return;
+    }
     if (type === 'open' && data.url) { await self.clients.openWindow(data.url); return; }
     const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    if ((type === 'done' || type === 'snooze') && data.id) {
+      // Save the tap first, so it is never lost (watch taps arrive while the app is asleep). The app applies it as soon as it runs.
+      const c = await caches.open(ACTS); await c.put(new Request('./__act/' + Date.now() + '-' + Math.random().toString(36).slice(2)), new Response(JSON.stringify({ type, id: data.id, sub: data.sub || null, mins: sm ? +sm[1] : (type === 'snooze' ? 10 : 0), at: Date.now() })));
+      all.forEach(w => w.postMessage({ type: 'drain' }));
+      return;
+    }
     if (all.length) {
       const c = all[0];
       c.postMessage({ type, id: data.id, sub: data.sub });
