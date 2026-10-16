@@ -908,6 +908,24 @@ main.calw{max-width:800px}
 .raempty{padding:20px 6px;color:var(--muted);font-size:13px}
 #rail .rtasks{margin:0}
 .chip.nagt{cursor:pointer;border:1.5px dashed var(--line);background:none}.chip.nagt.on{border-style:solid;border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--bg))}
+.swrap{display:grid;grid-template-columns:230px minmax(0,1fr);gap:0;min-height:calc(100vh - 40px)}
+main.setw{max-width:1040px}
+.snav{position:sticky;top:0;align-self:start;padding:6px 10px 30px 14px;border-right:1px solid var(--line);min-height:calc(100vh - 40px);display:flex;flex-direction:column;gap:2px}
+.snav h1{font-family:var(--fd);font-size:22px;margin:4px 8px 14px}
+.snav a{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px;text-decoration:none;color:var(--soft);font-weight:600;font-size:14.5px}
+.snav a svg{width:19px;height:19px;flex:none;color:var(--muted)}
+.snav a:hover{background:var(--surface)}.snav a.on{background:var(--surface);color:var(--ink)}.snav a.on svg{color:var(--accent-text,var(--accent))}
+.sver{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);padding:18px 10px 0;margin-top:auto}.sver.m{padding:24px 24px 0;margin:0}
+.spane{min-width:0;padding:0 8px 60px}.stitle{font-family:var(--fd);font-size:26px;margin:10px 16px 6px}
+.acard{display:flex;align-items:center;gap:16px;margin:10px 16px 6px;padding:18px;border-radius:18px;background:var(--surface)}
+.aav{width:64px;height:64px;border-radius:32px;object-fit:cover;flex:none}.aav.ini{display:flex;align-items:center;justify-content:center;background:var(--accent);color:var(--on-accent,#fff);font-family:var(--fd);font-weight:800;font-size:22px}
+.ainf{display:flex;flex-direction:column;gap:2px;min-width:0}.ainf b{font-family:var(--fd);font-size:20px;font-weight:800}.ainf span{font-size:13.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ainf em{font-style:normal;font-size:12px;font-weight:700;color:var(--muted);margin-top:4px}.ainf em.ok{color:#1F8A3B}.ainf em.ok::before{content:'● '}
+.acardl{display:flex;align-items:center;text-decoration:none;color:inherit;margin:0 16px 0 0}.acardl .acard{flex:1}.acardl>svg{width:18px;height:18px;color:var(--muted)}
+.slist{display:flex;flex-direction:column;margin:12px 16px 0;border-radius:18px;background:var(--surface);overflow:hidden}
+.slist a{display:flex;align-items:center;gap:14px;padding:13px 16px;text-decoration:none;color:var(--ink)}.slist a+a{border-top:1px solid var(--line)}
+.slist a>svg:first-child{width:21px;height:21px;color:var(--accent-text,var(--accent));flex:none}.slist a>svg:last-child{width:16px;height:16px;color:var(--muted);flex:none}
+.slist .sl{flex:1;min-width:0;display:flex;flex-direction:column}.slist .sl b{font-size:15.5px;font-weight:700}.slist .sl small{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
@@ -2634,7 +2652,7 @@ function coachPanel() {
 }
 
 /* ---------- settings ---------- */
-function vSettings(arg) {
+function settingsAll(arg) {
   const st = S.settings; const perm = ('Notification' in window) ? Notification.permission : 'unsupported';
   let h = topbar('', 'Settings') + `<div class="pad"><h1 class="title">Settings</h1></div>`;
   h += `<div class="sechead" id="phone"><h2 class="sec">This ${isWide() ? 'computer' : 'phone'}</h2></div><div class="setsec">
@@ -2673,10 +2691,47 @@ function vSettings(arg) {
   h += `<div class="sechead"><h2 class="sec">Templates</h2></div><div class="setsec"><div class="setrow"><span class="l"><b>${plural(S.templates.length, 'template')}</b><span>Lead, demo prep, proposal and your own</span></span><a class="pill ghost" href="#templates">Manage</a></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Projects</h2><button class="pill ghost" data-act="newproject">New project</button></div><div class="setsec">${S.projects.map(p => `<div class="setrow"><span class="l"><b>${p.emoji ? p.emoji + ' ' : `<i class="dot" style="background:${p.color};margin-right:8px"></i>`}${esc(p.name)}</b><span>${esc(p.area)}</span></span><button class="pill ghost" data-act="editproject" data-id="${p.id}">Edit</button></div>`).join('')}</div>`;
   h += `<div class="sechead"><h2 class="sec">Focus timer</h2></div><div class="setsec"><div class="grid2"><div class="field" style="margin:0"><label>Focus minutes</label><input class="inp" type="number" min="5" max="120" data-set="pomo" value="${st.pomo}"></div><div class="field" style="margin:0"><label>Break minutes</label><input class="inp" type="number" min="1" max="60" data-set="brk" value="${st.brk}"></div></div></div>`;
-  h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>
-  <div class="setsec muted" style="font-size:12.5px;padding-top:20px;display:flex;align-items:center;gap:8px">${LOGO(20)} Dayline 4.4.3</div>`;
-  if (arg) setTimeout(() => $('#' + arg)?.scrollIntoView(), 80);
+  h += `<div class="sechead"><h2 class="sec">Your data</h2></div><div class="setsec"><p class="sub" style="line-height:1.5;margin:0 0 10px">Saved on this device${fbUser ? ' and synced to your Google account' : ''}. Download a backup now and then and keep it in Google Drive.</p><div class="btnrow" style="margin-top:0"><button class="btn" data-act="export">Download backup</button><button class="btn sec" data-act="restore">Restore backup</button><button class="btn danger" data-act="reset">Erase all</button></div></div>`;
   return h;
+}
+/* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
+const APPV = '4.6';
+const SET_CATS = [
+  ['account', 'Account', 'user', 'Sync, backup and your data'],
+  ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
+  ['calendar', 'Calendar & meetings', 'cal', 'Google, Outlook and phone calendars'],
+  ['tasks', 'Tasks & lists', 'done', 'Projects, templates, swipes, focus'],
+  ['look', 'Appearance', 'palette', 'Theme, dark mode, logo, font'],
+  ['ai', 'AI & coach', 'spark', 'Coach nudges and AI review'],
+  ['keys', 'Shortcuts', 'kbd', 'Keyboard shortcuts on the laptop'],
+  ['import', 'Import', 'upload', 'Bring tasks from other apps'],
+  ['phone', 'Phone app', 'phone', 'Android companion app'],
+  ['about', 'This device & about', 'info', 'Install, app lock, version']
+];
+function setCatOf(title) {
+  if (/^This (computer|phone)/.test(title)) return 'about'; if (/^Android/.test(title)) return 'phone'; if (/^Keyboard/.test(title)) return 'keys';
+  if (/^Coach|^AI/.test(title)) return 'ai'; if (/^Calendar|^Meetings/.test(title)) return 'calendar'; if (/^Look/.test(title)) return 'look';
+  if (/^Today and reminders|^Notif/.test(title)) return 'notif'; if (/^Swipe|^Projects|^Templates|^Focus/.test(title)) return 'tasks';
+  if (/^Sync|^Your data/.test(title)) return 'account'; if (/^Bring/.test(title)) return 'import'; return 'about';
+}
+function setIcon(k) { return ({ user: sv('<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>', 2), palette: sv('<path d="M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.4A4.6 4.6 0 0 0 22 9.8C22 6 17.5 3 12 3z"/><circle cx="7.5" cy="11" r="1.2"/><circle cx="10.5" cy="7" r="1.2"/><circle cx="15.5" cy="7.5" r="1.2"/>', 2), spark: sv('<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/>', 1.8), kbd: sv('<rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>', 2), phone: sv('<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>', 2), info: sv('<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>', 2) })[k] || I[k] || I.gear; }
+function setAccountCard() {
+  const u = fbUser; const name = u ? (u.displayName || (u.email || '').split('@')[0]) : 'Not signed in'; const ini = (name || '?').trim().split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase();
+  return `<div class="acard">${u && u.photoURL ? `<img class="aav" src="${esc(u.photoURL)}" alt="" referrerpolicy="no-referrer">` : `<span class="aav ini">${esc(ini)}</span>`}<div class="ainf"><b>${esc(name)}</b><span>${u ? esc(u.email || '') : 'Sign in to sync your phone and laptop'}</span><em class="${u && syncState === 'on' ? 'ok' : ''}">${u ? (syncState === 'on' ? 'Synced' : 'Connecting…') : 'Sync off'}</em></div></div>`;
+}
+function vSettings(arg) {
+  const all = settingsAll(arg); const parts = all.split('<div class="sechead"'); const chunks = {};
+  parts.slice(1).forEach(c => { const html = '<div class="sechead"' + c; const t = (html.match(/<h2 class="sec">([^<]*)/) || [])[1] || ''; const k = setCatOf(t); (chunks[k] ||= []).push(html); });
+  const cats = SET_CATS.filter(([k]) => chunks[k] || k === 'account');
+  let cur = arg && cats.some(([k]) => k === arg) ? arg : null; let jump = null;
+  if (arg && !cur) { const k = Object.keys(chunks).find(k => chunks[k].some(c => c.includes(`id="${arg}"`))); if (k) { cur = k; jump = arg; } }
+  const wide = isWide(); if (wide && !cur) cur = 'account';
+  const pane = k => { const c = SET_CATS.find(x => x[0] === k); return `<div class="spane">${wide ? `<h1 class="stitle">${esc(c[1])}</h1>` : ''}${k === 'account' ? setAccountCard() : ''}${(chunks[k] || []).join('')}</div>`; };
+  if (jump) setTimeout(() => $('#' + jump)?.scrollIntoView({ block: 'start' }), 80);
+  if (wide) return `<div class="swrap"><nav class="snav" aria-label="Settings sections"><h1>Settings</h1>${cats.map(([k, n, ic]) => `<a href="#settings/${k}" class="${k === cur ? 'on' : ''}" aria-current="${k === cur ? 'page' : 'false'}">${setIcon(ic)}<span>${esc(n)}</span></a>`).join('')}<div class="sver">${LOGO(18)} Dayline ${APPV}</div></nav>${pane(cur)}</div>`;
+  if (!cur) return topbar('', 'Settings') + `<div class="pad"><h1 class="title">Settings</h1></div><a class="acardl" href="#settings/account">${setAccountCard()}${I.next}</a><div class="slist">${cats.filter(([k]) => k !== 'account').map(([k, n, ic, d]) => `<a href="#settings/${k}">${setIcon(ic)}<span class="sl"><b>${esc(n)}</b><small>${esc(d)}</small></span>${I.next}</a>`).join('')}</div><div class="sver m">${LOGO(18)} Dayline ${APPV}</div>`;
+  const c = SET_CATS.find(x => x[0] === cur);
+  return `<div class="topbar"><a class="back" href="#settings" aria-label="Back to Settings">${I.back}<span>Settings</span></a><span></span><div class="acts"></div></div><div class="pad"><h1 class="title">${esc(c[1])}</h1></div>` + pane(cur);
 }
 function projectForm(id) {
   const p = id ? proj(id) : { name: '', area: areas()[0] || 'Work', color: '#F2A33A', emoji: '' };
@@ -3585,7 +3640,7 @@ function entities() {
 function setEntity(key, val) {
   const [kind, ...rest] = key.split(':'); const id = rest.join(':');
   const put = (arr) => { const i = arr.findIndex(x => x.id === id); if (i >= 0) arr[i] = val; else arr.push(val); };
-  if (kind === 'task') put(S.tasks); else if (kind === 'project') put(S.projects); else if (kind === 'habit') put(S.habits); else if (kind === 'focus') put(S.focus); else if (kind === 'date') put(S.dates); else if (kind === 'goal') put(S.goals ||= []); else if (kind === 'tpl') put(S.templates); else if (kind === 'log') put(S.logs ||= []); else if (kind === 'phone') (S.phone ||= {})[id] = val; else if (kind === 'pcal') { S.pcal = val; applyPcal(); }
+  if (kind === 'task') { const old = S.tasks.find(x => x.id === id); const was = old ? { seen: old.seenAt, done: old.done, snz: old.snoozeUntil } : null; put(S.tasks); if (was && (val.done && !was.done || (val.seenAt && val.seenAt !== was.seen) || (val.snoozeUntil && val.snoozeUntil !== was.snz))) closeNotifs(val); } else if (kind === 'project') put(S.projects); else if (kind === 'habit') put(S.habits); else if (kind === 'focus') put(S.focus); else if (kind === 'date') put(S.dates); else if (kind === 'goal') put(S.goals ||= []); else if (kind === 'tpl') put(S.templates); else if (kind === 'log') put(S.logs ||= []); else if (kind === 'phone') (S.phone ||= {})[id] = val; else if (kind === 'pcal') { S.pcal = val; applyPcal(); }
   else if (key === 'meta:cur') S.cur = val.c || null;
   else if (kind === 'meet') S.meetLog[id] = val;
   else if (kind === 'img') { IMGS[id] = val.data; idb.put(id, val.data).catch(() => { }); }
@@ -3599,7 +3654,7 @@ function startSync() {
   stopSync(); const colRef = firebase.firestore().collection('users').doc(fbUser.uid).collection('items'); let first = true;
   fbUnsub = colRef.onSnapshot(snap => {
     let changed = false;
-    snap.docChanges().forEach(ch => { const key = dkey(ch.doc.id), v = ch.doc.data(); if (ch.type !== 'removed' && !v.x && !v.k) needK.add(key); if (ch.type === 'removed' || v.x) { if (lastSent[key] !== undefined || true) { removeEntity(key); delete lastSent[key]; changed = true; } return; } if (lastSent[key] === v.d) return; try { setEntity(key, JSON.parse(v.d)); lastSent[key] = v.d; changed = true; } catch (e) { } });
+    snap.docChanges().forEach(ch => { const key = dkey(ch.doc.id), v = ch.doc.data(); if (key.startsWith('claim:')) return; if (ch.type !== 'removed' && !v.x && !v.k) needK.add(key); if (ch.type === 'removed' || v.x) { if (lastSent[key] !== undefined || true) { removeEntity(key); delete lastSent[key]; changed = true; } return; } if (lastSent[key] === v.d) return; try { setEntity(key, JSON.parse(v.d)); lastSent[key] = v.d; changed = true; } catch (e) { } });
     if (changed) { saveLocal(); if (!$('#sheet').classList.contains('on')) render(); else { renderMainOnly(); } if (pageId && !$('#sheet').classList.contains('on') && document.activeElement?.id !== 'pNotes' && document.activeElement?.id !== 'pTitle') renderPage(); }
     if (first) { first = false; syncState = 'on'; pushNow(); }
   }, err => { console.warn(err); toast('Sync paused: ' + (err.code || 'error')); });
@@ -3647,7 +3702,7 @@ function renderMainOnly() {
   Object.entries(keep).forEach(([id, v]) => { const el = document.getElementById(id); if (el && !el.value) el.value = v; });
   if (act) { const el = document.getElementById(act); if (el) { el.focus({ preventScroll: true }); try { el.setSelectionRange(a0, a1); } catch (e) { } } }
 }
-function renderMainCore() { const v = route().view; $('#main').innerHTML = viewHtml(); $('#main').classList.toggle('calw', v === 'calendar' || v === 'week'); document.body.classList.toggle('oncal', v === 'calendar' || v === 'week'); renderSide(); renderTabs(); renderRail(); wire(v); }
+function renderMainCore() { const v = route().view; $('#main').innerHTML = viewHtml(); $('#main').classList.toggle('calw', v === 'calendar' || v === 'week'); $('#main').classList.toggle('setw', v === 'settings'); document.body.classList.toggle('oncal', v === 'calendar' || v === 'week' || v === 'settings'); renderSide(); renderTabs(); renderRail(); wire(v); }
 function render() {
   const { view } = route(); renderMainOnly();
   $('#fab').style.display = ['settings', 'focus', 'insights', 'habits', 'dates', 'templates', 'home', 'review', 'life'].includes(view) ? 'none' : '';
@@ -3847,6 +3902,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') { navigator.s
   navigator.serviceWorker.addEventListener('controllerchange', () => { if (!swHad) { swHad = true; return; } if (swReload || window.QM) return; const go = () => { if (swReload) return; if ($('#sheet').classList.contains('on') || $('#page').classList.contains('on') || /INPUT|TEXTAREA/.test(document.activeElement?.tagName || '') || document.activeElement?.isContentEditable) { setTimeout(go, 4000); return; } swReload = true; saveLocal(); location.reload(); }; go(); }); navigator.serviceWorker.addEventListener('message', e => handleAction(e.data)); }
 function handleAction(d) {
   if (!d || !d.type) return; const t = getTask(d.id);
+  if (t) { t.seenAt = Date.now(); save(); closeNotifs(t); } if (d.type === 'seen') return;
   const c = t && d.sub ? t.subs.find(x => x.id === d.sub) : null;
   if (c) {
     if (d.type === 'done') { c.d = true; c.nagAt = 0; c.snoozeUntil = 0; save(); render(); if (pageId === t.id) renderPage(); toast('Subtask done'); }
@@ -3879,8 +3935,21 @@ function askNotify(explicit) {
   if (Notification.permission === 'default') Notification.requestPermission().then(() => { if (route().view === 'settings') render(); });
   else if (explicit && Notification.permission === 'denied') toast('Notifications are blocked for this site in browser settings');
 }
-async function notify(title, body, tag, data = {}, actions) {
+/* One reminder, one device: the first of your phone or laptop to ring it claims it, the other stays quiet */
+async function claimFire(key) {
+  if (!key || !fbUser || syncState !== 'on' || typeof firebase === 'undefined') return true;
+  try {
+    const ref = firebase.firestore().collection('users').doc(fbUser.uid).collection('items').doc(ekey('claim:' + key));
+    return await firebase.firestore().runTransaction(async tx => { const d = await tx.get(ref); if (d.exists && Date.now() - (d.data().u || 0) < 6 * 3600e3) return false; tx.set(ref, { d: '1', u: Date.now(), x: false, k: 'claim' }); return true; });
+  } catch (e) { return true; }
+}
+/* You acted on a reminder on one device: close the same reminder on this one */
+async function closeNotifs(t) {
+  try { const reg = swReg || await navigator.serviceWorker?.getRegistration(); if (!reg) return; const subs = (t.subs || []).map(c => 's' + c.id); (await reg.getNotifications()).forEach(n => { const g = n.tag || ''; if (g.startsWith('t' + t.id) || subs.some(x => g.startsWith(x))) n.close(); }); } catch (e) { }
+}
+async function notify(title, body, tag, data = {}, actions, once) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (tag !== 'test' && !(await claimFire(once || (tag + '|' + title + '|' + Math.floor(Date.now() / 18e4))))) return;
   const opts = { body, tag, data, icon: 'icon-192.png', badge: 'icon-192.png', renotify: true };
   if (actions) { const mx = Notification.maxActions || 2; opts.actions = mx >= 3 ? [{ action: 'done', title: 'Done' }, { action: 'snooze', title: 'Snooze 10 min' }, { action: 'later', title: 'Snooze or reschedule' }] : [{ action: 'done', title: 'Done' }, { action: 'later', title: 'Snooze or reschedule' }]; opts.requireInteraction = true; opts.vibrate = [200, 100, 200]; }
   try { const reg = swReg || await navigator.serviceWorker?.getRegistration(); if (reg) { await reg.showNotification(title, opts); return; } } catch (e) { }
@@ -3905,17 +3974,17 @@ function tick() {
     // Moved to later (or no date any more): stop "still not done" and old snoozes for it
     { const due = t.date && !t.someday ? pYmd(t.date).getTime() + hm2m(t.time || '09:00') * 6e4 : Infinity; if (due > now + 6e4 && (t.nagAt || t.snoozeUntil)) { t.nagAt = 0; t.nagN = 0; t.snoozeUntil = 0; changed = true; } }
     t.subs.forEach(c => { if (!c.d && c.at && new Date(c.at).getTime() > now + 6e4 && (c.nagAt || c.snoozeUntil)) { c.nagAt = 0; c.nagN = 0; c.snoozeUntil = 0; changed = true; } });
-    if (t.snoozeUntil && now >= t.snoozeUntil && !hold) { t.snoozeUntil = 0; startNag(t, nag); changed = true; notify(t.title, 'Snoozed reminder', 't' + t.id, { id: t.id }, true); return; }
-    if (t.nagAt && now >= t.nagAt && !hold) { t.nagN = (t.nagN || 0) + 1; t.nagAt = nag && t.nagN < NAG_MAX ? now + nag * 6e4 : 0; changed = true; notify(t.title, 'Still not done', 't' + t.id, { id: t.id }, true); }
+    if (t.snoozeUntil && now >= t.snoozeUntil && !hold) { const ck = 't' + t.id + '|z' + t.snoozeUntil; t.snoozeUntil = 0; startNag(t, nag); changed = true; notify(t.title, 'Snoozed reminder', 't' + t.id, { id: t.id }, true, ck); return; }
+    if (t.nagAt && now >= t.nagAt && !hold) { const ck = 't' + t.id + '|n' + t.nagAt; t.nagN = (t.nagN || 0) + 1; t.nagAt = nag && t.nagN < NAG_MAX ? now + nag * 6e4 : 0; changed = true; notify(t.title, 'Still not done', 't' + t.id, { id: t.id }, true, ck); }
     t.subs.forEach(c => {
       if (c.d || !c.at || hold) return; const p = proj(t.projectId);
-      if (c.snoozeUntil && now >= c.snoozeUntil) { c.snoozeUntil = 0; startNag(c, nag); changed = true; notify(c.t, `Snoozed. Part of ${t.title}`, 's' + c.id, { id: t.id, sub: c.id }, true); return; }
-      if (c.nagAt && now >= c.nagAt) { c.nagN = (c.nagN || 0) + 1; c.nagAt = nag && c.nagN < NAG_MAX ? now + nag * 6e4 : 0; changed = true; notify(c.t, `Still not done. Part of ${t.title}`, 's' + c.id, { id: t.id, sub: c.id }, true); return; }
+      if (c.snoozeUntil && now >= c.snoozeUntil) { const ck = 's' + c.id + '|z' + c.snoozeUntil; c.snoozeUntil = 0; startNag(c, nag); changed = true; notify(c.t, `Snoozed. Part of ${t.title}`, 's' + c.id, { id: t.id, sub: c.id }, true, ck); return; }
+      if (c.nagAt && now >= c.nagAt) { const ck = 's' + c.id + '|n' + c.nagAt; c.nagN = (c.nagN || 0) + 1; c.nagAt = nag && c.nagN < NAG_MAX ? now + nag * 6e4 : 0; changed = true; notify(c.t, `Still not done. Part of ${t.title}`, 's' + c.id, { id: t.id, sub: c.id }, true, ck); return; }
       const at = new Date(c.at).getTime(); const key = 's' + c.id + c.at;
       if (isNaN(at) || t.firedKeys.includes(key) || now < at || now - at > 12 * 3600e3) return;
       t.firedKeys = [...t.firedKeys.slice(-8), key]; changed = true;
       if (now - at > 15 * 6e4) { missed++; return; } startNag(c, nag);
-      notify(c.t, `Part of ${t.title}${p ? ' · ' + p.name : ''}`, 's' + c.id, { id: t.id, sub: c.id }, true);
+      notify(c.t, `Part of ${t.title}${p ? ' · ' + p.name : ''}`, 's' + c.id, { id: t.id, sub: c.id }, true, key);
     });
     if (!t.date || !t.reminders.length || hold) return;
     const base = t.time || '09:00'; const [h, m] = base.split(':').map(Number);
@@ -3924,7 +3993,7 @@ function tick() {
       if (t.firedKeys.includes(key) || now < at.getTime() || now - at.getTime() > 12 * 3600e3) return;
       t.firedKeys = [...t.firedKeys.slice(-8), key]; changed = true; const p = proj(t.projectId); const late = false; if (now - at.getTime() > 15 * 6e4) { missed++; return; } if (mins <= 60) startNag(t, nag);
       const when = mins >= 1440 ? (mins === 1440 ? 'Tomorrow' : `In ${mins / 1440} days`) + (t.time ? ' at ' + fmtTime(t.time) : '') : mins ? `In ${fmtMins(mins)}, at ${fmtTime(base)}` : t.time ? 'Now, ' + fmtTime(t.time) : 'Today';
-      notify(t.title, (late ? 'Missed reminder. ' : '') + when + (p ? `. ${p.name}` : ''), 't' + t.id + mins, { id: t.id }, true);
+      notify(t.title, (late ? 'Missed reminder. ' : '') + when + (p ? `. ${p.name}` : ''), 't' + t.id + mins, { id: t.id }, true, 't' + t.id + key);
     });
   });
   if (missed) notify(missed === 1 ? '1 missed reminder' : `${missed} missed reminders`, 'While Dayline was closed. Tap to see Today.', 'missed', { url: './#today' });

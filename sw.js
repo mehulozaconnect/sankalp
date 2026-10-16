@@ -1,5 +1,5 @@
 // Dayline service worker: offline app shell + notification buttons
-const CACHE = 'sankalp-v67';
+const CACHE = 'sankalp-v69';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -33,6 +33,11 @@ self.addEventListener('fetch', e => {
   e.respondWith(caches.match(req).then(hit => hit || fetch(req)));
 });
 
+// Swiped away on this device: tell the app so the same reminder closes on your other device
+self.addEventListener('notificationclose', e => {
+  const data = e.notification.data || {}; if (!data.id) return;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(all => { if (all[0]) all[0].postMessage({ type: 'seen', id: data.id, sub: data.sub }); }));
+});
 // Done / Snooze buttons on reminders
 self.addEventListener('notificationclick', e => {
   const n = e.notification;
