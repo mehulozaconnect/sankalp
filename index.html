@@ -975,6 +975,70 @@ main.setw{max-width:1040px}
 .rev.past{opacity:.5}.rev.live{box-shadow:0 0 0 1.5px var(--meet)}.rev .rj{flex:none;margin:4px 4px 0 0;font-size:11px;font-weight:800;color:#fff;background:var(--meet);border-radius:999px;padding:3px 9px;text-decoration:none}
 .rev>button:hover{background:color-mix(in srgb,var(--ink) 4%,transparent)}
 .rnow{position:absolute;left:-6px;right:0;height:2px;background:var(--danger);z-index:3;pointer-events:none}.rnow i{position:absolute;left:0;top:-4px;width:10px;height:10px;border-radius:5px;background:var(--danger)}
+
+/* water */
+.h2o{margin:14px 16px 6px;padding:16px 16px 12px;border-radius:24px;background:linear-gradient(160deg,color-mix(in srgb,#2F86F6 13%,var(--bg)),color-mix(in srgb,#7FD3FF 9%,var(--bg)));border:1px solid color-mix(in srgb,#2F86F6 16%,transparent);color:var(--ink);position:relative;overflow:hidden}
+.h2o.full{background:linear-gradient(160deg,color-mix(in srgb,#22C55E 14%,var(--bg)),color-mix(in srgb,#7FD3FF 12%,var(--bg)))}
+.h2o-top{display:flex;gap:16px;align-items:center}
+.h2o-glass{position:relative;flex:none;color:#2F86F6;width:104px;height:128px}.h2o-glass svg{display:block}
+.h2o-pct{position:absolute;left:0;right:0;top:50%;text-align:center;font-family:var(--fd);font-size:22px;font-weight:800;color:#0B3B78;text-shadow:0 1px 0 rgba(255,255,255,.6);transform:translateY(-30%)}
+.h2o-water{transition:transform 1s cubic-bezier(.2,.8,.2,1)}
+.h2o-w1{animation:h2ow 3.2s linear infinite}.h2o-w2{animation:h2ow 5s linear infinite reverse}
+@keyframes h2ow{from{transform:translateX(0)}to{transform:translateX(74px)}}
+.h2o-b{animation:h2ob 3s ease-in infinite}.h2o-b.b2{animation-delay:1s}.h2o-b.b3{animation-delay:2s}
+@keyframes h2ob{0%{transform:translateY(0);opacity:0}15%{opacity:.8}100%{transform:translateY(-70px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.h2o-w1,.h2o-w2,.h2o-b{animation:none}}
+.h2o-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.h2o-k{font-size:12.5px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#1F6FD6}
+.h2o-amt{display:flex;align-items:baseline;gap:6px}.h2o-amt b{font-family:var(--fd);font-size:30px;font-weight:800;letter-spacing:-.02em}.h2o-amt span{font-size:14px;color:var(--muted);font-weight:600}
+.h2o-cups{display:flex;flex-wrap:wrap;gap:4px;margin:2px 0}.h2o-cups i{width:11px;height:14px;border-radius:2px 2px 4px 4px;border:1.5px solid color-mix(in srgb,#2F86F6 45%,transparent)}.h2o-cups i.on{background:#2F86F6;border-color:#2F86F6}
+.h2o-msg{margin:2px 0 0;font-size:13.5px;line-height:1.35;color:var(--soft);font-weight:600}
+.h2o-set{position:absolute;top:8px;right:8px;width:34px;height:34px;color:var(--muted)}
+.h2o-btns{display:flex;gap:8px;margin-top:14px}
+.h2o-add{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:9px 0 8px;border-radius:16px;background:color-mix(in srgb,var(--bg) 75%,transparent);border:1px solid color-mix(in srgb,#2F86F6 18%,transparent);color:#1F6FD6;transition:transform .12s}
+.h2o-add span{font-size:15px;font-weight:800;display:flex;align-items:center}.h2o-add span svg{width:18px;height:18px}.h2o-add small{font-size:11px;font-weight:700;color:var(--muted)}
+.h2o-add.p{background:#2F86F6;border-color:#2F86F6;color:#fff}.h2o-add.p small{color:rgba(255,255,255,.8)}.h2o-add:active{transform:scale(.96)}
+.h2o-undo{width:52px;flex:none;border-radius:16px;color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700}.h2o-undo svg{width:18px;height:18px}
+.h2o-week{margin-top:14px;padding-top:12px;border-top:1px solid color-mix(in srgb,#2F86F6 14%,transparent)}
+.h2o-bars{position:relative;display:grid;grid-template-columns:repeat(7,1fr);gap:8px;height:74px}
+.h2o-bars>div{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px}.h2o-bars i{width:100%;max-width:26px;border-radius:6px 6px 3px 3px;background:color-mix(in srgb,#2F86F6 35%,transparent);display:block}
+.h2o-bars>div.ok i{background:#2F86F6}.h2o-bars>div.td span{color:var(--ink)}.h2o-bars span{font-size:10.5px;font-weight:700;color:var(--muted)}
+.h2o-bars em{position:absolute;left:0;right:0;border-top:1.5px dashed color-mix(in srgb,#2F86F6 50%,transparent);pointer-events:none}
+.h2o-meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:12px;font-weight:600;color:var(--muted)}.h2o-meta b{color:var(--ink)}
+/* progress */
+.glowchip{display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 10px 0 6px;border-radius:17px;background:var(--surface);text-decoration:none;color:var(--ink);font-size:13px;font-weight:800;margin-right:4px}.glowchip span{font-size:12.5px}
+.pgl{display:flex;align-items:center;gap:16px;margin:8px 16px 0;padding:18px;border-radius:24px;background:linear-gradient(135deg,#FFB347,#FF6A3D 55%,#D9306B);color:#fff}
+.pgl-em{width:64px;height:64px;border-radius:20px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:36px;flex:none}
+.pgl-i{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.pgl-i small{font-size:12px;font-weight:800;opacity:.85;text-transform:uppercase;letter-spacing:.04em}.pgl-i b{font-family:var(--fd);font-size:26px;font-weight:800;line-height:1.1}.pgl-i>span{font-size:12.5px;font-weight:700;opacity:.9}
+.pgbar{height:8px;border-radius:4px;background:rgba(255,255,255,.3);overflow:hidden;margin:4px 0 2px}.pgbar i{display:block;height:100%;border-radius:4px;background:#fff}
+.pgbar.sm{background:var(--line);height:6px}.pgbar.sm i{background:var(--accent)}
+.pgday{display:flex;align-items:center;gap:18px;margin:12px 16px 0;padding:16px;border-radius:24px;background:var(--surface)}
+.pgring{position:relative;flex:none;width:132px;height:132px}.pgring>div{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}.pgring b{font-family:var(--fd);font-size:30px;font-weight:800}.pgring small{font-size:12px;color:var(--muted);font-weight:700}
+.pgparts{flex:1;min-width:0;display:grid;grid-template-columns:1fr 1fr;gap:10px}.pgparts>div{display:flex;flex-direction:column}.pgparts span{font-size:11.5px;font-weight:700;color:var(--muted)}.pgparts b{font-size:18px;font-weight:800}.pgparts b small{font-size:12px;color:var(--muted);font-weight:700}
+.pgparts .xp{grid-column:1/-1;padding-top:8px;border-top:1px solid var(--line)}.pgparts .xp b{color:#E8590C}
+.pgst{margin:12px 16px 0;padding:16px;border-radius:24px;background:var(--surface)}
+.pgst-h{display:flex;align-items:center;gap:12px}.pgfl{font-size:30px}.pgst-h b{font-size:17px;font-weight:800;display:block}.pgst-h small{font-size:12.5px;color:var(--muted);font-weight:600}
+.pgdots{display:grid;grid-template-columns:repeat(14,minmax(0,24px));justify-content:space-between;gap:5px;margin-top:12px}.pgdots i{aspect-ratio:1;border-radius:50%;background:var(--line);display:block}.pgdots i.ok{background:#FFB347}.pgdots i.pf{background:#FF6A3D;box-shadow:0 0 0 2px color-mix(in srgb,#FF6A3D 35%,transparent)}.pgdots i.lo{background:color-mix(in srgb,var(--ink) 18%,var(--bg))}.pgdots i.na{background:none;border:1.5px dashed var(--line)}.pgdots i.td{outline:2px solid var(--ink);outline-offset:1px}
+.pgleg{display:flex;gap:12px;margin-top:8px;font-size:11px;font-weight:700;color:var(--muted)}.pgleg i{display:inline-block;width:8px;height:8px;border-radius:4px;margin-right:4px}.pgleg .ok{background:#FFB347}.pgleg .pf{background:#FF6A3D}.pgleg .lo{background:color-mix(in srgb,var(--ink) 18%,var(--bg))}
+.pgnext{display:flex;gap:14px;align-items:center;margin:12px 16px 0;padding:14px 16px;border-radius:24px;border:1.5px dashed color-mix(in srgb,var(--accent) 45%,var(--line))}
+.pgn-e{font-size:34px;width:54px;height:54px;border-radius:16px;background:var(--surface);display:flex;align-items:center;justify-content:center;flex:none}
+.pgnext>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.pgnext small{font-size:11.5px;font-weight:800;color:var(--accent-text);text-transform:uppercase;letter-spacing:.04em}.pgnext b{font-size:16px}.pgnext span{font-size:12.5px;color:var(--muted)}.pgnext em{font-style:normal;font-size:11.5px;font-weight:700;color:var(--muted)}
+.pgsec{margin:20px 20px 8px;display:flex;justify-content:space-between}.pgsec span{text-transform:none;letter-spacing:0;font-weight:700}
+.pgxp{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;height:110px;margin:0 20px}.pgxp>div{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px}.pgxp i{width:100%;max-width:30px;border-radius:7px 7px 3px 3px;background:linear-gradient(#FFB347,#FF6A3D);display:block;max-height:calc(100% - 32px)}.pgxp em{font-style:normal;font-size:10.5px;font-weight:700;color:var(--muted)}.pgxp span{font-size:10.5px;font-weight:700;color:var(--muted)}.pgxp .td span{color:var(--ink)}
+.pgbadges{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:10px;margin:0 16px}
+.pgb{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;padding:12px 6px;border-radius:18px;background:var(--surface)}.pgb span{font-size:30px;filter:grayscale(1);opacity:.35}.pgb b{font-size:12.5px;line-height:1.2}.pgb small{font-size:11px;color:var(--muted);font-weight:700}
+.pgb.on{background:linear-gradient(160deg,color-mix(in srgb,#FFB347 22%,var(--bg)),var(--surface))}.pgb.on span{filter:none;opacity:1}.pgb.on small{color:#E8590C}
+.pghow{margin:16px 16px 0;padding:12px 16px;border-radius:18px;background:var(--surface);font-size:13.5px}.pghow summary{font-weight:700;cursor:pointer}.pghow p{margin:8px 0 0;color:var(--soft);line-height:1.5}
+.pgfx{margin:8px 16px 40px;padding:6px 4px}
+.wrw{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 4px;text-decoration:none;color:var(--ink)}.wrw>div{padding:10px 12px;border-radius:14px;background:linear-gradient(160deg,color-mix(in srgb,#FFB347 18%,var(--bg)),var(--surface))}.wrw b{font-family:var(--fd);font-size:20px;display:block}.wrw small{font-size:11.5px;font-weight:700;color:var(--muted)}
+.wrw-n{font-size:13.5px;color:var(--soft);margin:8px 0 10px;line-height:1.45}
+.confetti{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9999}
+.xppop{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);z-index:9998;padding:6px 14px;border-radius:999px;background:linear-gradient(135deg,#FFB347,#FF6A3D);color:#fff;font-weight:800;font-size:14px;box-shadow:0 6px 18px rgba(255,106,61,.35);animation:xpp 1.3s ease-out forwards;pointer-events:none}
+@keyframes xpp{0%{opacity:0;transform:translate(-50%,10px) scale(.9)}15%{opacity:1;transform:translate(-50%,0) scale(1.05)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-40px)}}
+.rwtoast{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:9998;display:flex;align-items:center;gap:12px;padding:12px 18px 12px 12px;border-radius:20px;background:var(--card);box-shadow:0 12px 40px var(--shadow);cursor:pointer;animation:rwin .45s cubic-bezier(.2,1.4,.4,1);max-width:calc(100vw - 32px)}
+.rwtoast.out{opacity:0;transform:translate(-50%,-20px);transition:all .4s}.rwtoast .rwe{font-size:30px;width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#FFE3B3,#FFD0C2);flex:none}
+.rwtoast b{display:block;font-size:15px}.rwtoast small{font-size:12.5px;color:var(--muted);font-weight:600}
+@keyframes rwin{from{opacity:0;transform:translate(-50%,-30px) scale(.9)}to{opacity:1;transform:translate(-50%,0)}}
 .wempty{padding:16px 4px;color:var(--muted);font-size:14px;line-height:1.45}
 .wnote-v{background:var(--surface);border-radius:14px;padding:12px 14px;font-size:14.5px;line-height:1.45;margin-bottom:6px}
 .wbars{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;height:120px;margin:6px 0 4px}.wbars div{display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;gap:4px}.wbars i{display:block;background:#1F8A3B;border-radius:5px 5px 2px 2px}.wbars span{text-align:center;font-size:11px;color:var(--muted);font-weight:700}
@@ -1576,14 +1640,14 @@ function toggleDone(id) {
   if (!t.done) {
     if (t.repeat && t.date) {
       const nd = nextDate(t);
-      const copy = { ...t, id: uid(), orig: t.id, done: true, doneAt: Date.now(), repeat: null, pinned: false, subs: t.subs.map(c => ({ ...c })) };
+      const copy = { ...t, id: uid(), orig: t.id, done: true, doneAt: Date.now(), repeat: null, pinned: false, subs: t.subs.map(c => ({ ...c })) }; xpPop(rwIndex().xpTask(t, today()));
       S.tasks.push(copy);
       if (!nd) { t.done = true; t.doneAt = Date.now(); S.tasks = S.tasks.filter(x => x !== copy); save(); render(); toast('Done. That was the last one in this series'); return; }
       t.nagAt = 0; t.snoozeUntil = 0; t.date = nd; t.firedKeys = []; t.subs.forEach(c => { c.d = false; c.nagAt = 0; }); t.pushed = 0; addPlan(t);
       save(); render(); toast(`Done. Next one ${nd === addDays(today(), 1) ? 'tomorrow' : 'on ' + fmtDate(nd)}`);
       return;
     }
-    t.done = true; t.doneAt = Date.now(); t.nagAt = 0; t.snoozeUntil = 0; save(); render();
+    t.done = true; t.doneAt = Date.now(); t.nagAt = 0; t.snoozeUntil = 0; xpPop(rwIndex().xpTask(t, today())); save(); render();
     toast('Task done', () => { t.done = false; t.doneAt = null; save(); render(); });
   } else { t.done = false; t.doneAt = null; save(); render(); }
 }
@@ -1709,8 +1773,9 @@ function row(t, o = {}) {
 }
 const rows = (list, o) => `<div class="list">${list.map(t => row(t, o)).join('')}</div>`;
 function navItem(href, icon, color, name, count, on, extra = '') { return `<a class="navi${on ? ' on' : ''}" href="#${href}"><span style="color:${on ? 'var(--accent)' : color};display:flex">${icon}</span><span class="nm">${esc(name)}</span>${extra}${count !== '' && count != null ? `<span class="c">${count}</span>` : ''}</a>`; }
-const NAV_DEF = ['inbox', 'today', 'calendar', 'someday', 'habits', 'life', 'dates', 'templates', 'focus', 'review', 'insights'];
-const NAV_NAMES = { inbox: 'Inbox', today: 'Today', calendar: 'Calendar', someday: 'Someday', habits: 'Habits', life: 'Life list', dates: 'Birthdays and dates', templates: 'Templates', focus: 'Focus timer', review: 'Day review', insights: 'Insights' };
+Object.assign(I, { trophy: sv('<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M12 13v4M8 20h8M10 17h4"/>') });
+const NAV_DEF = ['inbox', 'today', 'calendar', 'someday', 'habits', 'life', 'dates', 'templates', 'focus', 'review', 'insights', 'progress'];
+const NAV_NAMES = { inbox: 'Inbox', today: 'Today', calendar: 'Calendar', someday: 'Someday', habits: 'Habits', life: 'Life list', dates: 'Birthdays and dates', templates: 'Templates', focus: 'Focus timer', review: 'Day review', insights: 'Insights', progress: 'Progress' };
 function navOrder() { const o = (S.settings.navOrder || []).filter(k => NAV_DEF.includes(k)); NAV_DEF.forEach((k, i) => { if (!o.includes(k)) o.splice(Math.min(i, o.length), 0, k); }); return o; }
 function listsNav(cur) {
   const td = today(); const D = todayData();
@@ -1730,6 +1795,7 @@ function listsNav(cur) {
     focus: () => navItem('focus', I.timer, '#F97316', 'Focus timer', S.timer.running ? 'running' : '', cur === 'focus'),
     review: () => navItem('review', I.clock, '#F97316', 'Day review', S.cur ? catOf(S.cur.cat).e : '', cur === 'review'),
     insights: () => navItem('insights', I.chart, '#22B8D9', 'Insights', '', cur === 'insights'),
+    progress: () => { const X = rwIndex(); return navItem('progress', I.trophy, '#F5A524', 'Progress', X.streak ? '🔥' + X.streak : '', cur === 'progress'); },
   };
   return navOrder().filter(k => !hide.includes(k) || cur === k).map(k => M[k]()).join('');
 }
@@ -2012,7 +2078,7 @@ function vToday() {
   const doneN = D.doneToday.length + (D.impact && D.impact.done ? 1 : 0);
   const bday = S.dates.filter(x => occOf(x) === today());
   const gl = { time: 'Time', priority: 'Priority', project: 'Project' }[st.todayGroup] || 'Time';
-  let h = topbar(`<button class="iconbtn" data-act="groupcycle" aria-label="Group by ${gl}. Tap to change" title="Group by ${gl}">${I.layers}</button>` + eyeBtn());
+  let h = topbar(glowChip() + `<button class="iconbtn" data-act="groupcycle" aria-label="Group by ${gl}. Tap to change" title="Group by ${gl}">${I.layers}</button>` + eyeBtn());
   const left = D.openCount;
   h += `<div class="thead"><h1>Today</h1><span>${DAYS[d.getDay()]}, ${d.getDate()} ${MONS[d.getMonth()]}${bday.length ? ' · 🎂 ' + bday.map(x => esc(x.name)).join(', ') : ''}<br>${(() => { const td0 = D.day.length + D.evening.length + D.pinned.length, od = D.overdue.length; const parts = []; if (td0) parts.push(`${td0} to do`); if (od) parts.push(`<b>${od} overdue</b>`); if (!parts.length) parts.push(doneN ? 'All done' : 'Nothing planned'); return parts.join(' + ') + (doneN ? ` · ${doneN} done` : ''); })()}</span></div>`;
   h += bannersHtml();
@@ -2179,9 +2245,199 @@ function habitMonth(h, ym) {
 }
 const habitTotal = h => Object.values(h.log).filter(v => v === 1).length + (+h.prior || 0);
 const MILESTONES = [7, 21, 30, 50, 100, 108, 200, 365, 500, 700, 1000, 1008, 1500, 2000, 3000];
+/* ================= Water: a daily glass you fill up ================= */
+const WATER_DEF = { goal: 2500, cup: 250, rem: true, every: 60, from: '09:00', to: '21:00', smart: true, log: {} };
+const water = () => (S.water ||= { ...WATER_DEF, log: {} });
+const fmtMl = ml => ml >= 1000 ? (Math.round(ml / 100) / 10).toString().replace(/\.0$/, '') + ' L' : ml + ' ml';
+const waterOn = d => (water().log[d] || []).reduce((a, x) => a + (+x.ml || 0), 0);
+function waterPace(now = new Date()) {
+  const W = water(), hm = now.getHours() * 60 + now.getMinutes(), a = hm2m(W.from), b = hm2m(W.to);
+  const f = b > a ? Math.max(0, Math.min(1, (hm - a) / (b - a))) : 1; return Math.round(W.goal * f / 50) * 50;
+}
+function waterAdd(ml, at) {
+  const W = water(), d = ymd(new Date(at || Date.now())), before = waterOn(d); ml = Math.max(10, Math.min(3000, Math.round(+ml || W.cup)));
+  (W.log[d] ||= []).push({ t: at || Date.now(), ml }); W.snz = 0;
+  const cut = addDays(today(), -400); Object.keys(W.log).forEach(k => { if (k < cut) delete W.log[k]; });
+  save(); render(); const after = waterOn(d);
+  if (before < W.goal && after >= W.goal) { celebrate(); rewardToast('💧', 'Water goal reached', '+20 XP · ' + fmtMl(after) + ' today'); }
+  else toast(`+${fmtMl(ml)} · ${fmtMl(after)} of ${fmtMl(W.goal)}`, () => waterUndo());
+}
+function waterUndo() { const L = water().log[today()]; if (!L || !L.length) return; L.pop(); save(); render(); toast('Removed the last one'); }
+function waterStreak() { const W = water(); let n = 0, d = today(); if (waterOn(d) < W.goal) d = addDays(d, -1); while (n < 400 && waterOn(d) >= W.goal) { n++; d = addDays(d, -1); } return n; }
+function waterCard() {
+  const W = water(), td = today(), tot = waterOn(td), pct = Math.min(1, tot / W.goal), pace = waterPace(), cups = Math.ceil(W.goal / W.cup), had = Math.floor(tot / W.cup);
+  const left = Math.max(0, W.goal - tot), behind = pace - tot;
+  const msg = tot >= W.goal ? `Goal reached. Nicely done 🎉` : behind >= W.cup ? `${fmtMl(behind)} behind. One glass now catches you up.` : tot === 0 ? `Start with a glass. ${fmtMl(W.goal)} to go.` : `On track. ${fmtMl(left)} to go.`;
+  const y = 112 - 100 * pct; // water surface inside the glass (glass spans y 12..112)
+  const days = Array.from({ length: 7 }, (_, i) => addDays(td, i - 6)); const mx = Math.max(W.goal, ...days.map(waterOn));
+  const st = waterStreak(); const last = (W.log[td] || []).at(-1);
+  return `<section class="h2o${tot >= W.goal ? ' full' : ''}" aria-label="Water today">
+  <div class="h2o-top"><div class="h2o-glass" role="img" aria-label="${Math.round(pct * 100)} percent of your water goal">
+    <svg viewBox="0 0 100 124" width="104" height="128"><defs><clipPath id="h2oClip"><path d="M14 12h72l-8 100a8 8 0 0 1-8 7H30a8 8 0 0 1-8-7z"/></clipPath><linearGradient id="h2oFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FD3FF"/><stop offset="1" stop-color="#2F86F6"/></linearGradient></defs>
+    <g clip-path="url(#h2oClip)"><rect x="0" y="0" width="100" height="124" fill="color-mix(in srgb,#2F86F6 10%,transparent)"/>
+    <g class="h2o-water" style="transform:translateY(${y}px)"><path class="h2o-w2" d="M-100 4c12-6 25-6 37 0s25 6 37 0 25-6 37 0 25 6 37 0 25-6 37 0 25 6 37 0 25-6 37 0V140h-262z" fill="#9BDCFF" opacity=".55"/><path class="h2o-w1" d="M-100 6c12-6 25-6 37 0s25 6 37 0 25-6 37 0 25 6 37 0 25-6 37 0 25 6 37 0 25-6 37 0V140h-262z" fill="url(#h2oFill)"/></g>
+    ${tot ? '<circle class="h2o-b b1" cx="38" cy="108" r="2.2" fill="#fff" opacity=".7"/><circle class="h2o-b b2" cx="60" cy="110" r="1.6" fill="#fff" opacity=".7"/><circle class="h2o-b b3" cx="50" cy="104" r="1.2" fill="#fff" opacity=".6"/>' : ''}</g>
+    <path d="M14 12h72l-8 100a8 8 0 0 1-8 7H30a8 8 0 0 1-8-7z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" opacity=".55"/><path d="M24 22l5 76" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".35"/></svg>
+    <b class="h2o-pct">${Math.round(pct * 100)}%</b></div>
+  <div class="h2o-info"><span class="h2o-k">💧 Water</span><div class="h2o-amt"><b>${fmtMl(tot)}</b><span>of ${fmtMl(W.goal)}</span></div>
+    <div class="h2o-cups" aria-hidden="true">${Array.from({ length: Math.min(cups, 12) }, (_, i) => `<i class="${i < had ? 'on' : ''}"></i>`).join('')}</div>
+    <p class="h2o-msg">${msg}</p></div>
+  <button class="iconbtn h2o-set" data-act="waterset" aria-label="Water settings">${I.gear}</button></div>
+  <div class="h2o-btns"><button class="h2o-add p" data-act="wateradd" data-ml="${W.cup}"><span>+${fmtMl(W.cup)}</span><small>Glass</small></button><button class="h2o-add" data-act="wateradd" data-ml="${Math.max(500, W.cup * 2)}"><span>+${fmtMl(Math.max(500, W.cup * 2))}</span><small>Bottle</small></button><button class="h2o-add" data-act="watercustom"><span>${I.plus}</span><small>Other</small></button>${last ? `<button class="h2o-undo" data-act="waterundo" aria-label="Remove the last ${fmtMl(last.ml)}" title="Remove the last ${fmtMl(last.ml)}">Undo</button>` : ''}</div>
+  <div class="h2o-week"><div class="h2o-bars">${days.map(d => { const v = waterOn(d); return `<div class="${d === td ? 'td' : ''}${v >= W.goal ? ' ok' : ''}"><i style="height:calc((100% - 20px) * ${Math.max(v ? .05 : .02, v / mx)})" title="${fmtMl(v)}"></i><span>${'SMTWTFS'[pYmd(d).getDay()]}</span></div>`; }).join('')}<em style="bottom:calc(17px + (100% - 20px) * ${W.goal / mx})" title="Goal"></em></div>
+  <div class="h2o-meta"><span>${st ? `🔥 <b>${st}</b> ${st === 1 ? 'day' : 'days'} on goal` : 'Hit your goal to start a streak'}</span><span>${W.rem ? `🔔 Every ${fmtMins(W.every)}, ${fmtTime(W.from)}–${fmtTime(W.to)}` : '🔕 Reminders off'}</span></div></div>
+  </section>`;
+}
+function waterSheet() {
+  const W = water(); let goal = W.goal, cup = W.cup, every = W.every;
+  const chips = (id, vals, cur, f) => `<div class="optchips" id="${id}">${vals.map(v => `<button type="button" data-v="${v}" class="${cur === v ? 'on' : ''}">${f(v)}</button>`).join('')}</div>`;
+  openSheet(sheetHead('Water', 'Save', 'wsOk') + `
+  <div class="field"><span class="flabel">Daily goal</span>${chips('wsG', [2000, 2500, 3000, 3500, 4000], goal, fmtMl)}<input class="inp" id="wsGc" type="number" inputmode="numeric" min="500" max="8000" step="100" value="${[2000, 2500, 3000, 3500, 4000].includes(goal) ? '' : goal}" placeholder="Other, in ml" style="margin-top:8px"></div>
+  <div class="field"><span class="flabel">Your glass</span>${chips('wsC', [150, 200, 250, 300, 400, 500], cup, fmtMl)}</div>
+  <div class="setrow" style="padding:6px 0"><span class="l"><b>Remind me</b><span>A nudge on your phone, laptop and watch</span></span><button type="button" class="switch${W.rem ? ' on' : ''}" id="wsR" role="switch" aria-checked="${!!W.rem}" aria-label="Remind me"></button></div>
+  <div id="wsMore"${W.rem ? '' : ' hidden'}>
+  <div class="field"><span class="flabel">Every</span>${chips('wsE', [30, 45, 60, 90, 120], every, fmtMins)}</div>
+  <div class="grid2"><div class="field" style="margin:0"><label for="wsF">From</label><input class="inp" type="time" id="wsF" value="${W.from}"></div><div class="field" style="margin:0"><label for="wsT">Until</label><input class="inp" type="time" id="wsT" value="${W.to}"></div></div>
+  <div class="setrow" style="padding:10px 0 0"><span class="l"><b>Only when I'm behind</b><span>Skips the nudge if you're already on pace</span></span><button type="button" class="switch${W.smart ? ' on' : ''}" id="wsS" role="switch" aria-checked="${!!W.smart}" aria-label="Only when I'm behind"></button></div></div>`);
+  const pick = (id, set) => $$(`#${id} button`).forEach(b => b.onclick = () => { set(+b.dataset.v); $$(`#${id} button`).forEach(z => z.classList.toggle('on', z === b)); if (id === 'wsG') $('#wsGc').value = ''; });
+  pick('wsG', v => goal = v); pick('wsC', v => cup = v); pick('wsE', v => every = v);
+  const tg = (id, f) => { const b = $(id); b.onclick = () => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); b.setAttribute('aria-checked', on); f && f(on); }; }; tg('#wsR', on => { $('#wsMore').hidden = !on; }); tg('#wsS');
+  $('#wsOk').onclick = () => { const gc = +$('#wsGc').value; if (gc >= 500 && gc <= 8000) goal = Math.round(gc / 50) * 50;
+    Object.assign(W, { goal, cup, every, rem: $('#wsR').classList.contains('on'), from: $('#wsF').value || '09:00', to: $('#wsT').value || '21:00', smart: $('#wsS').classList.contains('on') });
+    if (W.rem) askNotify(); save(); closeSheet(true); render(); toast('Water settings saved'); };
+}
+function waterCustom() {
+  openSheet(sheetHead('Add water', 'Add', 'wcOk') + `<div class="optchips" id="wcQ">${[100, 150, 200, 330, 750, 1000].map(v => `<button type="button" data-v="${v}">${fmtMl(v)}</button>`).join('')}</div><div class="field"><label for="wcIn">Amount in ml</label><input class="inp" id="wcIn" type="number" inputmode="numeric" min="10" max="3000" step="10" value=""></div>`);
+  $$('#wcQ button').forEach(b => b.onclick = () => { closeSheet(true); waterAdd(+b.dataset.v); });
+  $('#wcOk').onclick = () => { const v = +$('#wcIn').value; if (!(v >= 10)) { $('#wcIn').focus(); return; } closeSheet(true); waterAdd(v); };
+  setTimeout(() => $('#wcIn')?.focus(), 250);
+}
+// Called from the reminder loop
+function waterTick(now) {
+  const W = water(); if (!W.rem) return; const td = today(), d = new Date(now), hm = d.getHours() * 60 + d.getMinutes();
+  if (hm < hm2m(W.from) || hm >= hm2m(W.to) || inQuiet()) return; const tot = waterOn(td); if (tot >= W.goal) return;
+  const lastDrink = ((W.log[td] || []).at(-1) || {}).t || 0; const start = pYmd(td).getTime() + hm2m(W.from) * 6e4;
+  const since = Math.max(lastDrink, W.lastRem || 0, start, W.snz || 0); if (now - since < W.every * 6e4) return;
+  if (W.smart && tot >= waterPace(d) && tot > 0) return;
+  W.lastRem = now; save();
+  const left = W.goal - tot; const slot = Math.floor(now / (W.every * 6e4));
+  notify('💧 Time for water', `${fmtMl(tot)} of ${fmtMl(W.goal)} so far · ${fmtMl(left)} to go`, 'water', { url: './#habits', water: 1 }, [{ action: 'w' + W.cup, title: `+${fmtMl(W.cup)}` }, { action: 'wsnz', title: 'In 30 min' }], 'water|' + td + '|' + slot);
+}
+
+/* ================= Progress: XP, levels, glow streak and badges (all worked out from what you did, so it syncs by itself) ================= */
+const LEVELS = [['Dawn', 0, '🌅'], ['Sunrise', 150, '🌄'], ['Morning', 400, '☀️'], ['Bright', 800, '🌤️'], ['Noon', 1400, '🌞'], ['Golden', 2200, '✨'], ['Radiant', 3300, '💫'], ['Blaze', 4800, '🔥'], ['Solar', 7000, '🌟'], ['Legend', 10000, '👑']];
+let rwMemo = null;
+const hStart = h => Object.keys(h.log || {}).sort()[0] || today();
+function rwIndex() {
+  if (rwMemo) return rwMemo;
+  const done = {}, focus = {}, top = {};
+  S.tasks.forEach(t => { if (t.done && t.doneAt) (done[ymd(new Date(t.doneAt))] ||= []).push(t); });
+  S.focus.forEach(f => { const k = ymd(new Date(f.start)); focus[k] = (focus[k] || 0) + (+f.mins || 0); });
+  const W = water(); const wUsed = Object.keys(W.log).length > 0;
+  const score = d => {
+    const ids = S.plan[d] || []; const dn = (done[d] || []); const dnPlan = dn.filter(t => ids.includes(t.id) || ids.includes(t.orig)).length; const p = Math.max(ids.length, dnPlan);
+    const wd = pYmd(d).getDay(); const hd = S.habits.filter(h => h.days.includes(wd) && d >= hStart(h)); const hDone = hd.filter(h => hOk(h, d)).length;
+    const parts = []; if (p) parts.push([dnPlan / p, .5]); else if (dn.length) parts.push([1, .5]);
+    if (hd.length) parts.push([hDone / hd.length, .3]);
+    if (wUsed && d >= Object.keys(W.log).sort()[0]) parts.push([Math.min(1, waterOn(d) / W.goal), .2]);
+    if (!parts.length) return null; const w = parts.reduce((a, x) => a + x[1], 0); return Math.round(parts.reduce((a, x) => a + x[0] * x[1], 0) / w * 100);
+  };
+  const xpTask = (t, d) => 10 + (t.priority === 1 ? 10 : t.priority === 2 ? 5 : 0) + (((S.days[d] || {}).top || []).some(x => x === t.id || x === t.orig) ? 10 : 0);
+  const xpOn = d => { let x = 0; (done[d] || []).forEach(t => x += xpTask(t, d)); S.habits.forEach(h => { if (hOk(h, d)) x += 10; }); if (wUsed && waterOn(d) >= W.goal) x += 20; if ((S.days[d] || {}).wrap) x += 15; x += Math.min(60, Math.floor((focus[d] || 0) / 5)); const sc = score(d); if (sc != null && sc >= 100) x += 30; return x; };
+  // every day you did something on
+  const set = new Set(Object.keys(done)); S.habits.forEach(h => Object.keys(h.log).forEach(k => { if (h.log[k] === 1) set.add(k); })); Object.keys(W.log).forEach(k => set.add(k)); Object.keys(focus).forEach(k => set.add(k)); Object.keys(S.days).forEach(k => { if (S.days[k].wrap) set.add(k); });
+  const days = [...set].filter(k => /^\d{4}-\d\d-\d\d$/.test(k) && k <= today()).sort();
+  const xpDay = {}; let total = 0; days.forEach(d => { xpDay[d] = xpOn(d); total += xpDay[d]; });
+  // glow streak: days scoring 60%+ in a row (days with nothing planned are skipped, they don't break it)
+  const td = today(); let streak = 0; { let d = td; const s0 = score(td); if (s0 == null || s0 < 60) d = addDays(td, -1); const first = days[0] || td; let g = 0; while (d >= first && g++ < 500) { const s = score(d); if (s != null) { if (s < 60) break; streak++; } d = addDays(d, -1); } }
+  let best = 0, run = 0, perfect = 0; if (days.length) { for (let d = days[0]; d <= td; d = addDays(d, 1)) { const s = score(d); if (s == null) continue; if (s >= 60) { run++; best = Math.max(best, run); } else run = 0; if (s >= 100) perfect++; } }
+  const allDone = Object.values(done).flat(); const early = allDone.filter(t => new Date(t.doneAt).getHours() < 9).length;
+  const wDays = Object.keys(W.log).filter(k => waterOn(k) >= W.goal).sort(); let wBest = 0; { let r = 0, prev = null; wDays.forEach(k => { r = prev && addDays(prev, 1) === k ? r + 1 : 1; wBest = Math.max(wBest, r); prev = k; }); }
+  const top3 = Object.keys(S.days).filter(k => { const tp = (S.days[k] || {}).top || []; return tp.length >= 3 && tp.every(id => { const t = getTask(id) || S.tasks.find(x => x.orig === id && x.done && ymd(new Date(x.doneAt)) === k); return t && t.done; }); }).length;
+  const reviews = Object.values(S.days).filter(x => x && x.wrap).length; const focusH = Object.values(focus).reduce((a, b) => a + b, 0) / 60;
+  const habitBestAll = Math.max(0, ...S.habits.map(h => habitBest(h)));
+  rwMemo = { score, xpOn, xpTask, xpDay, total, streak, best, perfect, early, wBest, wDays: wDays.length, top3, reviews, focusH, habitBestAll, tasks: allDone.length, days };
+  return rwMemo;
+}
+const BADGES = [
+  ['first', '✅', 'First win', 'Finish your first task', X => [X.tasks, 1]],
+  ['streak3', '🔥', '3-day glow', '3 good days in a row', X => [X.best, 3]],
+  ['perfect1', '💯', 'Perfect day', 'Everything done in one day', X => [X.perfect, 1]],
+  ['water7', '💧', 'Hydrated week', 'Water goal 7 days in a row', X => [X.wBest, 7]],
+  ['early', '🐦', 'Early bird', '10 tasks done before 9 AM', X => [X.early, 10]],
+  ['streak7', '🔥', 'Week on fire', '7 good days in a row', X => [X.best, 7]],
+  ['review7', '📝', 'Reflective', 'Close 7 days with Day review', X => [X.reviews, 7]],
+  ['tasks50', '🎯', 'Getting it done', '50 tasks finished', X => [X.tasks, 50]],
+  ['top3', '⭐', 'Top 3 champion', 'All of your top 3 done on 10 days', X => [X.top3, 10]],
+  ['habit21', '🌱', 'Habit formed', 'Any habit, 21 days in a row', X => [X.habitBestAll, 21]],
+  ['focus10', '🧠', 'Deep diver', '10 hours of focus sessions', X => [Math.floor(X.focusH), 10]],
+  ['perfect10', '🌈', 'Ten perfect days', '10 days with everything done', X => [X.perfect, 10]],
+  ['water30', '🌊', 'Well watered', 'Water goal on 30 days', X => [X.wDays, 30]],
+  ['tasks250', '🏹', 'Machine', '250 tasks finished', X => [X.tasks, 250]],
+  ['streak30', '☄️', '30-day glow', '30 good days in a row', X => [X.best, 30]],
+  ['tasks1000', '🏆', 'Legend', '1,000 tasks finished', X => [X.tasks, 1000]]
+];
+const levelOf = xp => { let i = 0; LEVELS.forEach((l, j) => { if (xp >= l[1]) i = j; }); return i; };
+function rwState() { const X = rwIndex(); const unlocked = BADGES.filter(b => { const [c, n] = b[4](X); return c >= n; }).map(b => b[0]); return { X, unlocked, lvl: levelOf(X.total) }; }
+function nextBadge(X) { return BADGES.map(b => { const [c, n] = b[4](X); return { b, c: Math.min(c, n), n, f: Math.min(1, c / n) }; }).filter(x => x.c < x.n).sort((a, b) => b.f - a.f)[0]; }
+// Celebrations
+function celebrate() {
+  if (S.settings.fx === false || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cv = document.createElement('canvas'); cv.className = 'confetti'; cv.width = innerWidth * devicePixelRatio; cv.height = innerHeight * devicePixelRatio; document.body.appendChild(cv);
+  const g = cv.getContext('2d'); g.scale(devicePixelRatio, devicePixelRatio); const cols = ['#F5A524', '#2F86F6', '#22C55E', '#EC4899', '#8B5CF6', '#FFD24D'];
+  const P = Array.from({ length: 90 }, () => ({ x: innerWidth / 2 + (Math.random() - .5) * 120, y: innerHeight * .42, vx: (Math.random() - .5) * 13, vy: -Math.random() * 13 - 4, r: Math.random() * 6 + 4, a: Math.random() * 6, va: (Math.random() - .5) * .3, c: cols[Math.floor(Math.random() * cols.length)] }));
+  let t0 = performance.now(); const step = t => { const k = (t - t0) / 1000; g.clearRect(0, 0, innerWidth, innerHeight); P.forEach(p => { p.vy += .38; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.a += p.va; g.save(); g.globalAlpha = Math.max(0, 1 - k / 1.8); g.translate(p.x, p.y); g.rotate(p.a); g.fillStyle = p.c; g.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); g.restore(); }); if (k < 1.8) requestAnimationFrame(step); else cv.remove(); };
+  requestAnimationFrame(step);
+}
+function xpPop(n) { if (S.settings.fx === false) return; const el = document.createElement('div'); el.className = 'xppop'; el.textContent = `+${n} XP`; document.body.appendChild(el); setTimeout(() => el.remove(), 1300); }
+function rewardToast(emo, title, sub) { const el = document.createElement('div'); el.className = 'rwtoast'; el.innerHTML = `<span class="rwe">${emo}</span><span><b>${esc(title)}</b><small>${esc(sub)}</small></span>`; el.onclick = () => { el.remove(); go('progress'); }; document.body.appendChild(el); setTimeout(() => el.classList.add('out'), 3600); setTimeout(() => el.remove(), 4200); }
+let rwT = 0;
+function rewardCheck() {
+  clearTimeout(rwT); rwT = setTimeout(() => {
+    const { X, unlocked, lvl } = rwState(); const R = (S.rw ||= { seen: [], lvl: 0 });
+    if (!R.init) { // first run on this account: wait until sync has brought in your history, then start quietly (no flood of old badges)
+      if (typeof firebase !== 'undefined' && S.settings.syncOn !== false && (!authKnown || (fbUser && syncState !== 'on'))) return;
+      R.init = true; R.seen = unlocked; R.lvl = lvl; R.allDone = todayData().openCount === 0 ? today() : ''; save(); return; }
+    const fresh = unlocked.filter(k => !R.seen.includes(k)); let shown = false;
+    if (lvl > (R.lvl || 0)) { R.lvl = lvl; const L = LEVELS[lvl]; celebrate(); rewardToast(L[2], `Level up: ${L[0]}`, `${X.total.toLocaleString('en-IN')} XP. Keep the day going.`); shown = true; }
+    if (fresh.length) { R.seen = [...R.seen, ...fresh]; const b = BADGES.find(x => x[0] === fresh[0]); setTimeout(() => { celebrate(); rewardToast(b[1], `Badge: ${b[2]}`, b[3]); }, shown ? 4300 : 0); }
+    const td = today(), D = todayData(); if (D.openCount === 0 && D.doneToday.length >= 2 && R.allDone !== td) { R.allDone = td; if (!fresh.length && !shown) { celebrate(); rewardToast('🎉', 'Everything done for today', `+${X.xpOn(td)} XP today${X.streak ? ` · 🔥 ${X.streak}-day glow` : ''}`); } }
+    if (fresh.length || shown || R.allDone === td) save();
+  }, 700);
+}
+function ringSvg(p, size, stroke, col) { const r = (size - stroke) / 2, c = 2 * Math.PI * r; return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--line)" stroke-width="${stroke}"/><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${col}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - Math.max(0, Math.min(1, p)))}" transform="rotate(-90 ${size / 2} ${size / 2})"/></svg>`; }
+function glowChip() {
+  const X = rwIndex(); const s = X.score(today()); if (s == null && !X.streak) return '';
+  return `<a class="glowchip" href="#progress" aria-label="Today ${s || 0} percent, ${X.streak} day streak. Open progress">${ringSvg((s || 0) / 100, 22, 3.5, 'var(--accent)')}<b>${s || 0}%</b>${X.streak ? `<span>🔥${X.streak}</span>` : ''}</a>`;
+}
+function vProgress() {
+  const X = rwIndex(), td = today(), lvl = levelOf(X.total), L = LEVELS[lvl], N = LEVELS[lvl + 1];
+  const into = X.total - L[1], span = N ? N[1] - L[1] : 1; const s = X.score(td) ?? 0, xpT = X.xpOn(td);
+  const D = todayData(); const wd = new Date().getDay(); const hd = S.habits.filter(h => h.days.includes(wd)); const W = water();
+  const nb = nextBadge(X);
+  let h = topbar('', 'Progress') + `<div class="pad"><h1 class="title">Progress</h1></div>`;
+  h += `<section class="pgl"><div class="pgl-em">${L[2]}</div><div class="pgl-i"><small>Level ${lvl + 1}</small><b>${L[0]}</b><div class="pgbar"><i style="width:${N ? into / span * 100 : 100}%"></i></div><span>${X.total.toLocaleString('en-IN')} XP${N ? ` · ${(N[1] - X.total).toLocaleString('en-IN')} to ${N[0]} ${N[2]}` : ' · top level'}</span></div></section>`;
+  h += `<section class="pgday"><div class="pgring">${ringSvg(s / 100, 132, 12, s >= 100 ? '#22C55E' : 'var(--accent)')}<div><b>${s}%</b><small>today</small></div></div><div class="pgparts">
+    <div><span>Tasks</span><b>${D.doneToday.length}<small> / ${D.doneToday.length + D.openCount}</small></b></div>
+    ${hd.length ? `<div><span>Habits</span><b>${hd.filter(x => hOk(x, td)).length}<small> / ${hd.length}</small></b></div>` : ''}
+    <div><span>Water</span><b>${fmtMl(waterOn(td))}<small> / ${fmtMl(W.goal)}</small></b></div>
+    <div class="xp"><span>Earned today</span><b>+${xpT} XP</b></div></div></section>`;
+  const dots = Array.from({ length: 14 }, (_, i) => addDays(td, i - 13)).map(d => { const v = X.score(d); return `<i class="${v == null ? 'na' : v >= 100 ? 'pf' : v >= 60 ? 'ok' : 'lo'}${d === td ? ' td' : ''}" title="${fmtShort(d)}: ${v == null ? 'nothing planned' : v + '%'}"></i>`; }).join('');
+  h += `<section class="pgst"><div class="pgst-h"><span class="pgfl">🔥</span><div><b>${X.streak ? X.streak + '-day glow' : 'Start your glow'}</b><small>${X.streak ? 'Days at 60% or more, in a row. Best: ' + X.best : 'Reach 60% today to start one'}</small></div></div><div class="pgdots">${dots}</div><div class="pgleg"><span><i class="ok"></i>Good day</span><span><i class="pf"></i>Perfect</span><span><i class="lo"></i>Low</span></div></section>`;
+  if (nb) h += `<section class="pgnext"><span class="pgn-e">${nb.b[1]}</span><div><small>Next badge</small><b>${nb.b[2]}</b><span>${nb.b[3]}</span><div class="pgbar sm"><i style="width:${nb.f * 100}%"></i></div><em>${nb.c} of ${nb.n}</em></div></section>`;
+  const seven = Array.from({ length: 7 }, (_, i) => addDays(td, i - 6)); const mx = Math.max(50, ...seven.map(d => X.xpOn(d)));
+  h += `<div class="wsec pgsec">This week</div><div class="pgxp">${seven.map(d => { const v = X.xpOn(d); return `<div class="${d === td ? 'td' : ''}"><em>${v || ''}</em><i style="height:${Math.max(v ? 8 : 2, v / mx * 100)}%"></i><span>${'SMTWTFS'[pYmd(d).getDay()]}</span></div>`; }).join('')}</div>`;
+  const R = S.rw || { seen: [] };
+  h += `<div class="wsec pgsec">Badges <span>${BADGES.filter(b => { const [c, n] = b[4](X); return c >= n; }).length} of ${BADGES.length}</span></div><div class="pgbadges">${BADGES.map(b => { const [c, n] = b[4](X); const on = c >= n; return `<div class="pgb${on ? ' on' : ''}" title="${esc(b[3])}"><span>${b[1]}</span><b>${esc(b[2])}</b><small>${on ? 'Unlocked' : `${Math.min(c, n)} / ${n}`}</small></div>`; }).join('')}</div>`;
+  h += `<details class="pghow"><summary>How you earn XP</summary><div><p>Task done <b>+10</b> · P1 <b>+10</b> extra · P2 <b>+5</b> extra · one of your top 3 <b>+10</b> extra</p><p>Habit done <b>+10</b> · Water goal <b>+20</b> · Day review <b>+15</b> · Focus <b>+1</b> per 5 min</p><p>Perfect day (100%) <b>+30</b> bonus</p><p>Your day % mixes tasks you planned (half), habits due today and water.</p></div></details>`;
+  h += `<div class="setrow pgfx"><span class="l"><b>Celebrations</b><span>Confetti and +XP when you finish things</span></span><button type="button" class="switch${S.settings.fx === false ? '' : ' on'}" data-act="fxtog" role="switch" aria-checked="${S.settings.fx !== false}" aria-label="Celebrations"></button></div>`;
+  return h;
+}
+
 function vHabits() {
   const td = today(), wd = new Date().getDay();
   let h = topbar(`<button class="iconbtn" data-act="newhabit" aria-label="New habit">${I.plus}</button>`) + `<div class="pad"><h1 class="title">Habits</h1><p class="sub" style="margin:6px 0 0;line-height:1.45">Tap the emoji when done today. Tap any day: once for done, twice for missed, again to clear.</p><div class="legend2"><span><i style="background:var(--accent);border-color:var(--accent);color:var(--on-accent)">${I.check}</i>Done</span><span><i style="background:color-mix(in srgb,var(--danger) 13%,var(--bg));border-color:color-mix(in srgb,var(--danger) 50%,var(--bg));color:var(--danger)">${I.x}</i>Missed</span><span><i style="border-style:dashed"></i>Rest day</span></div></div>`;
+  h += waterCard();
   if (!S.habits.length) return h + `<div class="empty">No habits yet.<br><button class="btn" data-act="newhabit" style="margin-top:14px">${I.plus}Add a habit</button></div>`;
   const secs = [...S.habitSections.map(x => x.n)]; S.habits.forEach(x => { if (!secs.includes(x.section)) secs.push(x.section); });
   secs.forEach(sn => {
@@ -2203,7 +2459,7 @@ function habitForm(id) {
   const x = id ? S.habits.find(h => h.id === id) : { name: '', emoji: '🧘', section: S.habitSections[0]?.n || 'Morning', type: 'do', days: [0, 1, 2, 3, 4, 5, 6], time: '', prior: 0 };
   let emo = x.emoji, type = x.type;
   openSheet(sheetHead(id ? 'Edit habit' : 'New habit', 'Save', 'hSave') + `
-  <div class="field"><label for="hName">Name</label><textarea class="inp one" rows="1" id="hName" placeholder="Evening walk" data-form-type="other">${esc(x.name)}</textarea></div>
+  <div class="field"><label for="hName">Name</label><textarea class="inp one" rows="1" id="hName" placeholder="" data-form-type="other">${esc(x.name)}</textarea></div>
   <div class="field"><span class="flabel">Emoji</span><div class="emojis" id="hEmo">${EMOJIS.map(e => `<button type="button" class="${e === emo ? 'on' : ''}" data-e="${e}" aria-label="${e}">${e}</button>`).join('')}</div><input class="inp" id="hEmoIn" placeholder="Or type any emoji" style="margin-top:6px" maxlength="8"></div>
   <div class="grid2"><div class="field" style="margin:0"><label for="hSec">Section</label><select class="inp" id="hSec">${S.habitSections.map(s => `<option${s.n === x.section ? ' selected' : ''}>${esc(s.n)}</option>`).join('')}<option value="__new">New section…</option></select></div>
   </div><div class="field"><span class="flabel">Goal</span><div class="hgoal" id="hType"><button type="button" data-t="do" class="${type === 'do' ? 'on' : ''}"><b>✅ Build</b><span>Something to start doing. Tick on days you do it.</span></button><button type="button" data-t="avoid" class="${type === 'avoid' ? 'on' : ''}"><b>🚫 Quit</b><span>Something to stop. Tick on days you stayed away.</span></button></div></div>
@@ -2624,6 +2880,7 @@ function vReview(arg) {
   let h = topbar('', 'Day review') + `<div class="pad wraph"><div class="seg" role="tablist"><button class="on" role="tab" aria-selected="true">Today</button><button role="tab" aria-selected="false" data-act="nav" data-to="review/week">Week</button></div></div>`;
   if (rec.wrap && wrapStep < 4) {
     h += `<div class="wrapc"><div class="wtop"><span>Day review · ${DAYS[dd.getDay()]} ${dd.getDate()} ${MONS[dd.getMonth()]}</span></div><h1 class="wh1">Day closed ✓</h1><p class="sub">${plural(W.done.length, 'task')} done${W.meets.length ? `, ${plural(W.meets.length, 'meeting')}` : ''}.${rec.wrap.mood ? ' ' + ({ good: '👍 Good day', ok: '😐 Okay day', tough: '😓 Tough day' })[rec.wrap.mood] + '.' : ''}</p>`;
+    { const X = rwIndex(); const nb = nextBadge(X); const s0 = X.score(d) ?? 0; h += `<a class="wrw" href="#progress"><div><b>+${X.xpOn(d)}</b><small>XP today</small></div><div><b>${s0}%</b><small>day score</small></div><div><b>🔥 ${X.streak}</b><small>day glow</small></div></a>${nb ? `<p class="wrw-n">${nb.b[1]} <b>${esc(nb.b[2])}</b> is ${nb.n - nb.c === 1 ? 'one step' : (nb.n - nb.c) + ' steps'} away. ${X.streak ? 'Tomorrow keeps your glow going.' : 'Tomorrow starts a new glow.'}</p>` : ''}`; }
     if (rec.wrap.note) h += `<div class="wnote-v">${esc(rec.wrap.note)}</div>`;
     const top = (tr.top || []).map(getTask).filter(Boolean);
     if (top.length) h += `<div class="wsec">Tomorrow's top 3</div>` + top.map((t, i) => `<div class="wtop3"><span class="wn">${i + 1}</span>${esc(t.title)}</div>`).join('');
@@ -2871,7 +3128,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '4.9.8';
+const APPV = '5.0';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -3811,8 +4068,8 @@ const dkey = k => decodeURIComponent(k);
 function entities() {
   const o = {}; S.tasks.forEach(t => o['task:' + t.id] = t); S.projects.forEach(p => o['project:' + p.id] = p); S.habits.forEach(h => o['habit:' + h.id] = h);
   S.focus.forEach(f => o['focus:' + f.id] = f); S.dates.forEach(d => o['date:' + d.id] = d); (S.goals || []).forEach(g => o['goal:' + g.id] = g); S.templates.forEach(t => o['tpl:' + t.id] = t); Object.values(S.meetLog).forEach(m => { if (m.src !== 'pcal') o['meet:' + m.id] = m; }); if (S.pcal) o['pcal:' + (S.pcal.id || 'all')] = S.pcal; o['meta:coach'] = coachBrief(); Object.keys(IMGS).forEach(id => o['img:' + id] = { id, data: IMGS[id] }); (S.logs || []).forEach(l => o['log:' + l.id] = l); Object.values(S.phone || {}).forEach(p => o['phone:' + p.id] = p); o['meta:cur'] = { c: S.cur || null }; o['meta:rv'] = { v: remSig() }; if (S.remAck) o['meta:ack'] = S.remAck;
-  const st = S.settings; o['meta:days'] = S.days; o['meta:plan'] = S.plan; o['meta:hsec'] = S.habitSections;
-  o['meta:prefs'] = { phoneOff: !!st.phoneOff, coach: coachSet(), appmap: st.appmap, nagDef: st.nagDef, workStart: st.workStart, checkin: st.checkin, catv: st.catv, aiModel: st.aiModel, aiPrivate: st.aiPrivate, logo: st.logo, darkStyle: st.darkStyle, gcid: st.gcid, theme: st.theme, mode: st.mode, accent: st.accent, font: st.font, pomo: st.pomo, brk: st.brk, morning: st.morning, shutdown: st.shutdown, meetBefore: st.meetBefore, quietOn: st.quietOn, quietStart: st.quietStart, quietEnd: st.quietEnd, shield: st.shield, showDone: st.showDone, todayGroup: st.todayGroup };
+  const st = S.settings; o['meta:days'] = S.days; if (S.water) o['meta:water'] = S.water; if (S.rw) o['meta:rw'] = S.rw; o['meta:plan'] = S.plan; o['meta:hsec'] = S.habitSections;
+  o['meta:prefs'] = { phoneOff: !!st.phoneOff, coach: coachSet(), appmap: st.appmap, nagDef: st.nagDef, workStart: st.workStart, checkin: st.checkin, catv: st.catv, aiModel: st.aiModel, aiPrivate: st.aiPrivate, logo: st.logo, darkStyle: st.darkStyle, gcid: st.gcid, theme: st.theme, mode: st.mode, accent: st.accent, font: st.font, pomo: st.pomo, brk: st.brk, morning: st.morning, shutdown: st.shutdown, meetBefore: st.meetBefore, quietOn: st.quietOn, quietStart: st.quietStart, quietEnd: st.quietEnd, shield: st.shield, showDone: st.showDone, todayGroup: st.todayGroup, fx: st.fx };
   return o;
 }
 function setEntity(key, val) {
@@ -3822,7 +4079,7 @@ function setEntity(key, val) {
   else if (key === 'meta:cur') S.cur = val.c || null;
   else if (kind === 'meet') S.meetLog[id] = val;
   else if (kind === 'img') { IMGS[id] = val.data; idb.put(id, val.data).catch(() => { }); }
-  else if (key === 'meta:coach' || key === 'meta:rv') { } else if (key === 'meta:ack') S.remAck = val; else if (key === 'meta:days') S.days = val; else if (key === 'meta:plan') S.plan = val; else if (key === 'meta:hsec') S.habitSections = val; else if (key === 'meta:prefs') { Object.assign(S.settings, val); applyTheme(); }
+  else if (key === 'meta:coach' || key === 'meta:rv') { } else if (key === 'meta:ack') S.remAck = val; else if (key === 'meta:days') S.days = val; else if (key === 'meta:water') S.water = val; else if (key === 'meta:rw') S.rw = val; else if (key === 'meta:plan') S.plan = val; else if (key === 'meta:hsec') S.habitSections = val; else if (key === 'meta:prefs') { Object.assign(S.settings, val); applyTheme(); }
 }
 function removeEntity(key) { sweepSoon();
   const [kind, ...rest] = key.split(':'); const id = rest.join(':'); const rm = n => { S[n] = S[n].filter(x => x.id !== id); };
@@ -3870,7 +4127,7 @@ function pokePhone() {
 /* ================= render ================= */
 function viewHtml() {
   const { view, arg } = route();
-  const V = { life: vLife, review: () => vReview(arg), home: vHome, today: vToday, plan: () => vPlan(arg || 'today'), week: vCalendar, inbox: vInbox, upcoming: vUpcoming, someday: vSomeday, calendar: vCalendar, project: () => vProject(arg), done: vDone, habits: vHabits, dates: vDates, templates: vTemplates, focus: vFocus, insights: () => vInsights(arg), settings: () => vSettings(arg) };
+  const V = { life: vLife, review: () => vReview(arg), home: vHome, today: vToday, plan: () => vPlan(arg || 'today'), week: vCalendar, inbox: vInbox, upcoming: vUpcoming, someday: vSomeday, calendar: vCalendar, project: () => vProject(arg), done: vDone, habits: vHabits, dates: vDates, templates: vTemplates, focus: vFocus, insights: () => vInsights(arg), progress: vProgress, settings: () => vSettings(arg) };
   return (view === 'home' && isWide()) ? vToday() : (V[view] || vToday)();
 }
 function renderMainOnly() {
@@ -3880,10 +4137,10 @@ function renderMainOnly() {
   Object.entries(keep).forEach(([id, v]) => { const el = document.getElementById(id); if (el && !el.value) el.value = v; });
   if (act) { const el = document.getElementById(act); if (el) { el.focus({ preventScroll: true }); try { el.setSelectionRange(a0, a1); } catch (e) { } } }
 }
-function renderMainCore() { const v = route().view; $('#main').innerHTML = viewHtml(); $('#main').classList.toggle('calw', v === 'calendar' || v === 'week'); $('#main').classList.toggle('setw', v === 'settings'); document.body.classList.toggle('oncal', v === 'calendar' || v === 'week' || v === 'settings'); renderSide(); renderTabs(); renderRail(); wire(v); }
+function renderMainCore() { rwMemo = null; const v = route().view; $('#main').innerHTML = viewHtml(); $('#main').classList.toggle('calw', v === 'calendar' || v === 'week'); $('#main').classList.toggle('setw', v === 'settings'); document.body.classList.toggle('oncal', v === 'calendar' || v === 'week' || v === 'settings'); renderSide(); renderTabs(); renderRail(); wire(v); rewardCheck(); }
 function render() {
   const { view } = route(); renderMainOnly();
-  $('#fab').style.display = ['settings', 'focus', 'insights', 'habits', 'dates', 'templates', 'home', 'review', 'life'].includes(view) ? 'none' : '';
+  $('#fab').style.display = ['settings', 'focus', 'insights', 'habits', 'dates', 'templates', 'home', 'review', 'life', 'progress'].includes(view) ? 'none' : '';
 }
 function wire(view) {
   { const ab = $('#abIn'); if (ab) { const pv = $('#abPrev');
@@ -4093,6 +4350,8 @@ document.addEventListener('click', e => {
     ekdone: () => { toggleDone(id); ekSheet(); }, eknext: () => { ekIdx++; ekSheet(); },
     wrapnext: () => { const n = $('#wrapNote'); if (n) { const r = dayRec(today()); r.wrapDraft = { ...(r.wrapDraft || {}), note: n.value }; } wrapStep = Math.min(3, wrapStep + 1); save(); render(); scrollTo(0, 0); },
     wrapback: () => { const n = $('#wrapNote'); if (n) { const r = dayRec(today()); r.wrapDraft = { ...(r.wrapDraft || {}), note: n.value }; save(); } wrapStep = Math.max(0, wrapStep - 1); render(); scrollTo(0, 0); },
+    wateradd: () => waterAdd(+b.dataset.ml), watercustom: () => waterCustom(), waterundo: () => waterUndo(), waterset: () => waterSheet(),
+    fxtog: () => { S.settings.fx = S.settings.fx === false; save(); render(); if (S.settings.fx) celebrate(); },
     insover: () => { const ts = open().filter(t => !t.someday && t.date && t.date < td && (t.pushed || 0) < 3); ts.forEach(t => setDate(t, td)); save(); render(); toast(`Moved ${plural(ts.length, 'task')} to today`); },
     instop: () => { wrapDay = td; wrapStep = 2; const r = S.days[td]; if (r && r.wrap) { r.wrapDraft = { note: r.wrap.note || '', mood: r.wrap.mood || '' }; delete r.wrap; save(); } go('review'); },
     insblock: () => { const X = insData(7); if (!X.power) return; const tom = addDays(td, 1); if (open().some(t => t.date === tom && t.focusBlock)) { toast('Already blocked'); return; } const t = newTask({ title: 'Focus block', date: tom, time: pad(X.power[0]) + ':00', duration: 120, priority: 2, focusBlock: true }); S.tasks.push(t); addPlan(t); save(); render(); toast('Blocked ' + X.power[1] + ' tomorrow'); },
@@ -4182,7 +4441,9 @@ async function drainActs() {
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') drainActs(); });
 function handleAction(d) {
-  if (!d || !d.type) return; const t = getTask(d.id);
+  if (!d || !d.type) return;
+  if (d.type === 'water') { waterAdd(+d.ml || water().cup, d.at && Date.now() - d.at < 6 * 3600e3 ? d.at : undefined); return; }
+  if (d.type === 'wsnz') { water().snz = (d.at || Date.now()) + 30 * 6e4; save(); toast('Water reminder in 30 minutes'); return; } const t = getTask(d.id);
   if (t) { t.seenAt = Date.now(); save(); closeNotifs(t); } if (d.type === 'seen') return;
   const c = t && d.sub ? t.subs.find(x => x.id === d.sub) : null;
   if (c) {
@@ -4256,7 +4517,7 @@ async function notify(title, body, tag, data = {}, actions, once) {
   if (tag !== 'test' && !(await claimFire(once || (tag + '|' + title + '|' + Math.floor(Date.now() / 18e4))))) return;
   if (data._late) { data = { ...data }; delete data._late; }
   const opts = { body, tag, data, icon: 'icon-192.png', badge: 'icon-192.png', renotify: true };
-  if (actions) { const mx = Notification.maxActions || 2; opts.actions = mx >= 3 ? [{ action: 'done', title: 'Done' }, { action: 'snooze', title: 'Snooze 10 min' }, { action: 'later', title: 'Snooze…' }] : [{ action: 'done', title: 'Done' }, { action: 'later', title: 'Snooze…' }]; opts.vibrate = [200, 100, 200]; }
+  if (Array.isArray(actions)) { opts.actions = actions; opts.vibrate = [120, 80, 120]; } else if (actions) { const mx = Notification.maxActions || 2; opts.actions = mx >= 3 ? [{ action: 'done', title: 'Done' }, { action: 'snooze', title: 'Snooze 10 min' }, { action: 'later', title: 'Snooze…' }] : [{ action: 'done', title: 'Done' }, { action: 'later', title: 'Snooze…' }]; opts.vibrate = [200, 100, 200]; }
   try { const reg = swReg || await navigator.serviceWorker?.getRegistration(); if (reg) { await reg.showNotification(title, opts); return; } } catch (e) { }
   try { new Notification(title, { body, tag }); } catch (e) { }
 }
@@ -4271,6 +4532,7 @@ let remLeader = !(navigator.locks && navigator.locks.request);
 try { if (!remLeader) navigator.locks.request('sankalp-reminders', () => { remLeader = true; return new Promise(() => { }); }); } catch (e) { remLeader = true; }
 function tick() {
   sweepSoon(); if (!remLeader) return;
+  try { waterTick(Date.now()); } catch (e) { }
   const now = Date.now(), td = today(), hm = nowHM(); let changed = false; const quiet = inQuiet(), shield = shielded(); let missed = 0;
   const nativeRem = phoneLinked() && Object.keys(S.phone || {}).length && S.remAck && S.remAck.v === remSig();
   S.tasks.forEach(t => {
