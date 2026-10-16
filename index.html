@@ -9,6 +9,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
+<script>try{var k=localStorage.getItem('dayline.icon');if(k&&k!=='sky'&&/^[a-z]+$/.test(k)){document.querySelector('link[rel=manifest]').href='icons/manifest-'+k+'.json';document.querySelectorAll('link[rel=icon],link[rel=apple-touch-icon]').forEach(function(l){l.href='icons/'+k+'-192.png'})}}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Dayline">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -687,6 +688,7 @@ textarea.inp.one{resize:none;overflow:hidden;white-space:nowrap;line-height:20px
 /* logo picker */
 .logos{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
 .logos button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0;border-radius:14px;border:2px solid transparent;font-size:11.5px;font-weight:700;color:var(--muted)}
+.fests .fauto{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:21px;background:linear-gradient(135deg,#3A0F57,#D9301C 60%,#F59E0B)}.fests .fauto.off{background:var(--surface);color:var(--muted)}.fests .fauto svg{width:16px;height:16px}
 .logos button.on{border-color:var(--ink);color:var(--ink)}
 .steps{margin:6px 0 4px;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
 .steps li{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:14px;background:var(--surface);font-size:13.5px;line-height:1.45}
@@ -1071,7 +1073,37 @@ const I = {
   more: sv('<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>', 2.4),
   gcal: sv('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M12 13v5M9.5 15.5h5"/>', 2)
 };
-const LOGO = (s = 32) => `<svg class="logo" width="${s}" height="${s}" viewBox="0 0 48 48" aria-hidden="true"><rect class="lb" width="48" height="48" rx="14"/><path class="lf" d="M15 29a9 9 0 0 1 18 0z"/><rect class="lf" x="8" y="32" width="32" height="3.6" rx="1.8"/><path class="lr" fill="none" stroke-width="3" stroke-linecap="round" d="M24 11.5v3.6M12.6 16.6l2.5 2.5M35.4 16.6l-2.5 2.5"/></svg>`;
+const SUN = (c, ray = c) => `<path fill="${c}" d="M15 29a9 9 0 0 1 18 0z"/><rect fill="${c}" x="8" y="32" width="32" height="3.6" rx="1.8"/><path stroke="${ray}" stroke-width="3" stroke-linecap="round" fill="none" d="M24 11.5v3.6M12.6 16.6l2.5 2.5M35.4 16.6l-2.5 2.5"/>`;
+const SPK = (x, y, s, c) => `<path fill="${c}" d="M${x} ${y - s}q${s * .18} ${s * .82} ${s} ${s}q${-s * .82} ${s * .18} ${-s} ${s}q${-s * .18} ${-s * .82} ${-s} ${-s}q${s * .82} ${-s * .18} ${s} ${-s}z"/>`;
+const FEST = {
+  diwali: { n: 'Diwali', g: ['#3A0F57', '#8A1E3C'], art: `${SPK(12, 13, 3, '#FFE7A3')}${SPK(37, 16, 2.2, '#FFE7A3')}${SPK(33, 8, 1.6, '#FFE7A3')}<path fill="#FF8A1F" d="M24 10.5c3.4 4.4 5.4 7.6 5.4 10.6a5.4 5.4 0 0 1-10.8 0c0-3 2-6.2 5.4-10.6z"/><path fill="#FFD866" d="M24 16c1.7 2.3 2.7 3.8 2.7 5.4a2.7 2.7 0 0 1-5.4 0c0-1.6 1-3.1 2.7-5.4z"/><path fill="#F5A623" d="M9.5 27.5h29c-1.2 6.4-6.8 10-14.5 10s-13.3-3.6-14.5-10z"/><path fill="#FFC85A" d="M9.5 27.5h29c-.2 1-.5 1.9-.9 2.7H10.4c-.4-.8-.7-1.7-.9-2.7z"/>` },
+  holi: { n: 'Holi', g: ['#FF4F9A', '#FFB020'], g2: '#22C17A', art: `<circle cx="10" cy="11" r="2.2" fill="#fff" opacity=".7"/><circle cx="38.5" cy="10" r="1.6" fill="#fff" opacity=".7"/><circle cx="40" cy="26" r="2" fill="#fff" opacity=".55"/><circle cx="7.5" cy="23" r="1.4" fill="#fff" opacity=".55"/>${SUN('#fff')}` },
+  navratri: { n: 'Navratri', g: ['#D9301C', '#F59E0B'], art: `${[[9, 21], [11.5, 14.5], [16.5, 9.5], [24, 7.5], [31.5, 9.5], [36.5, 14.5], [39, 21]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.1" fill="#FFE08A"/>`).join('')}<path fill="#fff" d="M15 29a9 9 0 0 1 18 0z"/><rect fill="#fff" x="8" y="32" width="32" height="3.6" rx="1.8"/>` },
+  ganesh: { n: 'Ganpati', g: ['#FF9A2E', '#E8540A'], art: `<path fill="#FFF3DD" d="M24 9.5c3.2 5.6 11 10.2 11 16.6 0 4.2-4.9 6.4-11 6.4s-11-2.2-11-6.4c0-6.4 7.8-11 11-16.6z"/><path fill="none" stroke="#F0A35A" stroke-width="1.5" stroke-linecap="round" d="M24 12v19.5M19.5 17.5c-2.2 3-2.6 8.6-1.2 13M28.5 17.5c2.2 3 2.6 8.6 1.2 13"/><rect fill="#FFF3DD" x="8" y="35" width="32" height="3.6" rx="1.8"/>${SPK(10, 12, 2.2, '#FFE7A3')}${SPK(38, 13, 1.8, '#FFE7A3')}` },
+  christmas: { n: 'Christmas', g: ['#0E4D30', '#1C7A4C'], art: `<path fill="#fff" d="M24 11l8 11h-4.2L34 31H14l6.2-9H16z"/><rect fill="#C9A06A" x="22" y="31" width="4" height="4.5" rx="1"/><rect fill="#fff" x="8" y="35.5" width="32" height="3" rx="1.5" opacity=".9"/>${SPK(24, 8.5, 3, '#FFD24D')}<circle cx="21" cy="25" r="1.3" fill="#E5383B"/><circle cx="27.5" cy="27.5" r="1.3" fill="#E5383B"/><circle cx="25" cy="18.5" r="1.1" fill="#E5383B"/><circle cx="9" cy="12" r="1.2" fill="#fff" opacity=".8"/><circle cx="39" cy="18" r="1.2" fill="#fff" opacity=".8"/><circle cx="11" cy="26" r="1" fill="#fff" opacity=".7"/><circle cx="37" cy="9" r="1" fill="#fff" opacity=".7"/>` },
+  newyear: { n: 'New Year', g: ['#141A33', '#33307A'], art: `<rect x="10" y="10" width="2.4" height="4.4" rx="1" fill="#FF6FA8" transform="rotate(-25 11 12)"/><rect x="36" y="12" width="2.4" height="4.4" rx="1" fill="#5FD4FF" transform="rotate(30 37 14)"/><circle cx="31" cy="8.5" r="1.3" fill="#FFD24D"/><circle cx="16" cy="7.5" r="1.1" fill="#5FD4FF"/><rect x="38" y="24" width="2.2" height="4" rx="1" fill="#FFD24D" transform="rotate(-15 39 26)"/><rect x="7" y="21" width="2.2" height="4" rx="1" fill="#9BE564" transform="rotate(20 8 23)"/>${SUN('#F5C451')}` },
+  india: { n: 'Tricolour', bands: true, art: `<path fill="#0B2A7A" d="M15 29a9 9 0 0 1 18 0z"/><rect fill="#0B2A7A" x="8" y="31.2" width="32" height="3.6" rx="1.8"/><path stroke="#0B2A7A" stroke-width="3" stroke-linecap="round" fill="none" d="M24 11.5v3.6M12.6 16.6l2.5 2.5M35.4 16.6l-2.5 2.5"/>` },
+  sankranti: { n: 'Sankranti', g: ['#8ED0FF', '#3B8BF0'], art: `<path fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" d="M27 30c-4 3-9 4-16 9" opacity=".9"/><path fill="#FF4F6E" d="M28 7l9 11-9 12-9-12z"/><path stroke="#fff" stroke-width="1.1" opacity=".8" d="M28 7v23M19 18h18"/><path fill="#FFC531" d="M13 15l4.5 5.5L13 26.5 8.5 20.5z"/><path fill="none" stroke="#fff" stroke-width="1" d="M13 26.5c0 4 -2 7 -4 9" opacity=".8"/><rect fill="#fff" x="8" y="38" width="32" height="3" rx="1.5" opacity=".9"/>` },
+  autumn: { n: 'Autumn', g: ['#F7E3C4', '#EDB36E'], art: `${SUN('#B5481C')}<path fill="#E0601F" d="M9 9c4-1 7 1 7 5-4 1-7-1-7-5z"/><path fill="#C2341A" d="M35 6c3 1 5 4 3 7-3-1-5-4-3-7z"/><path fill="#E89A1E" d="M38 22c3 0 5 2 4.5 5-3 0-5-2-4.5-5z"/>` }
+};
+const FEST_ORDER = ['diwali', 'holi', 'navratri', 'ganesh', 'christmas', 'newyear', 'india', 'sankranti', 'autumn'];
+let festSeq = 0; // unique ids: a gradient defined inside a hidden copy would blank the visible ones
+function festSvg(k, s, mask, uid = '') {
+  const F = FEST[k]; const id = 'fg' + k + uid + '_' + (++festSeq); let defs = '', bg;
+  if (F.bands) { bg = `<rect width="48" height="16" fill="#FF9933"/><rect y="16" width="48" height="16" fill="#FFFFFF"/><rect y="32" width="48" height="16" fill="#138808"/>`; }
+  else { defs = `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${F.g[0]}"/>${F.g2 ? `<stop offset=".6" stop-color="${F.g[1]}"/><stop offset="1" stop-color="${F.g2}"/>` : `<stop offset="1" stop-color="${F.g[1]}"/>`}</linearGradient></defs>`; bg = `<rect width="48" height="48" fill="url(#${id})"/>`; }
+  const clip = mask ? '' : `<clipPath id="c${id}"><rect width="48" height="48" rx="${mask === 0 ? 11 : 14}"/></clipPath>`;
+  const body = mask ? `${bg}<g transform="translate(24 24) scale(.74) translate(-24 -24)">${F.art}</g>` : `<g clip-path="url(#c${id})">${bg}${F.art}</g>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" class="logo fest" width="${s}" height="${s}" viewBox="0 0 48 48" aria-hidden="true">${defs.replace('</defs>', clip + '</defs>') || `<defs>${clip}</defs>`}${body}</svg>`;
+}
+// Festive app icon: Auto switches on these days (Indian festivals), or pick one to keep
+const FEST_DATES = { sankranti: ['01-13:01-15'], india: ['01-25:01-26', '08-14:08-15'], christmas: ['12-20:12-26'], newyear: ['12-30:12-31', '01-01:01-01'],
+  holi: ['2027-03-19:2027-03-22', '2028-03-08:2028-03-11'], ganesh: ['2027-09-03:2027-09-14', '2028-08-23:2028-09-03'],
+  navratri: ['2026-10-11:2026-10-20', '2027-09-30:2027-10-09', '2028-09-19:2028-09-28'], diwali: ['2026-11-05:2026-11-11', '2027-10-26:2027-10-31', '2028-10-14:2028-10-20'] };
+function festOn(d) { for (const [k, rs] of Object.entries(FEST_DATES)) for (const r of rs) { const [a, b] = r.split(':'); const x = a.length === 5 ? d.slice(5) : d; if (x >= a && x <= b) return k; } return null; }
+function festNext(d) { for (let i = 1; i <= 120; i++) { const x = addDays(d, i); const k = festOn(x); if (k) return [k, x]; } return null; }
+function effIcon() { const f = (typeof S !== 'undefined' && S.settings && S.settings.fest) || 'auto'; if (FEST[f]) return f; if (f === 'auto') return festOn(ymd(new Date())); return null; }
+const LOGO = (s = 32) => effIcon() ? festSvg(effIcon(), s, false, String(s)) : `<svg class="logo" width="${s}" height="${s}" viewBox="0 0 48 48" aria-hidden="true"><rect class="lb" width="48" height="48" rx="14"/><path class="lf" d="M15 29a9 9 0 0 1 18 0z"/><rect class="lf" x="8" y="32" width="32" height="3.6" rx="1.8"/><path class="lr" fill="none" stroke-width="3" stroke-linecap="round" d="M24 11.5v3.6M12.6 16.6l2.5 2.5M35.4 16.6l-2.5 2.5"/></svg>`;
 
 /* ================= themes + fonts ================= */
 const THEMES = {
@@ -1129,7 +1161,8 @@ function applyTheme() {
 }
 let lastLogo = '';
 function applyLogoAssets() {
-  const k = LOGOS[S.settings.logo] ? S.settings.logo : 'sky'; if (k === lastLogo) return; lastLogo = k;
+  const k = effIcon() || (LOGOS[S.settings.logo] ? S.settings.logo : 'sky'); if (k === lastLogo) return; lastLogo = k;
+  try { localStorage.setItem('dayline.icon', k); } catch (e) { }
   const man = $('link[rel=manifest]'); if (man) man.setAttribute('href', k === 'sky' ? 'manifest.json' : `icons/manifest-${k}.json`);
   const ic = k === 'sky' ? 'icon-192.png' : `icons/${k}-192.png`; $$('link[rel=icon],link[rel=apple-touch-icon]').forEach(l => l.setAttribute('href', ic));
 }
@@ -2786,6 +2819,7 @@ function settingsAll(arg) {
   h += `<div class="sechead"><h2 class="sec">Look and feel</h2></div><div class="setsec"><div class="seg" role="group" aria-label="Mode">${['light', 'dark', 'auto'].map(m => `<button class="${st.mode === m ? 'on' : ''}" data-act="mode" data-m="${m}">${cap(m)}</button>`).join('')}</div><p class="hint">Auto follows your phone.</p>
   <div class="field"><span class="flabel">Dark mode style</span><div class="seg" role="group" aria-label="Dark mode style">${Object.keys(DARKS).map(k => `<button class="${(st.darkStyle || 'Slate') === k ? 'on' : ''}" data-act="dark" data-k="${k}"><span style="display:inline-block;width:12px;height:12px;border-radius:6px;background:${DARKS[k].bg};border:1px solid ${DARKS[k].line};margin-right:6px;vertical-align:-1px"></span>${k}</button>`).join('')}</div><span class="hint">${DARKS[st.darkStyle || 'Slate'].note}.</span></div>
   <div class="field"><span class="flabel">App logo</span><div class="logos">${Object.entries(LOGOS).map(([k, L]) => `<button class="${(st.logo || 'sky') === k ? 'on' : ''}" data-act="logo" data-k="${k}" aria-pressed="${st.logo === k}"><svg width="40" height="40" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="14" fill="${L.bg}" stroke="${L.bg === '#FFFFFF' ? '#D0D4DB' : 'none'}"/><path d="M15 29a9 9 0 0 1 18 0z" fill="${L.fg}"/><rect x="8" y="32" width="32" height="3.6" rx="1.8" fill="${L.fg}"/><path d="M24 11.5v3.6M12.6 16.6l2.5 2.5M35.4 16.6l-2.5 2.5" fill="none" stroke="${L.fg}" stroke-width="3" stroke-linecap="round"/></svg>${L.n}</button>`).join('')}</div><span class="hint">Changes the logo in the app and the browser tab. For the Home Screen icon, pick a logo first, then install (or remove and install again).</span></div>
+  <div class="field"><span class="flabel">Festive icon</span><div class="logos fests">${[['auto', 'Auto'], ['off', 'Off'], ...FEST_ORDER.map(k => [k, FEST[k].n])].map(([k, n]) => `<button class="${(st.fest || 'auto') === k ? 'on' : ''}" data-act="fest" data-k="${k}" aria-pressed="${(st.fest || 'auto') === k}">${k === 'auto' ? `<span class="fauto">🪔</span>` : k === 'off' ? `<span class="fauto off">${I.x}</span>` : festSvg(k, 40, false, 's' + k)}${esc(n)}</button>`).join('')}</div><span class="hint">${(() => { const f = st.fest || 'auto'; if (f === 'off') return 'Always your colour logo above.'; if (FEST[f]) return `Keeps the ${FEST[f].n} icon until you change it.`; const now = festOn(today()); const nx = festNext(today()); return (now ? `Now: ${FEST[now].n}. ` : '') + 'Changes by itself on Diwali, Holi, Navratri, Ganpati, Sankranti, 26 Jan, 15 Aug, Christmas and New Year' + (nx && !now ? `. Next: ${FEST[nx[0]].n} on ${fmtShort(nx[1])}` : '') + '.'; })()} The installed app icon follows within a day; Chrome may ask you to accept the new icon.</span></div>
   <div class="flabel" style="margin-top:14px">Colour theme</div><div class="themes" style="margin-top:8px">`;
   Object.entries(THEMES).forEach(([n, t]) => { h += `<button class="th${st.theme === n ? ' on' : ''}" data-act="theme" data-t="${n}" aria-pressed="${st.theme === n}"><span class="pv" style="background:${t.bg};border:1px solid ${t.line}"><span style="display:flex;justify-content:space-between;align-items:center"><b style="font-family:var(--fd);font-size:22px;color:${t.ink}">${new Date().getDate()}</b><i style="width:22px;height:22px;border-radius:11px;background:${t.accent}"></i></span><i style="display:block;height:10px;border-radius:4px;background:${t.surface};position:relative"><i style="position:absolute;left:20%;width:18%;top:2px;bottom:2px;border-radius:2px;background:${t.meet}"></i><i style="position:absolute;left:48%;width:14%;top:2px;bottom:2px;border-radius:2px;background:${t.accent}"></i></i><i style="display:flex;gap:6px;align-items:center"><i style="width:10px;height:10px;border-radius:5px;background:${t.accent}"></i><i style="flex:1;height:6px;border-radius:3px;background:${t.line}"></i></i></span><span class="nm"><span>${n}</span>${st.theme === n ? I.check : ''}</span></button>`; });
   h += `</div><div class="field"><span class="flabel">Accent colour</span><div class="swatches">${ACCENTS.map(c => `<button data-act="accent" data-c="${c}" class="${st.accent === c ? 'on' : ''}" style="background:${c || 'conic-gradient(#F2A33A,#0F9D8A,#5B5BD6,#DB2777,#F2A33A)'}" aria-label="${c ? 'Accent ' + c : 'Theme default'}"></button>`).join('')}</div><span class="hint">The first one keeps the theme's own colour.</span></div>
@@ -2816,7 +2850,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '4.8.3';
+const APPV = '4.9.1';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -3761,13 +3795,13 @@ function entities() {
 function setEntity(key, val) {
   const [kind, ...rest] = key.split(':'); const id = rest.join(':');
   const put = (arr) => { const i = arr.findIndex(x => x.id === id); if (i >= 0) arr[i] = val; else arr.push(val); };
-  if (kind === 'task') { const old = S.tasks.find(x => x.id === id); const was = old ? { seen: old.seenAt, done: old.done, snz: old.snoozeUntil } : null; put(S.tasks); if (was && (val.done && !was.done || (val.seenAt && val.seenAt !== was.seen) || (val.snoozeUntil && val.snoozeUntil !== was.snz))) closeNotifs(val); } else if (kind === 'project') put(S.projects); else if (kind === 'habit') put(S.habits); else if (kind === 'focus') put(S.focus); else if (kind === 'date') put(S.dates); else if (kind === 'goal') put(S.goals ||= []); else if (kind === 'tpl') put(S.templates); else if (kind === 'log') put(S.logs ||= []); else if (kind === 'phone') (S.phone ||= {})[id] = val; else if (kind === 'pcal') { S.pcal = val; applyPcal(); }
+  if (kind === 'task') { const old = S.tasks.find(x => x.id === id); const was = old ? { seen: old.seenAt, done: old.done, snz: old.snoozeUntil } : null; put(S.tasks); if (was && (val.done && !was.done || (val.seenAt && val.seenAt !== was.seen) || (val.snoozeUntil && val.snoozeUntil !== was.snz))) closeNotifs(val); sweepSoon(); } else if (kind === 'project') put(S.projects); else if (kind === 'habit') put(S.habits); else if (kind === 'focus') put(S.focus); else if (kind === 'date') put(S.dates); else if (kind === 'goal') put(S.goals ||= []); else if (kind === 'tpl') put(S.templates); else if (kind === 'log') put(S.logs ||= []); else if (kind === 'phone') (S.phone ||= {})[id] = val; else if (kind === 'pcal') { S.pcal = val; applyPcal(); }
   else if (key === 'meta:cur') S.cur = val.c || null;
   else if (kind === 'meet') S.meetLog[id] = val;
   else if (kind === 'img') { IMGS[id] = val.data; idb.put(id, val.data).catch(() => { }); }
   else if (key === 'meta:coach' || key === 'meta:rv') { } else if (key === 'meta:ack') S.remAck = val; else if (key === 'meta:days') S.days = val; else if (key === 'meta:plan') S.plan = val; else if (key === 'meta:hsec') S.habitSections = val; else if (key === 'meta:prefs') { Object.assign(S.settings, val); applyTheme(); }
 }
-function removeEntity(key) {
+function removeEntity(key) { sweepSoon();
   const [kind, ...rest] = key.split(':'); const id = rest.join(':'); const rm = n => { S[n] = S[n].filter(x => x.id !== id); };
   if (kind === 'task') rm('tasks'); else if (kind === 'project') rm('projects'); else if (kind === 'habit') rm('habits'); else if (kind === 'focus') rm('focus'); else if (kind === 'date') rm('dates'); else if (kind === 'goal') S.goals = (S.goals || []).filter(x => x.id !== id); else if (kind === 'tpl') rm('templates'); else if (kind === 'log') rm('logs'); else if (kind === 'phone') delete (S.phone || {})[id]; else if (kind === 'meet') delete S.meetLog[id]; else if (kind === 'img') { delete IMGS[id]; idb.del(id).catch(() => { }); }
 }
@@ -3940,6 +3974,7 @@ document.addEventListener('click', e => {
     hidedenied: () => { S.settings.deniedSeen = true; save(); render(); },
     carrytm: () => { const tm = addDays(td, 1); const l = open().filter(t => t.date && t.date <= td && t.priority <= 3 && !t.someday); l.forEach(t => setDate(t, tm)); save(); render(); toast(`${plural(l.length, 'task')} moved to tomorrow`); },
     railday: () => { railDay = b.dataset.d; renderRail(); }, railmon: () => { const [y, m] = railMonth.split('-').map(Number); const d = new Date(y, m - 1 + +b.dataset.dir, 1); railMonth = ymd(d).slice(0, 7); renderRail(); },
+    fest: () => { S.settings.fest = b.dataset.k; save(); applyTheme(); render(); toast(b.dataset.k === 'off' ? 'Festive icon off' : b.dataset.k === 'auto' ? 'Festive icon: Auto' : 'Icon changed'); },
     logo: () => { S.settings.logo = b.dataset.k; save(); applyTheme(); render(); toast('Logo changed. Reinstall the app to update the Home Screen icon.'); },
     dark: () => { S.settings.darkStyle = b.dataset.k; if (S.settings.mode === 'light') S.settings.mode = 'dark'; save(); applyTheme(); render(); },
     lockon: () => lockToggle(),
@@ -4089,6 +4124,18 @@ async function claimFire(key) {
 async function closeNotifs(t) {
   try { const reg = swReg || await navigator.serviceWorker?.getRegistration(); if (!reg) return; const subs = (t.subs || []).map(c => 's' + c.id); (await reg.getNotifications()).forEach(n => { const g = n.tag || ''; if (g.startsWith('t' + t.id) || subs.some(x => g.startsWith(x))) n.close(); }); } catch (e) { }
 }
+// Close any reminder on this device whose task was finished, deleted, snoozed, seen or moved on another device
+let sweepT = 0;
+function sweepSoon() { clearTimeout(sweepT); sweepT = setTimeout(sweepNotifs, 600); }
+async function sweepNotifs() {
+  try { const reg = swReg || await navigator.serviceWorker?.getRegistration(); if (!reg) return; const now = Date.now(), td = today();
+    (await reg.getNotifications()).forEach(n => { const d = n.data || {}; const g = n.tag || ''; if (!d.id || !(g.startsWith('t' + d.id) || (d.sub && g.startsWith('s' + d.sub)))) return; const t = getTask(d.id); const at = n.timestamp || 0;
+      let gone = !t || t.done || t.someday || !t.date || t.date > td || (t.seenAt && t.seenAt > at) || (t.snoozeUntil && t.snoozeUntil > now);
+      if (!gone && d.sub) { const c = (t.subs || []).find(x => x.id === d.sub); gone = !c || c.d || (c.snoozeUntil && c.snoozeUntil > now) || (c.at && new Date(c.at).getTime() > now + 6e4); }
+      if (gone) n.close(); });
+  } catch (e) { }
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') sweepSoon(); });
 async function notify(title, body, tag, data = {}, actions, once) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   if (tag !== 'test' && !(await claimFire(once || (tag + '|' + title + '|' + Math.floor(Date.now() / 18e4))))) return;
@@ -4107,7 +4154,7 @@ const shielded = () => S.settings.shield && S.timer.running && S.timer.mode === 
 let remLeader = !(navigator.locks && navigator.locks.request);
 try { if (!remLeader) navigator.locks.request('sankalp-reminders', () => { remLeader = true; return new Promise(() => { }); }); } catch (e) { remLeader = true; }
 function tick() {
-  if (!remLeader) return;
+  sweepSoon(); if (!remLeader) return;
   const now = Date.now(), td = today(), hm = nowHM(); let changed = false; const quiet = inQuiet(), shield = shielded(); let missed = 0;
   const nativeRem = phoneLinked() && Object.keys(S.phone || {}).length && S.remAck && S.remAck.v === remSig();
   S.tasks.forEach(t => {
@@ -4180,7 +4227,7 @@ setInterval(() => {
 }, 1000);
 let lastDay = today();
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { tick(); lastDay = today(); if (!$('#sheet').classList.contains('on') && !$('#page').classList.contains('on')) render(); if (gValid() && Date.now() - (S.settings.gSynced || 0) > 5 * 60000) gSync(false); } });
-setInterval(() => { if (document.visibilityState !== 'visible' || $('#sheet').classList.contains('on') || $('#page').classList.contains('on')) return; const v = route().view; if (today() !== lastDay) { lastDay = today(); render(); } else if (v === 'today' || (v === 'home' && isWide())) renderMainOnly(); }, 60000);
+setInterval(() => { if (document.visibilityState !== 'visible' || $('#sheet').classList.contains('on') || $('#page').classList.contains('on')) return; const v = route().view; if (today() !== lastDay) { lastDay = today(); applyLogoAssets(); render(); } else if (v === 'today' || (v === 'home' && isWide())) renderMainOnly(); }, 60000);
 
 /* ================= start ================= */
 applyTheme();

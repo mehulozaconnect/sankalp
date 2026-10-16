@@ -1,4 +1,5 @@
 {
+ "id": "/sankalp/",
  "name": "Dayline",
  "short_name": "Dayline",
  "description": "Your day on one line: tasks, meetings and reminders.",
@@ -50,7 +51,6 @@
    ]
   }
  ],
- "id": "./",
  "share_target": {
   "action": "./",
   "method": "GET",
