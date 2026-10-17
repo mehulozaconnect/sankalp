@@ -3128,7 +3128,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.0';
+const APPV = '5.0.1';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4587,8 +4587,13 @@ function tick() {
   if (!quiet && !shield) S.habits.forEach(x => { if (!x.time || !x.days.includes(wd) || x.log[td] != null) return; const k = 'h' + x.id + td; if (!S.fired[k] && hm >= x.time) { S.fired[k] = 1; changed = true; notify(`${x.emoji} ${x.name}`, `Streak: ${habitStreak(x)} days. Tap Habits to check in.`, k); } });
   if (!nativeRem) S.dates.forEach(x => { const occ = occOf(x); (x.remind || []).forEach(dd => { const day = addDays(occ, -dd); const k = 'd' + x.id + day; if (day === td && hm >= (x.time || '09:00') && !S.fired[k]) { S.fired[k] = 1; changed = true; const i = dateInfo(x); notify(`${i.emoji} ${x.name}`, dd === 0 ? `${cap(i.what)} today` : `${cap(i.what)} ${dd === 1 ? 'tomorrow' : 'in ' + dd + ' days'}, ${fmtShort(occ)}`, k); } }); });
   if (S.settings.lastSummary !== td && hm >= S.settings.morning && hm < '12:00' && !quiet && cs.morn && !phoneDoes) {
-    S.settings.lastSummary = td; changed = true; const D = todayData(); const n = D.openCount; const mm = meetingsOn(td).length; const cb = coachBrief(); const top = [...D.overdue, ...D.day].sort(sortTasks)[0];
-    notify('Good morning', `${plural(n, 'task')}${mm ? ` and ${plural(mm, 'meeting')}` : ''} today.${cb.best ? ` Best hours ${cb.best}.` : ''}${top ? ` Start with: ${top.title}.` : ''}${cb.leak ? ` Watch ${cb.leak}.` : ''}`, 'summary', { url: './#today' });
+    S.settings.lastSummary = td; changed = true; const D = todayData(); const mm = meetingsOn(td).filter(m => m.e > now);
+    // Only what is due today: your top 3 first, then a P1 due today, then the first timed task. Overdue is counted, never suggested.
+    const top3 = ((S.days[td] || {}).top || []).map(getTask).filter(t => t && !t.done && !t.someday);
+    const due = [...top3, ...D.day, ...D.evening].filter(t => t.date === td || top3.includes(t));
+    const first = top3[0] || due.filter(t => t.priority === 1).sort(sortTasks)[0] || due.filter(t => t.time).sort((a, b) => a.time < b.time ? -1 : 1)[0] || due.slice().sort(sortTasks)[0];
+    const parts = [due.length ? plural(due.length, 'task') + ' due today' : 'Nothing due today']; if (mm.length) parts.push(plural(mm.length, 'meeting') + (mm[0] ? `, first at ${fmtClock(mm[0].s)}` : '')); if (D.overdue.length) parts.push(`${D.overdue.length} overdue`);
+    notify('Good morning', parts.join(' · ') + '.' + (first ? ` Start with: ${first.title}${first.time ? ` at ${fmtTime(first.time)}` : ''}.` : ''), 'summary', { url: './#today' });
   }
   if (S.settings.lastShutdown !== td && hm >= S.settings.shutdown && hm < '23:00' && !quiet && cs.eve && !phoneDoes) {
     S.settings.lastShutdown = td; changed = true; const D = todayData(); const A = analyse(td, td);
