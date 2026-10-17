@@ -1340,6 +1340,19 @@ function wireEditor(ed, bar, onSave) {
     const inUl = () => { let n = getSelection().anchorNode; while (n && n !== ed) { if (n.nodeName === 'UL') return n; if (n.nodeName === 'OL') return null; n = n.parentNode; } return null; };
     let ul = inUl(); if (!ul) { document.execCommand('insertUnorderedList'); ul = inUl(); } if (ul) ul.className = c === 'ul:dot' ? '' : 'ls-' + c.slice(3);
   };
+  // Typing shortcuts: "- " or "* " starts a ➤ list, "1. " a numbered list, "[] " a checklist
+  ed.addEventListener('keydown', e => {
+    if (e.key !== ' ' || e.isComposing) return; const sel = getSelection(); if (!sel.isCollapsed || !sel.anchorNode || !ed.contains(sel.anchorNode)) return;
+    let blk = sel.anchorNode; while (blk && blk !== ed && !/^(DIV|P|LI|H3)$/.test(blk.nodeName)) blk = blk.parentNode; if (!blk) return;
+    let n = sel.anchorNode; while (n && n !== ed) { if (n.nodeName === 'UL' || n.nodeName === 'OL') return; n = n.parentNode; }
+    const r = document.createRange();
+    if (blk === ed) { const a = sel.anchorNode; if (a === ed || (a.previousSibling && a.previousSibling.nodeName !== 'BR')) return; r.setStart(a, 0); } else r.setStart(blk, 0);
+    r.setEnd(sel.anchorNode, sel.anchorOffset); const pre = r.toString().replace(/\u00a0/g, ' ').trim();
+    const kind = (pre === '-' || pre === '*' || pre === '>' || pre === '->') ? 'ul:arrow' : pre === '•' ? 'ul:dot' : /^1[.)]$/.test(pre) ? 'ol' : pre === '[]' ? 'ul:check' : null;
+    if (!kind || r.toString().length > 3) return; e.preventDefault(); r.deleteContents();
+    if (blk !== ed) { if (!blk.textContent) blk.innerHTML = '<br>'; const rr = document.createRange(); rr.setStart(blk, 0); rr.collapse(true); sel.removeAllRanges(); sel.addRange(rr); }
+    listCmd(kind); ed.dispatchEvent(new Event('input'));
+  });
   $$('button', bar).forEach(b => {
     b.addEventListener('mousedown', e => e.preventDefault()); b.addEventListener('pointerdown', e => e.preventDefault()); b.addEventListener('touchstart', e => { e.preventDefault(); b.click(); }, { passive: false });
     b.addEventListener('click', () => {
@@ -3164,7 +3177,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.0.2';
+const APPV = '5.0.3';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -3494,7 +3507,7 @@ function quickAdd(ctxOverride) {
   const note = $('#qaNote'), pick = $('#qaPick'); let pk = { items: [], i: 0, start: -1 };
   const fitN = () => { note.style.height = 'auto'; note.style.height = note.scrollHeight + 'px'; };
   note.addEventListener('input', fitN);
-  note.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.isComposing && bulletEnter(note)) { e.preventDefault(); note.dispatchEvent(new Event('input')); return; } });
+  note.addEventListener('keydown', e => { if (e.key === ' ' && !e.isComposing) { const v = note.value, a = note.selectionStart; const ls = v.lastIndexOf('\n', a - 1) + 1; const pre = v.slice(ls, a); if (a === note.selectionEnd && /^\s*(-|\*|>|->)$/.test(pre)) { e.preventDefault(); const ind = pre.match(/^\s*/)[0]; note.value = v.slice(0, ls) + ind + '➤ ' + v.slice(a); note.selectionStart = note.selectionEnd = ls + ind.length + 2; note.dispatchEvent(new Event('input')); return; } } if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.isComposing && bulletEnter(note)) { e.preventDefault(); note.dispatchEvent(new Event('input')); return; } });
   note.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); submit(); } else if (e.key === 'Escape' && ctx.quick) window.close(); });
   const allTags = () => { const c = {}; S.tasks.forEach(t => (t.tags || []).forEach(x => c[x] = (c[x] || 0) + 1)); ['work', 'personal', 'home', 'call', 'email', 'followup', 'waiting'].forEach(x => c[x] ||= 0); return Object.keys(c).sort((a, b) => c[b] - c[a] || a.localeCompare(b)); };
   const closePick = () => { pick.hidden = true; pk = { items: [], i: 0, start: -1 }; };
