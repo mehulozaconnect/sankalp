@@ -1279,6 +1279,42 @@ function cleanNode(node, out) {
 function cleanHtml(h) { if (!h) return ''; const doc = new DOMParser().parseFromString('<div>' + h + '</div>', 'text/html'); const out = document.createElement('div'); cleanNode(doc.body.firstChild || doc.body, out); const r = out.innerHTML; return textOfHtml(r) || /<br/.test(r) ? r : ''; }
 function textOfHtml(h) { return (h || '').replace(/<br\s*\/?>/gi, ' ').replace(/<\/(div|p|li|h3)>/gi, ' ').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim(); }
 const textOf = textOfHtml;
+// Notes typed in the quick-add box: Enter continues a bullet list (➤), Enter on an empty bullet ends it
+function bulletEnter(ta) {
+  const v = ta.value, a = ta.selectionStart, b = ta.selectionEnd; const ls = v.lastIndexOf('\n', a - 1) + 1; const line = v.slice(ls, a);
+  const m = line.match(/^(\s*)(➤|•|-|\*|–|(\d+)[.)])\s+/);
+  if (m && line.trim() === m[0].trim()) { ta.value = v.slice(0, ls) + v.slice(a); ta.selectionStart = ta.selectionEnd = ls; return true; }
+  let ins, pre = '';
+  if (m) ins = '\n' + m[1] + (m[3] ? (+m[3] + 1) + m[2].slice(-1) : m[2]) + ' ';
+  else if (line.trim()) { pre = '➤ '; ins = '\n➤ '; }
+  else return false;
+  ta.value = v.slice(0, ls) + pre + v.slice(ls, a) + ins + v.slice(b); const pos = a + pre.length + ins.length; ta.selectionStart = ta.selectionEnd = pos; return true;
+}
+function notesToHtml(s) {
+  if (!s) return ''; if (/^\s*</.test(s)) return textToHtml(s);
+  const out = []; let list = null; const close = () => { if (list) { out.push(`<${list.tag}${list.cls ? ` class="${list.cls}"` : ''}>${list.items.map(x => `<li>${esc(x)}</li>`).join('')}</${list.tag}>`); list = null; } };
+  s.split('\n').forEach(l => { const m = l.match(/^\s*(➤|•|-|\*|–|\d+[.)])\s+(.*)$/); if (m) { const k = /\d/.test(m[1]) ? 'ol' : m[1]; const tag = k === 'ol' ? 'ol' : 'ul', cls = k === '➤' ? 'ls-arrow' : (k === '-' || k === '–') ? 'ls-dash' : ''; if (!list || list.k !== k) { close(); list = { k, tag, cls, items: [] }; } if (m[2].trim()) list.items.push(m[2]); } else { close(); out.push(`<div>${l ? esc(l) : '<br>'}</div>`); } });
+  close(); return out.join('');
+}
+// Typing "wednesday", "tomorrow 5pm", "p1", "#Sales" or "every monday" in a task's title sets them, like the add box does
+function titleSmart(t, v) {
+  const r = parseTask(v); if (!r.title || r.meeting) return false;
+  const has = r.date || r.time || r.priority || r.projectId || r.newProject || r.repeat || (r.tags || []).length || r.duration || r.someday; if (!has) return false;
+  const before = JSON.parse(JSON.stringify(t)); const got = [];
+  t.title = r.title;
+  if (r.someday) { t.someday = true; t.date = null; got.push('Someday'); }
+  if (r.date) { const pu = t.pushed || 0; setDate(t, r.date); t.pushed = pu; t.someday = false; got.push(fmtDate(r.date)); } // setting a date while writing isn't 'moving' it
+  if (r.time) { t.time = r.time; t.evening = !!r.evening; if (!t.date) setDate(t, today()); if (!t.reminders.length) t.reminders = [0]; t.firedKeys = []; got.push(fmtTime(r.time)); }
+  if (r.priority) { t.priority = r.priority; got.push('P' + r.priority); }
+  if (r.newProject) r.projectId = ensureProject(r.newProject).id; if (r.projectId) { t.projectId = r.projectId; got.push(proj(r.projectId)?.name || ''); }
+  if ((r.tags || []).length) { t.tags = [...new Set([...(t.tags || []), ...r.tags])]; got.push(r.tags.map(x => '@' + x).join(' ')); }
+  if (r.repeat) { t.repeat = r.repeat; got.push(repeatLabel(r.repeat)); }
+  if (r.duration) t.duration = r.duration;
+  if (r.nag) t.nag = 10;
+  addPlan(t); save(); render(); if (t.reminders.length) askNotify();
+  toast('Set: ' + got.filter(Boolean).join(', '), () => { Object.keys(t).forEach(k => delete t[k]); Object.assign(t, before); save(); render(); renderPage(); });
+  return true;
+}
 function textToHtml(s) { if (!s) return ''; if (/^\s*<(div|p|b|ul|ol|mark|br|h3|i|u)\b/i.test(s)) return cleanHtml(s); return s.split('\n').map(l => `<div>${l ? esc(l) : '<br>'}</div>`).join(''); }
 function toolbarHtml() { return `<div class="ntool" role="toolbar" aria-label="Formatting">${[['bold', '<b>B</b>', 'Bold'], ['italic', '<i style="font-family:serif">I</i>', 'Italic'], ['underline', '<u>U</u>', 'Underline'], ['mark', '<mark style="background:#FFE58A;color:#1a1400;padding:0 5px;border-radius:3px">H</mark>', 'Highlight'], ['h3', '<b style="font-size:17px">T</b>', 'Heading'], ['pop:fs', '<span style="font-size:13px">A</span><span style="font-size:17px">A</span>&nbsp;▾', 'Text size'], ['pop:ff', 'Font&nbsp;▾', 'Font'], ['pop:ls', '•&nbsp;List&nbsp;▾', 'List style'],  ['link', 'Link', 'Add link'], ['removeFormat', 'Clear', 'Clear formatting']].map(([c, l, a]) => `<button type="button" data-cmd="${c}" aria-label="${a}" style="${l.length > 30 ? '' : 'padding:0 8px'}">${l}</button>`).join('')}<div class="npop" data-pop="fs" hidden>${[['fs:s', 'Small'], ['fs:n', 'Normal'], ['fs:l', 'Large'], ['fs:xl', 'Huge']].map(([c, l]) => `<button type="button" data-cmd="${c}" class="${c.slice(3) === 'n' ? '' : 'fs-' + c.slice(3)}">${l}</button>`).join('')}</div><div class="npop" data-pop="ff" hidden>${[['ff:default', 'Default'], ['ff:serif', 'Serif'], ['ff:mono', 'Mono'], ['ff:hand', 'Handwritten']].map(([c, l]) => `<button type="button" data-cmd="${c}" class="${c === 'ff:default' ? '' : 'ff-' + c.slice(3)}">${l}</button>`).join('')}</div><div class="npop" data-pop="ls" hidden>${[['ul:dot', '•  Bullets'], ['ul:arrow', '➤  Arrows'], ['ul:check', '☐  Checkboxes'], ['ul:dash', '–  Dashes'], ['ul:star', '★  Stars'], ['ol', '1.  Numbers']].map(([c, l]) => `<button type="button" data-cmd="${c}">${l}</button>`).join('')}</div></div>`; }
 function wireEditor(ed, bar, onSave) {
@@ -3128,7 +3164,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.0.1';
+const APPV = '5.0.2';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -3458,6 +3494,7 @@ function quickAdd(ctxOverride) {
   const note = $('#qaNote'), pick = $('#qaPick'); let pk = { items: [], i: 0, start: -1 };
   const fitN = () => { note.style.height = 'auto'; note.style.height = note.scrollHeight + 'px'; };
   note.addEventListener('input', fitN);
+  note.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.isComposing && bulletEnter(note)) { e.preventDefault(); note.dispatchEvent(new Event('input')); return; } });
   note.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); submit(); } else if (e.key === 'Escape' && ctx.quick) window.close(); });
   const allTags = () => { const c = {}; S.tasks.forEach(t => (t.tags || []).forEach(x => c[x] = (c[x] || 0) + 1)); ['work', 'personal', 'home', 'call', 'email', 'followup', 'waiting'].forEach(x => c[x] ||= 0); return Object.keys(c).sort((a, b) => c[b] - c[a] || a.localeCompare(b)); };
   const closePick = () => { pick.hidden = true; pk = { items: [], i: 0, start: -1 }; };
@@ -3498,7 +3535,7 @@ function quickAdd(ctxOverride) {
   const submit = e => {
     e && e.preventDefault(); const v = inp.value.trim(); if (!v) return;
     const res = addFromText(v, ctx); if (!res) { toast('Add a few words for the task name'); return; }
-    const nv = (note.value || '').trim(); if (nv && !res.meeting) { res.notes = (res.notes || '') + textToHtml(nv); res.nh = true; save(); }
+    const nv = (note.value || '').trim(); if (nv && !res.meeting) { res.notes = (res.notes || '') + notesToHtml(nv); res.nh = true; save(); }
     applyOv(res);
     if (res.meeting) { closeSheet(true); if (ctx.quick) { quickDone(); return; } render(); toast(`Meeting added, ${fmtClock(res.meeting.s)}`); return; }
     if (res.reminders.length) askNotify();
@@ -3513,7 +3550,7 @@ function quickAdd(ctxOverride) {
     const v = inp.value.trim(); if (!v) return inp.focus();
     const res = addFromText(v, ctx); if (!res) { toast('Add a few words for the task name'); return; }
     if (res.meeting) { closeSheet(true); render(); toast(`Meeting added, ${fmtClock(res.meeting.s)}`); return; }
-    const nv = (note.value || '').trim(); if (nv) { res.notes = (res.notes || '') + textToHtml(nv); res.nh = true; save(); }
+    const nv = (note.value || '').trim(); if (nv) { res.notes = (res.notes || '') + notesToHtml(nv); res.nh = true; save(); }
     applyOv(res);
     closeSheet(true); if (ctx.quick) { document.body.classList.remove('qm'); window.QM = false; }
     render(); setTimeout(() => taskSheet(res.id), 220);
@@ -3589,6 +3626,8 @@ function renderPage(fresh) {
   const ta = $('#pTitle'); const fit = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }; fit();
   ta.oninput = () => { fit(); t.title = ta.value.replace(/\n/g, ' '); save(); };
   ta.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); ta.blur(); } };
+  let titleAtFocus = t.title; ta.onfocus = () => { titleAtFocus = t.title; };
+  ta.onblur = () => { const v = ta.value.replace(/\n/g, ' ').trim(); if (v && v !== titleAtFocus && titleSmart(t, v)) renderPage(); };
   $('#pBack').onclick = () => closePage();
   $('#pClose').onclick = () => closePage();
   $('#pChk').onclick = () => { toggleDone(t.id); renderPage(); };
