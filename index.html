@@ -3177,7 +3177,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.0.3';
+const APPV = '5.0.4';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -3262,7 +3262,7 @@ function openSheet(html, onCancel, noHist) {
 function closeSheet(silent, fromPop) { // silent = saved, do not run cancel handler
   const sh = $('#sheet'); if (!sh.classList.contains('on')) return;
   if (!fromPop && sh.dataset.h === '1' && history.state?.sk === 'ov') { popPending++; history.back(); } sh.dataset.h = '';
-  sh.classList.remove('on'); sh.dataset.exit = ''; $('#scrim').classList.remove('on'); if (!$('#page').classList.contains('on')) document.body.style.overflow = '';
+  sh.classList.remove('on'); $('#scrim').classList.remove('on'); if (!$('#page').classList.contains('on')) document.body.style.overflow = '';
   const f = sheetClose; sheetClose = null; if (!silent && f) f();
 }
 $('#scrim').onclick = () => closeSheet();
@@ -3595,16 +3595,16 @@ function closePage(fromPop) {
 window.addEventListener('popstate', e => {
   if (popPending) { popPending--; return; }
   if ($('#viewer').classList.contains('on')) { $('#viewer').classList.remove('on'); return; }
-  if ($('#sheet').classList.contains('on')) { const wasExit = $('#sheet').dataset.exit === '1'; closeSheet(false, true); if (!wasExit) return; }
+  if ($('#sheet').classList.contains('on')) { closeSheet(false, true); return; }
   if ($('#page').classList.contains('on')) { closePage(true); return; }
   if (e.state?.sk === 'root' && !$('#lock').classList.contains('on')) askExit();
 });
+// Back on the first screen: like other Android apps, a second Back closes Dayline (a web app can't close itself with a button)
+let exitArmed = 0;
 function askExit() {
   if (!isWide() && route().view !== 'today') { history.pushState({ sk: 'app' }, ''); go('today'); return; }
-  openSheet(sheetHead('Close Dayline?', '', '') + `<p class="sub" style="margin:10px 0 18px;line-height:1.5">Your tasks are saved. Reminders keep working while the app is in the background.</p><div class="btnrow"><button class="btn acc" id="exStay">Stay</button><button class="btn sec" id="exGo">Close app</button></div>`, () => { history.pushState({ sk: 'app' }, ''); }, true);
-  $('#sheet').dataset.exit = '1';
-  $('#exStay').onclick = () => { $('#sheet').dataset.exit = ''; closeSheet(); history.pushState({ sk: 'app' }, ''); };
-  $('#exGo').onclick = () => { $('#sheet').dataset.exit = ''; closeSheet(true); popPending = 0; history.back(); setTimeout(() => { try { window.close(); } catch (x) { } }, 300); };
+  clearTimeout(exitArmed); toast('Press Back again to close Dayline');
+  exitArmed = setTimeout(() => { exitArmed = 0; try { if (history.state?.sk === 'root') history.pushState({ sk: 'app' }, ''); } catch (e) { } }, 2500);
 }
 (function initHistory() { try { if (history.state?.sk !== 'app') { history.replaceState({ sk: 'root' }, ''); history.pushState({ sk: 'app' }, ''); } } catch (e) { } })();
 function whenLabel(t) {
