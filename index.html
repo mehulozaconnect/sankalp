@@ -481,6 +481,9 @@ textarea.inp{height:auto;min-height:96px;padding:10px 12px;line-height:1.5;resiz
 .notes mark{background:#FFE58A;color:#1a1400;padding:0 3px;border-radius:3px}
 .notes h3{font-family:var(--fd);font-size:19px;margin:8px 0 2px}
 .notes hr,.wnote-v hr{border:0;border-top:1.5px solid var(--line);margin:12px 0;width:100%}
+.qa-rich{min-height:24px;outline:none;font-size:15px;line-height:1.5;color:var(--ink);padding:0 0 8px;word-break:break-word}.qa-rich:empty::before{content:attr(data-ph);color:var(--muted);opacity:.8}
+.qa-rich ul,.qa-rich ol{margin:2px 0;padding-left:22px}.qa-rich hr{border:0;border-top:1.5px solid var(--line);margin:10px 0;width:100%}
+.ptprev{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:-2px 0 10px 36px}.ptprev:empty{display:none}.ptprev .chip{pointer-events:none}.ptk{font-size:11.5px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:2px 6px}
 .notes ul,.notes ol{margin:4px 0;padding-left:22px}
 .notes a{color:var(--meet)}
 .imgs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
@@ -1280,22 +1283,6 @@ function cleanNode(node, out) {
 function cleanHtml(h) { if (!h) return ''; const doc = new DOMParser().parseFromString('<div>' + h + '</div>', 'text/html'); const out = document.createElement('div'); cleanNode(doc.body.firstChild || doc.body, out); const r = out.innerHTML; return textOfHtml(r) || /<br|<hr/.test(r) ? r : ''; }
 function textOfHtml(h) { return (h || '').replace(/<br\s*\/?>/gi, ' ').replace(/<\/(div|p|li|h3)>/gi, ' ').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim(); }
 const textOf = textOfHtml;
-// Notes typed in the quick-add box: Enter continues a list you started (•, -, ➤, 1.), Enter on an empty bullet ends it. Plain lines stay plain.
-function bulletEnter(ta) {
-  const v = ta.value, a = ta.selectionStart, b = ta.selectionEnd; const ls = v.lastIndexOf('\n', a - 1) + 1; const line = v.slice(ls, a);
-  const m = line.match(/^(\s*)(➤|•|-|\*|–|(\d+)[.)])\s+/);
-  if (m && line.trim() === m[0].trim()) { ta.value = v.slice(0, ls) + v.slice(a); ta.selectionStart = ta.selectionEnd = ls; return true; }
-  let ins, pre = '';
-  if (m) ins = '\n' + m[1] + (m[3] ? (+m[3] + 1) + m[2].slice(-1) : m[2]) + ' ';
-  else return false;
-  ta.value = v.slice(0, ls) + pre + v.slice(ls, a) + ins + v.slice(b); const pos = a + pre.length + ins.length; ta.selectionStart = ta.selectionEnd = pos; return true;
-}
-function notesToHtml(s) {
-  if (!s) return ''; if (/^\s*</.test(s)) return textToHtml(s);
-  const out = []; let list = null; const close = () => { if (list) { out.push(`<${list.tag}${list.cls ? ` class="${list.cls}"` : ''}>${list.items.map(x => `<li>${esc(x)}</li>`).join('')}</${list.tag}>`); list = null; } };
-  s.split('\n').forEach(l => { if (/^\s*-{3,}\s*$/.test(l)) { close(); out.push('<hr>'); return; } const m = l.match(/^\s*(➤|•|-|\*|–|\d+[.)])\s+(.*)$/); if (m) { const k = /\d/.test(m[1]) ? 'ol' : m[1]; const tag = k === 'ol' ? 'ol' : 'ul', cls = k === '➤' ? 'ls-arrow' : (k === '-' || k === '–') ? 'ls-dash' : ''; if (!list || list.k !== k) { close(); list = { k, tag, cls, items: [] }; } if (m[2].trim()) list.items.push(m[2]); } else { close(); out.push(`<div>${l ? esc(l) : '<br>'}</div>`); } });
-  close(); return out.join('');
-}
 // Typing "wednesday", "tomorrow 5pm", "p1", "#Sales" or "every monday" in a task's title sets them, like the add box does
 function titleSmart(t, v) {
   const r = parseTask(v); if (!r.title || r.meeting) return false;
@@ -3196,7 +3183,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.0.5';
+const APPV = '5.0.6';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -3510,7 +3497,7 @@ function quickAdd(ctxOverride) {
   openSheet(`<div class="shead"><button class="cx" data-close>Cancel</button><span class="ttl">${ctx.tpl ? esc(ctx.tpl.emoji + ' ' + ctx.tpl.name) : ctx.date ? 'New task, ' + fmtDate(ctx.date) + (ctx.time ? ', ' + fmtTime(ctx.time) : '') : 'New task'}</span><span class="qa-r"><button class="iconbtn qa-x" id="qaExp" disabled aria-label="Open full task: subtasks, notes, images" title="Open full task">${I.expand}</button><button class="ok" id="qaAdd" disabled>Add</button></span></div>
   <div id="qaForm"><div class="qa-in"><label for="qaIn" class="sr">New task</label><textarea id="qaIn" rows="1" placeholder="Task name" enterkeyhint="done" autocomplete="off" autocapitalize="sentences" spellcheck="true" data-form-type="other">${ctx.tpl ? esc(ctx.tpl.title) : ''}</textarea>${('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) ? `<button type="button" class="iconbtn" id="qaMic" aria-label="Speak the task">${I.mic}</button>` : ''}</div>
   <div class="qa-wrap"><div class="qa-pick" id="qaPick" role="listbox" hidden></div></div>
-  <label for="qaNote" class="sr">Notes</label><textarea class="qa-note" id="qaNote" rows="1" placeholder="Notes" autocomplete="off" data-form-type="other"></textarea>
+  <label for="qaNote" class="sr">Notes</label><div class="qa-note qa-rich" id="qaNote" contenteditable="true" data-ph="Notes" role="textbox" aria-multiline="true" aria-label="Notes"></div><div class="ntool" id="qaNoteBar" style="display:none"></div>
   <div class="chips" id="qaChips"></div><div class="preview" id="qaPrev"></div><input type="date" id="qaD" class="qa-hid" tabindex="-1" aria-label="Pick date"><input type="time" id="qaT" class="qa-hid" tabindex="-1" aria-label="Pick time"></div>
   ${ctx.tpl ? '' : `<button type="button" class="tplbtn" id="qaTplBtn" aria-expanded="false">${I.layers}Templates</button><div class="tplrow" id="qaTpl" hidden>${S.templates.map(t => `<button class="tplchip" data-tpl="${t.id}">${t.emoji} ${esc(t.name)}</button>`).join('')}<button class="tplchip" id="qaNewTpl" style="border-style:dashed;color:var(--muted)">${I.plus} New</button></div>`}
   `, ctx.quick ? () => window.close() : null, !!ctx.quick);
@@ -3524,12 +3511,8 @@ function quickAdd(ctxOverride) {
   const applyOv = t => { if (!t || t.meeting) return; if (ov.nag !== undefined) { t.nag = ov.nag ? 10 : null; save(); } if (ov.date) { t.date = ov.date; t.someday = false; } if (ov.time) { t.time = ov.time; t.firedKeys = []; if (!t.reminders.length) t.reminders = [0]; } if (ov.date || ov.time) save(); };
   // # projects and @ tags: a picker pops up while you type
   const note = $('#qaNote'), pick = $('#qaPick'); let pk = { items: [], i: 0, start: -1 };
-  const fitN = () => { note.style.height = 'auto'; note.style.height = note.scrollHeight + 'px'; };
-  note.addEventListener('input', fitN);
-  note.addEventListener('keydown', e => { if (e.key === 'Tab' && !e.isComposing) { const v = note.value, a = note.selectionStart; const ls = v.lastIndexOf('\n', a - 1) + 1; const m = v.slice(ls).match(/^(\s*)(•|-|➤|\*|–)\s+/); e.preventDefault();
-      if (e.shiftKey) { if (m) { note.value = v.slice(0, ls) + v.slice(ls + m[0].length); note.selectionStart = note.selectionEnd = Math.max(ls, a - m[0].length); } }
-      else if (!m) { note.value = v.slice(0, ls) + '• ' + v.slice(ls); note.selectionStart = note.selectionEnd = a + 2; }
-      note.dispatchEvent(new Event('input')); return; } if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.isComposing && bulletEnter(note)) { e.preventDefault(); note.dispatchEvent(new Event('input')); return; } });
+  wireEditor(note, $('#qaNoteBar'), () => { }); // same typing shortcuts as task notes: Tab bullets, "- " lists, "---" line
+  const noteVal = () => { const h = cleanHtml(note.innerHTML); return textOfHtml(h) || /<hr/.test(h) ? h : ''; };
   note.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); submit(); } else if (e.key === 'Escape' && ctx.quick) window.close(); });
   const allTags = () => { const c = {}; S.tasks.forEach(t => (t.tags || []).forEach(x => c[x] = (c[x] || 0) + 1)); ['work', 'personal', 'home', 'call', 'email', 'followup', 'waiting'].forEach(x => c[x] ||= 0); return Object.keys(c).sort((a, b) => c[b] - c[a] || a.localeCompare(b)); };
   const closePick = () => { pick.hidden = true; pk = { items: [], i: 0, start: -1 }; };
@@ -3570,7 +3553,7 @@ function quickAdd(ctxOverride) {
   const submit = e => {
     e && e.preventDefault(); const v = inp.value.trim(); if (!v) return;
     const res = addFromText(v, ctx); if (!res) { toast('Add a few words for the task name'); return; }
-    const nv = (note.value || '').trim(); if (nv && !res.meeting) { res.notes = (res.notes || '') + notesToHtml(nv); res.nh = true; save(); }
+    const nv = noteVal(); if (nv && !res.meeting) { res.notes = (res.notes || '') + nv; res.nh = true; save(); }
     applyOv(res);
     if (res.meeting) { closeSheet(true); if (ctx.quick) { quickDone(); return; } render(); toast(`Meeting added, ${fmtClock(res.meeting.s)}`); return; }
     if (res.reminders.length) askNotify();
@@ -3585,7 +3568,7 @@ function quickAdd(ctxOverride) {
     const v = inp.value.trim(); if (!v) return inp.focus();
     const res = addFromText(v, ctx); if (!res) { toast('Add a few words for the task name'); return; }
     if (res.meeting) { closeSheet(true); render(); toast(`Meeting added, ${fmtClock(res.meeting.s)}`); return; }
-    const nv = (note.value || '').trim(); if (nv) { res.notes = (res.notes || '') + notesToHtml(nv); res.nh = true; save(); }
+    const nv = noteVal(); if (nv) { res.notes = (res.notes || '') + nv; res.nh = true; save(); }
     applyOv(res);
     closeSheet(true); if (ctx.quick) { document.body.classList.remove('qm'); window.QM = false; }
     render(); setTimeout(() => taskSheet(res.id), 220);
@@ -3610,6 +3593,7 @@ function taskSheet(id) {
 }
 function closePage(fromPop) {
   const p = $('#page'); if (!p.classList.contains('on')) return;
+  { const tt = $('#pTitle'); if (tt && document.activeElement === tt) tt.blur(); } // apply "wed 3pm p1" typed in the title before closing
   $('#pNotes')?._flush?.();
   p.classList.remove('on'); document.body.style.overflow = ''; pageId = null; render();
   if (!fromPop && p.dataset.h === '1' && history.state?.sk === 'ov') { popPending++; history.back(); } p.dataset.h = '';
@@ -3650,7 +3634,7 @@ function renderPage(fresh) {
   props.push(`<button class="prop more" data-pp="more">${I.plus}More</button>`);
   const sd = t.subs.filter(c => c.d).length;
   pg.innerHTML = `<div class="pbar"><button class="back" id="pBack" aria-label="Back">${I.back}<span>Back</span></button><div class="acts"><button class="iconbtn${t.pinned ? ' on' : ''}" id="pPin" aria-pressed="${t.pinned}" aria-label="${t.pinned ? 'Unpin' : 'Pin to top'}">${I.pin}</button><button class="iconbtn" id="pImgB" aria-label="Attach image">${I.img}</button><button class="iconbtn" id="pMore" aria-label="More actions">${I.more}</button><button class="iconbtn" id="pClose" aria-label="Close" title="Close (Esc)">${I.x}</button></div></div>
-  <div class="ptitle${t.done ? ' done' : ''}"><button class="chk p${t.priority}${t.done ? ' isdone' : ''}" id="pChk" aria-label="${t.done ? 'Mark not done' : 'Complete task'}" style="${t.done ? '--x:1' : ''}">${t.done ? I.check : ''}</button><label for="pTitle" class="sr">Title</label><textarea id="pTitle" rows="1">${esc(t.title)}</textarea></div>
+  <div class="ptitle${t.done ? ' done' : ''}"><button class="chk p${t.priority}${t.done ? ' isdone' : ''}" id="pChk" aria-label="${t.done ? 'Mark not done' : 'Complete task'}" style="${t.done ? '--x:1' : ''}">${t.done ? I.check : ''}</button><label for="pTitle" class="sr">Title</label><textarea id="pTitle" rows="1">${esc(t.title)}</textarea></div><div class="ptprev" id="pTitlePrev" aria-live="polite"></div>
   <div class="props">${props.join('')}</div>
   ${t.pushed >= 2 ? `<div class="psec" style="padding-top:8px"><div class="warn">Moved ${t.pushed} times. Add a small first step below, or drop it from the menu.</div></div>` : ''}
   <div class="psec"><h3><span>Subtasks${t.subs.length ? ` ${sd}/${t.subs.length}` : ''}</span></h3><div id="pCl">${t.subs.map(c => clRow(c, true)).join('')}</div><div class="cl"><button type="button" id="pClAdd" class="iconbtn" style="width:24px;color:var(--muted)" aria-label="Add subtask">${I.plus}</button><textarea class="clt" id="pClNew" rows="1" placeholder="Add a subtask" aria-label="Add a subtask" enterkeyhint="enter" autocomplete="off"></textarea></div></div>
@@ -3659,7 +3643,7 @@ function renderPage(fresh) {
   <div class="pfoot">Created ${fmtDate(ymd(new Date(t.createdAt)))}${t.done && t.doneAt ? `. Done ${fmtDate(ymd(new Date(t.doneAt)))}` : ''}${t.pushed ? `. Moved ${plural(t.pushed, 'time')}` : ''}.</div>`;
   pg.classList.add('on'); document.body.style.overflow = 'hidden'; pg.scrollTop = y;
   const ta = $('#pTitle'); const fit = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }; fit();
-  ta.oninput = () => { fit(); t.title = ta.value.replace(/\n/g, ' '); save(); };
+  ta.oninput = () => { fit(); t.title = ta.value.replace(/\n/g, ' '); save(); const pv = $('#pTitlePrev'); if (!pv) return; const r = parseTask(t.title); pv.innerHTML = r.title && !r.meeting && (r.date || r.time || r.priority || r.projectId || r.newProject || r.repeat || (r.tags || []).length) ? chipsFor(r) + '<span class="ptk">Enter to set</span>' : ''; };
   ta.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); ta.blur(); } };
   let titleAtFocus = t.title; ta.onfocus = () => { titleAtFocus = t.title; };
   ta.onblur = () => { const v = ta.value.replace(/\n/g, ' ').trim(); if (v && v !== titleAtFocus && titleSmart(t, v)) renderPage(); };
