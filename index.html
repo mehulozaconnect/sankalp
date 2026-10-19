@@ -480,6 +480,7 @@ textarea.inp{height:auto;min-height:96px;padding:10px 12px;line-height:1.5;resiz
 .notes:empty::before{content:attr(data-ph);color:var(--muted)}
 .notes mark{background:#FFE58A;color:#1a1400;padding:0 3px;border-radius:3px}
 .notes h3{font-family:var(--fd);font-size:19px;margin:8px 0 2px}
+.notes hr,.wnote-v hr{border:0;border-top:1.5px solid var(--line);margin:12px 0;width:100%}
 .notes ul,.notes ol{margin:4px 0;padding-left:22px}
 .notes a{color:var(--meet)}
 .imgs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
@@ -1248,7 +1249,7 @@ function applyLogoAssets() {
   const ic = k === 'sky' ? 'icon-192.png' : `icons/${k}-192.png`; $$('link[rel=icon],link[rel=apple-touch-icon]').forEach(l => l.setAttribute('href', ic));
 }
 /* ================= rich notes ================= */
-const RT_OK = ['B', 'I', 'U', 'MARK', 'BR', 'DIV', 'P', 'UL', 'OL', 'LI', 'A', 'H3', 'SPAN'];
+const RT_OK = ['B', 'I', 'U', 'MARK', 'BR', 'DIV', 'P', 'UL', 'OL', 'LI', 'A', 'H3', 'SPAN', 'HR'];
 const RT_CLS = /^(fs-(s|l|xl)|ff-(serif|mono|hand)|ls-(arrow|check|dash|star))$/;
 function rtClasses(c) {
   const out = []; const st = (c.getAttribute('style') || '').toLowerCase(); const sz = c.getAttribute('size'), face = (c.getAttribute('face') || '').toLowerCase();
@@ -1276,24 +1277,23 @@ function cleanNode(node, out) {
     } else cleanNode(c, out);
   });
 }
-function cleanHtml(h) { if (!h) return ''; const doc = new DOMParser().parseFromString('<div>' + h + '</div>', 'text/html'); const out = document.createElement('div'); cleanNode(doc.body.firstChild || doc.body, out); const r = out.innerHTML; return textOfHtml(r) || /<br/.test(r) ? r : ''; }
+function cleanHtml(h) { if (!h) return ''; const doc = new DOMParser().parseFromString('<div>' + h + '</div>', 'text/html'); const out = document.createElement('div'); cleanNode(doc.body.firstChild || doc.body, out); const r = out.innerHTML; return textOfHtml(r) || /<br|<hr/.test(r) ? r : ''; }
 function textOfHtml(h) { return (h || '').replace(/<br\s*\/?>/gi, ' ').replace(/<\/(div|p|li|h3)>/gi, ' ').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim(); }
 const textOf = textOfHtml;
-// Notes typed in the quick-add box: Enter continues a bullet list (➤), Enter on an empty bullet ends it
+// Notes typed in the quick-add box: Enter continues a list you started (•, -, ➤, 1.), Enter on an empty bullet ends it. Plain lines stay plain.
 function bulletEnter(ta) {
   const v = ta.value, a = ta.selectionStart, b = ta.selectionEnd; const ls = v.lastIndexOf('\n', a - 1) + 1; const line = v.slice(ls, a);
   const m = line.match(/^(\s*)(➤|•|-|\*|–|(\d+)[.)])\s+/);
   if (m && line.trim() === m[0].trim()) { ta.value = v.slice(0, ls) + v.slice(a); ta.selectionStart = ta.selectionEnd = ls; return true; }
   let ins, pre = '';
   if (m) ins = '\n' + m[1] + (m[3] ? (+m[3] + 1) + m[2].slice(-1) : m[2]) + ' ';
-  else if (line.trim()) { pre = '➤ '; ins = '\n➤ '; }
   else return false;
   ta.value = v.slice(0, ls) + pre + v.slice(ls, a) + ins + v.slice(b); const pos = a + pre.length + ins.length; ta.selectionStart = ta.selectionEnd = pos; return true;
 }
 function notesToHtml(s) {
   if (!s) return ''; if (/^\s*</.test(s)) return textToHtml(s);
   const out = []; let list = null; const close = () => { if (list) { out.push(`<${list.tag}${list.cls ? ` class="${list.cls}"` : ''}>${list.items.map(x => `<li>${esc(x)}</li>`).join('')}</${list.tag}>`); list = null; } };
-  s.split('\n').forEach(l => { const m = l.match(/^\s*(➤|•|-|\*|–|\d+[.)])\s+(.*)$/); if (m) { const k = /\d/.test(m[1]) ? 'ol' : m[1]; const tag = k === 'ol' ? 'ol' : 'ul', cls = k === '➤' ? 'ls-arrow' : (k === '-' || k === '–') ? 'ls-dash' : ''; if (!list || list.k !== k) { close(); list = { k, tag, cls, items: [] }; } if (m[2].trim()) list.items.push(m[2]); } else { close(); out.push(`<div>${l ? esc(l) : '<br>'}</div>`); } });
+  s.split('\n').forEach(l => { if (/^\s*-{3,}\s*$/.test(l)) { close(); out.push('<hr>'); return; } const m = l.match(/^\s*(➤|•|-|\*|–|\d+[.)])\s+(.*)$/); if (m) { const k = /\d/.test(m[1]) ? 'ol' : m[1]; const tag = k === 'ol' ? 'ol' : 'ul', cls = k === '➤' ? 'ls-arrow' : (k === '-' || k === '–') ? 'ls-dash' : ''; if (!list || list.k !== k) { close(); list = { k, tag, cls, items: [] }; } if (m[2].trim()) list.items.push(m[2]); } else { close(); out.push(`<div>${l ? esc(l) : '<br>'}</div>`); } });
   close(); return out.join('');
 }
 // Typing "wednesday", "tomorrow 5pm", "p1", "#Sales" or "every monday" in a task's title sets them, like the add box does
@@ -1340,7 +1340,27 @@ function wireEditor(ed, bar, onSave) {
     const inUl = () => { let n = getSelection().anchorNode; while (n && n !== ed) { if (n.nodeName === 'UL') return n; if (n.nodeName === 'OL') return null; n = n.parentNode; } return null; };
     let ul = inUl(); if (!ul) { document.execCommand('insertUnorderedList'); ul = inUl(); } if (ul) ul.className = c === 'ul:dot' ? '' : 'ls-' + c.slice(3);
   };
-  // Typing shortcuts: "- " or "* " starts a ➤ list, "1. " a numbered list, "[] " a checklist
+  const makeList = kind => {
+    const sel = getSelection(); if (!sel.anchorNode) return; let blk = sel.anchorNode; while (blk && blk !== ed && !/^(DIV|P|H3)$/.test(blk.nodeName)) blk = blk.parentNode; if (!blk) return;
+    const L = document.createElement(kind === 'ol' ? 'ol' : 'ul'); if (kind !== 'ol' && kind !== 'ul:dot') L.className = 'ls-' + kind.slice(3); const li = document.createElement('li'); L.appendChild(li);
+    if (blk === ed) { let tn = sel.anchorNode; if (tn === ed) tn = ed.childNodes[sel.anchorOffset] || null; if (tn) { ed.insertBefore(L, tn); li.appendChild(tn); } else ed.appendChild(L); }
+    else { while (blk.firstChild) li.appendChild(blk.firstChild); blk.replaceWith(L); }
+    if (!li.textContent) li.innerHTML = '<br>'; const r = document.createRange(); r.selectNodeContents(li); r.collapse(false); if (li.firstChild && li.firstChild.nodeName === 'BR') { r.setStart(li, 0); r.collapse(true); } sel.removeAllRanges(); sel.addRange(r);
+  };
+  // Typing shortcuts: "- " dash list, "* " dot list, "> " arrow list, "1. " numbered, "[] " checklist, "---" a line across. Tab: bullet / indent.
+  ed.addEventListener('keydown', e => {
+    if (e.key !== 'Tab' || e.isComposing) return; e.preventDefault(); let n = getSelection().anchorNode, inList = false; while (n && n !== ed) { if (n.nodeName === 'LI') { inList = true; break; } n = n.parentNode; }
+    if (inList) document.execCommand(e.shiftKey ? 'outdent' : 'indent'); else if (!e.shiftKey) makeList('ul:dot'); ed.dispatchEvent(new Event('input'));
+  });
+  ed.addEventListener('input', e => {
+    if (e.inputType !== 'insertText' || e.data !== '-') return; const sel = getSelection(); if (!sel.isCollapsed || !sel.anchorNode) return;
+    let blk = sel.anchorNode; while (blk && blk !== ed && !/^(DIV|P|H3)$/.test(blk.nodeName)) blk = blk.parentNode; if (!blk) return;
+    let n = sel.anchorNode; while (n && n !== ed) { if (n.nodeName === 'LI') return; n = n.parentNode; }
+    const txt = (blk === ed ? sel.anchorNode.textContent : blk.textContent).replace(/\u00a0/g, ' ').trim(); if (txt !== '---') return;
+    const hr = document.createElement('hr'), nd = document.createElement('div'); nd.innerHTML = '<br>';
+    if (blk === ed) { const tn = sel.anchorNode; tn.parentNode.insertBefore(hr, tn); tn.parentNode.insertBefore(nd, tn); tn.remove(); } else { blk.replaceWith(hr); hr.after(nd); }
+    const r = document.createRange(); r.setStart(nd, 0); r.collapse(true); sel.removeAllRanges(); sel.addRange(r);
+  });
   ed.addEventListener('keydown', e => {
     if (e.key !== ' ' || e.isComposing) return; const sel = getSelection(); if (!sel.isCollapsed || !sel.anchorNode || !ed.contains(sel.anchorNode)) return;
     let blk = sel.anchorNode; while (blk && blk !== ed && !/^(DIV|P|LI|H3)$/.test(blk.nodeName)) blk = blk.parentNode; if (!blk) return;
@@ -1348,10 +1368,9 @@ function wireEditor(ed, bar, onSave) {
     const r = document.createRange();
     if (blk === ed) { const a = sel.anchorNode; if (a === ed || (a.previousSibling && a.previousSibling.nodeName !== 'BR')) return; r.setStart(a, 0); } else r.setStart(blk, 0);
     r.setEnd(sel.anchorNode, sel.anchorOffset); const pre = r.toString().replace(/\u00a0/g, ' ').trim();
-    const kind = (pre === '-' || pre === '*' || pre === '>' || pre === '->') ? 'ul:arrow' : pre === '•' ? 'ul:dot' : /^1[.)]$/.test(pre) ? 'ol' : pre === '[]' ? 'ul:check' : null;
+    const kind = pre === '-' ? 'ul:dash' : (pre === '>' || pre === '->') ? 'ul:arrow' : (pre === '*' || pre === '•') ? 'ul:dot' : /^1[.)]$/.test(pre) ? 'ol' : pre === '[]' ? 'ul:check' : null;
     if (!kind || r.toString().length > 3) return; e.preventDefault(); r.deleteContents();
-    if (blk !== ed) { if (!blk.textContent) blk.innerHTML = '<br>'; const rr = document.createRange(); rr.setStart(blk, 0); rr.collapse(true); sel.removeAllRanges(); sel.addRange(rr); }
-    listCmd(kind); ed.dispatchEvent(new Event('input'));
+    makeList(kind); ed.dispatchEvent(new Event('input'));
   });
   $$('button', bar).forEach(b => {
     b.addEventListener('mousedown', e => e.preventDefault()); b.addEventListener('pointerdown', e => e.preventDefault()); b.addEventListener('touchstart', e => { e.preventDefault(); b.click(); }, { passive: false });
@@ -3177,7 +3196,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.0.4';
+const APPV = '5.0.5';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -3507,7 +3526,10 @@ function quickAdd(ctxOverride) {
   const note = $('#qaNote'), pick = $('#qaPick'); let pk = { items: [], i: 0, start: -1 };
   const fitN = () => { note.style.height = 'auto'; note.style.height = note.scrollHeight + 'px'; };
   note.addEventListener('input', fitN);
-  note.addEventListener('keydown', e => { if (e.key === ' ' && !e.isComposing) { const v = note.value, a = note.selectionStart; const ls = v.lastIndexOf('\n', a - 1) + 1; const pre = v.slice(ls, a); if (a === note.selectionEnd && /^\s*(-|\*|>|->)$/.test(pre)) { e.preventDefault(); const ind = pre.match(/^\s*/)[0]; note.value = v.slice(0, ls) + ind + '➤ ' + v.slice(a); note.selectionStart = note.selectionEnd = ls + ind.length + 2; note.dispatchEvent(new Event('input')); return; } } if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.isComposing && bulletEnter(note)) { e.preventDefault(); note.dispatchEvent(new Event('input')); return; } });
+  note.addEventListener('keydown', e => { if (e.key === 'Tab' && !e.isComposing) { const v = note.value, a = note.selectionStart; const ls = v.lastIndexOf('\n', a - 1) + 1; const m = v.slice(ls).match(/^(\s*)(•|-|➤|\*|–)\s+/); e.preventDefault();
+      if (e.shiftKey) { if (m) { note.value = v.slice(0, ls) + v.slice(ls + m[0].length); note.selectionStart = note.selectionEnd = Math.max(ls, a - m[0].length); } }
+      else if (!m) { note.value = v.slice(0, ls) + '• ' + v.slice(ls); note.selectionStart = note.selectionEnd = a + 2; }
+      note.dispatchEvent(new Event('input')); return; } if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.isComposing && bulletEnter(note)) { e.preventDefault(); note.dispatchEvent(new Event('input')); return; } });
   note.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); submit(); } else if (e.key === 'Escape' && ctx.quick) window.close(); });
   const allTags = () => { const c = {}; S.tasks.forEach(t => (t.tags || []).forEach(x => c[x] = (c[x] || 0) + 1)); ['work', 'personal', 'home', 'call', 'email', 'followup', 'waiting'].forEach(x => c[x] ||= 0); return Object.keys(c).sort((a, b) => c[b] - c[a] || a.localeCompare(b)); };
   const closePick = () => { pick.hidden = true; pk = { items: [], i: 0, start: -1 }; };
