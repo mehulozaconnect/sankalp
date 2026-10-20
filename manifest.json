@@ -52,7 +52,7 @@
   }
  ],
  "share_target": {
-  "action": "./",
+  "action": "./?share=1",
   "method": "GET",
   "params": {
    "title": "title",
