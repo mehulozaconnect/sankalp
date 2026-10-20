@@ -1447,6 +1447,7 @@ function seed() {
   };
   s.tasks.push(newTask({ title: 'Tap Add and type: Call mom kal 5pm p2, home' }));
   s.tasks.push(newTask({ title: 'Swipe a task right to finish it, left to move or pin it' }));
+  s.fresh = true; // starter data; dropped if this device signs in to an account that already has your data
   return s;
 }
 function newTask(p) { return Object.assign({ id: uid(), title: '', notes: '', projectId: null, date: null, time: null, evening: false, someday: false, priority: 4, tags: [], repeat: null, reminders: [], duration: null, subs: [], pinned: false, done: false, doneAt: null, createdAt: Date.now(), pushed: 0, firedKeys: [], snoozeUntil: 0, imgs: [], nh: true }, p); }
@@ -1473,7 +1474,7 @@ function migrate(s) {
   if (!s.settings.v3) { s.settings.v3 = true; if (s.settings.theme === 'Marigold') s.settings.theme = 'Akash'; if (s.settings.accent === '#F2A33A') s.settings.accent = ''; }
   return s;
 }
-function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && (s.v === 1 || s.v === 2)) return migrate(s); } catch (e) { } return seed(); }
+function load() { let raw = null; try { raw = localStorage.getItem(KEY); const s = JSON.parse(raw); if (s && (s.v === 1 || s.v === 2)) return migrate(s); } catch (e) { try { if (raw) localStorage.setItem(KEY + '.rescue.' + Date.now(), raw); } catch (x) { } } return seed(); }
 let S = load();
 function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('Could not save. Storage may be full.'); } }
 function save() { saveLocal(); schedulePush(); }
@@ -3287,7 +3288,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.1';
+const APPV = '5.1.2';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4254,7 +4255,26 @@ function startSync() {
     let changed = false;
     snap.docChanges().forEach(ch => { const key = dkey(ch.doc.id), v = ch.doc.data(); if (key.startsWith('claim:')) return; if (ch.type !== 'removed' && !v.x && !v.k) needK.add(key); if (ch.type === 'removed' || v.x) { if (lastSent[key] !== undefined || true) { removeEntity(key); delete lastSent[key]; changed = true; } return; } if (lastSent[key] === v.d) return; try { setEntity(key, JSON.parse(v.d)); lastSent[key] = v.d; changed = true; } catch (e) { } });
     if (changed) { saveLocal(); if (!$('#sheet').classList.contains('on')) render(); else { renderMainOnly(); } if (pageId && !$('#sheet').classList.contains('on') && document.activeElement?.id !== 'pNotes' && document.activeElement?.id !== 'pTitle') renderPage(); }
-    if (first) { first = false; syncState = 'on'; pushNow(); }
+    if (first) { first = false; syncState = 'on';
+      if (S.fresh) { // fresh install signing in to an existing account: don't upload the starter tasks, projects and templates again
+        const keys = new Set(snap.docs.map(d => dkey(d.id))); const has = k => [...keys].some(x => x.startsWith(k));
+        if (has('task:') || has('project:')) {
+          const SEEDT = ['Tap Add and type: Call mom kal 5pm p2, home', 'Swipe a task right to finish it, left to move or pin it'], SEEDP = ['Sales', 'Client demos', 'Home', 'Health'];
+          S.tasks = S.tasks.filter(t => keys.has('task:' + t.id) || !SEEDT.includes(t.title));
+          S.projects = S.projects.filter(p => keys.has('project:' + p.id) || !SEEDP.includes(p.name) || S.tasks.some(t => t.projectId === p.id));
+          if (has('tpl:')) S.templates = S.templates.filter(t => keys.has('tpl:' + t.id) || !t.builtin);
+        }
+        delete S.fresh; saveLocal(); render();
+      }
+      { // two devices joining one account: merge projects and built-in templates that share a name, drop repeated starter tasks
+        const keys = new Set(snap.docs.map(d => dkey(d.id))); let fixed = false;
+        S.projects.filter(p => !keys.has('project:' + p.id)).forEach(p => { const twin = S.projects.find(q => q !== p && keys.has('project:' + q.id) && q.name.trim().toLowerCase() === p.name.trim().toLowerCase()); if (!twin) return; S.tasks.forEach(t => { if (t.projectId === p.id) t.projectId = twin.id; }); S.projects = S.projects.filter(x => x !== p); fixed = true; });
+        S.templates.filter(t => t.builtin && !keys.has('tpl:' + t.id)).forEach(t => { if (S.templates.some(q => q !== t && keys.has('tpl:' + q.id) && q.name === t.name)) { S.templates = S.templates.filter(x => x !== t); fixed = true; } });
+        const SEEDT = ['Tap Add and type: Call mom kal 5pm p2, home', 'Swipe a task right to finish it, left to move or pin it'];
+        S.tasks.filter(t => SEEDT.includes(t.title) && !keys.has('task:' + t.id)).forEach(t => { if (S.tasks.some(q => q !== t && q.title === t.title && keys.has('task:' + q.id))) { S.tasks = S.tasks.filter(x => x !== t); fixed = true; } });
+        if (fixed) { saveLocal(); render(); }
+      }
+      pushNow(); }
   }, err => { console.warn(err); toast('Sync paused: ' + (err.code || 'error')); });
 }
 function stopSync() { if (fbUnsub) fbUnsub(); fbUnsub = null; lastSent = {}; syncState = 'off'; }
