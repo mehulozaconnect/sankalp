@@ -1890,6 +1890,15 @@ function calSources() {
   <details style="margin:6px 0 8px"><summary class="sub" style="cursor:pointer">Events received for the next 3 days (${up.length})</summary>${up.length ? up.map(e => `<div class="logrow"><span class="lt">${fmtDate(ymd(new Date(e[2])))}${e[4] ? '' : ', ' + fmtClock(e[2])}</span><span class="ln">${esc(e[1])}<small>${esc(e[5] || '')}${why(e) ? ' · ' + why(e) : ''}</small></span></div>`).join('') : '<p class="sub">None. Tap Sync now in Dayline Phone.</p>'}</details>${pc.calInfo ? `<details style="margin:0 0 8px"><summary class="sub" style="cursor:pointer">All calendars on your phone (${pc.calInfo.length})</summary>${pc.calInfo.map(c => `<div class="logrow"><span class="lt">${c[5]} events</span><span class="ln">${esc(c[0] || 'Calendar')}<small>${esc(c[1] || '')} · ${esc((c[2] || '').split('.').pop())}${c[3] ? '' : ' · hidden in calendar app'}${c[4] ? '' : ' · sync off'}</small></span></div>`).join('')}</details>` : ''}`;
 }
 const pcSkip = (cal, st) => /holiday|birthday|contacts/i.test(cal || '');
+// Meeting invites (Zoom, Teams, Outlook) often arrive as web code: keep only the words people wrote
+function cleanDesc(d) {
+  if (!d || typeof d !== 'string') return '';
+  let t = d;
+  if (/<[a-z!\/][\s\S]*>/i.test(t)) { try { const doc = new DOMParser().parseFromString(t, 'text/html'); doc.querySelectorAll('style,script,head,title,meta').forEach(x => x.remove()); doc.querySelectorAll('br,p,div,li,tr,h1,h2,h3').forEach(x => x.append('\n')); t = doc.body ? doc.body.textContent : t; } catch (e) { } }
+  for (let i = 0; i < 4; i++) t = t.replace(/(^|\n)[^\n{}]{1,200}\{[^{}]*:[^{}]*\}/g, '$1'); // CSS rules like "body { margin: 0; }"
+  t = t.replace(/@media[^{]*\{\s*\}/g, '').replace(/[ \t\u00a0]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  return t;
+}
 function applyPcal() { Object.keys(S.meetLog).forEach(k => { if (S.meetLog[k].src === 'pcal') delete S.meetLog[k]; }); ((S.pcal || {}).ev || []).forEach(([id, t, s0, e0, all, cal, join, st, loc, desc, org, att]) => { if (pcSkip(cal, st)) return; S.meetLog['pc-' + id + '-' + s0] = { id: 'pc-' + id + '-' + s0, t: t || 'Busy', s: s0, e: e0, allDay: !!all, join: join || '', src: 'pcal', cal: cal || '', dec: st === 2, loc: typeof loc === 'string' ? loc : '', desc: typeof desc === 'string' ? desc : '', org: typeof org === 'string' ? org : '', att: Array.isArray(att) ? att : [] }; }); }
 function nextOcc(md) { const td = today(); const y = new Date().getFullYear(); let d = mkDateExact(y, md); if (d < td) d = mkDateExact(y + 1, md); return d; }
 function mkDateExact(y, md) { const [m, d] = md.split('-').map(Number); let dt = new Date(y, m - 1, d); if (dt.getMonth() !== m - 1) dt = new Date(y, m - 1, 28); return ymd(dt); }
@@ -2188,7 +2197,7 @@ function meetSheet(id) {
   ${m.org ? `<div class="mi">${I.star}<span><small>Organiser</small>${esc(m.org)}</span></div>` : ''}
   ${att.length ? `<div class="mi">${I.layers}<span style="flex:1"><small>${att.length} ${att.length === 1 ? 'person' : 'people'}</small><span class="ppl">${att.slice(0, 15).map(a => `<span>${esc(a)}</span>`).join('')}${att.length > 15 ? `<span>+${att.length - 15}</span>` : ''}</span></span></div>` : ''}
   ${cal ? `<div class="mi">${I.cal}<span><small>Calendar</small>${esc(cal)}${owner ? ' · ' + esc(owner) : ''}</span></div>` : ''}
-  ${m.desc ? `<div class="mi">${I.note}<span style="flex:1;min-width:0"><small>Details</small><div class="desc">${esc(m.desc)}</div></span></div>` : ''}
+  ${cleanDesc(m.desc) ? `<div class="mi">${I.note}<span style="flex:1;min-width:0"><small>Details</small><div class="desc">${esc(cleanDesc(m.desc))}</div></span></div>` : ''}
   <div class="btnrow" style="margin-top:14px"><button class="btn sec" id="mtPrep">${I.plus}Add a prep task</button></div></div>`);
   const cp = $('#mtCopy'); if (cp) cp.onclick = () => { navigator.clipboard?.writeText(m.join).then(() => toast('Link copied')).catch(() => { }); };
   $('#mtPrep').onclick = () => { closeSheet(true); const d = new Date(m.s - 30 * 6e4); setTimeout(() => quickAdd({ prefill: 'Prep: ' + m.t.slice(0, 120), date: ymd(d), time: pad(d.getHours()) + ':' + pad(d.getMinutes()) }), 220); };
@@ -3308,7 +3317,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.2.3';
+const APPV = '5.2.4';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
