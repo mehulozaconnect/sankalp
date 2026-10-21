@@ -1077,6 +1077,22 @@ body.selmode #fab{display:none!important}
 <input type="file" id="imgIn" accept="image/*" multiple hidden>
 
 <script>
+// If something goes wrong while Dayline starts, show what happened (and a way out) instead of a frozen screen
+(function () {
+  var shown = false;
+  function fail(msg) {
+    try { localStorage.setItem('dayline.err', new Date().toISOString() + ' ' + String(msg).slice(0, 300)); } catch (e) { }
+    var m = document.getElementById('main'); if (shown || (m && m.innerHTML.trim())) return; shown = true;
+    var d = document.createElement('div'); d.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#fff;color:#111;font:16px/1.5 system-ui,sans-serif;display:flex;flex-direction:column;justify-content:center;padding:28px;gap:12px';
+    d.innerHTML = '<b style="font-size:22px">Dayline couldn\'t start</b><span>Your data is still on this device. Tap Reload. If it happens again, send a screenshot of this screen.</span><code style="font-size:12px;color:#666;word-break:break-word">' + String(msg).replace(/</g, '&lt;').slice(0, 300) + '</code><button style="height:48px;border-radius:24px;border:0;background:#111;color:#fff;font-size:16px;font-weight:700" onclick="location.reload()">Reload</button>';
+    document.body.appendChild(d);
+  }
+  window.addEventListener('error', function (e) { fail((e.message || 'error') + (e.filename ? ' @' + e.filename.split('/').pop() + ':' + e.lineno : '')); });
+  window.__bootFail = fail;
+  setTimeout(function () { var m = document.getElementById('main'); if (m && !m.innerHTML.trim()) fail('Took too long to open'); }, 12000);
+})();
+</script>
+<script>
 'use strict';
 /* ================= utilities ================= */
 const $ = (s, el = document) => el.querySelector(s);
@@ -3248,6 +3264,7 @@ function settingsAll(arg) {
   const st = S.settings; const perm = ('Notification' in window) ? Notification.permission : 'unsupported';
   let h = topbar('', 'Settings') + `<div class="pad"><h1 class="title">Settings</h1></div>`;
   h += `<div class="sechead" id="phone"><h2 class="sec">This ${isWide() ? 'computer' : 'phone'}</h2></div><div class="setsec">
+  ${(() => { let er = ''; try { er = localStorage.getItem('dayline.err') || ''; } catch (e) { } return er ? `<div class="setrow"><span class="l"><b>Last problem</b><span style="word-break:break-word">${esc(er)}</span></span><button class="pill ghost" data-act="clearerr">Clear</button></div>` : ''; })()}
   <div class="setrow"><span class="l"><b>Installed as an app</b><span>${standalone() ? 'Yes' : 'Not yet. Installing gives full screen and steadier reminders.'}</span></span>${standalone() ? '' : `<button class="pill ghost" data-act="install">Install</button>`}</div>
   <div class="setrow"><span class="l"><b>Fingerprint lock</b><span>${lockId() ? 'On. Asked when you open Dayline or come back after a minute.' : 'Ask for your fingerprint or screen lock to open Dayline.'}</span></span><button class="switch${lockId() ? ' on' : ''}" data-act="lockon" role="switch" aria-checked="${!!lockId()}" aria-label="Fingerprint lock"></button></div></div>`;
   if (!isWide() || Object.keys(S.phone || {}).length) h += `<div class="sechead" id="phoneapp"><h2 class="sec">Android app: screen time, calls, alarms</h2></div><div class="setsec">${phonePanel()}</div>`;
@@ -3288,7 +3305,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.1.2';
+const APPV = '5.1.3';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4537,6 +4554,7 @@ document.addEventListener('click', e => {
     ekdone: () => { toggleDone(id); ekSheet(); }, eknext: () => { ekIdx++; ekSheet(); },
     wrapnext: () => { const n = $('#wrapNote'); if (n) { const r = dayRec(today()); r.wrapDraft = { ...(r.wrapDraft || {}), note: n.value }; } wrapStep = Math.min(3, wrapStep + 1); save(); render(); scrollTo(0, 0); },
     wrapback: () => { const n = $('#wrapNote'); if (n) { const r = dayRec(today()); r.wrapDraft = { ...(r.wrapDraft || {}), note: n.value }; save(); } wrapStep = Math.max(0, wrapStep - 1); render(); scrollTo(0, 0); },
+    clearerr: () => { try { localStorage.removeItem('dayline.err'); } catch (e) { } render(); },
     trashrestore: () => trashRestore(id), trashkill: () => { S.trash = trash().filter(x => x.id !== id); save(); render(); toast('Deleted for good'); },
     trashempty: () => { if (!confirm('Delete everything in the Trash for good?')) return; S.trash = []; save(); render(); toast('Trash emptied'); },
     newfilter: () => filterForm(), filteredit: () => filterForm(id), selstart: () => selStart(id),
@@ -4827,7 +4845,7 @@ setTimeout(drainActs, 400);
   if (q.get('focus') && getTask(q.get('focus'))) setTimeout(() => { S.timer.taskId = q.get('focus'); resetTimer('work'); startTimer(); go('focus'); }, 400);
   if (q.toString()) history.replaceState({ sk: 'app' }, '', location.pathname + location.hash);
 })();
-render();
+try { render(); } catch (e) { window.__bootFail && window.__bootFail((e && e.message) || e); }
 if (!window.QM) showLock();
 if (S.settings.fb) fbInit().catch(e => console.warn('sync init', e));
 idb.all().then(o => { Object.assign(IMGS, o); if (pageId) renderPage(); }).catch(() => { });
