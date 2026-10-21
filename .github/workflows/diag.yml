@@ -19,10 +19,9 @@ jobs:
           P=dayline-226fb
           set +e
           {
-            T=$(gcloud auth print-access-token)
-            echo "== release"; curl -sS -H "Authorization: Bearer $T" "https://firebaserules.googleapis.com/v1/projects/$P/releases" | head -30
-            R=$(curl -sS -H "Authorization: Bearer $T" "https://firebaserules.googleapis.com/v1/projects/$P/releases/cloud.firestore" | grep -o '"rulesetName": "[^"]*' | cut -d'"' -f4)
-            echo "== ruleset $R"; curl -sS -H "Authorization: Bearer $T" "https://firebaserules.googleapis.com/v1/$R" | head -40
+            npx -y firebase-tools@15 apps:list WEB --project $P 2>&1 | tail -8
+            ID=$(npx -y firebase-tools@15 apps:list WEB --project $P --json 2>/dev/null | grep -o '"appId": *"[^"]*' | head -1 | cut -d'"' -f4)
+            npx -y firebase-tools@15 apps:sdkconfig WEB $ID --project $P 2>&1 | tail -15
           } > out.txt
           git config user.name bot; git config user.email bot@example.invalid
           git checkout -B diag-out; git add -f out.txt; git commit -qm out; git push -f origin diag-out
