@@ -19,7 +19,7 @@ jobs:
           P=dayline-226fb
           set +e
           {
-            T=$(gcloud auth print-access-token); B=https://firestore.googleapis.com/v1/projects/$P/databases/(default)/documents
+            T=$(gcloud auth print-access-token); B="https://firestore.googleapis.com/v1/projects/$P/databases/(default)/documents"
             echo "== pub"; curl -sS -H "Authorization: Bearer $T" "$B/pub" | grep -E '"name"|integerValue|"t"' | head
             echo "== pushq"; curl -sS -H "Authorization: Bearer $T" "$B/pushq" | grep -E '"name"|"u"|integerValue' | head
             echo "== users"; curl -sS -H "Authorization: Bearer $T" "$B/users?mask.fieldPaths=x" | grep '"name"' | head
