@@ -20,10 +20,17 @@ jobs:
           set +e
           {
             J=firebase-schedule-tick-asia-south1; L="--location asia-south1 --project $P"
-            gcloud scheduler jobs run dayline-tick --location us-central1 --project $P 2>&1; sleep 60
-            echo "== attempts"; for R in asia-south1 us-central1; do gcloud scheduler jobs describe dayline-tick --location $R --project $P --format='value(name,state,status,lastAttemptTime)' 2>&1; done
-            echo "== sched logs"; gcloud logging read 'resource.type="cloud_scheduler_job" AND timestamp>="'$(date -u -d '-15 min' +%FT%TZ)'"' --project $P --limit 10 --format=json 2>&1 | head -60
-            echo "== job after"; gcloud scheduler jobs list --location asia-south1 --project $P 2>&1; gcloud scheduler jobs list --location us-central1 --project $P 2>&1; gcloud scheduler jobs describe $J $L --format='value(state,status,lastAttemptTime,scheduleTime)' 2>&1
+            U=https://asia-south1-dayline-226fb.cloudfunctions.net/tick; SA=776337315217-compute@developer.gserviceaccount.com
+            echo "== direct call"; TOK=$(gcloud auth print-identity-token --audiences=$U 2>&1); curl -sS -m 60 -X POST -H "Authorization: Bearer $TOK" -H 'Content-Type: application/json' -d '{}' -w ' HTTP %{http_code}\n' $U 2>&1 | tail -3
+            echo "== reset scheduler"
+            gcloud services disable cloudscheduler.googleapis.com --project $P --force 2>&1; sleep 30
+            gcloud services enable cloudscheduler.googleapis.com --project $P 2>&1
+            gcloud beta services identity create --service=cloudscheduler.googleapis.com --project $P 2>&1
+            sleep 60
+            gcloud scheduler jobs create http dayline-tick --location asia-south1 --project $P --schedule='* * * * *' --time-zone=Asia/Kolkata --uri=$U --http-method=POST --oidc-service-account-email=$SA --oidc-token-audience=$U --attempt-deadline=60s --format='value(name)' 2>&1
+            sleep 150
+            echo "== attempts"; gcloud scheduler jobs list --location asia-south1 --project $P --format='value(name,state,status,lastAttemptTime)' 2>&1
+            echo "== job after"
             echo "== tick logs"; gcloud logging read 'timestamp>="'$(date -u -d '-12 min' +%FT%TZ)'" AND (resource.type="cloud_run_revision" OR resource.type="cloud_scheduler_job")' --project $P --limit 40 --format='value(timestamp,resource.type,severity,textPayload,jsonPayload.message,jsonPayload.status,httpRequest.status)' 2>&1
           } > out.txt
           git config user.name bot; git config user.email bot@example.invalid
