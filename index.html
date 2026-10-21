@@ -3284,7 +3284,7 @@ function settingsAll(arg) {
   <div class="setrow"><span class="l"><b>← Swipe left</b></span><select class="inp" data-set="swL" style="width:auto;min-width:170px">${SWIPE_ACTS.map(([k, l]) => `<option value="${k}"${(st.swL || 'move') === k ? ' selected' : ''}>${l}</option>`).join('')}</select></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Today and reminders</h2></div><div class="setsec">
   <div class="setrow"><span class="l"><b>Reminders on this ${isWide() ? 'computer' : 'phone'}</b><span>${perm === 'granted' ? 'On. Tap Test to see one.' : perm === 'denied' ? 'Blocked. Tap the icon left of the address bar, Permissions, Notifications, Allow. Installed app: long-press its icon, App info, Notifications.' : perm === 'unsupported' ? 'This browser cannot show reminders. Open Dayline in Chrome.' : 'Off. Turn on to get task alerts.'}</span></span>${perm === 'granted' ? `<button class="pill ghost" data-act="testnotif">Test</button>` : perm === 'default' ? `<button class="pill acc" data-act="asknotif">Turn on</button>` : ''}</div>
-  <div class="setrow"><span class="l"><b>Ring when the phone is locked</b><span>${S.settings.srvPush === false ? 'Off. Reminders ring only while Dayline is awake.' : !fbUser ? 'Sign in under Sync phone and laptop to turn this on.' : pushLive() ? 'On. Reminders reach your phone, watch and laptop on time, even when Dayline is closed.' : perm !== 'granted' ? 'Allow reminders above first.' : 'Connecting to the reminder service…'}</span></span><button type="button" class="switch${S.settings.srvPush === false ? '' : ' on'}" data-act="srvpush" role="switch" aria-checked="${S.settings.srvPush !== false}" aria-label="Ring when the phone is locked"></button></div>
+  <div class="setrow"><span class="l"><b>Ring when the phone is locked</b><span>${S.settings.srvPush === false ? 'Off. Reminders ring only while Dayline is awake.' : !fbUser ? 'Sign in under Sync phone and laptop to turn this on.' : pushLive() ? 'On. Reminders reach your phone, watch and laptop on time, even when Dayline is closed.' : perm !== 'granted' ? 'Allow reminders above first.' : !('PushManager' in window) ? 'This browser cannot get reminders while closed. Use Chrome.' : lsG('dayline.perr') ? 'Could not connect: ' + esc(lsG('dayline.perr')) + '. Switch off and on to retry.' : syncState !== 'on' ? 'Waiting for sync to connect…' : 'Connecting to the reminder service…'}</span></span><button type="button" class="switch${S.settings.srvPush === false ? '' : ' on'}" data-act="srvpush" role="switch" aria-checked="${S.settings.srvPush !== false}" aria-label="Ring when the phone is locked"></button></div>
   <div class="setrow"><span class="l"><b>Pop up on screen</b><span>Task reminders pop up over what you're doing and stay until you tap Done or Snooze. Turn off if your screen stays on too long.</span></span><button type="button" class="switch${S.settings.popRem === false ? '' : ' on'}" data-act="poprem" role="switch" aria-checked="${S.settings.popRem !== false}" aria-label="Pop up on screen"></button></div>
   <div class="setrow"><span class="l"><b>Reminder card when Dayline is open</b><span>If Dayline is on screen when a reminder is due, a card slides up from the bottom with Snooze 10, 30, 60 min, Reschedule and Done.</span></span><button type="button" class="switch${S.settings.inCard === false ? '' : ' on'}" data-act="incard" role="switch" aria-checked="${S.settings.inCard !== false}" aria-label="Reminder card when Dayline is open"></button></div>
   <div class="setrow"><span class="l"><b>Morning plan</b><span>Summary of the day and a nudge to set your objective</span></span><input class="inp" type="time" data-set="morning" value="${st.morning}" style="width:130px"></div>
@@ -3308,7 +3308,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.2';
+const APPV = '5.2.1';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4336,11 +4336,11 @@ function pushLive() { return S.settings.srvPush !== false && !!fbUser && lsG('da
 function b64u(s) { const p = '='.repeat((4 - s.length % 4) % 4); const r = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(r, c => c.charCodeAt(0)); }
 async function pushSetup(force) {
   if (!fbUser || syncState !== 'on' || S.settings.srvPush === false || !('PushManager' in window) || !('Notification' in window) || Notification.permission !== 'granted') return;
-  if (!force && Date.now() - pushChk < 5 * 6e4) return; pushChk = Date.now();
+  if (!force && Date.now() - pushChk < 5 * 6e4) return; pushChk = Date.now(); lsS('dayline.perr', '');
   try {
     const db = firebase.firestore(); const reg = swReg || await navigator.serviceWorker?.getRegistration(); if (!reg) return;
     const b = await db.doc('pub/beat').get(); const live = b.exists && Date.now() - (b.data().t || 0) < 10 * 6e4; lsS('dayline.plive', live ? '1' : '0');
-    if (!pushPub) { const v = await db.doc('pub/vapid').get(); if (!v.exists) return; pushPub = v.data().publicKey; }
+    if (!pushPub) { const v = await db.doc('pub/vapid').get(); if (!v.exists) throw new Error('service not started yet'); pushPub = v.data().publicKey; }
     let sub = await reg.pushManager.getSubscription();
     if (sub && lsG('dayline.pkey') !== pushPub) { try { await sub.unsubscribe(); } catch (e) { } sub = null; }
     if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(pushPub) });
@@ -4352,7 +4352,7 @@ async function pushSetup(force) {
     }
     lsS('dayline.psub', fbUser.uid); pushHash = ''; pushQueueNow();
     if (!live) { const c = fbConfig(); if (c) fetch(`https://asia-south1-${c.projectId}.cloudfunctions.net/act`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ u: fbUser.uid, dev: devId(), tok, type: 'kick' }) }).then(() => setTimeout(() => pushSetup(true), 8000)).catch(() => { }); } if (route().view === 'settings' && !$('#sheet').classList.contains('on')) render();
-  } catch (e) { console.warn('reminder service', e); }
+  } catch (e) { console.warn('reminder service', e); const m = (e && (e.code || e.name || '') + ' ' + (e.message || '')).trim().slice(0, 140); lsS('dayline.perr', m); if (force) toast('Reminder service: ' + m); if (route().view === 'settings') render(); }
 }
 // Every task reminder in the next 36 hours, worked out the same way the app rings them (same keys, so a reminder never rings twice)
 function pushItems() {
