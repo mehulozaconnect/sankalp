@@ -4350,7 +4350,8 @@ async function pushSetup(force) {
       await db.doc(`pushq/${fbUser.uid}/subs/${devId()}`).set({ sub: js, tok, phone: IS_PHONE, ua: navigator.userAgent.slice(0, 140), u: Date.now() });
       lsS('dayline.psig', sig); lsS('dayline.pat', String(Date.now())); lsS('dayline.pkey', pushPub);
     }
-    lsS('dayline.psub', fbUser.uid); pushHash = ''; pushQueueNow(); if (route().view === 'settings' && !$('#sheet').classList.contains('on')) render();
+    lsS('dayline.psub', fbUser.uid); pushHash = ''; pushQueueNow();
+    if (!live) { const c = fbConfig(); if (c) fetch(`https://asia-south1-${c.projectId}.cloudfunctions.net/act`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ u: fbUser.uid, dev: devId(), tok, type: 'kick' }) }).then(() => setTimeout(() => pushSetup(true), 8000)).catch(() => { }); } if (route().view === 'settings' && !$('#sheet').classList.contains('on')) render();
   } catch (e) { console.warn('reminder service', e); }
 }
 // Every task reminder in the next 36 hours, worked out the same way the app rings them (same keys, so a reminder never rings twice)

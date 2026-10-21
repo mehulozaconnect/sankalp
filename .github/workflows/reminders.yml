@@ -9,21 +9,33 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      P: dayline-226fb
+      SA: 776337315217-compute@developer.gserviceaccount.com
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check the key is there
-        env:
-          SA: ${{ secrets.FIREBASE_SA }}
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SA }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Minute timer (Cloud Tasks queue and permissions)
         run: |
-          if [ -z "$SA" ]; then echo "::error::Add the FIREBASE_SA secret first"; exit 1; fi
-          printf '%s' "$SA" > "$RUNNER_TEMP/sa.json"
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+          set +e
+          gcloud services enable cloudtasks.googleapis.com --project $P
+          gcloud tasks queues describe dayline --location asia-south1 --project $P >/dev/null 2>&1 || gcloud tasks queues create dayline --location asia-south1 --project $P --max-attempts=1
+          for R in roles/cloudtasks.enqueuer roles/iam.serviceAccountUser roles/run.invoker; do gcloud projects add-iam-policy-binding $P --member=serviceAccount:$SA --role=$R --condition=None --quiet >/dev/null && echo "ok $R"; done
+          true
       - run: npm ci
         working-directory: functions
       - name: Deploy (tries again once, the very first deploy sometimes needs a minute for Google to switch services on)
         run: |
-          npx -y firebase-tools@15 deploy --only functions,firestore:rules --project dayline-226fb --force --non-interactive \
-          || (sleep 90 && npx -y firebase-tools@15 deploy --only functions,firestore:rules --project dayline-226fb --force --non-interactive)
+          npx -y firebase-tools@15 deploy --only functions,firestore:rules --project $P --force --non-interactive \
+          || (sleep 90 && npx -y firebase-tools@15 deploy --only functions,firestore:rules --project $P --force --non-interactive)
+      - name: Start the minute timer
+        run: |
+          U=https://asia-south1-$P.cloudfunctions.net/tick
+          sleep 20
+          curl -sS -m 60 -X POST -H "Authorization: Bearer $(gcloud auth print-identity-token --audiences=$U)" -H 'Content-Type: application/json' -d '{}' -w ' HTTP %{http_code}\n' $U
