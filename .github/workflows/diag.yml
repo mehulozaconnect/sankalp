@@ -22,7 +22,8 @@ jobs:
             J=firebase-schedule-tick-asia-south1; L="--location asia-south1 --project $P"
             echo "== fix"
             SA=776337315217-compute@developer.gserviceaccount.com; U=https://asia-south1-dayline-226fb.cloudfunctions.net/tick
-            for R in asia-south1 us-central1; do
+            gcloud scheduler jobs describe dayline-tick --location asia-south1 --project $P --format='value(state,status,lastAttemptTime)' 2>&1; gcloud scheduler jobs delete dayline-tick --location asia-south1 --project $P --quiet 2>&1
+            for R in us-central1 europe-west1; do
               if gcloud scheduler jobs create http dayline-tick --location $R --project $P --schedule='* * * * *' --time-zone=Asia/Kolkata --uri=$U --http-method=POST --oidc-service-account-email=$SA --oidc-token-audience=$U --attempt-deadline=60s 2>&1; then echo "created in $R"; sleep 10; gcloud scheduler jobs run dayline-tick --location $R --project $P 2>&1; break; fi
               gcloud scheduler jobs delete dayline-tick --location $R --project $P --quiet 2>&1
             done
