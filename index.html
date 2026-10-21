@@ -1051,7 +1051,7 @@ body.selmode #fab{display:none!important}
 @media (max-width:899px){.selbar{bottom:calc(76px + env(safe-area-inset-bottom))}}
 .sbh{display:flex;align-items:center;gap:8px;padding:0 4px 8px}.sbh b{flex:1;font-size:14px}.sbh button{height:30px;padding:0 10px;border-radius:15px;background:var(--surface);font-size:12.5px;font-weight:700;display:flex;align-items:center}.sbh button svg{width:15px;height:15px}
 .sbb{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.sbb button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0;border-radius:12px;font-size:11px;font-weight:700;color:var(--ink)}.sbb button svg{width:19px;height:19px}.sbb button:hover{background:var(--surface)}.sbb button[disabled]{opacity:.35;pointer-events:none}.sbb button.dg{color:var(--danger)}
-.mvlist{display:flex;flex-direction:column}.mvlist button{display:flex;align-items:center;gap:10px;padding:12px 6px;border-bottom:1px solid var(--line);font-size:15px;font-weight:600;color:var(--ink);text-align:left}.mvlist button small{margin-left:auto;color:var(--muted);font-weight:600;font-size:12px}.mvlist button svg{width:18px;height:18px;color:var(--muted)}
+.mvlist{display:flex;flex-direction:column}.mvlist button{display:flex;align-items:center;gap:10px;padding:12px 6px;border-bottom:1px solid var(--line);font-size:15px;font-weight:600;color:var(--ink);text-align:left}.mvlist button.on{color:var(--accent-text)}.mvlist button small{margin-left:auto;color:var(--muted);font-weight:600;font-size:12px}.mvlist button svg{width:18px;height:18px;color:var(--muted)}
 .fcount{margin-top:8px;font-size:13px;font-weight:700;color:var(--accent-text)}.fq{font-family:ui-monospace,monospace;font-size:12.5px;background:var(--surface);padding:1px 6px;border-radius:6px}
 .wempty{padding:16px 4px;color:var(--muted);font-size:14px;line-height:1.45}
 .wnote-v{background:var(--surface);border-radius:14px;padding:12px 14px;font-size:14.5px;line-height:1.45;margin-bottom:6px}
@@ -3305,7 +3305,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.1.3';
+const APPV = '5.1.4';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4392,7 +4392,7 @@ function ctxMenu(x, y, id) {
   m.querySelectorAll('[data-cp]').forEach(b => b.onclick = () => { t.priority = +b.dataset.cp; done(t.priority < 4 ? 'Priority ' + t.priority : 'Priority removed'); });
   m.querySelectorAll('[data-mp]').forEach(b => b.onclick = () => { t.projectId = b.dataset.mp || null; const p = proj(t.projectId); done('Moved to ' + (p ? p.name : 'Inbox')); });
   m.querySelectorAll('[data-cm]').forEach(b => b.onclick = () => {
-    const a = b.dataset.cm; if (a === 'move') return;
+    const a = b.dataset.cm; if (a === 'move') { if (smallMenu()) { closeCtx(); moveSheet([t]); } return; }
     if (a === 'select') { closeCtx(); selStart(t.id); return; }
     if (a === 'sub') { closeCtx(); taskSheet(t.id); setTimeout(() => { const n = $('#pClNew'); if (n) n.focus(); }, 300); }
     else if (a === 'pin') { t.pinned = !t.pinned; done(t.pinned ? 'Pinned' : 'Unpinned'); }
@@ -4433,6 +4433,17 @@ function renameArea(a) {
   S.projects.forEach(p => { if (p.area === a) p.area = n; }); S.settings.areaOrder = (S.settings.areaOrder || []).map(x => x === a ? n : x);
   if ((S.settings.shut || {})[a] != null) { S.settings.shut = { ...S.settings.shut, [n]: S.settings.shut[a] }; delete S.settings.shut[a]; } save(); render();
 }
+// On phones the side submenus don't fit, so "Move to" opens a list instead
+const smallMenu = () => innerWidth < 760 || matchMedia('(pointer:coarse)').matches;
+function moveSheet(ts) {
+  openSheet(sheetHead('Move to', '', '') + `<div class="mvlist">${projSorted().map(p => `<button type="button" data-p="${p.id}" class="${ts.length === 1 && ts[0].projectId === p.id ? 'on' : ''}">${p.emoji ? `<span>${p.emoji}</span>` : `<i class="dot" style="background:${p.color}"></i>`}${esc(p.name)}<small>${esc(p.area)}</small></button>`).join('')}<button type="button" data-p="" class="${ts.length === 1 && !ts[0].projectId ? 'on' : ''}">${I.inbox}Inbox</button></div>`);
+  $$('#sheet .mvlist button').forEach(b => b.onclick = () => { closeSheet(true); ts.forEach(t => t.projectId = b.dataset.p || null); save(); render(); if (pageId) renderPage(); const p = proj(b.dataset.p); toast('Moved to ' + (p ? p.name : 'Inbox')); });
+}
+function areaSheet(pid) {
+  const p = proj(pid); if (!p) return; const others = [...new Set([...areasSorted(), 'Work', 'Personal'])].filter(a => a !== p.area);
+  openSheet(sheetHead('Move ' + esc(p.name) + ' to', '', '') + `<div class="mvlist">${others.map(a => `<button type="button" data-a="${esc(a)}">${I.layers}${esc(a)}</button>`).join('')}<button type="button" data-a="">${I.plus}New area</button></div>`);
+  $$('#sheet .mvlist button').forEach(b => b.onclick = () => { let a = b.dataset.a; if (!a) { a = (prompt('New area name') || '').trim(); if (!a) return; } closeSheet(true); sMove({ k: 'p', id: pid }, { area: a }); toast('Moved to ' + a); });
+}
 function sideMenu(x, y, k, id) {
   closeCtx(); const m = document.createElement('div'); m.id = 'ctx'; m.className = 'ctx'; m.setAttribute('role', 'menu');
   const p = k === 'p' ? proj(id) : null; if (k === 'p' && !p) return;
@@ -4443,7 +4454,7 @@ function sideMenu(x, y, k, id) {
   m.innerHTML = h; document.body.appendChild(m);
   const W = m.offsetWidth, H = m.offsetHeight; m.style.left = Math.max(8, Math.min(x, innerWidth - W - 8)) + 'px'; m.style.top = Math.max(8, Math.min(y, innerHeight - H - 8)) + 'px';
   const sub = m.querySelector('.cxsub'); if (sub) sub.onmouseenter = () => { const r = sub.getBoundingClientRect(); sub.querySelector('.cxp').classList.toggle('left', r.right + 220 > innerWidth); };
-  m.querySelectorAll('[data-sm]').forEach(b => b.onclick = () => { const a = b.dataset.sm; if (a === 'mv') return; closeCtx();
+  m.querySelectorAll('[data-sm]').forEach(b => b.onclick = () => { const a = b.dataset.sm; if (a === 'mv') { if (smallMenu()) { closeCtx(); areaSheet(id); } return; } closeCtx();
     if (a === 'open') go('project/' + id); else if (a === 'edit') projectForm(id); else if (a === 'newp') projectForm(null, id); else if (a === 'ren') renameArea(id);
     else if (a === 'up' || a === 'down') sStep(k, id, a === 'up' ? -1 : 1); });
   m.querySelectorAll('[data-ma]').forEach(b => b.onclick = () => { closeCtx(); let a = b.dataset.ma; if (!a) { a = (prompt('New area name') || '').trim(); if (!a) return; } sMove({ k: 'p', id }, { area: a }); toast('Moved to ' + a); });
