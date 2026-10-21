@@ -1493,7 +1493,7 @@ function migrate(s) {
 function load() { let raw = null; try { raw = localStorage.getItem(KEY); const s = JSON.parse(raw); if (s && (s.v === 1 || s.v === 2)) return migrate(s); } catch (e) { try { if (raw) localStorage.setItem(KEY + '.rescue.' + Date.now(), raw); } catch (x) { } } return seed(); }
 let S = load();
 function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('Could not save. Storage may be full.'); } }
-function save() { saveLocal(); schedulePush(); }
+function save() { saveLocal(); schedulePush(); pushQueueSoon(); }
 
 const getTask = id => S.tasks.find(t => t.id === id);
 const proj = id => S.projects.find(p => p.id === id);
@@ -3284,6 +3284,7 @@ function settingsAll(arg) {
   <div class="setrow"><span class="l"><b>← Swipe left</b></span><select class="inp" data-set="swL" style="width:auto;min-width:170px">${SWIPE_ACTS.map(([k, l]) => `<option value="${k}"${(st.swL || 'move') === k ? ' selected' : ''}>${l}</option>`).join('')}</select></div></div>`;
   h += `<div class="sechead"><h2 class="sec">Today and reminders</h2></div><div class="setsec">
   <div class="setrow"><span class="l"><b>Reminders on this ${isWide() ? 'computer' : 'phone'}</b><span>${perm === 'granted' ? 'On. Tap Test to see one.' : perm === 'denied' ? 'Blocked. Tap the icon left of the address bar, Permissions, Notifications, Allow. Installed app: long-press its icon, App info, Notifications.' : perm === 'unsupported' ? 'This browser cannot show reminders. Open Dayline in Chrome.' : 'Off. Turn on to get task alerts.'}</span></span>${perm === 'granted' ? `<button class="pill ghost" data-act="testnotif">Test</button>` : perm === 'default' ? `<button class="pill acc" data-act="asknotif">Turn on</button>` : ''}</div>
+  <div class="setrow"><span class="l"><b>Ring when the phone is locked</b><span>${S.settings.srvPush === false ? 'Off. Reminders ring only while Dayline is awake.' : !fbUser ? 'Sign in under Sync phone and laptop to turn this on.' : pushLive() ? 'On. Reminders reach your phone, watch and laptop on time, even when Dayline is closed.' : perm !== 'granted' ? 'Allow reminders above first.' : 'Connecting to the reminder service…'}</span></span><button type="button" class="switch${S.settings.srvPush === false ? '' : ' on'}" data-act="srvpush" role="switch" aria-checked="${S.settings.srvPush !== false}" aria-label="Ring when the phone is locked"></button></div>
   <div class="setrow"><span class="l"><b>Pop up on screen</b><span>Task reminders pop up over what you're doing and stay until you tap Done or Snooze. Turn off if your screen stays on too long.</span></span><button type="button" class="switch${S.settings.popRem === false ? '' : ' on'}" data-act="poprem" role="switch" aria-checked="${S.settings.popRem !== false}" aria-label="Pop up on screen"></button></div>
   <div class="setrow"><span class="l"><b>Reminder card when Dayline is open</b><span>If Dayline is on screen when a reminder is due, a card slides up from the bottom with Snooze 10, 30, 60 min, Reschedule and Done.</span></span><button type="button" class="switch${S.settings.inCard === false ? '' : ' on'}" data-act="incard" role="switch" aria-checked="${S.settings.inCard !== false}" aria-label="Reminder card when Dayline is open"></button></div>
   <div class="setrow"><span class="l"><b>Morning plan</b><span>Summary of the day and a nudge to set your objective</span></span><input class="inp" type="time" data-set="morning" value="${st.morning}" style="width:130px"></div>
@@ -3307,7 +3308,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.1.6';
+const APPV = '5.2';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4252,7 +4253,7 @@ function entities() {
   const o = {}; S.tasks.forEach(t => o['task:' + t.id] = t); S.projects.forEach(p => o['project:' + p.id] = p); S.habits.forEach(h => o['habit:' + h.id] = h);
   S.focus.forEach(f => o['focus:' + f.id] = f); S.dates.forEach(d => o['date:' + d.id] = d); (S.goals || []).forEach(g => o['goal:' + g.id] = g); S.templates.forEach(t => o['tpl:' + t.id] = t); Object.values(S.meetLog).forEach(m => { if (m.src !== 'pcal') o['meet:' + m.id] = m; }); if (S.pcal) o['pcal:' + (S.pcal.id || 'all')] = S.pcal; o['meta:coach'] = coachBrief(); Object.keys(IMGS).forEach(id => o['img:' + id] = { id, data: IMGS[id] }); (S.logs || []).forEach(l => o['log:' + l.id] = l); Object.values(S.phone || {}).forEach(p => o['phone:' + p.id] = p); o['meta:cur'] = { c: S.cur || null }; o['meta:rv'] = { v: remSig() }; if (S.remAck) o['meta:ack'] = S.remAck;
   const st = S.settings; o['meta:days'] = S.days; if (S.water) o['meta:water'] = S.water; (S.trash || []).forEach(x => o['trash:' + x.id] = x); (S.filters || []).forEach(f => o['filter:' + f.id] = f); if (S.rw) o['meta:rw'] = S.rw; o['meta:plan'] = S.plan; o['meta:hsec'] = S.habitSections;
-  o['meta:prefs'] = { phoneOff: !!st.phoneOff, coach: coachSet(), appmap: st.appmap, nagDef: st.nagDef, workStart: st.workStart, checkin: st.checkin, catv: st.catv, aiModel: st.aiModel, aiPrivate: st.aiPrivate, logo: st.logo, darkStyle: st.darkStyle, gcid: st.gcid, theme: st.theme, mode: st.mode, accent: st.accent, font: st.font, pomo: st.pomo, brk: st.brk, morning: st.morning, shutdown: st.shutdown, meetBefore: st.meetBefore, quietOn: st.quietOn, quietStart: st.quietStart, quietEnd: st.quietEnd, shield: st.shield, showDone: st.showDone, todayGroup: st.todayGroup, fx: st.fx, popRem: st.popRem, inCard: st.inCard };
+  o['meta:prefs'] = { phoneOff: !!st.phoneOff, coach: coachSet(), appmap: st.appmap, nagDef: st.nagDef, workStart: st.workStart, checkin: st.checkin, catv: st.catv, aiModel: st.aiModel, aiPrivate: st.aiPrivate, logo: st.logo, darkStyle: st.darkStyle, gcid: st.gcid, theme: st.theme, mode: st.mode, accent: st.accent, font: st.font, pomo: st.pomo, brk: st.brk, morning: st.morning, shutdown: st.shutdown, meetBefore: st.meetBefore, quietOn: st.quietOn, quietStart: st.quietStart, quietEnd: st.quietEnd, shield: st.shield, showDone: st.showDone, todayGroup: st.todayGroup, fx: st.fx, popRem: st.popRem, inCard: st.inCard, srvPush: st.srvPush };
   return o;
 }
 function setEntity(key, val) {
@@ -4272,7 +4273,7 @@ function startSync() {
   stopSync(); const colRef = firebase.firestore().collection('users').doc(fbUser.uid).collection('items'); let first = true;
   fbUnsub = colRef.onSnapshot(snap => {
     let changed = false;
-    snap.docChanges().forEach(ch => { const key = dkey(ch.doc.id), v = ch.doc.data(); if (key.startsWith('claim:')) return; if (ch.type !== 'removed' && !v.x && !v.k) needK.add(key); if (ch.type === 'removed' || v.x) { if (lastSent[key] !== undefined || true) { removeEntity(key); delete lastSent[key]; changed = true; } return; } if (lastSent[key] === v.d) return; try { setEntity(key, JSON.parse(v.d)); lastSent[key] = v.d; changed = true; } catch (e) { } });
+    snap.docChanges().forEach(ch => { const key = dkey(ch.doc.id), v = ch.doc.data(); if (key.startsWith('claim:')) return; if (key.startsWith('pact:')) { if (ch.type !== 'removed') { try { const o = JSON.parse(v.d); closeTag(o.tag); } catch (e) { } } return; } if (ch.type !== 'removed' && !v.x && !v.k) needK.add(key); if (ch.type === 'removed' || v.x) { if (lastSent[key] !== undefined || true) { removeEntity(key); delete lastSent[key]; changed = true; } return; } if (lastSent[key] === v.d) return; try { setEntity(key, JSON.parse(v.d)); lastSent[key] = v.d; changed = true; } catch (e) { } });
     if (changed) { saveLocal(); if (!$('#sheet').classList.contains('on')) render(); else { renderMainOnly(); } if (pageId && !$('#sheet').classList.contains('on') && document.activeElement?.id !== 'pNotes' && document.activeElement?.id !== 'pTitle') renderPage(); }
     if (first) { first = false; syncState = 'on';
       if (S.fresh) { // fresh install signing in to an existing account: don't upload the starter tasks, projects and templates again
@@ -4293,7 +4294,7 @@ function startSync() {
         S.tasks.filter(t => SEEDT.includes(t.title) && !keys.has('task:' + t.id)).forEach(t => { if (S.tasks.some(q => q !== t && q.title === t.title && keys.has('task:' + q.id))) { S.tasks = S.tasks.filter(x => x !== t); fixed = true; } });
         if (fixed) { saveLocal(); render(); }
       }
-      pushNow(); }
+      pushNow(); setTimeout(() => pushSetup(true), 1500); }
   }, err => { console.warn(err); toast('Sync paused: ' + (err.code || 'error')); });
 }
 function stopSync() { if (fbUnsub) fbUnsub(); fbUnsub = null; lastSent = {}; syncState = 'off'; }
@@ -4325,6 +4326,77 @@ function pokePhone() {
     location.href = 'sankalp://sync';
   } catch (e) { }
 }
+
+/* ================= reminder service: rings phone, watch and laptop even when Dayline is asleep ================= */
+let pushPub = null, pushHash = '', pushQT = 0, pushChk = 0; const pushShown = new Set();
+const lsG = k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, lsS = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { } };
+function devId() { let d = lsG('dayline.dev'); if (!d) { d = 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); lsS('dayline.dev', d); } return d; }
+// On when this device is registered with the reminder service and the service was running at the last check
+function pushLive() { return S.settings.srvPush !== false && !!fbUser && lsG('dayline.psub') === fbUser.uid && lsG('dayline.plive') === '1'; }
+function b64u(s) { const p = '='.repeat((4 - s.length % 4) % 4); const r = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(r, c => c.charCodeAt(0)); }
+async function pushSetup(force) {
+  if (!fbUser || syncState !== 'on' || S.settings.srvPush === false || !('PushManager' in window) || !('Notification' in window) || Notification.permission !== 'granted') return;
+  if (!force && Date.now() - pushChk < 5 * 6e4) return; pushChk = Date.now();
+  try {
+    const db = firebase.firestore(); const reg = swReg || await navigator.serviceWorker?.getRegistration(); if (!reg) return;
+    const b = await db.doc('pub/beat').get(); const live = b.exists && Date.now() - (b.data().t || 0) < 10 * 6e4; lsS('dayline.plive', live ? '1' : '0');
+    if (!pushPub) { const v = await db.doc('pub/vapid').get(); if (!v.exists) return; pushPub = v.data().publicKey; }
+    let sub = await reg.pushManager.getSubscription();
+    if (sub && lsG('dayline.pkey') !== pushPub) { try { await sub.unsubscribe(); } catch (e) { } sub = null; }
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(pushPub) });
+    const js = JSON.parse(JSON.stringify(sub)); let tok = lsG('dayline.ptok'); if (!tok) { tok = Array.from(crypto.getRandomValues(new Uint8Array(18)), x => x.toString(16).padStart(2, '0')).join(''); lsS('dayline.ptok', tok); }
+    const sig = fbUser.uid + '|' + js.endpoint;
+    if (force || lsG('dayline.psig') !== sig || Date.now() - (+lsG('dayline.pat') || 0) > 3 * 864e5) {
+      await db.doc(`pushq/${fbUser.uid}/subs/${devId()}`).set({ sub: js, tok, phone: IS_PHONE, ua: navigator.userAgent.slice(0, 140), u: Date.now() });
+      lsS('dayline.psig', sig); lsS('dayline.pat', String(Date.now())); lsS('dayline.pkey', pushPub);
+    }
+    lsS('dayline.psub', fbUser.uid); pushHash = ''; pushQueueNow(); if (route().view === 'settings' && !$('#sheet').classList.contains('on')) render();
+  } catch (e) { console.warn('reminder service', e); }
+}
+// Every task reminder in the next 36 hours, worked out the same way the app rings them (same keys, so a reminder never rings twice)
+function pushItems() {
+  const now = Date.now(), lo = now - 20 * 6e4, hi = now + 36 * 3600e3, st = S.settings, out = [];
+  const quietAt = ms => { if (!st.quietOn) return false; const d = new Date(ms), hm = pad(d.getHours()) + ':' + pad(d.getMinutes()); return st.quietStart <= st.quietEnd ? (hm >= st.quietStart && hm < st.quietEnd) : (hm >= st.quietStart || hm < st.quietEnd); };
+  S.tasks.forEach(t => {
+    if (t.done || t.someday) return; const p = proj(t.projectId), nag = nagOf(t);
+    const run = (who, list) => { // list: anchors [{at,k,body,nags}], nags stop at the next anchor
+      list.sort((a, b) => a.at - b.at);
+      list.forEach((a, i) => { const stop = list[i + 1] ? list[i + 1].at : Infinity; const tg = a.tag || who.tag; const its = [{ ...who, tag: tg, k: a.k, at: a.at, body: a.body }];
+        if (a.nags && nag) for (let n = 1; n <= NAG_MAX; n++) { const at = a.at + n * nag * 6e4; if (at >= stop) break; its.push({ ...who, k: a.k + '|n' + n, at, body: who.nagBody }); }
+        its.forEach(x => { if (x.at >= lo && x.at <= hi && !(t.priority !== 1 && quietAt(x.at))) { const o = { ...x }; delete o.nagBody; out.push(o); } }); });
+    };
+    const A = [];
+    if (t.date && (t.reminders || []).length) { const base = t.time || '09:00'; const [h, m] = base.split(':').map(Number);
+      t.reminders.forEach(mins => { const d = pYmd(t.date); d.setHours(h, m - mins, 0, 0); const key = t.date + base + mins;
+        const when = mins >= 1440 ? (mins === 1440 ? 'Tomorrow' : `In ${mins / 1440} days`) + (t.time ? ' at ' + fmtTime(t.time) : '') : mins ? `In ${fmtMins(mins)}, at ${fmtTime(base)}` : t.time ? 'Now, ' + fmtTime(t.time) : 'Today';
+        A.push({ at: d.getTime(), k: 't' + t.id + key, body: when + (p ? `. ${p.name}` : ''), nags: mins <= 60, tag: 't' + t.id + mins }); }); }
+    if (t.snoozeUntil) A.push({ at: t.snoozeUntil, k: 't' + t.id + '|z' + t.snoozeUntil, body: 'Snoozed reminder', nags: true, tag: 't' + t.id });
+    const zt = t.snoozeUntil > now ? t.snoozeUntil : 0; const A2 = zt ? A.filter(a => a.at >= zt || a.at < now - 6e4) : A;
+    run({ id: t.id, title: t.title, tag: 't' + t.id, p: t.priority, nagBody: 'Still not done' }, A2);
+    (t.subs || []).forEach(c => { if (c.d) return; const B = [];
+      if (c.at) { const at = new Date(c.at).getTime(); if (!isNaN(at)) B.push({ at, k: 's' + c.id + c.at, body: `Part of ${t.title}${p ? ' · ' + p.name : ''}`, nags: true }); }
+      if (c.snoozeUntil) B.push({ at: c.snoozeUntil, k: 's' + c.id + '|z' + c.snoozeUntil, body: `Snoozed. Part of ${t.title}`, nags: true });
+      const zc = c.snoozeUntil > now ? c.snoozeUntil : 0; run({ id: t.id, sub: c.id, title: c.t, ptitle: t.title, tag: 's' + c.id, p: t.priority, nagBody: `Still not done. Part of ${t.title}` }, zc ? B.filter(a => a.at >= zc || a.at < now - 6e4) : B); });
+  });
+  return out.sort((a, b) => a.at - b.at).slice(0, 250);
+}
+function pushQueueSoon() { if (!fbUser || lsG('dayline.psub') !== fbUser.uid) return; clearTimeout(pushQT); pushQT = setTimeout(pushQueueNow, 1500); }
+async function pushQueueNow() {
+  clearTimeout(pushQT); if (!fbUser || syncState !== 'on' || lsG('dayline.psub') !== fbUser.uid) return;
+  try { const items = S.settings.srvPush === false ? [] : pushItems(); const extra = { pop: S.settings.popRem !== false, card: S.settings.inCard !== false };
+    const h = JSON.stringify([items, extra]); if (h === pushHash) return; pushHash = h;
+    await firebase.firestore().doc(`pushq/${fbUser.uid}`).set({ items, ...extra, u: Date.now(), by: devId() });
+  } catch (e) { pushHash = ''; console.warn('reminder queue', e); }
+}
+// Dayline is open on screen when a reminder is due: show the card from the bottom (the service then skips it)
+function pushCardTick() {
+  if (!pushLive() || document.visibilityState !== 'visible' || S.settings.inCard === false || $('#sheet').classList.contains('on') || $('#page').classList.contains('on')) return;
+  const now = Date.now(); const it = pushItems().find(x => x.at <= now && now - x.at < 2 * 6e4 && !pushShown.has(x.k)); if (!it) return; pushShown.add(it.k);
+  claimFire(it.k).then(ok => { if (!ok) return; const t = getTask(it.id), c = t && it.sub ? (t.subs || []).find(x => x.id === it.sub) : null; if (t && !t.done && (!it.sub || (c && !c.d))) { try { navigator.vibrate?.([200, 100, 200]); } catch (e) { } laterSheet(t, c || undefined); } });
+}
+async function closeTag(tag) { try { const reg = swReg || await navigator.serviceWorker?.getRegistration(); if (!reg || !tag) return; (await reg.getNotifications({ tag })).forEach(n => n.close()); } catch (e) { } }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') pushQueueNow(); else pushSetup(); });
+setInterval(() => { pushSetup(); pushQueueSoon(); }, 5 * 6e4);
 
 /* ================= render ================= */
 function viewHtml() {
@@ -4568,6 +4640,7 @@ document.addEventListener('click', e => {
     wrapnext: () => { const n = $('#wrapNote'); if (n) { const r = dayRec(today()); r.wrapDraft = { ...(r.wrapDraft || {}), note: n.value }; } wrapStep = Math.min(3, wrapStep + 1); save(); render(); scrollTo(0, 0); },
     wrapback: () => { const n = $('#wrapNote'); if (n) { const r = dayRec(today()); r.wrapDraft = { ...(r.wrapDraft || {}), note: n.value }; save(); } wrapStep = Math.max(0, wrapStep - 1); render(); scrollTo(0, 0); },
     incard: () => { S.settings.inCard = S.settings.inCard === false; save(); render(); },
+    srvpush: () => { S.settings.srvPush = S.settings.srvPush === false; save(); pushHash = ''; if (S.settings.srvPush) pushSetup(true); else pushQueueNow(); render(); toast(S.settings.srvPush ? 'Reminders will ring even when Dayline is closed' : 'Reminders ring only while Dayline is awake'); },
     poprem: () => { S.settings.popRem = S.settings.popRem === false; save(); render(); toast(S.settings.popRem ? 'Reminders will pop up on screen' : 'Reminders go quietly to the notification list'); },
     clearerr: () => { try { localStorage.removeItem('dayline.err'); } catch (e) { } render(); },
     trashrestore: () => trashRestore(id), trashkill: () => { S.trash = trash().filter(x => x.id !== id); save(); render(); toast('Deleted for good'); },
@@ -4654,7 +4727,7 @@ let swReg = null;
 if ('serviceWorker' in navigator && location.protocol !== 'file:') { navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(r => { swReg = r; r.update().catch(() => { }); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') r.update().catch(() => { }); }); }).catch(() => { });
   /* A new version was installed: switch to it when you're not in the middle of typing */
   let swHad = !!navigator.serviceWorker.controller, swReload = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!swHad) { swHad = true; return; } if (swReload || window.QM) return; const go = () => { if (swReload) return; if ($('#sheet').classList.contains('on') || $('#page').classList.contains('on') || /INPUT|TEXTAREA/.test(document.activeElement?.tagName || '') || document.activeElement?.isContentEditable) { setTimeout(go, 4000); return; } swReload = true; saveLocal(); location.reload(); }; go(); }); navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'drain') drainActs(); else handleAction(e.data); }); }
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!swHad) { swHad = true; return; } if (swReload || window.QM) return; const go = () => { if (swReload) return; if ($('#sheet').classList.contains('on') || $('#page').classList.contains('on') || /INPUT|TEXTAREA/.test(document.activeElement?.tagName || '') || document.activeElement?.isContentEditable) { setTimeout(go, 4000); return; } swReload = true; saveLocal(); location.reload(); }; go(); }); navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'drain') drainActs(); else if (e.data && e.data.type === 'card') { if (!$('#sheet').classList.contains('on')) handleAction({ type: 'later', id: e.data.id, sub: e.data.sub }); } else handleAction(e.data); }); }
 let draining = false;
 async function drainActs() {
   if (draining || !('caches' in window)) return; draining = true;
@@ -4767,7 +4840,7 @@ try { if (!remLeader) navigator.locks.request('sankalp-reminders', () => { remLe
 function tick() {
   sweepSoon(); if (!remLeader) return;
   try { waterTick(Date.now()); } catch (e) { }
-  const now = Date.now(), td = today(), hm = nowHM(); let changed = false; const quiet = inQuiet(), shield = shielded(); let missed = 0;
+  const now = Date.now(), td = today(), hm = nowHM(); let changed = false; const quiet = inQuiet(), shield = shielded(); let missed = 0; const srv = pushLive(); if (srv) pushCardTick();
   const nativeRem = phoneLinked() && Object.keys(S.phone || {}).length && S.remAck && S.remAck.v === remSig();
   S.tasks.forEach(t => {
     if (t.done || nativeRem) return; const hold = (quiet || shield) && t.priority !== 1;
@@ -4775,6 +4848,7 @@ function tick() {
     // Moved to later (or no date any more): stop "still not done" and old snoozes for it
     { const due = t.date && !t.someday ? pYmd(t.date).getTime() + hm2m(t.time || '09:00') * 6e4 : Infinity; if (due > now + 6e4 && (t.nagAt || t.snoozeUntil)) { t.nagAt = 0; t.nagN = 0; t.snoozeUntil = 0; changed = true; } }
     t.subs.forEach(c => { if (!c.d && c.at && new Date(c.at).getTime() > now + 6e4 && (c.nagAt || c.snoozeUntil)) { c.nagAt = 0; c.nagN = 0; c.snoozeUntil = 0; changed = true; } });
+    if (srv) return; // the reminder service rings it (on every device, even asleep)
     if (t.snoozeUntil && now >= t.snoozeUntil && !hold) { const ck = 't' + t.id + '|z' + t.snoozeUntil; t.snoozeUntil = 0; startNag(t, nag); changed = true; notify(t.title, 'Snoozed reminder', 't' + t.id, { id: t.id }, true, ck); return; }
     if (t.nagAt && now >= t.nagAt && !hold) { const ck = 't' + t.id + '|n' + t.nagAt; t.nagN = (t.nagN || 0) + 1; t.nagAt = nag && t.nagN < NAG_MAX ? now + nag * 6e4 : 0; changed = true; notify(t.title, 'Still not done', 't' + t.id, { id: t.id }, true, ck); }
     t.subs.forEach(c => {

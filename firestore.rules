@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // your tasks, projects, habits... only you can read or change them
+    match /users/{uid}/{doc=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+    // reminders your devices hand to the reminder service, and where to send them
+    match /pushq/{uid}/{doc=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+    // the reminder service's public key and heartbeat
+    match /pub/{doc} {
+      allow read: if true;
+    }
+  }
+}

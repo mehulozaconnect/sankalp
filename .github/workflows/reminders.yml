@@ -1,0 +1,29 @@
+name: Reminder service
+
+on:
+  push:
+    branches: [main]
+    paths: ['functions/**', 'firestore.rules', 'firebase.json', '.github/workflows/reminders.yml']
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check the key is there
+        env:
+          SA: ${{ secrets.FIREBASE_SA }}
+        run: |
+          if [ -z "$SA" ]; then echo "::error::Add the FIREBASE_SA secret first"; exit 1; fi
+          printf '%s' "$SA" > "$RUNNER_TEMP/sa.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+      - run: npm ci
+        working-directory: functions
+      - name: Deploy (tries again once, the very first deploy sometimes needs a minute for Google to switch services on)
+        run: |
+          npx -y firebase-tools@15 deploy --only functions,firestore:rules --project dayline-226fb --force --non-interactive \
+          || (sleep 90 && npx -y firebase-tools@15 deploy --only functions,firestore:rules --project dayline-226fb --force --non-interactive)

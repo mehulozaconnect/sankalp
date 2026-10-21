@@ -1,5 +1,5 @@
 // Dayline service worker: offline app shell + notification buttons
-const CACHE = 'sankalp-v99';
+const CACHE = 'sankalp-v100';
 const ACTS = 'dayline-acts'; // taps on Done/Snooze waiting for the app (works even if the app was asleep or closed)
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
@@ -34,6 +34,26 @@ self.addEventListener('fetch', e => {
   e.respondWith(caches.match(req).then(hit => hit || fetch(req)));
 });
 
+// A reminder from the Dayline reminder service: arrives even when the phone is locked and Dayline is asleep
+self.addEventListener('push', e => {
+  let p = null; try { p = e.data && e.data.json(); } catch (x) { }
+  if (!p || !p.title) return;
+  e.waitUntil((async () => {
+    const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const vis = all.find(c => c.visibilityState === 'visible' && c.focused);
+    // Dayline is open on screen: show the card from the bottom instead
+    if (vis && p.card !== false && p.data && p.data.id) { vis.postMessage({ type: 'card', id: p.data.id, sub: p.data.sub }); return; }
+    const mx = (self.Notification && Notification.maxActions) || 2;
+    const actions = mx >= 3 ? [{ action: 'done', title: 'Done' }, { action: 'snooze', title: 'Snooze 10 min' }, { action: 'later', title: 'Snooze…' }] : [{ action: 'done', title: 'Done' }, { action: 'later', title: 'Snooze…' }];
+    await self.registration.showNotification(p.title, { body: p.body || '', tag: p.tag || 'dayline', data: p.data || {}, icon: 'icon-192.png', badge: 'icon-192.png', renotify: true, requireInteraction: p.pop !== false, vibrate: [200, 100, 200], actions });
+  })());
+});
+// Tell the reminder service about a Done / Snooze, so it stops (or re-rings later) even while the app sleeps
+function tellServer(data, body) {
+  if (!data || !data.fn || !data.tok) return Promise.resolve();
+  return fetch(data.fn, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ u: data.u, dev: data.dev, tok: data.tok, id: data.id, sub: data.sub || null, title: data.title || '', ptitle: data.ptitle || '', ...body }) }).catch(() => { });
+}
+
 // Swiped away on this device: tell the app so the same reminder closes on your other device
 self.addEventListener('notificationclose', e => {
   const data = e.notification.data || {}; if (!data.id) return;
@@ -61,8 +81,10 @@ self.addEventListener('notificationclick', e => {
     const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     if ((type === 'done' || type === 'snooze') && data.id) {
       // Save the tap first, so it is never lost (watch taps arrive while the app is asleep). The app applies it as soon as it runs.
-      const c = await caches.open(ACTS); await c.put(new Request('./__act/' + Date.now() + '-' + Math.random().toString(36).slice(2)), new Response(JSON.stringify({ type, id: data.id, sub: data.sub || null, mins: sm ? +sm[1] : (type === 'snooze' ? 10 : 0), at: Date.now() })));
+      const at = Date.now(), mins = sm ? +sm[1] : (type === 'snooze' ? 10 : 0);
+      const c = await caches.open(ACTS); await c.put(new Request('./__act/' + at + '-' + Math.random().toString(36).slice(2)), new Response(JSON.stringify({ type, id: data.id, sub: data.sub || null, mins, at })));
       all.forEach(w => w.postMessage({ type: 'drain' }));
+      await tellServer(data, { type, mins, at, tag: n.tag });
       return;
     }
     if (all.length) {
