@@ -3308,7 +3308,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.2.2';
+const APPV = '5.2.3';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4227,10 +4227,15 @@ let fbApp = null, fbUser = null, fbUnsub = null, lastSent = {}, pushT = null, sy
 function syncPanel() {
   if (fbUser) return `<div class="setrow"><span class="l"><b><span class="syncdot"></span>Synced as ${esc(fbUser.email || 'your Google account')}</b><span>Changes on this device reach your other devices within seconds.</span></span><button class="pill ghost" data-act="fbout">Sign out</button></div>`;
   const has = !!S.settings.fb;
+  if ((fbConfig() || {}).projectId === FB_HOME) return `<p class="sub" style="line-height:1.5;margin:0 0 6px">${S.settings.fbMoved ? 'Dayline moved this device to your main sync account. Sign in once with your <b>personal Gmail</b> and your phone and laptop share the same tasks again.' : 'Sign in with your <b>personal Gmail</b> to keep phone and laptop in step.'}</p>
+  <div class="btnrow" style="margin-top:4px"><button class="btn" data-act="fbin">${I.sync}Sign in with Google</button></div>`;
   return `<p class="sub" style="line-height:1.5;margin:0 0 6px">Uses your own free Firebase project on your <b>personal Gmail</b>. One-time setup, about 10 minutes; steps are in the README.</p>
   <div class="field"><label for="fbCfg">Firebase config</label><textarea class="inp" id="fbCfg" style="min-height:100px;font-size:13px" placeholder="Paste the firebaseConfig block from Firebase, Project settings, Your apps" spellcheck="false">${esc(S.settings.fb)}</textarea></div>
   <div class="btnrow" style="margin-top:4px"><button class="btn" data-act="fbin">${I.sync}${has ? 'Sign in with Google' : 'Save and sign in'}</button></div>`;
 }
+// Your Dayline Firebase project (public web settings, safe to ship). Every device uses this one, so phone and laptop always share the same data.
+const FB_HOME = 'dayline-226fb';
+const FB_BUILTIN = `const firebaseConfig = { apiKey: "AIzaSyAAn_4jV1rGLs4lHVLdVej9oq0wS73FL-k", authDomain: "dayline-226fb.firebaseapp.com", projectId: "dayline-226fb", storageBucket: "dayline-226fb.firebasestorage.app", messagingSenderId: "776337315217", appId: "1:776337315217:web:5c5c490cf9cbbdf7eef630" };`;
 function fbConfig() { const t = S.settings.fb || ''; const g = k => (t.match(new RegExp(k + '\\s*["\']?\\s*:\\s*["\']([^"\']+)["\']')) || [])[1]; const c = { apiKey: g('apiKey'), authDomain: g('authDomain'), projectId: g('projectId'), appId: g('appId'), storageBucket: g('storageBucket'), messagingSenderId: g('messagingSenderId') }; return c.apiKey && c.projectId && c.authDomain ? c : null; }
 async function fbInit() {
   const cfg = fbConfig(); if (!cfg) return null; if (fbApp) return fbApp;
@@ -4944,7 +4949,9 @@ setTimeout(drainActs, 400);
 })();
 try { render(); } catch (e) { window.__bootFail && window.__bootFail((e && e.message) || e); }
 if (!window.QM) showLock();
-if (S.settings.fb) fbInit().catch(e => console.warn('sync init', e));
+{ const cur = (fbConfig() || {}).projectId; if (cur !== FB_HOME) { if (cur) S.settings.fbMoved = cur; S.settings.fb = FB_BUILTIN; saveLocal(); } }
+fbInit().catch(e => console.warn('sync init', e));
+if (S.settings.fbMoved && !window.QM) setTimeout(() => { if (!fbUser && authKnown) { toast('One-time step: sign in to sync again'); go('settings/sync'); } }, 4000);
 idb.all().then(o => { Object.assign(IMGS, o); if (pageId) renderPage(); }).catch(() => { });
 if (gValid()) gSync(false);
 tick();
