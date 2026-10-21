@@ -18,9 +18,10 @@ jobs:
         run: |
           P=dayline-226fb
           {
-            echo "== functions"; gcloud functions list --project $P 2>&1
-            echo "== scheduler"; gcloud scheduler jobs list --location asia-south1 --project $P 2>&1
-            echo "== logs"; gcloud logging read 'resource.type=("cloud_run_revision" OR "cloud_function" OR "cloud_scheduler_job")' --project $P --freshness=1h --limit 60 --format='value(timestamp,severity,textPayload,jsonPayload.message,jsonPayload.status,httpRequest.status)' 2>&1
+            echo "== job"; gcloud scheduler jobs describe firebase-schedule-tick-asia-south1 --location asia-south1 --project $P 2>&1
+            echo "== tick service"; gcloud run services describe tick --region asia-south1 --project $P --format='value(status.url,spec.template.spec.serviceAccountName)' 2>&1
+            echo "== tick iam"; gcloud run services get-iam-policy tick --region asia-south1 --project $P 2>&1
+            echo "== recent logs all"; gcloud logging read 'timestamp>="'$(date -u -d '-20 min' +%FT%TZ)'"' --project $P --limit 40 --format='value(timestamp,resource.type,severity,textPayload,jsonPayload.message,jsonPayload.status,jsonPayload.debugInfo,httpRequest.status,protoPayload.status.message)' 2>&1
           } > out.txt
           git config user.name bot; git config user.email bot@example.invalid
           git checkout -B diag-out; git add -f out.txt; git commit -qm out; git push -f origin diag-out
