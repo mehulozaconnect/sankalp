@@ -18,10 +18,11 @@ jobs:
         run: |
           P=dayline-226fb
           {
-            echo "== job"; gcloud scheduler jobs describe firebase-schedule-tick-asia-south1 --location asia-south1 --project $P 2>&1
-            echo "== tick service"; gcloud run services describe tick --region asia-south1 --project $P --format='value(status.url,spec.template.spec.serviceAccountName)' 2>&1
-            echo "== tick iam"; gcloud run services get-iam-policy tick --region asia-south1 --project $P 2>&1
-            echo "== recent logs all"; gcloud logging read 'timestamp>="'$(date -u -d '-20 min' +%FT%TZ)'"' --project $P --limit 40 --format='value(timestamp,resource.type,severity,textPayload,jsonPayload.message,jsonPayload.status,jsonPayload.debugInfo,httpRequest.status,protoPayload.status.message)' 2>&1
+            J=firebase-schedule-tick-asia-south1; L="--location asia-south1 --project $P"
+            echo "== fix"; gcloud scheduler jobs pause $J $L 2>&1; sleep 5; gcloud scheduler jobs resume $J $L 2>&1; gcloud scheduler jobs run $J $L 2>&1
+            sleep 150
+            echo "== job after"; gcloud scheduler jobs describe $J $L --format='value(state,status,lastAttemptTime,scheduleTime)' 2>&1
+            echo "== tick logs"; gcloud logging read 'timestamp>="'$(date -u -d '-4 min' +%FT%TZ)'" AND (resource.type="cloud_run_revision" OR resource.type="cloud_scheduler_job")' --project $P --limit 40 --format='value(timestamp,resource.type,severity,textPayload,jsonPayload.message,jsonPayload.status,httpRequest.status)' 2>&1
           } > out.txt
           git config user.name bot; git config user.email bot@example.invalid
           git checkout -B diag-out; git add -f out.txt; git commit -qm out; git push -f origin diag-out
