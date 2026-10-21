@@ -19,9 +19,12 @@ jobs:
           P=dayline-226fb
           set +e
           {
-            sleep 120
-            echo "== queue"; gcloud tasks list --queue dayline --location asia-south1 --project $P 2>&1 | head
-            echo "== tick calls (last 6 min)"; gcloud logging read 'timestamp>="'$(date -u -d '-6 min' +%FT%TZ)'" AND resource.type="cloud_run_revision" AND (httpRequest.status>0 OR severity>=WARNING)' --project $P --limit 30 --format='value(timestamp,resource.labels.service_name,severity,httpRequest.status,textPayload)' 2>&1
+            T=$(gcloud auth print-access-token); B=https://firestore.googleapis.com/v1/projects/$P/databases/(default)/documents
+            echo "== pub"; curl -sS -H "Authorization: Bearer $T" "$B/pub" | grep -E '"name"|integerValue|"t"' | head
+            echo "== pushq"; curl -sS -H "Authorization: Bearer $T" "$B/pushq" | grep -E '"name"|"u"|integerValue' | head
+            echo "== users"; curl -sS -H "Authorization: Bearer $T" "$B/users?mask.fieldPaths=x" | grep '"name"' | head
+            for U in $(curl -sS -H "Authorization: Bearer $T" "$B/users?mask.fieldPaths=x" | grep -o 'users/[A-Za-z0-9]*' | sort -u; curl -sS -H "Authorization: Bearer $T" -X POST "$B:listCollectionIds" -d '{}' >/dev/null); do echo "subs of $U"; curl -sS -H "Authorization: Bearer $T" "$B/pushq/${U#users/}/subs" | grep -E '"name"|stringValue' | cut -c1-120 | head; done
+            echo "== act/kick logs"; gcloud logging read 'timestamp>="'$(date -u -d '-30 min' +%FT%TZ)'" AND resource.type="cloud_run_revision" AND resource.labels.service_name="act"' --project $P --limit 20 --format='value(timestamp,severity,httpRequest.status,httpRequest.requestMethod,textPayload)' 2>&1
           } > out.txt
           git config user.name bot; git config user.email bot@example.invalid
           git checkout -B diag-out; git add -f out.txt; git commit -qm out; git push -f origin diag-out
