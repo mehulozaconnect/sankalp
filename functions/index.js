@@ -95,7 +95,8 @@ async function runTick() {
     acts.filter(a => a.type === 'snooze').forEach(a => extra.push({ k: (a.sub ? 's' + a.sub : 't' + a.id) + '|z' + a.until, at: a.until, id: a.id, sub: a.sub || null, title: a.title || 'Reminder', body: a.sub ? 'Snoozed. ' + (a.ptitle ? 'Part of ' + a.ptitle : '') : 'Snoozed reminder', tag: a.tag || ('t' + a.id), z: 1, aat: a.at }));
     const items = [...(q.items || []), ...extra].filter(it => it && it.k && it.at <= now + 15e3 && now - it.at < WINDOW && !sent[it.k]);
     if (!items.length) { if (Object.keys(sent).length > 300 || acts.length !== (st.acts || []).length) await stRef.set({ sent: prune(sent, now), acts }, { merge: true }); continue; }
-    const subs = (await db.collection(`pushq/${uid}/subs`).get()).docs.map(d => ({ id: d.id, ...d.data() })).filter(s => s.sub && s.sub.endpoint);
+    // The Dayline phone app (full-screen card) already rings the phone and watch: then send only to the laptop
+    const subs = (await db.collection(`pushq/${uid}/subs`).get()).docs.map(d => ({ id: d.id, ...d.data() })).filter(s => s.sub && s.sub.endpoint && !(q.native && s.phone));
     for (const it of items) {
       sent[it.k] = now;
       const t = await taskOf(uid, it.id);

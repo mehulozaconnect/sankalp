@@ -3317,7 +3317,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.2.4';
+const APPV = '5.2.5';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4400,7 +4400,7 @@ function pushItems() {
 function pushQueueSoon() { if (!fbUser || lsG('dayline.psub') !== fbUser.uid) return; clearTimeout(pushQT); pushQT = setTimeout(pushQueueNow, 1500); }
 async function pushQueueNow() {
   clearTimeout(pushQT); if (!fbUser || syncState !== 'on' || lsG('dayline.psub') !== fbUser.uid) return;
-  try { const items = S.settings.srvPush === false ? [] : pushItems(); const extra = { pop: S.settings.popRem !== false, card: S.settings.inCard !== false };
+  try { const items = S.settings.srvPush === false ? [] : pushItems(); const extra = { pop: S.settings.popRem !== false, card: S.settings.inCard !== false, native: !S.settings.phoneOff && Object.keys(S.phone || {}).length > 0 && !!S.remAck && S.remAck.v === remSig() };
     const h = JSON.stringify([items, extra]); if (h === pushHash) return; pushHash = h;
     await firebase.firestore().doc(`pushq/${fbUser.uid}`).set({ items, ...extra, u: Date.now(), by: devId() });
   } catch (e) { pushHash = ''; console.warn('reminder queue', e); }
