@@ -1,0 +1,26 @@
+name: Reminder service check
+on:
+  push:
+    branches: [main]
+    paths: ['diag/**']
+permissions:
+  contents: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SA }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Collect
+        run: |
+          P=dayline-226fb
+          {
+            echo "== functions"; gcloud functions list --project $P 2>&1
+            echo "== scheduler"; gcloud scheduler jobs list --location asia-south1 --project $P 2>&1
+            echo "== logs"; gcloud logging read 'resource.type=("cloud_run_revision" OR "cloud_function" OR "cloud_scheduler_job")' --project $P --freshness=1h --limit 60 --format='value(timestamp,severity,textPayload,jsonPayload.message,jsonPayload.status,httpRequest.status)' 2>&1
+          } > out.txt
+          git config user.name bot; git config user.email bot@example.invalid
+          git checkout -B diag-out; git add -f out.txt; git commit -qm out; git push -f origin diag-out
