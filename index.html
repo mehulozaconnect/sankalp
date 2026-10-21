@@ -3285,6 +3285,7 @@ function settingsAll(arg) {
   h += `<div class="sechead"><h2 class="sec">Today and reminders</h2></div><div class="setsec">
   <div class="setrow"><span class="l"><b>Reminders on this ${isWide() ? 'computer' : 'phone'}</b><span>${perm === 'granted' ? 'On. Tap Test to see one.' : perm === 'denied' ? 'Blocked. Tap the icon left of the address bar, Permissions, Notifications, Allow. Installed app: long-press its icon, App info, Notifications.' : perm === 'unsupported' ? 'This browser cannot show reminders. Open Dayline in Chrome.' : 'Off. Turn on to get task alerts.'}</span></span>${perm === 'granted' ? `<button class="pill ghost" data-act="testnotif">Test</button>` : perm === 'default' ? `<button class="pill acc" data-act="asknotif">Turn on</button>` : ''}</div>
   <div class="setrow"><span class="l"><b>Pop up on screen</b><span>Task reminders pop up over what you're doing and stay until you tap Done or Snooze. Turn off if your screen stays on too long.</span></span><button type="button" class="switch${S.settings.popRem === false ? '' : ' on'}" data-act="poprem" role="switch" aria-checked="${S.settings.popRem !== false}" aria-label="Pop up on screen"></button></div>
+  <div class="setrow"><span class="l"><b>Reminder card when Dayline is open</b><span>If Dayline is on screen when a reminder is due, a card slides up from the bottom with Snooze 10, 30, 60 min, Reschedule and Done.</span></span><button type="button" class="switch${S.settings.inCard === false ? '' : ' on'}" data-act="incard" role="switch" aria-checked="${S.settings.inCard !== false}" aria-label="Reminder card when Dayline is open"></button></div>
   <div class="setrow"><span class="l"><b>Morning plan</b><span>Summary of the day and a nudge to set your objective</span></span><input class="inp" type="time" data-set="morning" value="${st.morning}" style="width:130px"></div>
   <div class="setrow"><span class="l"><b>Evening wrap-up</b><span>What got done, move the rest, set tomorrow's focus</span></span><input class="inp" type="time" data-set="shutdown" value="${st.shutdown}" style="width:130px"></div>
   <div class="setrow"><span class="l"><b>Focus shield</b><span>While a focus session runs, only P1 reminders come through</span></span><button class="switch${st.shield ? ' on' : ''}" data-act="sw" data-k="shield" role="switch" aria-checked="${st.shield}" aria-label="Focus shield"></button></div>
@@ -3306,7 +3307,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.1.5';
+const APPV = '5.1.6';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4251,7 +4252,7 @@ function entities() {
   const o = {}; S.tasks.forEach(t => o['task:' + t.id] = t); S.projects.forEach(p => o['project:' + p.id] = p); S.habits.forEach(h => o['habit:' + h.id] = h);
   S.focus.forEach(f => o['focus:' + f.id] = f); S.dates.forEach(d => o['date:' + d.id] = d); (S.goals || []).forEach(g => o['goal:' + g.id] = g); S.templates.forEach(t => o['tpl:' + t.id] = t); Object.values(S.meetLog).forEach(m => { if (m.src !== 'pcal') o['meet:' + m.id] = m; }); if (S.pcal) o['pcal:' + (S.pcal.id || 'all')] = S.pcal; o['meta:coach'] = coachBrief(); Object.keys(IMGS).forEach(id => o['img:' + id] = { id, data: IMGS[id] }); (S.logs || []).forEach(l => o['log:' + l.id] = l); Object.values(S.phone || {}).forEach(p => o['phone:' + p.id] = p); o['meta:cur'] = { c: S.cur || null }; o['meta:rv'] = { v: remSig() }; if (S.remAck) o['meta:ack'] = S.remAck;
   const st = S.settings; o['meta:days'] = S.days; if (S.water) o['meta:water'] = S.water; (S.trash || []).forEach(x => o['trash:' + x.id] = x); (S.filters || []).forEach(f => o['filter:' + f.id] = f); if (S.rw) o['meta:rw'] = S.rw; o['meta:plan'] = S.plan; o['meta:hsec'] = S.habitSections;
-  o['meta:prefs'] = { phoneOff: !!st.phoneOff, coach: coachSet(), appmap: st.appmap, nagDef: st.nagDef, workStart: st.workStart, checkin: st.checkin, catv: st.catv, aiModel: st.aiModel, aiPrivate: st.aiPrivate, logo: st.logo, darkStyle: st.darkStyle, gcid: st.gcid, theme: st.theme, mode: st.mode, accent: st.accent, font: st.font, pomo: st.pomo, brk: st.brk, morning: st.morning, shutdown: st.shutdown, meetBefore: st.meetBefore, quietOn: st.quietOn, quietStart: st.quietStart, quietEnd: st.quietEnd, shield: st.shield, showDone: st.showDone, todayGroup: st.todayGroup, fx: st.fx, popRem: st.popRem };
+  o['meta:prefs'] = { phoneOff: !!st.phoneOff, coach: coachSet(), appmap: st.appmap, nagDef: st.nagDef, workStart: st.workStart, checkin: st.checkin, catv: st.catv, aiModel: st.aiModel, aiPrivate: st.aiPrivate, logo: st.logo, darkStyle: st.darkStyle, gcid: st.gcid, theme: st.theme, mode: st.mode, accent: st.accent, font: st.font, pomo: st.pomo, brk: st.brk, morning: st.morning, shutdown: st.shutdown, meetBefore: st.meetBefore, quietOn: st.quietOn, quietStart: st.quietStart, quietEnd: st.quietEnd, shield: st.shield, showDone: st.showDone, todayGroup: st.todayGroup, fx: st.fx, popRem: st.popRem, inCard: st.inCard };
   return o;
 }
 function setEntity(key, val) {
@@ -4566,6 +4567,7 @@ document.addEventListener('click', e => {
     ekdone: () => { toggleDone(id); ekSheet(); }, eknext: () => { ekIdx++; ekSheet(); },
     wrapnext: () => { const n = $('#wrapNote'); if (n) { const r = dayRec(today()); r.wrapDraft = { ...(r.wrapDraft || {}), note: n.value }; } wrapStep = Math.min(3, wrapStep + 1); save(); render(); scrollTo(0, 0); },
     wrapback: () => { const n = $('#wrapNote'); if (n) { const r = dayRec(today()); r.wrapDraft = { ...(r.wrapDraft || {}), note: n.value }; save(); } wrapStep = Math.max(0, wrapStep - 1); render(); scrollTo(0, 0); },
+    incard: () => { S.settings.inCard = S.settings.inCard === false; save(); render(); },
     poprem: () => { S.settings.popRem = S.settings.popRem === false; save(); render(); toast(S.settings.popRem ? 'Reminders will pop up on screen' : 'Reminders go quietly to the notification list'); },
     clearerr: () => { try { localStorage.removeItem('dayline.err'); } catch (e) { } render(); },
     trashrestore: () => trashRestore(id), trashkill: () => { S.trash = trash().filter(x => x.id !== id); save(); render(); toast('Deleted for good'); },
@@ -4743,6 +4745,11 @@ async function notify(title, body, tag, data = {}, actions, once) {
     else if (data._late && !(await claimFire(ck))) return;
   } else if (tag !== 'test' && !(await claimFire(ck))) return;
   if (data._late) { data = { ...data }; delete data._late; }
+  // Dayline is open on screen: show the reminder card from the bottom (Snooze 10/30/60, Reschedule, Done) instead of a notification
+  if (actions === true && data.id && document.visibilityState === 'visible' && S.settings.inCard !== false && !$('#sheet').classList.contains('on') && !$('#page').classList.contains('on')) {
+    const t = getTask(data.id), c = t && data.sub ? (t.subs || []).find(x => x.id === data.sub) : null;
+    if (t && !t.done && (!data.sub || c)) { try { navigator.vibrate?.([200, 100, 200]); } catch (e) { } laterSheet(t, c || undefined); return; }
+  }
   const opts = { body, tag, data, icon: 'icon-192.png', badge: 'icon-192.png', renotify: true };
   if (Array.isArray(actions)) { opts.actions = actions; opts.vibrate = [120, 80, 120]; } else if (actions) { const mx = Notification.maxActions || 2; opts.actions = mx >= 3 ? [{ action: 'done', title: 'Done' }, { action: 'snooze', title: 'Snooze 10 min' }, { action: 'later', title: 'Snooze…' }] : [{ action: 'done', title: 'Done' }, { action: 'later', title: 'Snooze…' }]; if (S.settings.popRem !== false) opts.requireInteraction = true; opts.vibrate = [200, 100, 200]; }
   try { const reg = swReg || await navigator.serviceWorker?.getRegistration(); if (reg) { await reg.showNotification(title, opts); return; } } catch (e) { }
