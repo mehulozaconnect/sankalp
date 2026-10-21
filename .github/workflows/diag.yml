@@ -17,6 +17,7 @@ jobs:
       - name: Collect
         run: |
           P=dayline-226fb
+          set +e
           {
             J=firebase-schedule-tick-asia-south1; L="--location asia-south1 --project $P"
             echo "== fix"; gcloud scheduler jobs pause $J $L 2>&1; sleep 5; gcloud scheduler jobs resume $J $L 2>&1; gcloud scheduler jobs run $J $L 2>&1
