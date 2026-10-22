@@ -3317,7 +3317,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.2.6';
+const APPV = '5.2.7';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4642,7 +4642,7 @@ document.addEventListener('click', e => {
     carrytm: () => { const tm = addDays(td, 1); const l = open().filter(t => t.date && t.date <= td && t.priority <= 3 && !t.someday); l.forEach(t => setDate(t, tm)); save(); render(); toast(`${plural(l.length, 'task')} moved to tomorrow`); },
     railday: () => { railDay = b.dataset.d; renderRail(); }, railwk: () => { railDay = addDays(railDay || today(), 7 * +b.dataset.dir); renderRail(); },
     fest: () => { S.settings.fest = b.dataset.k; save(); applyTheme(); render(); toast(b.dataset.k === 'off' ? 'Festive icon off' : b.dataset.k === 'auto' ? 'Festive icon: Auto' : 'Icon changed'); },
-    logo: () => { S.settings.logo = b.dataset.k; save(); applyTheme(); render(); toast('Logo changed. Reinstall the app to update the Home Screen icon.'); },
+    logo: () => { S.settings.logo = b.dataset.k; save(); applyTheme(); render(); toast(FEST[effIcon()] ? 'Logo saved. The festive icon is showing now; set Festive icon to Off to use this logo.' : 'Logo changed. The Home Screen icon updates by itself within a day.'); },
     dark: () => { S.settings.darkStyle = b.dataset.k; if (S.settings.mode === 'light') S.settings.mode = 'dark'; save(); applyTheme(); render(); },
     lockon: () => lockToggle(),
     phonelink: () => phoneLink(),
