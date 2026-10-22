@@ -3317,7 +3317,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.2.7';
+const APPV = '5.2.8';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4890,7 +4890,7 @@ function tick() {
   });
   if (missed) notify(missed === 1 ? '1 missed reminder' : `${missed} missed reminders`, 'While Dayline was closed. Tap to see Today.', 'missed', { url: './#today' });
   const cs = coachSet(); const phoneDoes = phoneLinked() && Object.keys(S.phone || {}).length;
-  if (cs.p1 && !phoneDoes && hm >= cs.p1At && hm < S.settings.shutdown && !quiet && !S.fired['p1' + td]) { const p1 = [...todayData().overdue, ...todayData().day].filter(t => t.priority === 1).sort(sortTasks)[0]; if (p1) { S.fired['p1' + td] = 1; changed = true; notify('P1 still open', `${p1.title}. Start a 25-minute focus on it now?`, 'p1', { url: './?focus=' + p1.id }); } }
+  if (cs.p1 && !phoneDoes && hm >= cs.p1At && hm < S.settings.shutdown && !quiet && !S.fired['p1' + td]) { const p1 = [...todayData().overdue, ...todayData().day].filter(t => t.priority === 1).sort(sortTasks)[0]; if (p1) { S.fired['p1' + td] = 1; changed = true; notify('P1 still open', `${p1.title}. Start a 25-minute focus on it now?`, 'p1', { url: './?focus=' + p1.id, id: p1.id }, (Notification.maxActions || 2) >= 3 ? [{ action: 'focus', title: 'Start focus' }, { action: 's30', title: 'Snooze 30 min' }, { action: 'done', title: 'Done' }] : [{ action: 's30', title: 'Snooze 30 min' }, { action: 'done', title: 'Done' }]); } }
   if (!quiet) meetingsOn(td).forEach(m => { const k = 'me' + m.id + m.s; if (m.e <= now && now - m.e < 10 * 6e4 && !S.fired[k]) { S.fired[k] = 1; changed = true; const nx = [...todayData().overdue, ...todayData().day].sort(sortTasks)[0]; if (nx) notify('Meeting done', `Next: ${nx.title}${nx.duration ? ' (' + fmtMins(nx.duration) + ')' : ''}`, k, { id: nx.id }, true); } });
   if (cs.week && !phoneDoes && new Date().getDay() === 0 && hm >= '19:00' && hm < '22:00' && !quiet && !S.fired['wk' + td]) { S.fired['wk' + td] = 1; changed = true; const A = analyse(addDays(td, -6), td); notify('Your week', `${plural(A.done.length, 'task')} done, ${fmtMins(A.prod)} productive, ${fmtMins(A.waste)} wasted. Tap for your weekly review.`, 'week', { url: './#review/week' }); }
   const ci = +S.settings.checkin;
