@@ -32,6 +32,12 @@ import java.util.Locale;
 public class ReminderActivity extends Activity {
     private JSONObject a;
     private boolean dark;
+    private long shownAt;
+    private final android.os.Handler h = new android.os.Handler(android.os.Looper.getMainLooper());
+    // The screen stays lit for 45 seconds, then sleeps as usual (the card is still there when you wake the phone)
+    private final Runnable screenOff = () -> getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    // Done, snoozed or moved on the laptop or the watch: close this card here too
+    private final Runnable watch = new Runnable() { @Override public void run() { checkElsewhere(); h.postDelayed(this, 15000); } };
     private int ink, muted, card, chip, line;
 
     @Override
@@ -57,6 +63,10 @@ public class ReminderActivity extends Activity {
         chip = dark ? 0xFF2E333B : 0xFFF2F4F7;
         line = dark ? 0xFF3A404A : 0xFFE3E6EB;
         build();
+        shownAt = System.currentTimeMillis();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        h.removeCallbacks(screenOff); h.postDelayed(screenOff, 45000);
+        h.removeCallbacks(watch); if (!a.optBoolean("test") && !a.optString("name").isEmpty()) h.postDelayed(watch, 10000);
         if (i.getBooleanExtra("resched", false) && !a.optBoolean("meet")) getWindow().getDecorView().post(this::reschedule);
     }
 
@@ -180,6 +190,26 @@ public class ReminderActivity extends Activity {
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, dp(h), 1);
         p.setMargins(dp(left), 0, 0, 0);
         return p;
+    }
+
+    @Override
+    protected void onDestroy() { h.removeCallbacksAndMessages(null); super.onDestroy(); }
+
+    private void checkElsewhere() {
+        final JSONObject ja = a; final long since = shownAt - 5000; final android.content.Context ctx = getApplicationContext();
+        new Thread(() -> {
+            try {
+                JSONObject t = Api.getD(ctx, ja.optString("name"));
+                long now = System.currentTimeMillis();
+                boolean gone = t == null || t.optBoolean("done") || t.optLong("seenAt", 0) > since || t.optLong("snoozeUntil", 0) > now;
+                if (!gone && ja.has("sub")) {
+                    boolean found = false; org.json.JSONArray subs = t.optJSONArray("subs");
+                    if (subs != null) for (int k = 0; k < subs.length(); k++) { JSONObject c = subs.getJSONObject(k); if (ja.optString("sub").equals(c.optString("id"))) { found = true; gone = c.optBoolean("d") || c.optLong("snoozeUntil", 0) > now; } }
+                    if (!found) gone = true;
+                }
+                if (gone) h.post(() -> { if (a == ja && !isFinishing()) { Alarms.cancelNag(ctx, ja); dismiss(); } });
+            } catch (Exception ignored) { }
+        }).start();
     }
 
     private void cancelNotif() {
