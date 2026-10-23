@@ -42,7 +42,7 @@ async function sendAll(uid, subs, payload) {
   let n = 0;
   await Promise.all(subs.map(async s => {
     const body = JSON.stringify({ ...payload, data: { ...(payload.data || {}), u: uid, dev: s.id, tok: s.tok } });
-    try { await webpush.sendNotification(s.sub, body, { TTL: 900, urgency: 'high', topic: (payload.tag || 'd').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 32) || 'd' }); n++; }
+    try { await webpush.sendNotification(s.sub, body, { TTL: 900, urgency: 'high', topic: (payload.close ? 'c' + payload.id : (payload.tag || 'd')).replace(/[^A-Za-z0-9_-]/g, '').slice(0, 32) || 'd' }); n++; }
     catch (e) { if (e.statusCode === 404 || e.statusCode === 410) await db.doc(`pushq/${uid}/subs/${s.id}`).delete().catch(() => { }); else console.warn('push', uid, s.id, e.statusCode, e.body); }
   }));
   return n;
@@ -118,7 +118,7 @@ exports.act = onRequest({ region: REGION, cors: true, memory: '256MiB' }, async 
   try {
     const b = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     const { u, dev, tok, type, id } = b;
-    if (!u || !dev || !tok || (type !== 'kick' && !id) || !['done', 'snooze', 'seen', 'kick'].includes(type)) { res.status(400).send('bad'); return; }
+    if (!u || !dev || !tok || (type !== 'kick' && !id) || !['done', 'snooze', 'seen', 'kick', 'close'].includes(type)) { res.status(400).send('bad'); return; }
     const s = await db.doc(`pushq/${u}/subs/${String(dev).replace(/\//g, '')}`).get();
     if (!s.exists || s.data().tok !== tok) { res.status(403).send('no'); return; }
     if (type === 'kick') { // an app found the service quiet: restart the minute timer
@@ -127,6 +127,13 @@ exports.act = onRequest({ region: REGION, cors: true, memory: '256MiB' }, async 
     const at = +b.at || Date.now(); const mins = Math.min(1440, Math.max(1, +b.mins || 10));
     const a = { type, id: String(id), sub: b.sub ? String(b.sub) : null, at, title: String(b.title || '').slice(0, 200), ptitle: String(b.ptitle || '').slice(0, 200), tag: String(b.tag || '').slice(0, 80) };
     if (type === 'snooze') a.until = at + mins * 6e4;
+    // close the same reminder on your other devices (quiet message, nothing new pops up)
+    if (type !== 'seen') {
+      const v = await vapid(); webpush.setVapidDetails('mailto:dayline@example.invalid', v.publicKey, v.privateKey);
+      const others = (await db.collection(`pushq/${u}/subs`).get()).docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.id !== dev && x.sub && x.sub.endpoint);
+      await sendAll(u, others, { close: 1, id: String(id), sub: b.sub ? String(b.sub) : undefined });
+    }
+    if (type === 'close') { res.status(200).send('ok'); return; }
     if (type !== 'seen') await db.doc(`pushs/${u}`).set({ acts: admin.firestore.FieldValue.arrayUnion(a) }, { merge: true });
     // close it on your other devices (they pick this up through sync)
     if (b.tag) await db.doc(`users/${u}/items/${ekey('pact:' + at + '-' + Math.random().toString(36).slice(2, 7))}`).set({ d: JSON.stringify({ tag: a.tag, id: a.id, sub: a.sub }), u: Date.now(), x: false, k: 'pact' });

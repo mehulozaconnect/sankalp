@@ -1,5 +1,5 @@
 // Dayline service worker: offline app shell + notification buttons
-const CACHE = 'sankalp-v108';
+const CACHE = 'sankalp-v109';
 const ACTS = 'dayline-acts'; // taps on Done/Snooze waiting for the app (works even if the app was asleep or closed)
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
@@ -37,6 +37,10 @@ self.addEventListener('fetch', e => {
 // A reminder from the Dayline reminder service: arrives even when the phone is locked and Dayline is asleep
 self.addEventListener('push', e => {
   let p = null; try { p = e.data && e.data.json(); } catch (x) { }
+  if (p && p.close) { // done or snoozed on another device: close it here
+    e.waitUntil(self.registration.getNotifications().then(list => list.forEach(n => { const d = n.data || {}; if (d.id === p.id && (!p.sub || d.sub === p.sub)) n.close(); })));
+    return;
+  }
   if (!p || !p.title) return;
   e.waitUntil((async () => {
     const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });

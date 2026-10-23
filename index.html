@@ -1719,6 +1719,7 @@ function chipsFor(r) {
 /* ================= task actions ================= */
 function toggleDone(id) {
   const t = getTask(id); if (!t) return;
+  if (!t.done) pushClose(id);
   if (!t.done) {
     if (t.repeat && t.date) {
       const nd = nextDate(t);
@@ -3317,7 +3318,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.2.8';
+const APPV = '5.2.9';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4411,6 +4412,8 @@ function pushCardTick() {
   const now = Date.now(); const it = pushItems().find(x => x.at <= now && now - x.at < 2 * 6e4 && !pushShown.has(x.k)); if (!it) return; pushShown.add(it.k);
   claimFire(it.k).then(ok => { if (!ok) return; const t = getTask(it.id), c = t && it.sub ? (t.subs || []).find(x => x.id === it.sub) : null; if (t && !t.done && (!it.sub || (c && !c.d))) { try { navigator.vibrate?.([200, 100, 200]); } catch (e) { } laterSheet(t, c || undefined); } });
 }
+// Finished or snoozed here: tell the service to close the same reminder on your other devices right away (even if Dayline sleeps there)
+function pushClose(id, sub) { try { if (!pushLive() || !id) return; const c = fbConfig(), tok = lsG('dayline.ptok'); if (!c || !tok) return; fetch(`https://asia-south1-${c.projectId}.cloudfunctions.net/act`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ u: fbUser.uid, dev: devId(), tok, type: 'close', id, sub: sub || null }), keepalive: true }).catch(() => { }); } catch (e) { } }
 async function closeTag(tag) { try { const reg = swReg || await navigator.serviceWorker?.getRegistration(); if (!reg || !tag) return; (await reg.getNotifications({ tag })).forEach(n => n.close()); } catch (e) { } }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') pushQueueNow(); else pushSetup(); });
 setInterval(() => { pushSetup(); pushQueueSoon(); }, 5 * 6e4);
@@ -4760,15 +4763,15 @@ function handleAction(d) {
   if (t) { t.seenAt = Date.now(); save(); closeNotifs(t); } if (d.type === 'seen') return;
   const c = t && d.sub ? t.subs.find(x => x.id === d.sub) : null;
   if (c) {
-    if (d.type === 'done') { c.d = true; c.nagAt = 0; c.snoozeUntil = 0; save(); render(); if (pageId === t.id) renderPage(); toast('Subtask done'); }
-    if (d.type === 'snooze') { const mn = +d.mins || 10; c.nagAt = 0; c.snoozeUntil = (d.at || Date.now()) + mn * 6e4; save(); render(); toast(`Snoozed for ${mn} minutes`); }
+    if (d.type === 'done') { c.d = true; c.nagAt = 0; c.snoozeUntil = 0; save(); pushClose(t.id, c.id); render(); if (pageId === t.id) renderPage(); toast('Subtask done'); }
+    if (d.type === 'snooze') { const mn = +d.mins || 10; c.nagAt = 0; c.snoozeUntil = (d.at || Date.now()) + mn * 6e4; save(); pushClose(t.id, c.id); render(); toast(`Snoozed for ${mn} minutes`); }
     if (d.type === 'open') taskSheet(t.id);
     if (d.type === 'resched') { taskSheet(t.id); toast('Tap the subtask to change its time'); }
     if (d.type === 'later') laterSheet(t, c);
     return;
   }
   if (d.type === 'done' && t && !t.done) toggleDone(d.id);
-  if (d.type === 'snooze' && t) { const mn = +d.mins || 10; t.nagAt = 0; t.snoozeUntil = (d.at || Date.now()) + mn * 6e4; save(); render(); toast(`Snoozed for ${mn} minutes`); }
+  if (d.type === 'snooze' && t) { const mn = +d.mins || 10; t.nagAt = 0; t.snoozeUntil = (d.at || Date.now()) + mn * 6e4; save(); pushClose(t.id); render(); toast(`Snoozed for ${mn} minutes`); }
   if (d.type === 'open' && t) taskSheet(d.id);
   if (d.type === 'resched' && t) { t.nagAt = 0; save(); pickWhen(t); }
   if (d.type === 'later' && t) laterSheet(t);
@@ -4781,7 +4784,7 @@ function laterSheet(t, c) {
   <div class="lt-l">Snooze</div><div class="lt-row">${[[10, '10 min'], [30, '30 min'], [60, '1 hour']].map(([m, l]) => `<button data-snz="${m}">${l}</button>`).join('')}</div>
   <div class="lt-row lt-last"><button id="ltR">Reschedule</button><button id="ltD" class="ok">${I.check}Mark done</button></div></div>`);
   $('#sheet').classList.add('ltw');
-  $$('#sheet [data-snz]').forEach(b => b.onclick = () => { const m = +b.dataset.snz; x.nagAt = 0; x.snoozeUntil = Date.now() + m * 6e4; save(); closeSheet(true); toast(`Snoozed for ${m < 60 ? m + ' minutes' : '1 hour'}`); });
+  $$('#sheet [data-snz]').forEach(b => b.onclick = () => { const m = +b.dataset.snz; x.nagAt = 0; x.snoozeUntil = Date.now() + m * 6e4; save(); pushClose(t.id, c ? c.id : null); closeSheet(true); toast(`Snoozed for ${m < 60 ? m + ' minutes' : '1 hour'}`); });
   $('#ltR').onclick = () => { closeSheet(true); if (c) { taskSheet(t.id); toast('Tap the subtask to change its time'); } else { t.nagAt = 0; save(); setTimeout(() => pickWhen(t), 250); } };
   $('#ltD').onclick = () => { closeSheet(true); handleAction({ type: 'done', id: t.id, sub: c ? c.id : undefined }); };
 }
