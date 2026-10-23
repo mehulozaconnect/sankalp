@@ -3318,7 +3318,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.2.9';
+const APPV = '5.3';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -3952,12 +3952,15 @@ function impactPicker() {
   const c = $('#impClear'); if (c) c.onclick = () => { delete dayRec(td).impactId; save(); closeSheet(true); render(); };
 }
 function searchSheet() {
-  openSheet(`<div class="shead"><button class="cx" data-close>Cancel</button><span class="ttl">Search</span><span></span></div><label class="srch">${I.search}<textarea id="sIn" class="one" rows="1" placeholder="Tasks, notes, projects, habits, people" aria-label="Search" autocomplete="off" data-form-type="other" enterkeyhint="search"></textarea></label><div class="sres" id="sRes"><p class="hint">Search titles, notes, subtasks, tags, projects, habits and birthdays.</p></div>`);
+  openSheet(`<div class="shead"><button class="cx" data-close>Cancel</button><span class="ttl">Search</span><span></span></div><label class="srch">${I.search}<textarea id="sIn" class="one" rows="1" placeholder="Tasks, notes, projects, habits, people" aria-label="Search" autocomplete="off" data-form-type="other" enterkeyhint="search"></textarea></label><div class="sres" id="sRes"><p class="hint">Search titles, notes and subtasks. Type @tag for tags, #project for a project, p1 for priority.</p></div>`);
   const inp = $('#sIn');
   inp.oninput = () => {
-    const q = inp.value.trim().toLowerCase(); if (!q) { $('#sRes').innerHTML = '<p class="hint">Search titles, notes, subtasks, tags, projects, habits and birthdays.</p>'; return; }
-    const ts = S.tasks.filter(t => (t.title + ' ' + textOf(t.notes) + ' ' + t.tags.join(' ') + ' ' + t.subs.map(s => s.t).join(' ')).toLowerCase().includes(q)).sort((a, b) => a.done - b.done).slice(0, 40);
-    const ps = S.projects.filter(p => p.name.toLowerCase().includes(q)); const hs = S.habits.filter(x => x.name.toLowerCase().includes(q)); const ds = S.dates.filter(x => x.name.toLowerCase().includes(q));
+    const q = inp.value.trim().toLowerCase(); if (!q) { $('#sRes').innerHTML = '<p class="hint">Search titles, notes and subtasks. Type @tag for tags, #project for a project, p1 for priority.</p>'; return; }
+    // Every word must match. @tag finds tags, #project finds the project (and its area), p1–p4 finds priority
+    const words = q.split(/\s+/).filter(Boolean);
+    const hayOf = t => { const p = proj(t.projectId); const pn = p ? p.name.toLowerCase() : 'inbox'; return [t.title, textOf(t.notes), (t.tags || []).join(' '), (t.tags || []).map(x => '@' + x).join(' '), t.subs.map(s => s.t).join(' '), pn, '#' + pn.replace(/\s+/g, ''), p && p.area ? '#' + p.area.toLowerCase().replace(/\s+/g, '') + ' @' + p.area.toLowerCase().replace(/\s+/g, '') + ' ' + p.area.toLowerCase() : '', 'p' + t.priority].join(' ').toLowerCase(); };
+    const ts = S.tasks.filter(t => { const h = hayOf(t); return words.every(w => /^p[1-4]$/.test(w) ? t.priority === +w[1] : h.includes(w)); }).sort((a, b) => a.done - b.done || sortTasks(a, b)).slice(0, 60);
+    const pq = q.replace(/^#/, '').replace(/\s+/g, ''); const ps = pq && !/^[@]/.test(q) ? S.projects.filter(p => p.name.toLowerCase().replace(/\s+/g, '').includes(pq) || (p.area || '').toLowerCase().replace(/\s+/g, '').includes(pq)) : []; const hs = S.habits.filter(x => x.name.toLowerCase().includes(q)); const ds = S.dates.filter(x => x.name.toLowerCase().includes(q));
     let h = '';
     if (ps.length) h += '<div class="sr-h">Projects</div>' + ps.map(p => `<button data-go="project/${p.id}"><span style="width:22px;text-align:center">${p.emoji || '●'}</span><span>${esc(p.name)}</span></button>`).join('');
     if (ts.length) h += '<div class="sr-h">Tasks</div>' + ts.map(t => `<button data-task="${t.id}"><span style="width:22px;text-align:center;color:var(--muted)">${t.done ? I.check : '○'}</span><span style="${t.done ? 'text-decoration:line-through;color:var(--muted)' : ''}">${esc(t.title)}<small>${[t.date ? fmtDate(t.date) : t.someday ? 'Someday' : 'No date', proj(t.projectId)?.name].filter(Boolean).join(', ')}</small></span></button>`).join('');
