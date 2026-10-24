@@ -93,6 +93,14 @@ async function runTick() {
     // Snoozes tapped on the watch / lock screen while the app was asleep: ring again at the chosen time
     const extra = [];
     acts.filter(a => a.type === 'snooze').forEach(a => extra.push({ k: (a.sub ? 's' + a.sub : 't' + a.id) + '|z' + a.until, at: a.until, id: a.id, sub: a.sub || null, title: a.title || 'Reminder', body: a.sub ? 'Snoozed. ' + (a.ptitle ? 'Part of ' + a.ptitle : '') : 'Snoozed reminder', tag: a.tag || ('t' + a.id), z: 1, aat: a.at }));
+    // Water nudge (works while the app sleeps; buttons log straight from the lock screen or watch)
+    if (q.water && q.water.on) {
+      const ws = { ...(st.ws || {}) }; const wx = (st.wx || []).filter(e => now - e.t < 36 * 3600e3);
+      const nd = waterDecide(q.water, ws, wx, now);
+      if (nd) { const wsubs = (await db.collection(`pushq/${uid}/subs`).get()).docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.sub && x.sub.endpoint);
+        await sendAll(uid, wsubs, { title: nd.title, body: nd.body, tag: 'water', actions: waterActions(+q.water.cup || 250), data: { water: 1, fn: FN }, pop: false }); }
+      if (JSON.stringify(ws) !== JSON.stringify(st.ws || {})) await stRef.set({ ws }, { merge: true });
+    }
     const items = [...(q.items || []), ...extra].filter(it => it && it.k && it.at <= now + 15e3 && now - it.at < WINDOW && !sent[it.k]);
     if (!items.length) { if (Object.keys(sent).length > 300 || acts.length !== (st.acts || []).length) await stRef.set({ sent: prune(sent, now), acts }, { merge: true }); continue; }
     // The Dayline phone app (full-screen card) already rings the phone and watch: then send only to the laptop
@@ -111,6 +119,44 @@ async function runTick() {
   }
 }
 
+// ---------- Water: a gentle nudge only when you're behind ----------
+const fmtMl = ml => ml >= 1000 ? (Math.round(ml / 100) / 10).toString().replace(/\.0$/, '') + ' L' : ml + ' ml';
+const hm2m = s => { const [h, m] = String(s || '0:0').split(':').map(Number); return h * 60 + (m || 0); };
+function waterTotal(W, wx, day) {
+  const log = (W.log || []).filter(x => x && x[0]);
+  const extra = (wx || []).filter(e => e.day === day && !log.some(([t, ml]) => Math.abs(t - e.t) < 3000 && ml === e.ml));
+  return { tot: log.reduce((a, [, ml]) => a + (+ml || 0), 0) + extra.reduce((a, e) => a + e.ml, 0), last: Math.max(0, ...log.map(x => x[0]), ...extra.map(e => e.t)) };
+}
+// Returns a nudge to send now (and updates ws), or null. Same rules as the app uses when it is open.
+function waterDecide(W, ws, wx, now) {
+  if (!W || !W.on) return null;
+  const L = new Date(now + (W.tz || 330) * 6e4), day = L.toISOString().slice(0, 10), hm = L.getUTCHours() * 60 + L.getUTCMinutes();
+  if (ws.day !== day || W.day !== day) { if (ws.day !== day) Object.assign(ws, { day, n: 0, miss: 0, ign: 0, last: 0, lastTot: 0, meals: {}, snz: 0 }); if (W.day !== day) W = { ...W, log: [] }; }
+  const a = hm2m(W.from || '09:00'), b = hm2m(W.to || '21:00'); if (hm < a || hm >= b) return null;
+  if (W.quiet) { const [qs, qe] = W.quiet.map(hm2m); if (qs <= qe ? (hm >= qs && hm < qe) : (hm >= qs || hm < qe)) return null; }
+  const goal = +W.goal || 2500, cup = +W.cup || 250; const { tot, last } = waterTotal(W, wx, day);
+  if (tot >= goal) return null;
+  if ((W.focus || 0) > now) return null;
+  if ((W.mtg || []).some(([s, e]) => s <= now && now < e)) return null;
+  if (now < Math.max(W.snz || 0, ws.snz || 0)) return null;
+  if (now - last < 45 * 6e4) return null;
+  if ((ws.miss || 0) >= (+W.maxN || 6)) return null; // only nudges you didn't act on count towards the daily limit
+  const pace = Math.round(goal * Math.max(0, Math.min(1, (hm - a) / Math.max(1, b - a))) / 50) * 50, behind = pace - tot;
+  const sinceNudge = now - (ws.last || 0);
+  let kind = null;
+  const mEnd = W.meet !== false && (W.mtg || []).find(([s, e]) => e - s >= 30 * 6e4 && now >= e && now - e < 10 * 6e4);
+  const meal = W.meals ? ['13:30', '20:30'].find(m => hm >= hm2m(m) && hm < hm2m(m) + 10 && !(ws.meals || {})[m]) : null;
+  if ((mEnd || meal) && behind > 0 && sinceNudge >= 30 * 6e4) kind = mEnd ? 'meet' : 'meal';
+  else if (behind >= cup && sinceNudge >= ((ws.ign || 0) >= 2 ? 180 : ws.last && tot > (ws.lastTot || 0) ? 60 : 90) * 6e4) kind = 'behind'; // you answered the last one: a little sooner
+  if (!kind) return null;
+  const missed = !!ws.last && tot <= (ws.lastTot || 0); ws.ign = missed ? (ws.ign || 0) + 1 : 0; if (missed) ws.miss = (ws.miss || 0) + 1;
+  ws.last = now; ws.n = (ws.n || 0) + 1; ws.lastTot = tot; if (meal) (ws.meals ||= {})[meal] = 1;
+  const g = Math.max(1, Math.round(behind / cup));
+  const title = kind === 'meet' ? '💧 Meeting done. Have a glass' : kind === 'meal' ? '💧 A glass with your meal' : g === 1 ? '💧 1 glass behind' : '💧 Time for a glass';
+  return { title, body: `${fmtMl(tot)} of ${fmtMl(goal)} · ${g >= 2 && behind >= cup ? g + ' glasses behind · tap +2' : behind >= cup ? 'one now keeps you on track' : fmtMl(goal - tot) + ' to go'}`, pct: Math.round(tot / goal * 100) };
+}
+const waterActions = cup => [{ action: 'w' + cup, title: '+1 glass' }, { action: 'w' + cup * 2, title: '+2' }, { action: 'wsnz', title: 'Later' }];
+
 function prune(sent, now) { const o = {}; Object.entries(sent).forEach(([k, t]) => { if (now - t < 3 * 24 * 3600e3) o[k] = t; }); return o; }
 
 // Done / Snooze tapped on a notification (phone lock screen or watch): note it right away, and close the same reminder on your other devices
@@ -118,12 +164,25 @@ exports.act = onRequest({ region: REGION, cors: true, memory: '256MiB' }, async 
   try {
     const b = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     const { u, dev, tok, type, id } = b;
-    if (!u || !dev || !tok || (type !== 'kick' && !id) || !['done', 'snooze', 'seen', 'kick', 'close'].includes(type)) { res.status(400).send('bad'); return; }
+    if (!u || !dev || !tok || (!['kick', 'water', 'wsnz'].includes(type) && !id) || !['done', 'snooze', 'seen', 'kick', 'close', 'water', 'wsnz'].includes(type)) { res.status(400).send('bad'); return; }
     const s = await db.doc(`pushq/${u}/subs/${String(dev).replace(/\//g, '')}`).get();
     if (!s.exists || s.data().tok !== tok) { res.status(403).send('no'); return; }
     if (type === 'kick') { // an app found the service quiet: restart the minute timer
       const b2 = await db.doc('pub/beat').get(); if (!b2.exists || Date.now() - (b2.data().t || 0) > 150e3) { await chain(); await runTick(); }
       res.status(200).send('ok'); return; }
+    if (type === 'water' || type === 'wsnz') { // +1 glass or Later from the lock screen / watch
+      const at = +b.at || Date.now(); const ref = db.doc(`pushs/${u}`); const st = (await ref.get()).data() || {}; const q = (await db.doc(`pushq/${u}`).get()).data() || {}; const W = q.water || {};
+      const day = new Date(at + (W.tz || 330) * 6e4).toISOString().slice(0, 10);
+      if (type === 'wsnz') { const ws = { ...(st.ws || {}) }; ws.snz = at + 60 * 6e4; await ref.set({ ws }, { merge: true }); res.status(200).send('ok'); return; }
+      const ml = Math.max(10, Math.min(3000, Math.round(+b.ml || W.cup || 250)));
+      const wx = [...(st.wx || []).filter(e => Date.now() - e.t < 36 * 3600e3), { t: at, ml, day }];
+      const before = waterTotal(W.day === day ? W : { ...W, log: [] }, st.wx || [], day).tot, after = before + ml;
+      await ref.set({ wx }, { merge: true });
+      if (W.goal && before < W.goal && after >= W.goal) { const v = await vapid(); webpush.setVapidDetails('mailto:dayline@example.invalid', v.publicKey, v.privateKey);
+        const subs = (await db.collection(`pushq/${u}/subs`).get()).docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.sub && x.sub.endpoint);
+        await sendAll(u, subs, { title: '💧 Water goal reached', body: `${fmtMl(after)} today. Nicely done.`, tag: 'water', actions: [], data: { water: 1 }, pop: false }); }
+      res.status(200).send('ok'); return;
+    }
     const at = +b.at || Date.now(); const mins = Math.min(1440, Math.max(1, +b.mins || 10));
     const a = { type, id: String(id), sub: b.sub ? String(b.sub) : null, at, title: String(b.title || '').slice(0, 200), ptitle: String(b.ptitle || '').slice(0, 200), tag: String(b.tag || '').slice(0, 80) };
     if (type === 'snooze') a.until = at + mins * 6e4;

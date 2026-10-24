@@ -1,5 +1,5 @@
 // Dayline service worker: offline app shell + notification buttons
-const CACHE = 'sankalp-v114';
+const CACHE = 'sankalp-v116';
 const ACTS = 'dayline-acts'; // taps on Done/Snooze waiting for the app (works even if the app was asleep or closed)
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
@@ -48,8 +48,8 @@ self.addEventListener('push', e => {
     // Dayline is open on screen: show the card from the bottom instead
     if (vis && p.card !== false && p.data && p.data.id) { vis.postMessage({ type: 'card', id: p.data.id, sub: p.data.sub }); return; }
     const mx = (self.Notification && Notification.maxActions) || 2;
-    const actions = mx >= 3 ? [{ action: 'done', title: 'Done' }, { action: 'snooze', title: 'Snooze 10 min' }, { action: 'later', title: 'Snooze…' }] : [{ action: 'done', title: 'Done' }, { action: 'later', title: 'Snooze…' }];
-    await self.registration.showNotification(p.title, { body: p.body || '', tag: p.tag || 'dayline', data: p.data || {}, icon: 'icon-192.png', badge: 'icon-192.png', renotify: true, requireInteraction: p.pop !== false, vibrate: [200, 100, 200], actions });
+    const actions = Array.isArray(p.actions) ? p.actions.slice(0, mx >= 3 ? 3 : 2) : mx >= 3 ? [{ action: 'done', title: 'Done' }, { action: 'snooze', title: 'Snooze 10 min' }, { action: 'later', title: 'Snooze…' }] : [{ action: 'done', title: 'Done' }, { action: 'later', title: 'Snooze…' }];
+    await self.registration.showNotification(p.title, { body: p.body || '', tag: p.tag || 'dayline', data: p.data || {}, icon: 'icon-192.png', badge: 'icon-192.png', renotify: true, requireInteraction: p.pop !== false, vibrate: p.data && p.data.water ? [80, 60, 80] : [200, 100, 200], silent: false, actions });
   })());
 });
 // Tell the reminder service about a Done / Snooze, so it stops (or re-rings later) even while the app sleeps
@@ -60,7 +60,10 @@ function tellServer(data, body) {
 
 // Swiped away on this device: tell the app so the same reminder closes on your other device
 self.addEventListener('notificationclose', e => {
-  const data = e.notification.data || {}; if (!data.id) return;
+  const data = e.notification.data || {};
+  if (data.water && data.tok) { // swiped a water nudge away: no more for an hour
+    e.waitUntil((async () => { const at = Date.now(); const c = await caches.open(ACTS); await c.put(new Request('./__act/' + at + '-w'), new Response(JSON.stringify({ type: 'wsnz', at }))); await tellServer(data, { type: 'wsnz', at, id: 'w' }); })()); return; }
+  if (!data.id) return;
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(all => { if (all[0]) all[0].postMessage({ type: 'seen', id: data.id, sub: data.sub }); }));
 });
 // Done / Snooze buttons on reminders
@@ -72,7 +75,7 @@ self.addEventListener('notificationclick', e => {
   const type = e.action === 'done' ? 'done' : (e.action === 'snooze' || sm) ? 'snooze' : e.action === 'resched' ? 'resched' : e.action === 'later' ? 'pick' : data.step === 'pick' ? 'later' : 'open';
   const wm = /^w(\d+)$/.exec(e.action || '');
   if (wm || e.action === 'wsnz') { // water: +1 glass or remind later, straight from the notification (or the watch)
-    e.waitUntil((async () => { const c = await caches.open(ACTS); await c.put(new Request('./__act/' + Date.now() + '-' + Math.random().toString(36).slice(2)), new Response(JSON.stringify(wm ? { type: 'water', ml: +wm[1], at: Date.now() } : { type: 'wsnz', at: Date.now() }))); (await self.clients.matchAll({ type: 'window', includeUncontrolled: true })).forEach(w => w.postMessage({ type: 'drain' })); })());
+    e.waitUntil((async () => { const at = Date.now(); const c = await caches.open(ACTS); await c.put(new Request('./__act/' + at + '-' + Math.random().toString(36).slice(2)), new Response(JSON.stringify(wm ? { type: 'water', ml: +wm[1], at } : { type: 'wsnz', at }))); (await self.clients.matchAll({ type: 'window', includeUncontrolled: true })).forEach(w => w.postMessage({ type: 'drain' })); await tellServer(data, wm ? { type: 'water', ml: +wm[1], at, id: 'w' } : { type: 'wsnz', at, id: 'w' }); })());
     return;
   }
   e.waitUntil((async () => {

@@ -2480,7 +2480,7 @@ function waterCard() {
   <button class="iconbtn h2o-set" data-act="waterset" aria-label="Water settings">${I.gear}</button></div>
   <div class="h2o-btns"><button class="h2o-add p" data-act="wateradd" data-ml="${W.cup}"><span>+${fmtMl(W.cup)}</span><small>Glass</small></button><button class="h2o-add" data-act="wateradd" data-ml="${Math.max(500, W.cup * 2)}"><span>+${fmtMl(Math.max(500, W.cup * 2))}</span><small>Bottle</small></button><button class="h2o-add" data-act="watercustom"><span>${I.plus}</span><small>Other</small></button>${last ? `<button class="h2o-undo" data-act="waterundo" aria-label="Remove the last ${fmtMl(last.ml)}" title="Remove the last ${fmtMl(last.ml)}">Undo</button>` : ''}</div>
   <div class="h2o-week"><div class="h2o-bars">${days.map(d => { const v = waterOn(d); return `<div class="${d === td ? 'td' : ''}${v >= W.goal ? ' ok' : ''}"><i style="height:calc((100% - 20px) * ${Math.max(v ? .05 : .02, v / mx)})" title="${fmtMl(v)}"></i><span>${'SMTWTFS'[pYmd(d).getDay()]}</span></div>`; }).join('')}<em style="bottom:calc(17px + (100% - 20px) * ${W.goal / mx})" title="Goal"></em></div>
-  <div class="h2o-meta"><span>${st ? `🔥 <b>${st}</b> ${st === 1 ? 'day' : 'days'} on goal` : 'Hit your goal to start a streak'}</span><span>${W.rem ? `🔔 Every ${fmtMins(W.every)}, ${fmtTime(W.from)}–${fmtTime(W.to)}` : '🔕 Reminders off'}</span></div></div>
+  <div class="h2o-meta"><span>${st ? `🔥 <b>${st}</b> ${st === 1 ? 'day' : 'days'} on goal` : 'Hit your goal to start a streak'}</span><span>${W.rem ? '🔔 Only when you\'re behind' : '🔕 Nudges off'}</span></div></div>
   </section>`;
 }
 function waterSheet() {
@@ -2489,16 +2489,18 @@ function waterSheet() {
   openSheet(sheetHead('Water', 'Save', 'wsOk') + `
   <div class="field"><span class="flabel">Daily goal</span>${chips('wsG', [2000, 2500, 3000, 3500, 4000], goal, fmtMl)}<input class="inp" id="wsGc" type="number" inputmode="numeric" min="500" max="8000" step="100" value="${[2000, 2500, 3000, 3500, 4000].includes(goal) ? '' : goal}" placeholder="Other, in ml" style="margin-top:8px"></div>
   <div class="field"><span class="flabel">Your glass</span>${chips('wsC', [150, 200, 250, 300, 400, 500], cup, fmtMl)}</div>
-  <div class="setrow" style="padding:6px 0"><span class="l"><b>Remind me</b><span>A nudge on your phone, laptop and watch</span></span><button type="button" class="switch${W.rem ? ' on' : ''}" id="wsR" role="switch" aria-checked="${!!W.rem}" aria-label="Remind me"></button></div>
+  <div class="setrow" style="padding:6px 0"><span class="l"><b>Nudge when I'm behind</b><span>Only when you fall a glass behind. Tap +1 glass right on the lock screen or watch.</span></span><button type="button" class="switch${W.rem ? ' on' : ''}" id="wsR" role="switch" aria-checked="${!!W.rem}" aria-label="Nudge when I'm behind"></button></div>
   <div id="wsMore"${W.rem ? '' : ' hidden'}>
-  <div class="field"><span class="flabel">Every</span>${chips('wsE', [30, 45, 60, 90, 120], every, fmtMins)}</div>
-  <div class="grid2"><div class="field" style="margin:0"><label for="wsF">From</label><input class="inp" type="time" id="wsF" value="${W.from}"></div><div class="field" style="margin:0"><label for="wsT">Until</label><input class="inp" type="time" id="wsT" value="${W.to}"></div></div>
-  <div class="setrow" style="padding:10px 0 0"><span class="l"><b>Only when I'm behind</b><span>Skips the nudge if you're already on pace</span></span><button type="button" class="switch${W.smart ? ' on' : ''}" id="wsS" role="switch" aria-checked="${!!W.smart}" aria-label="Only when I'm behind"></button></div></div>`);
+  <div class="grid2"><div class="field" style="margin:0"><label for="wsF">Day starts</label><input class="inp" type="time" id="wsF" value="${W.from}"></div><div class="field" style="margin:0"><label for="wsT">Day ends</label><input class="inp" type="time" id="wsT" value="${W.to}"></div></div>
+  <div class="setrow" style="padding:12px 0 0"><span class="l"><b>After long meetings</b><span>One glass after meetings of 30 min or more, only if you're behind</span></span><button type="button" class="switch${W.afterMeet !== false ? ' on' : ''}" id="wsM" role="switch" aria-checked="${W.afterMeet !== false}" aria-label="After long meetings"></button></div>
+  <div class="setrow" style="padding:12px 0 0"><span class="l"><b>With meals</b><span>1:30 pm and 8:30 pm, only if you're behind</span></span><button type="button" class="switch${W.meals ? ' on' : ''}" id="wsL" role="switch" aria-checked="${!!W.meals}" aria-label="With meals"></button></div>
+  <div class="field" style="margin-top:14px"><span class="flabel">Most ignored nudges a day</span>${chips('wsN', [3, 4, 6, 8], W.maxN || 6, v => v)}</div>
+  <p class="hint" style="margin:6px 0 0">Nudges you act on don't count. Never during meetings, focus or quiet hours, and not within 45 min of your last glass. Ignore two and it waits 3 hours. Swipe one away for an hour's peace.</p></div>`);
   const pick = (id, set) => $$(`#${id} button`).forEach(b => b.onclick = () => { set(+b.dataset.v); $$(`#${id} button`).forEach(z => z.classList.toggle('on', z === b)); if (id === 'wsG') $('#wsGc').value = ''; });
-  pick('wsG', v => goal = v); pick('wsC', v => cup = v); pick('wsE', v => every = v);
-  const tg = (id, f) => { const b = $(id); b.onclick = () => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); b.setAttribute('aria-checked', on); f && f(on); }; }; tg('#wsR', on => { $('#wsMore').hidden = !on; }); tg('#wsS');
+  let maxN = W.maxN || 6; pick('wsG', v => goal = v); pick('wsC', v => cup = v); pick('wsN', v => maxN = v);
+  const tg = (id, f) => { const b = $(id); b.onclick = () => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); b.setAttribute('aria-checked', on); f && f(on); }; }; tg('#wsR', on => { $('#wsMore').hidden = !on; }); tg('#wsM'); tg('#wsL');
   $('#wsOk').onclick = () => { const gc = +$('#wsGc').value; if (gc >= 500 && gc <= 8000) goal = Math.round(gc / 50) * 50;
-    Object.assign(W, { goal, cup, every, rem: $('#wsR').classList.contains('on'), from: $('#wsF').value || '09:00', to: $('#wsT').value || '21:00', smart: $('#wsS').classList.contains('on') });
+    Object.assign(W, { goal, cup, every, rem: $('#wsR').classList.contains('on'), from: $('#wsF').value || '09:00', to: $('#wsT').value || '21:00', smart: true, maxN, afterMeet: $('#wsM').classList.contains('on'), meals: $('#wsL').classList.contains('on') });
     if (W.rem) askNotify(); save(); closeSheet(true); render(); toast('Water settings saved'); };
 }
 function waterCustom() {
@@ -2508,15 +2510,29 @@ function waterCustom() {
   setTimeout(() => $('#wcIn')?.focus(), 250);
 }
 // Called from the reminder loop
+// The water block the reminder service reads (it nudges even while Dayline sleeps)
+function waterPush() {
+  const W = water(), td = today(), st = S.settings;
+  return { on: !!W.rem, goal: W.goal, cup: W.cup, from: W.from, to: W.to, tz: -new Date().getTimezoneOffset(), day: td, log: (W.log[td] || []).map(x => [x.t, x.ml]), snz: W.snz || 0, maxN: W.maxN || 6, meet: W.afterMeet !== false, meals: !!W.meals,
+    quiet: st.quietOn ? [st.quietStart, st.quietEnd] : null, mtg: [...meetingsOn(td), ...meetingsOn(addDays(td, 1))].filter(m => !m.dec).map(m => [m.s, m.e]), focus: S.timer.running && S.timer.mode === 'work' ? S.timer.endAt : 0 };
+}
+// Gentle nudge: only when you're behind, never in a meeting or focus, 45 min after your last glass, 90 min apart (3 h if you ignored two), at most 6 a day
+function waterDecideLocal(now) {
+  const W = water(), P = waterPush(), ws = (W.ws ||= {}); const td = today(); if (ws.day !== td) Object.assign(ws, { day: td, n: 0, miss: 0, ign: 0, last: 0, lastTot: 0, meals: {} });
+  if (!P.on) return null; const hm = minOf(now), a = hm2m(P.from), b = hm2m(P.to); if (hm < a || hm >= b || inQuiet() || shielded()) return null;
+  const tot = waterOn(td); if (tot >= P.goal) return null; if (P.focus > now || P.mtg.some(([x, y]) => x <= now && now < y) || now < P.snz) return null;
+  const last = ((W.log[td] || []).at(-1) || {}).t || 0; if (now - last < 45 * 6e4 || (ws.miss || 0) >= P.maxN) return null;
+  const behind = waterPace(new Date(now)) - tot, since = now - (ws.last || 0);
+  const mEnd = P.meet && P.mtg.find(([x, y]) => y - x >= 30 * 6e4 && now >= y && now - y < 10 * 6e4); const meal = P.meals ? ['13:30', '20:30'].find(m => hm >= hm2m(m) && hm < hm2m(m) + 10 && !ws.meals[m]) : null;
+  let kind = null; if ((mEnd || meal) && behind > 0 && since >= 30 * 6e4) kind = mEnd ? 'meet' : 'meal'; else if (behind >= P.cup && since >= (ws.ign >= 2 ? 180 : ws.last && tot > ws.lastTot ? 60 : 90) * 6e4) kind = 'behind';
+  if (!kind) return null; const missed = !!ws.last && tot <= ws.lastTot; ws.ign = missed ? ws.ign + 1 : 0; if (missed) ws.miss = (ws.miss || 0) + 1; ws.last = now; ws.n++; ws.lastTot = tot; if (meal) ws.meals[meal] = 1;
+  const g = Math.max(1, Math.round(behind / P.cup));
+  return { title: kind === 'meet' ? '💧 Meeting done. Have a glass' : kind === 'meal' ? '💧 A glass with your meal' : g === 1 ? '💧 1 glass behind' : '💧 Time for a glass', body: `${fmtMl(tot)} of ${fmtMl(P.goal)} · ${g >= 2 && behind >= P.cup ? g + ' glasses behind · tap +2' : behind >= P.cup ? 'one now keeps you on track' : fmtMl(P.goal - tot) + ' to go'}` };
+}
 function waterTick(now) {
-  const W = water(); if (!W.rem) return; const td = today(), d = new Date(now), hm = d.getHours() * 60 + d.getMinutes();
-  if (hm < hm2m(W.from) || hm >= hm2m(W.to) || inQuiet()) return; const tot = waterOn(td); if (tot >= W.goal) return;
-  const lastDrink = ((W.log[td] || []).at(-1) || {}).t || 0; const start = pYmd(td).getTime() + hm2m(W.from) * 6e4;
-  const since = Math.max(lastDrink, W.lastRem || 0, start, W.snz || 0); if (now - since < W.every * 6e4) return;
-  if (W.smart && tot >= waterPace(d) && tot > 0) return;
-  W.lastRem = now; save();
-  const left = W.goal - tot; const slot = Math.floor(now / (W.every * 6e4));
-  notify('💧 Time for water', `${fmtMl(tot)} of ${fmtMl(W.goal)} so far · ${fmtMl(left)} to go`, 'water', { url: './#habits', water: 1 }, [{ action: 'w' + W.cup, title: `+${fmtMl(W.cup)}` }, { action: 'wsnz', title: 'In 30 min' }], 'water|' + td + '|' + slot);
+  if (pushLive()) return; // the reminder service sends these, even when Dayline sleeps
+  const n = waterDecideLocal(now); if (!n) return; save(); const W = water();
+  notify(n.title, n.body, 'water', { url: './#habits', water: 1 }, [{ action: 'w' + W.cup, title: '+1 glass' }, { action: 'w' + W.cup * 2, title: '+2' }, { action: 'wsnz', title: 'Later' }], 'water|' + now);
 }
 
 /* ================= Progress: XP, levels, glow streak and badges (all worked out from what you did, so it syncs by itself) ================= */
@@ -3327,7 +3343,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.3.4';
+const APPV = '5.4';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4413,7 +4429,7 @@ function pushItems() {
 function pushQueueSoon() { if (!fbUser || lsG('dayline.psub') !== fbUser.uid) return; clearTimeout(pushQT); pushQT = setTimeout(pushQueueNow, 1500); }
 async function pushQueueNow() {
   clearTimeout(pushQT); if (!fbUser || syncState !== 'on' || lsG('dayline.psub') !== fbUser.uid) return;
-  try { const items = S.settings.srvPush === false ? [] : pushItems(); const extra = { pop: S.settings.popRem !== false, card: S.settings.inCard !== false, native: !S.settings.phoneOff && Object.keys(S.phone || {}).length > 0 && !!S.remAck && S.remAck.v === remSig() };
+  try { const items = S.settings.srvPush === false ? [] : pushItems(); const extra = { water: S.settings.srvPush === false ? null : waterPush(), pop: S.settings.popRem !== false, card: S.settings.inCard !== false, native: !S.settings.phoneOff && Object.keys(S.phone || {}).length > 0 && !!S.remAck && S.remAck.v === remSig() };
     const h = JSON.stringify([items, extra]); if (h === pushHash) return; pushHash = h;
     await firebase.firestore().doc(`pushq/${fbUser.uid}`).set({ items, ...extra, u: Date.now(), by: devId() });
   } catch (e) { pushHash = ''; console.warn('reminder queue', e); }
@@ -4790,7 +4806,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 function handleAction(d) {
   if (!d || !d.type) return;
   if (d.type === 'water') { waterAdd(+d.ml || water().cup, d.at && Date.now() - d.at < 6 * 3600e3 ? d.at : undefined); return; }
-  if (d.type === 'wsnz') { water().snz = (d.at || Date.now()) + 30 * 6e4; save(); toast('Water reminder in 30 minutes'); return; } const t = getTask(d.id);
+  if (d.type === 'wsnz') { water().snz = (d.at || Date.now()) + 60 * 6e4; save(); toast('No water nudge for an hour'); return; } const t = getTask(d.id);
   if (t) { t.seenAt = Date.now(); save(); closeNotifs(t); } if (d.type === 'seen') return;
   const c = t && d.sub ? t.subs.find(x => x.id === d.sub) : null;
   if (c) {
@@ -4979,6 +4995,7 @@ setTimeout(drainActs, 400);
 (function handleUrl() {
   const q = new URLSearchParams(location.search);
   const sub = q.get('sub') || undefined;
+  if (q.get('water')) setTimeout(() => { const w = q.get('water'), W = water(); waterAdd(w === 'bottle' ? Math.max(500, W.cup * 2) : (+w || W.cup)); }, 300); // Home Screen shortcut: +1 glass / bottle
   if (q.get('done')) handleAction({ type: 'done', id: q.get('done'), sub });
   if (q.get('snooze')) handleAction({ type: 'snooze', id: q.get('snooze'), sub });
   if (q.get('later')) setTimeout(() => handleAction({ type: 'later', id: q.get('later'), sub }), 500);

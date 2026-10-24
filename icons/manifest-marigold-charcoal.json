@@ -31,21 +31,34 @@
  ],
  "shortcuts": [
   {
-   "name": "Add task",
-   "url": "../?add=1",
+   "name": "+1 glass of water",
+   "short_name": "+1 glass",
+   "url": "../?water=glass",
    "icons": [
     {
-     "src": "marigold-192.png",
+     "src": "../icon-192.png",
      "sizes": "192x192"
     }
    ]
   },
   {
-   "name": "Today",
-   "url": "../#today",
+   "name": "+1 bottle of water",
+   "short_name": "+1 bottle",
+   "url": "../?water=bottle",
    "icons": [
     {
-     "src": "marigold-192.png",
+     "src": "../icon-192.png",
+     "sizes": "192x192"
+    }
+   ]
+  },
+  {
+   "name": "Add a task",
+   "short_name": "Add task",
+   "url": "../?add=1",
+   "icons": [
+    {
+     "src": "../icon-192.png",
      "sizes": "192x192"
     }
    ]
