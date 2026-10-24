@@ -7,8 +7,8 @@
  "scope": "../",
  "display": "standalone",
  "orientation": "any",
- "background_color": "#FFFFFF",
- "theme_color": "#FFFFFF",
+ "background_color": "#1E2229",
+ "theme_color": "#1E2229",
  "icons": [
   {
    "src": "ganesh-192.png",
