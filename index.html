@@ -3343,7 +3343,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.4.2';
+const APPV = '5.4.3';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4808,7 +4808,8 @@ function handleAction(d) {
   if (!d || !d.type) return;
   if (d.type === 'water') { waterAdd(+d.ml || water().cup, d.at && Date.now() - d.at < 6 * 3600e3 ? d.at : undefined); return; }
   if (d.type === 'wsnz') { water().snz = (d.at || Date.now()) + 60 * 6e4; save(); toast('No water nudge for an hour'); return; } const t = getTask(d.id);
-  if (t) { t.seenAt = Date.now(); save(); closeNotifs(t); } if (d.type === 'seen') return;
+  // Only a real answer (Done, Snooze, swiped away, moved) counts as seen. Just showing the card here must not close it on the phone.
+  if (t && d.type !== 'later' && d.type !== 'open') { t.seenAt = Date.now(); save(); closeNotifs(t); } if (d.type === 'seen') return;
   const c = t && d.sub ? t.subs.find(x => x.id === d.sub) : null;
   if (c) {
     if (d.type === 'done') { c.d = true; c.nagAt = 0; c.snoozeUntil = 0; save(); pushClose(t.id, c.id); render(); if (pageId === t.id) renderPage(); toast('Subtask done'); }
