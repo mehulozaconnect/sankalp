@@ -3343,7 +3343,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.4.3';
+const APPV = '5.4.4';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4795,15 +4795,17 @@ let swReg = null;
 if ('serviceWorker' in navigator && location.protocol !== 'file:') { navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(r => { swReg = r; r.update().catch(() => { }); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') r.update().catch(() => { }); }); }).catch(() => { });
   /* A new version was installed: switch to it when you're not in the middle of typing */
   let swHad = !!navigator.serviceWorker.controller, swReload = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!swHad) { swHad = true; return; } if (swReload || window.QM) return; const go = () => { if (swReload) return; if ($('#sheet').classList.contains('on') || $('#page').classList.contains('on') || /INPUT|TEXTAREA/.test(document.activeElement?.tagName || '') || document.activeElement?.isContentEditable) { setTimeout(go, 4000); return; } swReload = true; saveLocal(); location.reload(); }; go(); }); navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'drain') drainActs(); else if (e.data && e.data.type === 'card') { if (!$('#sheet').classList.contains('on')) handleAction({ type: 'later', id: e.data.id, sub: e.data.sub }); } else handleAction(e.data); }); }
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!swHad) { swHad = true; return; } if (swReload || window.QM) return; const go = () => { if (swReload) return; if ($('#sheet').classList.contains('on') || $('#page').classList.contains('on') || /INPUT|TEXTAREA/.test(document.activeElement?.tagName || '') || document.activeElement?.isContentEditable) { setTimeout(go, 4000); return; } swReload = true; saveLocal(); location.reload(); }; go(); }); navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'drain') afterSync(drainActs); else if (e.data && e.data.type === 'card') { if (!$('#sheet').classList.contains('on')) handleAction({ type: 'later', id: e.data.id, sub: e.data.sub }); } else handleAction(e.data); }); }
 let draining = false;
+// Taps from notifications and the phone app are applied only after sync has caught up, so the fresh copy from your other devices can't undo them
+function afterSync(fn) { const t0 = Date.now(); const go = () => { if (!S.settings.fb || syncState === 'on' || (authKnown && !fbUser) || Date.now() - t0 > 12000) fn(); else setTimeout(go, 250); }; go(); }
 async function drainActs() {
   if (draining || !('caches' in window)) return; draining = true;
   try { const c = await caches.open('dayline-acts'); const ks = await c.keys(); ks.sort((a, b) => a.url < b.url ? -1 : 1);
     for (const k of ks) { let d = null; try { d = await (await c.match(k)).json(); } catch (e) { } await c.delete(k); if (d) handleAction({ ...d, sub: d.sub || undefined }); } } catch (e) { }
   draining = false;
 }
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') drainActs(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') afterSync(drainActs); });
 function handleAction(d) {
   if (!d || !d.type) return;
   if (d.type === 'water') { waterAdd(+d.ml || water().cup, d.at && Date.now() - d.at < 6 * 3600e3 ? d.at : undefined); return; }
@@ -4993,13 +4995,13 @@ setInterval(() => { if (document.visibilityState !== 'visible' || $('#sheet').cl
 document.addEventListener('focusin', e => { if (!isWide() && e.target.matches && e.target.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,[contenteditable=true]')) document.body.classList.add('typing'); });
 document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a || !a.matches || !a.matches('input,textarea,[contenteditable=true]')) document.body.classList.remove('typing'); }, 60));
 applyTheme();
-setTimeout(drainActs, 400);
+setTimeout(() => afterSync(drainActs), 400);
 (function handleUrl() {
   const q = new URLSearchParams(location.search);
   const sub = q.get('sub') || undefined;
   if (q.get('water')) setTimeout(() => { const w = q.get('water'), W = water(); waterAdd(w === 'bottle' ? Math.max(500, W.cup * 2) : (+w || W.cup)); }, 300); // Home Screen shortcut: +1 glass / bottle
-  if (q.get('done')) handleAction({ type: 'done', id: q.get('done'), sub });
-  if (q.get('snooze')) handleAction({ type: 'snooze', id: q.get('snooze'), sub });
+  if (q.get('done')) { const id = q.get('done'); afterSync(() => { const t = getTask(id); handleAction({ type: 'done', id, sub }); if (t && !sub) toast(`Done: ${t.title}`); }); }
+  if (q.get('snooze')) { const id = q.get('snooze'); afterSync(() => handleAction({ type: 'snooze', id, sub })); }
   if (q.get('later')) setTimeout(() => handleAction({ type: 'later', id: q.get('later'), sub }), 500);
   if (q.get('resched')) setTimeout(() => handleAction({ type: 'resched', id: q.get('resched'), sub }), 500);
   if (q.get('open')) setTimeout(() => handleAction({ type: 'open', id: q.get('open') }), 300);

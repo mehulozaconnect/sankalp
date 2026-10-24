@@ -72,7 +72,7 @@ final class Alarms {
             String title = t.optString("title", "Task");
             int prio = t.optInt("priority", 4);
             int nag = t.has("nag") && !t.isNull("nag") ? t.optInt("nag", nagDef) : nagDef;
-            boolean rep = t.has("repeat") && !t.isNull("repeat");
+            boolean rep = t.optJSONObject("repeat") != null; // only a real repeat rule (not an empty value)
             String date = t.isNull("date") ? null : t.optString("date", null);
             String time = t.isNull("time") ? null : t.optString("time", null);
             JSONArray rem = t.optJSONArray("reminders");
