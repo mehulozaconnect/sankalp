@@ -97,7 +97,7 @@ async function runTick() {
     if (q.water && q.water.on) {
       const ws = { ...(st.ws || {}) }; const wx = (st.wx || []).filter(e => now - e.t < 36 * 3600e3);
       const nd = waterDecide(q.water, ws, wx, now);
-      if (nd) { const wsubs = (await db.collection(`pushq/${uid}/subs`).get()).docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.sub && x.sub.endpoint);
+      if (nd && !(await claim(uid, 'water|' + ws.day + '|' + Math.floor(now / 30e3)))) { /* another tick already sent this one */ } else if (nd) { const wsubs = (await db.collection(`pushq/${uid}/subs`).get()).docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.sub && x.sub.endpoint);
         await sendAll(uid, wsubs, { title: nd.title, body: nd.body, tag: 'water', actions: waterActions(+q.water.cup || 250), data: { water: 1, fn: FN }, pop: false }); }
       if (JSON.stringify(ws) !== JSON.stringify(st.ws || {})) await stRef.set({ ws }, { merge: true });
     }

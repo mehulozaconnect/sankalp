@@ -19,8 +19,11 @@ jobs:
           P=dayline-226fb
           set +e
           {
-            sleep 60
-            echo "== tick calls"; gcloud logging read 'timestamp>="'$(date -u -d '-4 min' +%FT%TZ)'" AND resource.type="cloud_run_revision" AND resource.labels.service_name="tick" AND (httpRequest.status>0 OR severity>=WARNING)' --project $P --limit 10 --format='value(timestamp,severity,httpRequest.status,textPayload)' 2>&1
+            echo "== jobs before"; for R in asia-south1 us-central1; do gcloud scheduler jobs list --location $R --project $P --format='value(name,state)' 2>&1; done
+            for R in asia-south1 us-central1; do gcloud scheduler jobs delete dayline-tick --location $R --project $P --quiet 2>&1 | tail -1; done
+            gcloud scheduler jobs pause firebase-schedule-tick-asia-south1 --location asia-south1 --project $P 2>&1 | tail -1
+            sleep 150
+            echo "== tick calls"; gcloud logging read 'timestamp>="'$(date -u -d '-2 min' +%FT%TZ)'" AND resource.type="cloud_run_revision" AND resource.labels.service_name="tick" AND httpRequest.status>0' --project $P --limit 10 --format='value(timestamp,httpRequest.status)' 2>&1
           } > out.txt
           git config user.name bot; git config user.email bot@example.invalid
           git checkout -B diag-out; git add -f out.txt; git commit -qm out; git push -f origin diag-out
