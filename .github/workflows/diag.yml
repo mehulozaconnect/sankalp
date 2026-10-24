@@ -19,9 +19,8 @@ jobs:
           P=dayline-226fb
           set +e
           {
-            npx -y firebase-tools@15 apps:list WEB --project $P 2>&1 | tail -8
-            ID=$(npx -y firebase-tools@15 apps:list WEB --project $P --json 2>/dev/null | grep -o '"appId": *"[^"]*' | head -1 | cut -d'"' -f4)
-            npx -y firebase-tools@15 apps:sdkconfig WEB $ID --project $P 2>&1 | tail -15
+            sleep 60
+            echo "== tick calls"; gcloud logging read 'timestamp>="'$(date -u -d '-4 min' +%FT%TZ)'" AND resource.type="cloud_run_revision" AND resource.labels.service_name="tick" AND (httpRequest.status>0 OR severity>=WARNING)' --project $P --limit 10 --format='value(timestamp,severity,httpRequest.status,textPayload)' 2>&1
           } > out.txt
           git config user.name bot; git config user.email bot@example.invalid
           git checkout -B diag-out; git add -f out.txt; git commit -qm out; git push -f origin diag-out
