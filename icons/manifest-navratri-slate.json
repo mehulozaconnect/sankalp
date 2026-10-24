@@ -1,0 +1,63 @@
+{
+ "id": "/sankalp/",
+ "name": "Dayline",
+ "short_name": "Dayline",
+ "description": "Your day on one line: tasks, meetings and reminders.",
+ "start_url": "../",
+ "scope": "../",
+ "display": "standalone",
+ "orientation": "any",
+ "background_color": "#1E2229",
+ "theme_color": "#1E2229",
+ "icons": [
+  {
+   "src": "navratri-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "navratri-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "navratri-mask.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ],
+ "shortcuts": [
+  {
+   "name": "Add task",
+   "url": "../?add=1",
+   "icons": [
+    {
+     "src": "sky-192.png",
+     "sizes": "192x192"
+    }
+   ]
+  },
+  {
+   "name": "Today",
+   "url": "../#today",
+   "icons": [
+    {
+     "src": "sky-192.png",
+     "sizes": "192x192"
+    }
+   ]
+  }
+ ],
+ "share_target": {
+  "action": "../?share=1",
+  "method": "GET",
+  "params": {
+   "title": "title",
+   "text": "text",
+   "url": "url"
+  }
+ }
+}

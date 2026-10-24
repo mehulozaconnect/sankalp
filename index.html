@@ -9,7 +9,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<script>try{var k=localStorage.getItem('dayline.icon');if(k&&k!=='sky'&&/^[a-z]+$/.test(k)){document.querySelector('link[rel=manifest]').href='icons/manifest-'+k+'.json';document.querySelectorAll('link[rel=icon],link[rel=apple-touch-icon]').forEach(function(l){l.href='icons/'+k+'-192.png'})}}catch(e){}</script>
+<script>try{var k=localStorage.getItem('dayline.icon'),m=localStorage.getItem('dayline.man');if(m&&/^(manifest|icons\/manifest-[a-z-]+)\.json$/.test(m))document.querySelector('link[rel=manifest]').href=m;if(k&&k!=='sky'&&/^[a-z]+$/.test(k)){if(!m)document.querySelector('link[rel=manifest]').href='icons/manifest-'+k+'.json';document.querySelectorAll('link[rel=icon],link[rel=apple-touch-icon]').forEach(function(l){l.href='icons/'+k+'-192.png'})}}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Dayline">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1272,9 +1272,13 @@ function applyTheme() {
 }
 let lastLogo = '';
 function applyLogoAssets() {
-  const k = effIcon() || (LOGOS[S.settings.logo] ? S.settings.logo : 'sky'); if (k === lastLogo) return; lastLogo = k;
-  try { localStorage.setItem('dayline.icon', k); } catch (e) { }
-  const man = $('link[rel=manifest]'); if (man) man.setAttribute('href', k === 'sky' ? 'manifest.json' : `icons/manifest-${k}.json`);
+  const k = effIcon() || (LOGOS[S.settings.logo] ? S.settings.logo : 'sky');
+  // Dark mode: a dark copy of the app settings, so Android paints the bar under the app dark too (not white)
+  const st = S.settings, dk = st.mode === 'dark' || (st.mode === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+  const href = dk ? `icons/manifest-${k}-${({ Charcoal: 'charcoal', Black: 'black' })[st.darkStyle] || 'slate'}.json` : (k === 'sky' ? 'manifest.json' : `icons/manifest-${k}.json`);
+  if (k + href === lastLogo) return; lastLogo = k + href;
+  try { localStorage.setItem('dayline.icon', k); localStorage.setItem('dayline.man', href); } catch (e) { }
+  const man = $('link[rel=manifest]'); if (man) man.setAttribute('href', href);
   const ic = k === 'sky' ? 'icon-192.png' : `icons/${k}-192.png`; $$('link[rel=icon],link[rel=apple-touch-icon]').forEach(l => l.setAttribute('href', ic));
 }
 /* ================= rich notes ================= */
@@ -3318,7 +3322,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.3';
+const APPV = '5.3.1';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
