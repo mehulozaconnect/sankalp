@@ -932,7 +932,9 @@ main.setw{max-width:1040px}
 .ilink{width:100%;display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding:13px 14px;border-radius:14px;background:var(--surface);font-size:14px;font-weight:700;color:var(--ink);text-align:left}.ilink span{display:flex;align-items:center;gap:2px;font-size:12.5px;color:var(--muted)}.ilink svg{width:15px;height:15px}
 .addbar{display:flex;align-items:center;gap:10px;margin:6px 16px 2px;padding:0 14px;height:46px;border-radius:14px;background:var(--surface);border:1.5px solid transparent;transition:border-color .15s,background .15s}
 .addbar:focus-within{border-color:var(--accent);background:var(--bg)}.addbar .ab-i{display:flex;color:var(--accent-text)}.addbar .ab-i svg{width:18px;height:18px}
-.addbar input{flex:1;min-width:0;border:0;background:none;font-size:15px;font-weight:500;color:var(--ink);outline:none;padding:0}.addbar input::placeholder{color:var(--muted);font-weight:500}
+.addbar textarea{flex:1;min-width:0;border:0;background:none;font:inherit;font-size:15px;font-weight:500;color:var(--ink);outline:none;padding:0;resize:none;overflow:hidden;white-space:nowrap;height:22px;line-height:22px}.addbar textarea::placeholder{color:var(--muted);font-weight:500}
+/* Phone: while typing, hide the bottom tabs and the + button so only your text and the keyboard show */
+body.typing .tabbar,body.typing .fab{display:none}
 .addbar .ab-k{font-size:11px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:2px 6px;opacity:0;transition:opacity .15s}.addbar:focus-within .ab-k{opacity:1}
 .ab-prev{margin:6px 18px 4px;display:flex;flex-wrap:wrap;gap:6px}.ab-prev:empty{display:none}
 .rweek{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:2px 12px 12px}
@@ -2261,7 +2263,7 @@ function groupBy(list, mode) {
   }
   return null;
 }
-const addBar = (lbl) => `<div class="addbar"><span class="ab-i">${I.plus}</span><input id="abIn" type="text" aria-label="${lbl}" placeholder="${lbl}" autocomplete="off" enterkeyhint="done" data-form-type="other"><span class="ab-k">Enter</span></div><div class="ab-prev" id="abPrev"></div>`;
+const addBar = (lbl) => `<div class="addbar"><span class="ab-i">${I.plus}</span><textarea id="abIn" rows="1" aria-label="${lbl}" placeholder="${lbl}" autocomplete="off" autocorrect="on" enterkeyhint="done" data-form-type="other"></textarea><span class="ab-k">Enter</span></div><div class="ab-prev" id="abPrev"></div>`;
 function vToday() {
   const d = new Date(); const D = todayData(); const st = S.settings;
   const total = D.day.length + D.evening.length + D.overdue.length + D.pinned.length + D.doneToday.length + (D.impact ? 1 : 0);
@@ -3322,7 +3324,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.3.2';
+const APPV = '5.3.3';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4445,7 +4447,7 @@ function render() {
 }
 function wire(view) {
   { const ab = $('#abIn'); if (ab) { const pv = $('#abPrev');
-    ab.oninput = () => { const v = ab.value.trim(); if (!v) { pv.innerHTML = ''; return; } const r = parseTask(v); r._edit = true; pv.innerHTML = (r.date || r.time || r.priority || r.projectId || r.repeat || r.tags.length) ? chipsFor(r) : ''; };
+    ab.oninput = () => { if (ab.value.includes('\n')) { ab.value = ab.value.replace(/\n/g, ''); ab.onkeydown({ key: 'Enter', preventDefault() { } }); return; } const v = ab.value.trim(); if (!v) { pv.innerHTML = ''; return; } const r = parseTask(v); r._edit = true; pv.innerHTML = (r.date || r.time || r.priority || r.projectId || r.repeat || r.tags.length) ? chipsFor(r) : ''; };
     ab.onkeydown = e => { if (e.key === 'Escape') { ab.value = ''; pv.innerHTML = ''; ab.blur(); return; } if (e.key !== 'Enter' || e.isComposing) return; e.preventDefault(); const v = ab.value.trim(); if (!v) return;
       const res = addFromText(v, route()); if (!res) { toast('Add a few words for the task name'); return; } if (res.meeting) { render(); toast(`Meeting added, ${fmtClock(res.meeting.s)}`); return; }
       ab.value = ''; pv.innerHTML = ''; if (res.reminders.length) askNotify(); render(); const n = $('#abIn'); if (n) { n.value = ''; n.focus(); } const np = $('#abPrev'); if (np) np.innerHTML = '';
@@ -4948,6 +4950,8 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 setInterval(() => { if (document.visibilityState !== 'visible' || $('#sheet').classList.contains('on') || $('#page').classList.contains('on')) return; const v = route().view; if (today() !== lastDay) { lastDay = today(); applyLogoAssets(); render(); } else if (v === 'today' || (v === 'home' && isWide())) renderMainOnly(); }, 60000);
 
 /* ================= start ================= */
+document.addEventListener('focusin', e => { if (!isWide() && e.target.matches && e.target.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,[contenteditable=true]')) document.body.classList.add('typing'); });
+document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a || !a.matches || !a.matches('input,textarea,[contenteditable=true]')) document.body.classList.remove('typing'); }, 60));
 applyTheme();
 setTimeout(drainActs, 400);
 (function handleUrl() {
