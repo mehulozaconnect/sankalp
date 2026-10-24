@@ -938,7 +938,7 @@ main.setw{max-width:1040px}
 .addbar textarea{flex:1;min-width:0;border:0;background:none;font:inherit;font-size:15px;font-weight:500;color:var(--ink);outline:none;padding:0;resize:none;overflow:hidden;white-space:nowrap;height:22px;line-height:22px}.addbar textarea::placeholder{color:var(--muted);font-weight:500}
 /* Phone: while typing, hide the bottom tabs and the + button so only your text and the keyboard show */
 body.typing .tabbar,body.typing .fab{display:none}
-.addbar .ab-k{font-size:11px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:2px 6px;opacity:0;transition:opacity .15s}.addbar:focus-within .ab-k{opacity:1}
+.addbar .ab-k{font:inherit;font-size:11px;font-weight:700;color:var(--muted);background:none;border:1px solid var(--line);border-radius:6px;padding:2px 6px;opacity:0;transition:opacity .15s;cursor:pointer}@media (max-width:899px){.addbar .ab-k{font-size:14px;padding:7px 14px;border-radius:10px;background:var(--accent);color:var(--on-accent);border-color:var(--accent)}}.addbar:focus-within .ab-k{opacity:1}
 .ab-prev{margin:6px 18px 4px;display:flex;flex-wrap:wrap;gap:6px}.ab-prev:empty{display:none}
 .rweek{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:2px 12px 12px}
 .rweek button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 0 6px;border-radius:12px;color:var(--ink)}
@@ -2266,7 +2266,7 @@ function groupBy(list, mode) {
   }
   return null;
 }
-const addBar = (lbl) => `<div class="qa-wrap"><div class="addbar"><span class="ab-i">${I.plus}</span><textarea id="abIn" rows="1" aria-label="${lbl}" placeholder="${lbl}" autocomplete="off" autocorrect="on" enterkeyhint="done" data-form-type="other"></textarea><span class="ab-k">Enter</span></div><div class="qa-pick ab-pick" id="abPick" role="listbox" hidden></div></div><div class="ab-tools" id="abTools" hidden><button type="button" data-ins="#"><b>#</b> Project</button><button type="button" data-ins="@"><b>@</b> Tag</button><button type="button" data-ins="p"><b>!</b> Priority</button></div><div class="ab-prev" id="abPrev"></div>`;
+const addBar = (lbl) => `<div class="qa-wrap"><div class="addbar"><span class="ab-i">${I.plus}</span><textarea id="abIn" rows="1" aria-label="${lbl}" placeholder="${lbl}" autocomplete="off" autocorrect="on" enterkeyhint="done" data-form-type="other"></textarea><button type="button" class="ab-k" id="abGo" aria-label="Add task">${isWide() ? 'Enter' : 'Add'}</button></div><div class="qa-pick ab-pick" id="abPick" role="listbox" hidden></div></div><div class="ab-tools" id="abTools" hidden><button type="button" data-ins="#"><b>#</b> Project</button><button type="button" data-ins="@"><b>@</b> Tag</button><button type="button" data-ins="p"><b>!</b> Priority</button></div><div class="ab-prev" id="abPrev"></div>`;
 function vToday() {
   const d = new Date(); const D = todayData(); const st = S.settings;
   const total = D.day.length + D.evening.length + D.overdue.length + D.pinned.length + D.doneToday.length + (D.impact ? 1 : 0);
@@ -3343,7 +3343,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.4';
+const APPV = '5.4.1';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4484,6 +4484,7 @@ function wire(view) {
     $$('button', tools).forEach(b => b.onpointerdown = ev => { ev.preventDefault(); const sym = b.dataset.ins === 'p' ? '!' : b.dataset.ins; const pos = ab.selectionStart ?? ab.value.length; const pre = ab.value.slice(0, pos); const add = (pre && !/\s$/.test(pre) ? ' ' : '') + sym; ab.value = pre + add + ab.value.slice(pos); const c = pos + add.length; ab.focus(); ab.setSelectionRange(c, c); scanPk(); });
     ab.addEventListener('focus', () => { tools.hidden = false; }); ab.addEventListener('blur', () => setTimeout(() => { if (document.activeElement !== ab) { tools.hidden = true; closePk(); } }, 150));
     ab.addEventListener('click', scanPk);
+    { const go = $('#abGo'); if (go) go.onpointerdown = ev => { ev.preventDefault(); closePk(); ab.onkeydown({ key: 'Enter', preventDefault() { } }); }; }
     ab.oninput = () => { scanPk(); if (ab.value.includes('\n')) { ab.value = ab.value.replace(/\n/g, ''); ab.onkeydown({ key: 'Enter', preventDefault() { } }); return; } const v = ab.value.trim(); if (!v) { pv.innerHTML = ''; return; } const r = parseTask(v); r._edit = true; pv.innerHTML = (r.date || r.time || r.priority || r.projectId || r.repeat || r.tags.length) ? chipsFor(r) : ''; };
     ab.onkeydown = e => { if (!apk.hidden && pk.items.length && e.key) { if (e.key === 'ArrowDown') { e.preventDefault(); pk.i = (pk.i + 1) % pk.items.length; drawPk(); return; } if (e.key === 'ArrowUp') { e.preventDefault(); pk.i = (pk.i - 1 + pk.items.length) % pk.items.length; drawPk(); return; } if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault && e.preventDefault(); choosePk(pk.i); return; } if (e.key === 'Escape') { closePk(); return; } }
       if (e.key === 'Escape') { ab.value = ''; pv.innerHTML = ''; ab.blur(); return; } if (e.key !== 'Enter' || e.isComposing) return; e.preventDefault(); const v = ab.value.trim(); if (!v) return;
