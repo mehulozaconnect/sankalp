@@ -123,9 +123,9 @@ async function runTick() {
 const fmtMl = ml => ml >= 1000 ? (Math.round(ml / 100) / 10).toString().replace(/\.0$/, '') + ' L' : ml + ' ml';
 const hm2m = s => { const [h, m] = String(s || '0:0').split(':').map(Number); return h * 60 + (m || 0); };
 function waterTotal(W, wx, day) {
-  const log = (W.log || []).filter(x => x && x[0]);
-  const extra = (wx || []).filter(e => e.day === day && !log.some(([t, ml]) => Math.abs(t - e.t) < 3000 && ml === e.ml));
-  return { tot: log.reduce((a, [, ml]) => a + (+ml || 0), 0) + extra.reduce((a, e) => a + e.ml, 0), last: Math.max(0, ...log.map(x => x[0]), ...extra.map(e => e.t)) };
+  const log = (W.log || []).map(x => Array.isArray(x) ? { t: x[0], ml: x[1] } : x).filter(x => x && x.t);
+  const extra = (wx || []).filter(e => e.day === day && !log.some(x => Math.abs(x.t - e.t) < 3000 && x.ml === e.ml));
+  return { tot: log.reduce((a, x) => a + (+x.ml || 0), 0) + extra.reduce((a, e) => a + e.ml, 0), last: Math.max(0, ...log.map(x => x.t), ...extra.map(e => e.t)) };
 }
 // Returns a nudge to send now (and updates ws), or null. Same rules as the app uses when it is open.
 function waterDecide(W, ws, wx, now) {
@@ -137,14 +137,14 @@ function waterDecide(W, ws, wx, now) {
   const goal = +W.goal || 2500, cup = +W.cup || 250; const { tot, last } = waterTotal(W, wx, day);
   if (tot >= goal) return null;
   if ((W.focus || 0) > now) return null;
-  if ((W.mtg || []).some(([s, e]) => s <= now && now < e)) return null;
+  if ((W.mtg || []).some(m => m.s <= now && now < m.e)) return null;
   if (now < Math.max(W.snz || 0, ws.snz || 0)) return null;
   if (now - last < 45 * 6e4) return null;
   if ((ws.miss || 0) >= (+W.maxN || 6)) return null; // only nudges you didn't act on count towards the daily limit
   const pace = Math.round(goal * Math.max(0, Math.min(1, (hm - a) / Math.max(1, b - a))) / 50) * 50, behind = pace - tot;
   const sinceNudge = now - (ws.last || 0);
   let kind = null;
-  const mEnd = W.meet !== false && (W.mtg || []).find(([s, e]) => e - s >= 30 * 6e4 && now >= e && now - e < 10 * 6e4);
+  const mEnd = W.meet !== false && (W.mtg || []).find(m => m.e - m.s >= 30 * 6e4 && now >= m.e && now - m.e < 10 * 6e4);
   const meal = W.meals ? ['13:30', '20:30'].find(m => hm >= hm2m(m) && hm < hm2m(m) + 10 && !(ws.meals || {})[m]) : null;
   if ((mEnd || meal) && behind > 0 && sinceNudge >= 30 * 6e4) kind = mEnd ? 'meet' : 'meal';
   else if (behind >= cup && sinceNudge >= ((ws.ign || 0) >= 2 ? 180 : ws.last && tot > (ws.lastTot || 0) ? 60 : 90) * 6e4) kind = 'behind'; // you answered the last one: a little sooner
