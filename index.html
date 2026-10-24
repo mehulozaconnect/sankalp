@@ -930,6 +930,9 @@ main.setw{max-width:1040px}
 .ileg{display:flex;gap:14px;font-size:11.5px;color:var(--muted);font-weight:600;margin:6px 0 2px}.ileg i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}.ileg .dn{background:var(--meet)}.ileg .pl{background:color-mix(in srgb,var(--meet) 20%,var(--bg))}
 .iwin{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}.iwin span{color:var(--muted);font-weight:600;flex:none}.iwin b{text-align:right;min-width:0}
 .ilink{width:100%;display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding:13px 14px;border-radius:14px;background:var(--surface);font-size:14px;font-weight:700;color:var(--ink);text-align:left}.ilink span{display:flex;align-items:center;gap:2px;font-size:12.5px;color:var(--muted)}.ilink svg{width:15px;height:15px}
+.ab-pick{top:calc(100% + 4px);margin:0 16px}
+.ab-tools{display:flex;gap:8px;margin:8px 16px 0;overflow-x:auto;scrollbar-width:none}.ab-tools::-webkit-scrollbar{display:none}
+.ab-tools button{flex:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:13.5px;font-weight:600;padding:7px 12px;border-radius:999px;cursor:pointer}.ab-tools b{color:var(--accent-text);margin-right:2px}
 .addbar{display:flex;align-items:center;gap:10px;margin:6px 16px 2px;padding:0 14px;height:46px;border-radius:14px;background:var(--surface);border:1.5px solid transparent;transition:border-color .15s,background .15s}
 .addbar:focus-within{border-color:var(--accent);background:var(--bg)}.addbar .ab-i{display:flex;color:var(--accent-text)}.addbar .ab-i svg{width:18px;height:18px}
 .addbar textarea{flex:1;min-width:0;border:0;background:none;font:inherit;font-size:15px;font-weight:500;color:var(--ink);outline:none;padding:0;resize:none;overflow:hidden;white-space:nowrap;height:22px;line-height:22px}.addbar textarea::placeholder{color:var(--muted);font-weight:500}
@@ -2263,7 +2266,7 @@ function groupBy(list, mode) {
   }
   return null;
 }
-const addBar = (lbl) => `<div class="addbar"><span class="ab-i">${I.plus}</span><textarea id="abIn" rows="1" aria-label="${lbl}" placeholder="${lbl}" autocomplete="off" autocorrect="on" enterkeyhint="done" data-form-type="other"></textarea><span class="ab-k">Enter</span></div><div class="ab-prev" id="abPrev"></div>`;
+const addBar = (lbl) => `<div class="qa-wrap"><div class="addbar"><span class="ab-i">${I.plus}</span><textarea id="abIn" rows="1" aria-label="${lbl}" placeholder="${lbl}" autocomplete="off" autocorrect="on" enterkeyhint="done" data-form-type="other"></textarea><span class="ab-k">Enter</span></div><div class="qa-pick ab-pick" id="abPick" role="listbox" hidden></div></div><div class="ab-tools" id="abTools" hidden><button type="button" data-ins="#"><b>#</b> Project</button><button type="button" data-ins="@"><b>@</b> Tag</button><button type="button" data-ins="p"><b>!</b> Priority</button></div><div class="ab-prev" id="abPrev"></div>`;
 function vToday() {
   const d = new Date(); const D = todayData(); const st = S.settings;
   const total = D.day.length + D.evening.length + D.overdue.length + D.pinned.length + D.doneToday.length + (D.impact ? 1 : 0);
@@ -3324,7 +3327,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.3.3';
+const APPV = '5.3.4';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4446,9 +4449,28 @@ function render() {
   $('#fab').style.display = ['settings', 'focus', 'insights', 'habits', 'dates', 'templates', 'home', 'review', 'life', 'progress', 'trash'].includes(view) ? 'none' : '';
 }
 function wire(view) {
-  { const ab = $('#abIn'); if (ab) { const pv = $('#abPrev');
-    ab.oninput = () => { if (ab.value.includes('\n')) { ab.value = ab.value.replace(/\n/g, ''); ab.onkeydown({ key: 'Enter', preventDefault() { } }); return; } const v = ab.value.trim(); if (!v) { pv.innerHTML = ''; return; } const r = parseTask(v); r._edit = true; pv.innerHTML = (r.date || r.time || r.priority || r.projectId || r.repeat || r.tags.length) ? chipsFor(r) : ''; };
-    ab.onkeydown = e => { if (e.key === 'Escape') { ab.value = ''; pv.innerHTML = ''; ab.blur(); return; } if (e.key !== 'Enter' || e.isComposing) return; e.preventDefault(); const v = ab.value.trim(); if (!v) return;
+  { const ab = $('#abIn'); if (ab) { const pv = $('#abPrev'); const apk = $('#abPick'), tools = $('#abTools');
+    // Type # or @ (or tap the chips) to pick a project or tag from a list
+    let pk = { items: [], i: 0, start: -1 };
+    const tagList = () => { const c = {}; S.tasks.forEach(t => (t.tags || []).forEach(x => c[x] = (c[x] || 0) + 1)); ['work', 'personal', 'home', 'call', 'email', 'followup', 'waiting'].forEach(x => c[x] ||= 0); return Object.keys(c).sort((a, b) => c[b] - c[a] || a.localeCompare(b)); };
+    const closePk = () => { apk.hidden = true; pk = { items: [], i: 0, start: -1 }; };
+    const drawPk = () => { apk.innerHTML = pk.items.map((x, k) => `<button type="button" role="option" data-k="${k}" class="${k === pk.i ? 'on' : ''}">${x.html}</button>`).join(''); apk.hidden = !pk.items.length; $$('button', apk).forEach(b => b.onpointerdown = ev => { ev.preventDefault(); choosePk(+b.dataset.k); }); };
+    const scanPk = () => {
+      const pos = ab.selectionStart, before = ab.value.slice(0, pos), m = before.match(/(^|\s)([#@!])([\p{L}\p{N}_-]*)$/u); if (!m) return closePk();
+      const sym = m[2], q = m[3].toLowerCase(), start = pos - m[3].length - 1; let items;
+      if (sym === '#') { items = S.projects.filter(p => !q || pslug(p.name).includes(q.replace(/_/g, '-')) || p.name.toLowerCase().includes(q)).slice(0, 8).map(p => ({ ins: '#' + (pslug(p.name) || p.name), html: `<span class="pd" style="background:${p.color || 'var(--muted)'}"></span>${esc((p.emoji ? p.emoji + ' ' : '') + p.name)}<small>${esc(p.area || '')}</small>` }));
+        if (q && !S.projects.some(p => pslug(p.name) === pslug(q))) items.push({ ins: '#' + q, html: `<span class="ph">+</span>New project “${esc(cap(q.replace(/[-_]/g, ' ')))}”` }); }
+      else if (sym === '@') { const tg = tagList(); items = tg.filter(x => !q || x.includes(q)).slice(0, 8).map(x => ({ ins: '@' + x, html: `<span class="ph">@</span>${esc(x)}` })); if (q && !tg.includes(q)) items.push({ ins: '@' + q, html: `<span class="ph">+</span>New tag “${esc(q)}”` }); }
+      else items = [[1, '#E5484D', 'Urgent'], [2, '#F2A33A', 'High'], [3, '#2F7BEA', 'Medium'], [4, 'var(--muted)', 'Normal']].filter(([n]) => !q || String(n).startsWith(q)).map(([n, c, l]) => ({ ins: 'p' + n, html: `<span class="pd" style="background:${c}"></span>P${n}<small>${l}</small>` }));
+      pk = { items, i: 0, start }; drawPk();
+    };
+    const choosePk = k => { const x = pk.items[k]; if (!x) return; const pos = ab.selectionStart; ab.value = ab.value.slice(0, pk.start) + x.ins + ' ' + ab.value.slice(pos).replace(/^\s+/, ''); const c = pk.start + x.ins.length + 1; closePk(); ab.focus(); ab.setSelectionRange(c, c); ab.oninput(); };
+    $$('button', tools).forEach(b => b.onpointerdown = ev => { ev.preventDefault(); const sym = b.dataset.ins === 'p' ? '!' : b.dataset.ins; const pos = ab.selectionStart ?? ab.value.length; const pre = ab.value.slice(0, pos); const add = (pre && !/\s$/.test(pre) ? ' ' : '') + sym; ab.value = pre + add + ab.value.slice(pos); const c = pos + add.length; ab.focus(); ab.setSelectionRange(c, c); scanPk(); });
+    ab.addEventListener('focus', () => { tools.hidden = false; }); ab.addEventListener('blur', () => setTimeout(() => { if (document.activeElement !== ab) { tools.hidden = true; closePk(); } }, 150));
+    ab.addEventListener('click', scanPk);
+    ab.oninput = () => { scanPk(); if (ab.value.includes('\n')) { ab.value = ab.value.replace(/\n/g, ''); ab.onkeydown({ key: 'Enter', preventDefault() { } }); return; } const v = ab.value.trim(); if (!v) { pv.innerHTML = ''; return; } const r = parseTask(v); r._edit = true; pv.innerHTML = (r.date || r.time || r.priority || r.projectId || r.repeat || r.tags.length) ? chipsFor(r) : ''; };
+    ab.onkeydown = e => { if (!apk.hidden && pk.items.length && e.key) { if (e.key === 'ArrowDown') { e.preventDefault(); pk.i = (pk.i + 1) % pk.items.length; drawPk(); return; } if (e.key === 'ArrowUp') { e.preventDefault(); pk.i = (pk.i - 1 + pk.items.length) % pk.items.length; drawPk(); return; } if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault && e.preventDefault(); choosePk(pk.i); return; } if (e.key === 'Escape') { closePk(); return; } }
+      if (e.key === 'Escape') { ab.value = ''; pv.innerHTML = ''; ab.blur(); return; } if (e.key !== 'Enter' || e.isComposing) return; e.preventDefault(); const v = ab.value.trim(); if (!v) return;
       const res = addFromText(v, route()); if (!res) { toast('Add a few words for the task name'); return; } if (res.meeting) { render(); toast(`Meeting added, ${fmtClock(res.meeting.s)}`); return; }
       ab.value = ''; pv.innerHTML = ''; if (res.reminders.length) askNotify(); render(); const n = $('#abIn'); if (n) { n.value = ''; n.focus(); } const np = $('#abPrev'); if (np) np.innerHTML = '';
       const where = res.someday ? 'Someday' : res.date === today() ? 'Today' : res.date ? fmtDate(res.date) : res.projectId ? proj(res.projectId).name : 'Inbox'; toast(`Added to ${where}`); }; } }
