@@ -3429,7 +3429,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.5.1';
+const APPV = '5.5.2';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5096,6 +5096,17 @@ const RF_WHEEL = [
 const RF_POS = new Set(RF_WHEEL.slice(0, 4).flatMap(w => [w[0], ...w[2]]));
 const RF_QUICK = ['Grateful', 'Calm', 'Focused', 'Happy', 'Proud', 'Hopeful', 'Anxious', 'Stressed', 'Tired', 'Irritated'];
 const RF_BODY = ['Head', 'Jaw', 'Chest', 'Shoulders', 'Stomach', 'Back', 'Hands', 'Nowhere'];
+// After a feeling: [question, answers, ask about the body?, a helpful next step]
+const RF_FOLLOW = {
+  Joy: ['what brought it?', ['Family', 'A work win', 'Good health', 'Friends', 'Nature', 'A spiritual moment', 'Something I created'], false, ['grat3', '🙏 Save it as a gratitude']],
+  Calm: ['what helped?', ['Rest', 'Prayer or meditation', 'A walk', 'Family time', 'Finishing work', 'Music', 'Quiet time alone']],
+  Love: ['who with?', ['Partner', 'Children', 'Parents', 'Friends', 'A colleague', 'Myself']],
+  Strong: ['what drove it?', ['A clear plan', 'A win', 'Good sleep', 'Exercise', 'Someone backing me', 'Faith']],
+  Anxious: ['what is it about?', ['Work', 'A client or deal', 'Money', 'Health', 'Family', 'The future'], true, ['breathe', '🌬️ Breathe for a minute']],
+  Sad: ['what would help right now?', ['Talking to someone', 'A call home', 'Some space', 'Rest', 'A walk', 'Letting it out'], false, ['walk', '🚶 Take a 5-minute walk']],
+  Angry: ['what crossed a line?', ['Respect', 'My time', 'Fairness', 'A broken promise', 'Being ignored', 'Traffic or travel'], true, ['breathe', '🌬️ Breathe before you respond']],
+  Tired: ['what drained me?', ['Too many meetings', 'Poor sleep', 'Travel', 'People', 'Screens', 'Skipped meals'], false],
+};
 const RF_AREAS = [['health', '🌿', 'Health', '#14B8A6'], ['family', '👨‍👩‍👦', 'Family', '#F2A33A'], ['career', '💼', 'Career', '#2F86F6'], ['spirit', '🪔', 'Spirit', '#8B5CF6'], ['love', '❤️', 'Love', '#DB2777'], ['wealth', '💰', 'Wealth', '#C9A227']];
 const RF_TITHI = ['Pratipada', 'Dwitiya', 'Tritiya', 'Chaturthi', 'Panchami', 'Shashthi', 'Saptami', 'Ashtami', 'Navami', 'Dashami', 'Ekadashi', 'Dwadashi', 'Trayodashi', 'Chaturdashi'];
 const RF_IC = sv('<path d="M12 20c-4.5 0-8.5-2.6-8.5-6.3 2.3 0 4.6.7 6.2 2.1"/><path d="M12 20c4.5 0 8.5-2.6 8.5-6.3-2.3 0-4.6.7-6.2 2.1"/><path d="M12 20c-2.1-2.6-3.2-5.3-3.2-8.2 0-2.6 1.3-5 3.2-7.3 1.9 2.3 3.2 4.7 3.2 7.3 0 2.9-1.1 5.6-3.2 8.2z"/>', 2);
@@ -5329,7 +5340,12 @@ function rfFeel() {
   const W = RF_WHEEL.find(w => w[0] === sel);
   let h = `<section class="rf-card"><div class="rf-k">How do I feel?</div><div class="rf-wheel">${rfWheelSvg(sel)}<div class="rf-wc"><b>${sel}</b><span>tap a colour</span></div></div><div class="rf-chips" style="justify-content:center">${rfFeelChips(e, [W[0], ...W[2]])}</div>
    ${(e?.feels || []).length ? `<p class="rf-mut" style="text-align:center;margin:10px 0 0">Today: ${e.feels.map(esc).join(', ')}</p>` : ''}</section>`;
-  h += `<section class="rf-card"><div class="rf-k">Where do I feel it?</div><div class="rf-chips">${RF_BODY.map(b => `<button type="button" class="rf-chip${(e?.body || []).includes(b) ? ' on' : ''}" data-rf="body" data-v="${b}">${b}</button>`).join('')}</div></section>`;
+  // A follow-up that fits the feeling you picked (only once you pick one)
+  const picked = (e?.feels || []).filter(f => f === W[0] || W[2].includes(f));
+  if (picked.length) { const F = RF_FOLLOW[W[0]]; const got = (e.ctx || {})[W[0]] || [];
+    h += `<section class="rf-card"><div class="rf-k">Feeling ${esc(picked.at(-1).toLowerCase())} · ${F[0]}</div><div class="rf-chips">${F[1].map(x => `<button type="button" class="rf-chip${got.includes(x) ? ' on' : ''}" data-rf="fctx" data-k="${W[0]}" data-v="${esc(x)}">${esc(x)}</button>`).join('')}</div>
+    ${F[2] ? `<div class="rf-k">Where do I feel it in my body?</div><div class="rf-chips">${RF_BODY.map(b => `<button type="button" class="rf-chip${(e?.body || []).includes(b) ? ' on' : ''}" data-rf="body" data-v="${b}">${b}</button>`).join('')}</div>` : ''}
+    ${F[3] ? `<button class="btn sec rf-wide" style="margin-top:12px" data-rf="${F[3][0]}">${F[3][1]}</button>` : ''}</section>`; }
   h += `<section class="rf-card"><div class="rf-k">Untangle a thought · 3 steps</div>
    <label class="rf-ul" for="rfU1">1 · What happened?</label><textarea class="inp rf-ta" id="rfU1" rows="2" placeholder="Just the facts"></textarea>
    <label class="rf-ul" for="rfU2">2 · What am I telling myself?</label><textarea class="inp rf-ta" id="rfU2" rows="2" placeholder="The thought in my head"></textarea>
@@ -5414,7 +5430,7 @@ Rules:
 - You are not a therapist. If he expresses hopelessness, thoughts of self-harm or a crisis, respond with care, encourage him to talk to someone he trusts or a professional today, and share that in India he can call Tele-MANAS on 14416.`;
 function rfContext() {
   const J = rf(); const td = today(); const from = addDays(td, -60);
-  const days = Object.values(J.days).filter(e => e.d >= from && !e.priv && (e.mood || e.line || e.text)).sort((a, b) => a.d < b.d ? -1 : 1).map(e => ({ date: e.d, mood: e.mood ? rfMood(e.mood)[1] : null, energy: e.energy, feelings: e.feels, body: e.body?.length ? e.body : undefined, line: e.line || undefined, text: e.text ? rfTrim(rfText(e.text), 500) : undefined, grateful: (e.grat || []).filter(Boolean), intention: e.int?.t ? { text: e.int.t, lived: e.int.lived } : undefined, untangled: e.untangle, day: e.facts }));
+  const days = Object.values(J.days).filter(e => e.d >= from && !e.priv && (e.mood || e.line || e.text)).sort((a, b) => a.d < b.d ? -1 : 1).map(e => ({ date: e.d, mood: e.mood ? rfMood(e.mood)[1] : null, energy: e.energy, feelings: e.feels, about_feelings: e.ctx && Object.keys(e.ctx).length ? e.ctx : undefined, body: e.body?.length ? e.body : undefined, line: e.line || undefined, text: e.text ? rfTrim(rfText(e.text), 500) : undefined, grateful: (e.grat || []).filter(Boolean), intention: e.int?.t ? { text: e.int.t, lived: e.int.lived } : undefined, untangled: e.untangle, day: e.facts }));
   const vision = Object.fromEntries(RF_AREAS.map(([k, , l]) => [l, J.vision[k]?.line || null]));
   const P = rfPatterns();
   return { today: td, weekday: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][pYmd(td).getDay()], tithi: rfTithiName(td), streak: rfStreak().n, vision_board: vision, affirmation: J.aff?.text || null, manifested: J.wall.map(w => ({ goal: w.title, written: w.wrote, came_true: w.came })), wheel_of_life: J.wheel, patterns: P.list.map(x => x.text.replace(/<[^>]+>/g, '')), what_mentor_knows: J.about, past_decisions: J.dec.slice(-10).map(x => ({ date: x.at, question: x.q, chose: x.choice, outcome: x.outcome, felt: x.rating })), journal: days };
@@ -5607,6 +5623,7 @@ document.addEventListener('click', ev => {
     ymood: () => { const d = addDays(td, -1); const e = rfDay(d, true); e.mood = +v; e.facts = rfFacts(d); e.saved = true; rfTouch(e); render(); toast(`Yesterday: ${rfMood(+v)[2]} ${rfMood(+v)[1]}. Tap it in Recent to add more.`); },
     feel: () => { const onPage = route().arg.startsWith('day/'); const d = onPage ? route().arg.split('/')[1] : td; if (!onPage && $('#rfLine')) rfSaveCheckin(true); const e = rfDay(d, true); e.feels = e.feels.includes(v) ? e.feels.filter(x => x !== v) : [...e.feels, v]; rfTouch(e); renderMainOnly(); },
     core: () => { rfSel = v; renderMainOnly(); },
+    fctx: () => { const e = rfDay(td, true); const k = b.dataset.k; const c = ((e.ctx ||= {})[k] ||= []); e.ctx[k] = c.includes(v) ? c.filter(x => x !== v) : [...c, v]; rfTouch(e); renderMainOnly(); },
     body: () => { const e = rfDay(td, true); e.body = e.body.includes(v) ? e.body.filter(x => x !== v) : [...e.body, v]; rfTouch(e); renderMainOnly(); },
     save: () => rfSaveCheckin(false),
     intsave: () => { const t = $('#rfInt')?.value.trim(); if (!t) { $('#rfInt')?.focus(); return; } const e = rfDay(td, true); e.int = { t, lived: null }; rfTouch(e); render(); toast('Intention set. Dayline asks tonight if you lived it 🎯'); },
