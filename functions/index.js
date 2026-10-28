@@ -107,6 +107,11 @@ async function runTick() {
     const subs = (await db.collection(`pushq/${uid}/subs`).get()).docs.map(d => ({ id: d.id, ...d.data() })).filter(s => s.sub && s.sub.endpoint && !(q.native && s.phone));
     for (const it of items) {
       sent[it.k] = now;
+      if (it.ping) { // Reflect: evening check-in, morning intention, Sunday story, letters (no task behind it)
+        if (!subs.length || !(await claim(uid, it.k))) continue;
+        await sendAll(uid, subs, { title: it.title, body: it.body, tag: it.tag || 'reflect', actions: Array.isArray(it.actions) ? it.actions : [], data: { reflect: 1, url: it.url || './#reflect', fn: FN }, pop: false });
+        continue;
+      }
       const t = await taskOf(uid, it.id);
       if (!t || t.done) continue;
       if (actState(acts, it, t.__u) === 'drop') continue;

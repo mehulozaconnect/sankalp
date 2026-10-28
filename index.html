@@ -1062,6 +1062,91 @@ body.selmode #fab{display:none!important}
 .wnote-v{background:var(--surface);border-radius:14px;padding:12px 14px;font-size:14.5px;line-height:1.45;margin-bottom:6px}
 .wbars{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;height:120px;margin:6px 0 4px}.wbars div{display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;gap:4px}.wbars i{display:block;background:#1F8A3B;border-radius:5px 5px 2px 2px}.wbars span{text-align:center;font-size:11px;color:var(--muted);font-weight:700}
 .wln{width:100%;text-align:left;display:block;font-size:14px;padding:9px 0;border-bottom:1px solid var(--line);color:var(--ink)}.wln b{display:block;font-size:12px;color:var(--muted)}
+/* Reflect */
+.rf-top{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}.rf-st{color:var(--muted);font-size:14px;font-weight:600;padding-bottom:6px;white-space:nowrap}
+.rf-tabs{display:flex;gap:6px;margin:10px 16px 4px;overflow-x:auto;scrollbar-width:none}.rf-tabs::-webkit-scrollbar{display:none}
+.rf-tabs a{flex:none;padding:8px 14px;border-radius:999px;background:var(--surface);color:var(--muted);font-weight:700;font-size:14px;text-decoration:none}.rf-tabs a.on{background:var(--ink);color:var(--bg)}
+.rf-card{display:block;background:var(--surface);border-radius:20px;padding:16px;margin:12px 16px;color:var(--ink);text-decoration:none}
+.rf-card>b{display:block;font-size:16px}.rf-card>span{display:block;color:var(--muted);font-size:14px;margin-top:4px;line-height:1.4}.rf-card>.btn{margin-top:12px}
+.rf-k{font-size:12px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:var(--muted);margin:14px 2px 8px}.rf-card>.rf-k:first-child{margin-top:0}
+.rf-sec{margin:20px 18px 6px}.rf-mut{color:var(--muted);font-size:13.5px;line-height:1.45}.rf-pad{padding:0 18px}
+.rf-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.rf-act{margin-top:16px}.rf-act .btn{flex:1;justify-content:center}
+.rf-moods{display:flex;justify-content:space-between;gap:4px}.rf-mo{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:0;color:var(--muted);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;padding:2px 0}
+.rf-mo i{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:26px;background:color-mix(in srgb,var(--mc) 22%,transparent);transition:transform .15s,box-shadow .15s;filter:saturate(.7)}
+.rf-moods.big .rf-mo i{width:56px;height:56px;font-size:30px}
+.rf-mo.on{color:var(--ink);font-weight:800}.rf-mo.on i{background:var(--mc);box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--mc);transform:scale(1.06);filter:none}
+.rf-chips{display:flex;flex-wrap:wrap;gap:7px}.rf-chip{display:inline-flex;align-items:center;gap:6px;border:0;background:var(--bg);color:var(--ink);font:inherit;font-size:13.5px;font-weight:600;padding:7px 12px;border-radius:999px;cursor:pointer;text-decoration:none}
+.rf-chip.on{background:color-mix(in srgb,#8B5CF6 26%,var(--bg));color:var(--ink);box-shadow:inset 0 0 0 1.5px #8B5CF6}.rf-chip.au{background:color-mix(in srgb,#2F86F6 14%,var(--bg));cursor:default}.rf-chip.more{color:var(--accent-text)}
+.rf-chip button{border:0;background:none;color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:0 0 0 2px}
+.rf-range{width:100%;accent-color:var(--accent);margin:4px 0 0}.rf-lab{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}
+.rf-ta{resize:vertical;min-height:0;font:inherit;line-height:1.5}.rf-big{min-height:170px}
+.rf-line{display:flex;gap:8px;align-items:flex-start}.rf-line textarea{flex:1}
+.rf-mic{flex:none;width:44px;height:44px;border-radius:50%;border:0;background:var(--bg);font-size:19px;cursor:pointer}.rf-mic.on{background:#E5484D;animation:rfpulse 1s infinite}
+@keyframes rfpulse{50%{box-shadow:0 0 0 8px color-mix(in srgb,#E5484D 25%,transparent)}}
+.rf-grat{margin-top:12px}.rf-grat summary{cursor:pointer;font-weight:700;font-size:14.5px;padding:4px 2px}.rf-grat summary span{color:var(--muted);font-weight:500;font-size:12.5px;margin-left:6px}.rf-grat .inp,.rf-gi{margin-top:8px}
+.rf-int{background:linear-gradient(135deg,color-mix(in srgb,#F5B66B 22%,var(--surface)),color-mix(in srgb,#8B5CF6 16%,var(--surface)))}
+.rf-intt{font-size:19px;font-weight:700;line-height:1.35}.rf-ideas{margin:8px 0 2px}.rf-int .btn{margin-top:10px}
+.rf-link{border:0;background:none;color:var(--accent-text);font:inherit;font-size:14px;font-weight:700;cursor:pointer;padding:0;text-decoration:none}
+.rf-aff{font-size:17px;font-weight:700;line-height:1.45;margin:4px 0 6px}
+.rf-369{display:grid;gap:6px;margin-top:8px}.rf-369r{display:flex;justify-content:space-between;align-items:center;border:0;background:var(--bg);border-radius:12px;padding:9px 12px;color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
+.rf-dots{display:flex;gap:5px}.rf-dots i{width:13px;height:13px;border-radius:50%;background:var(--line);display:block}.rf-dots i.on{background:#F5B66B}
+.rf-otd{display:flex;gap:12px;align-items:center}.rf-otd img,.rf-otd-m{width:62px;height:62px;border-radius:14px;object-fit:cover;flex:none;display:grid;place-items:center;font-size:30px;background:var(--bg)}.rf-otd b{display:block;font-size:14px}.rf-otd span span{display:block;color:var(--muted);font-size:14px;line-height:1.4;margin-top:2px}
+.rf-jar{background:color-mix(in srgb,#F5B66B 14%,var(--surface))}.rf-jar p{margin:6px 0 2px;font-size:16px;line-height:1.45}
+.rf-list{margin:6px 16px;display:grid;gap:8px}.rf-li{display:flex;gap:12px;align-items:center;background:var(--surface);border-radius:16px;padding:10px 12px;color:var(--ink);text-decoration:none}
+.rf-li b{display:block;font-size:14.5px}.rf-li span span{display:block;color:var(--muted);font-size:13px;line-height:1.35;margin-top:2px}.rf-li>span:nth-child(2){flex:1;min-width:0}
+.rf-dot{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex:none;font-size:18px}
+.rf-stories{margin:14px 16px}.rf-stories .btn{flex:1;justify-content:center}.rf-wide{width:100%;justify-content:center}
+.rf-priv{color:var(--muted);font-size:12.5px;text-align:center;margin:16px 16px 24px;line-height:1.45}
+.rf-lock{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:60px 24px}.rf-lock-ic{font-size:54px}.rf-lock b{font-size:20px}.rf-lock p{color:var(--muted);margin:0}.rf-lock .inp{max-width:200px;text-align:center;font-size:22px;letter-spacing:8px}
+.rf-imgs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}.rf-imgs button{border:0;padding:0;background:none;border-radius:12px;overflow:hidden;aspect-ratio:1;cursor:pointer}.rf-imgs img{width:100%;height:100%;object-fit:cover;display:block}
+.rf-ai{background:color-mix(in srgb,#8B5CF6 16%,var(--surface));border-radius:16px;padding:12px 14px;font-size:15px;line-height:1.5;margin:8px 0}
+.rf-card .rf-ai{background:color-mix(in srgb,#8B5CF6 16%,var(--bg))}
+.rf-me{background:var(--surface);border-radius:16px;padding:12px 14px;font-size:15px;line-height:1.5;margin:8px 0 8px 40px;white-space:pre-wrap}
+.rf-unt{display:grid;gap:3px;background:var(--bg);border-radius:12px;padding:10px 12px;margin-bottom:6px;font-size:14px}.rf-unt span{color:var(--muted)}.rf-unt b{color:#5DBB63;font-weight:600}
+.rf-del{color:#E5484D}
+.rf-mhead{justify-content:space-between;margin:10px 18px 0}.rf-mhead .sub{margin:0}
+.rf-vb{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 16px}
+.rf-vbc{min-height:118px;border:0;border-radius:18px;padding:12px;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;text-align:left;color:#fff;font:inherit;cursor:pointer;background:linear-gradient(160deg,color-mix(in srgb,var(--vc) 65%,#000),var(--vc));background-size:cover;background-position:center}
+.rf-vbc b{font-size:15px}.rf-vbc span{font-size:13px;line-height:1.35;margin-top:3px;opacity:.95}
+.rf-wall b{color:#C98A1E}
+.rf-letterx{font-size:16px;line-height:1.6;white-space:normal;padding:4px 2px 20px}
+.rf-wheel{position:relative;width:240px;height:240px;margin:0 auto 10px}.rf-wc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}.rf-wc b{font-size:17px}.rf-wc span{font-size:11.5px;color:var(--muted)}
+.rf-ul{display:block;font-weight:700;font-size:14px;margin:10px 2px 6px}.rf-card>.btn.acc{margin-top:12px}
+.rf-burnc{position:relative;overflow:hidden;transition:background .6s}.rf-burnb{margin-top:10px;background:#E0482A;color:#fff;border:0}
+.rf-burnc.burning{background:linear-gradient(180deg,var(--surface),#5a1a0c)}.rf-burnc.burning textarea{animation:rfburn 1.8s forwards}
+@keyframes rfburn{0%{color:var(--ink)}30%{color:#F2A33A;text-shadow:0 0 8px #F2A33A}70%{color:#E5484D;opacity:.6;transform:translateY(-6px) scale(.98);filter:blur(1px)}100%{opacity:0;transform:translateY(-24px) scale(.9);filter:blur(4px)}}
+.rf-tools{margin:6px 16px 20px}.rf-tools .btn{flex:1 1 30%;justify-content:center;font-size:14px;padding-left:8px;padding-right:8px}
+.rf-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:12px}.rf-cal span{text-align:center;font-size:11px;color:var(--muted);font-weight:700}
+.rf-cal a,.rf-cal i{aspect-ratio:1;border-radius:9px;background:var(--bg);display:grid;place-items:center;font-size:12px;color:var(--ink);text-decoration:none;font-style:normal}.rf-cal i.na{background:none}.rf-cal a.td{box-shadow:inset 0 0 0 2px var(--ink)}.rf-cal a.fut{opacity:.35;pointer-events:none}
+.rf-cal a[style*="background"]{color:#fff;font-weight:700}
+.rf-leg{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-size:12px;color:var(--muted)}.rf-leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+.rf-bars{display:flex;gap:8px;height:130px;align-items:flex-end}.rf-bars div{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px}.rf-bars i{width:100%;border-radius:8px 8px 3px 3px;display:block;min-height:4px}.rf-bars em{font-style:normal;font-size:11px;color:var(--muted);min-height:14px}.rf-bars span{font-size:11.5px;color:var(--muted);font-weight:700}
+.rf-pat{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--line);font-size:14.5px;line-height:1.45}.rf-pat:first-of-type{border-top:0;padding-top:2px}.rf-pat em{font-style:normal;font-size:20px;flex:none}
+.rf-prog{height:8px;border-radius:4px;background:var(--bg);overflow:hidden;margin-top:8px}.rf-prog i{display:block;height:100%;background:linear-gradient(90deg,#5DBB63,#14B8A6)}
+.rf-fb{display:grid;grid-template-columns:100px 1fr 28px;gap:8px;align-items:center;font-size:13.5px;margin:7px 0}.rf-fb i{height:10px;border-radius:5px;display:block}.rf-fb b{text-align:right}
+.rf-num{font-size:30px;font-weight:800}
+.rf-story{background:linear-gradient(160deg,color-mix(in srgb,#8B5CF6 18%,var(--surface)),color-mix(in srgb,#2F86F6 12%,var(--surface)));border-radius:24px;padding:18px;margin:10px 16px 24px}
+.rf-st-t{font-size:26px;line-height:1.25;margin:10px 0 16px;letter-spacing:-.3px}
+.rf-ring{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;flex:none}.rf-ring b{width:70px;height:70px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-size:30px}
+.rf-legv{display:grid;gap:4px;font-size:14px}.rf-legv i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.rf-q{margin:0;font-size:15.5px;line-height:1.5;background:color-mix(in srgb,var(--bg) 70%,transparent)}.rf-q .rf-mut{display:block;margin-top:6px}
+.rf-nums{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;gap:6px}.rf-nums b{display:block;font-size:24px;font-weight:800}.rf-nums span{font-size:12.5px;color:var(--muted)}
+.rf-modes{margin:4px 16px 0}.rf-modes .rf-chip,.rf-send .rf-mic{background:var(--surface)}.rf-chat{margin:6px 16px}.rf-chat .rf-ai{margin-right:20px}.rf-savedec{display:block;margin-top:8px;font-size:13.5px}
+.rf-typing{display:flex;gap:5px;width:max-content}.rf-typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:rfdot 1s infinite}.rf-typing i:nth-child(2){animation-delay:.15s}.rf-typing i:nth-child(3){animation-delay:.3s}
+@keyframes rfdot{50%{transform:translateY(-4px);opacity:.4}}
+.rf-send{display:flex;gap:8px;align-items:flex-end;margin:10px 16px 0}.rf-send textarea{flex:1}.rf-send .btn{flex:none}
+.rf-about summary{cursor:pointer;list-style:none}.rf-about summary::after{content:' ›';color:var(--muted)}.rf-about[open] summary::after{content:' ˅'}.rf-about .btn{margin-top:12px}
+.rf-ov{position:fixed;inset:0;z-index:300;background:radial-gradient(circle at 50% 40%,#2a2540,#0b0d11 70%);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:24px;text-align:center}
+.rf-ovx{position:absolute;top:calc(14px + env(safe-area-inset-top));right:16px;border:0;background:rgba(255,255,255,.12);color:#fff;width:42px;height:42px;border-radius:50%;font-size:18px;cursor:pointer}
+.rf-ov-slide:empty{display:none}.rf-vis{width:min(420px,88vw);min-height:220px;border-radius:24px;padding:22px;display:flex;flex-direction:column;justify-content:flex-end;text-align:left;background:linear-gradient(160deg,color-mix(in srgb,var(--vc) 55%,#000),var(--vc));background-size:cover;background-position:center;animation:rfin 1s ease}
+.rf-vis span{font-size:15px;opacity:.9}.rf-vis b{font-size:24px;line-height:1.3;margin-top:6px}
+@keyframes rfin{from{opacity:0;transform:scale(.97)}}
+.rf-breath{position:relative;width:180px;height:180px;display:grid;place-items:center}.rf-breath i{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,#7FD3FF55,#8B5CF633);box-shadow:0 0 60px #7FD3FF44;transition:transform 4s ease-in-out}.rf-breath b{position:relative;font-size:19px}
+.rf-ov-t{color:rgba(255,255,255,.6);font-size:14px}
+.rf-walk{display:flex;flex-direction:column;align-items:center;gap:12px}.rf-walk span{font-size:56px}.rf-walk b{font-size:56px;font-weight:300}.rf-walk p{max-width:300px;color:rgba(255,255,255,.75);line-height:1.5;margin:0 0 6px}
+.rf-letter{background:linear-gradient(135deg,color-mix(in srgb,#8B5CF6 22%,var(--surface)),var(--surface))}
+.rf-yday b{display:block;margin-bottom:10px}
+@media (min-width:900px){.rf-vb{grid-template-columns:repeat(3,1fr)}.rf-card,.rf-list,.rf-tabs,.rf-vb,.rf-stories,.rf-chat,.rf-send,.rf-modes,.rf-tools,.rf-story{max-width:720px}}
 </style>
 </head>
 <body>
@@ -1444,7 +1529,7 @@ function removeImage(t, id) { t.imgs = (t.imgs || []).filter(x => x !== id); if 
 let viewerCtx = null;
 function openViewer(t, id) { viewerCtx = { t, id }; $('#vImg').src = IMGS[id]; $('#viewer').classList.add('on'); }
 $('#vClose').onclick = () => { $('#viewer').classList.remove('on'); viewerCtx = null; };
-$('#vDel').onclick = () => { if (!viewerCtx) return; if (!confirm('Remove this image from the task?')) return; removeImage(viewerCtx.t, viewerCtx.id); $('#viewer').classList.remove('on'); viewerCtx = null; renderPage(); };
+$('#vDel').onclick = () => { if (!viewerCtx) return; if (viewerCtx.rf) { if (!confirm('Remove this photo?')) return; viewerCtx.t.imgs = (viewerCtx.t.imgs || []).filter(x => x !== viewerCtx.id); viewerCtx.t.u = Date.now(); save(); $('#viewer').classList.remove('on'); viewerCtx = null; render(); return; } if (!confirm('Remove this image from the task?')) return; removeImage(viewerCtx.t, viewerCtx.id); $('#viewer').classList.remove('on'); viewerCtx = null; renderPage(); };
 
 /* ================= state ================= */
 const KEY = 'sankalp.v1';
@@ -1932,7 +2017,7 @@ function toast(msg, undo) {
 /* ================= routing ================= */
 const isWide = () => matchMedia('(min-width:900px)').matches;
 function route() { const h = location.hash.replace(/^#\/?/, ''); const [view, ...rest] = h.split('/'); return { view: view || 'today', arg: decodeURIComponent(rest.join('/')) }; }
-const TABS = ['today', 'week', 'calendar', 'review', 'habits', 'home'];
+const TABS = ['today', 'week', 'calendar', 'reflect', 'habits', 'home'];
 let popPending = 0;
 function go(h) { if (popPending) { setTimeout(() => go(h), 80); return; } if (location.hash === '#' + h) render(); else location.hash = '#' + h; }
 window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); try { if (!history.state) history.replaceState({ sk: 'app' }, ''); } catch (e) { } });
@@ -1969,8 +2054,8 @@ function row(t, o = {}) {
 const rows = (list, o) => `<div class="list">${list.map(t => row(t, o)).join('')}</div>`;
 function navItem(href, icon, color, name, count, on, extra = '') { return `<a class="navi${on ? ' on' : ''}" href="#${href}"><span style="color:${on ? 'var(--accent)' : color};display:flex">${icon}</span><span class="nm">${esc(name)}</span>${extra}${count !== '' && count != null ? `<span class="c">${count}</span>` : ''}</a>`; }
 Object.assign(I, { trophy: sv('<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M12 13v4M8 20h8M10 17h4"/>') });
-const NAV_DEF = ['inbox', 'today', 'calendar', 'someday', 'habits', 'life', 'dates', 'templates', 'focus', 'review', 'insights', 'progress'];
-const NAV_NAMES = { inbox: 'Inbox', today: 'Today', calendar: 'Calendar', someday: 'Someday', habits: 'Habits', life: 'Life list', dates: 'Birthdays and dates', templates: 'Templates', focus: 'Focus timer', review: 'Day review', insights: 'Insights', progress: 'Progress' };
+const NAV_DEF = ['inbox', 'today', 'calendar', 'reflect', 'someday', 'habits', 'life', 'dates', 'templates', 'focus', 'review', 'insights', 'progress'];
+const NAV_NAMES = { inbox: 'Inbox', today: 'Today', calendar: 'Calendar', reflect: 'Reflect', someday: 'Someday', habits: 'Habits', life: 'Life list', dates: 'Birthdays and dates', templates: 'Templates', focus: 'Focus timer', review: 'Day review', insights: 'Insights', progress: 'Progress' };
 function navOrder() { const o = (S.settings.navOrder || []).filter(k => NAV_DEF.includes(k)); NAV_DEF.forEach((k, i) => { if (!o.includes(k)) o.splice(Math.min(i, o.length), 0, k); }); return o; }
 function listsNav(cur) {
   const td = today(); const D = todayData();
@@ -1982,6 +2067,7 @@ function listsNav(cur) {
     inbox: () => navItem('inbox', I.inbox, '#3B9EFF', 'Inbox', inboxTasks().length || '', cur === 'inbox'),
     today: () => navItem('today', I.star, '#F5B800', 'Today', D.openCount || '', cur === 'today', D.overdue.length ? `<span class="bad" aria-label="${D.overdue.length} overdue">${D.overdue.length}</span>` : ''),
     calendar: () => navItem('calendar', I.grid, '#E5484D', 'Calendar', '', cur === 'calendar'),
+    reflect: () => { const st = rfStreak().n; return navItem('reflect', RF_IC, '#8B5CF6', 'Reflect', rf().days[today()]?.mood ? (st ? '🔥' + st : '✓') : '', cur === 'reflect'); },
     someday: () => { const sc = open().filter(t => t.someday).length; return sc || cur === 'someday' ? navItem('someday', I.box, '#C9A66B', 'Someday', sc || '', cur === 'someday') : ''; },
     habits: () => navItem('habits', I.drop, '#EC4899', 'Habits', hab ? hab + ' left' : '', cur === 'habits'),
     life: () => navItem('life', I.target, '#10B981', 'Life list', act ? act + ' active' : '', cur === 'life'),
@@ -2031,7 +2117,7 @@ function menuEditor() {
 }
 function renderTabs() {
   const v = route().view; const D = todayData();
-  const tb = [['today', I.star, 'Today', D.openCount], ['calendar', I.grid, 'Calendar'], ['review/today', I.clock, 'Review'], ['habits', I.drop, 'Habits'], ['home', I.menu, 'More']];
+  const tb = [['today', I.star, 'Today', D.openCount], ['calendar', I.grid, 'Calendar'], ['reflect', RF_IC, 'Reflect'], ['habits', I.drop, 'Habits'], ['home', I.menu, 'More']];
   const isOn = k => { const b = k.split('/')[0]; return v === b || (b === 'calendar' && v === 'week') || (b === 'home' && !TABS.includes(v)); };
   $('#tabbar').innerHTML = tb.map(([k, ic, l]) => `<a href="#${k}" class="${isOn(k) ? 'on' : ''}" aria-current="${isOn(k) ? 'page' : 'false'}"><i>${ic}</i>${l}</a>`).join('');
 }
@@ -2554,9 +2640,9 @@ function rwIndex() {
     if (!parts.length) return null; const w = parts.reduce((a, x) => a + x[1], 0); return Math.round(parts.reduce((a, x) => a + x[0] * x[1], 0) / w * 100);
   };
   const xpTask = (t, d) => 10 + (t.priority === 1 ? 10 : t.priority === 2 ? 5 : 0) + (((S.days[d] || {}).top || []).some(x => x === t.id || x === t.orig) ? 10 : 0);
-  const xpOn = d => { let x = 0; (done[d] || []).forEach(t => x += xpTask(t, d)); S.habits.forEach(h => { if (hOk(h, d)) x += 10; }); if (wUsed && waterOn(d) >= W.goal) x += 20; if ((S.days[d] || {}).wrap) x += 15; x += Math.min(60, Math.floor((focus[d] || 0) / 5)); const sc = score(d); if (sc != null && sc >= 100) x += 30; return x; };
+  const xpOn = d => { let x = 0; (done[d] || []).forEach(t => x += xpTask(t, d)); S.habits.forEach(h => { if (hOk(h, d)) x += 10; }); if (wUsed && waterOn(d) >= W.goal) x += 20; if ((S.days[d] || {}).wrap) x += 15; { const jd = (S.jr?.days || {})[d]; if (jd && jd.mood) x += 10 + (rfText(jd.text).length > 120 ? 5 : 0); } x += Math.min(60, Math.floor((focus[d] || 0) / 5)); const sc = score(d); if (sc != null && sc >= 100) x += 30; return x; };
   // every day you did something on
-  const set = new Set(Object.keys(done)); S.habits.forEach(h => Object.keys(h.log).forEach(k => { if (h.log[k] === 1) set.add(k); })); Object.keys(W.log).forEach(k => set.add(k)); Object.keys(focus).forEach(k => set.add(k)); Object.keys(S.days).forEach(k => { if (S.days[k].wrap) set.add(k); });
+  const set = new Set(Object.keys(done)); S.habits.forEach(h => Object.keys(h.log).forEach(k => { if (h.log[k] === 1) set.add(k); })); Object.keys(W.log).forEach(k => set.add(k)); Object.keys(focus).forEach(k => set.add(k)); Object.keys(S.days).forEach(k => { if (S.days[k].wrap) set.add(k); }); Object.keys(S.jr?.days || {}).forEach(k => { if (S.jr.days[k].mood) set.add(k); });
   const days = [...set].filter(k => /^\d{4}-\d\d-\d\d$/.test(k) && k <= today()).sort();
   const xpDay = {}; let total = 0; days.forEach(d => { xpDay[d] = xpOn(d); total += xpDay[d]; });
   // glow streak: days scoring 60%+ in a row (days with nothing planned are skipped, they don't break it)
@@ -3343,7 +3429,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.4.4';
+const APPV = '5.5';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4295,12 +4381,13 @@ const dkey = k => decodeURIComponent(k);
 function entities() {
   const o = {}; S.tasks.forEach(t => o['task:' + t.id] = t); S.projects.forEach(p => o['project:' + p.id] = p); S.habits.forEach(h => o['habit:' + h.id] = h);
   S.focus.forEach(f => o['focus:' + f.id] = f); S.dates.forEach(d => o['date:' + d.id] = d); (S.goals || []).forEach(g => o['goal:' + g.id] = g); S.templates.forEach(t => o['tpl:' + t.id] = t); Object.values(S.meetLog).forEach(m => { if (m.src !== 'pcal') o['meet:' + m.id] = m; }); if (S.pcal) o['pcal:' + (S.pcal.id || 'all')] = S.pcal; o['meta:coach'] = coachBrief(); Object.keys(IMGS).forEach(id => o['img:' + id] = { id, data: IMGS[id] }); (S.logs || []).forEach(l => o['log:' + l.id] = l); Object.values(S.phone || {}).forEach(p => o['phone:' + p.id] = p); o['meta:cur'] = { c: S.cur || null }; o['meta:rv'] = { v: remSig() }; if (S.remAck) o['meta:ack'] = S.remAck;
-  const st = S.settings; o['meta:days'] = S.days; if (S.water) o['meta:water'] = S.water; (S.trash || []).forEach(x => o['trash:' + x.id] = x); (S.filters || []).forEach(f => o['filter:' + f.id] = f); if (S.rw) o['meta:rw'] = S.rw; o['meta:plan'] = S.plan; o['meta:hsec'] = S.habitSections;
+  const st = S.settings; o['meta:days'] = S.days; if (S.water) o['meta:water'] = S.water; (S.trash || []).forEach(x => o['trash:' + x.id] = x); (S.filters || []).forEach(f => o['filter:' + f.id] = f); if (S.rw) o['meta:rw'] = S.rw; o['meta:plan'] = S.plan; o['meta:hsec'] = S.habitSections; { const J = rf(); Object.values(J.days).forEach(e => o['jday:' + e.d] = e); const { days, ...jm } = J; o['meta:jr'] = jm; }
   o['meta:prefs'] = { phoneOff: !!st.phoneOff, coach: coachSet(), appmap: st.appmap, nagDef: st.nagDef, workStart: st.workStart, checkin: st.checkin, catv: st.catv, aiModel: st.aiModel, aiPrivate: st.aiPrivate, logo: st.logo, darkStyle: st.darkStyle, gcid: st.gcid, theme: st.theme, mode: st.mode, accent: st.accent, font: st.font, pomo: st.pomo, brk: st.brk, morning: st.morning, shutdown: st.shutdown, meetBefore: st.meetBefore, quietOn: st.quietOn, quietStart: st.quietStart, quietEnd: st.quietEnd, shield: st.shield, showDone: st.showDone, todayGroup: st.todayGroup, fx: st.fx, popRem: st.popRem, inCard: st.inCard, srvPush: st.srvPush };
   return o;
 }
 function setEntity(key, val) {
   const [kind, ...rest] = key.split(':'); const id = rest.join(':');
+  if (kind === 'jday') { rf().days[id] = val; return; } if (key === 'meta:jr') { const J = rf(); S.jr = { ...val, days: J.days }; rf(); return; }
   const put = (arr) => { const i = arr.findIndex(x => x.id === id); if (i >= 0) arr[i] = val; else arr.push(val); };
   if (kind === 'task') { const old = S.tasks.find(x => x.id === id); const was = old ? { seen: old.seenAt, done: old.done, snz: old.snoozeUntil } : null; put(S.tasks); if (was && (val.done && !was.done || (val.seenAt && val.seenAt !== was.seen) || (val.snoozeUntil && val.snoozeUntil !== was.snz))) closeNotifs(val); sweepSoon(); } else if (kind === 'project') put(S.projects); else if (kind === 'habit') put(S.habits); else if (kind === 'focus') put(S.focus); else if (kind === 'date') put(S.dates); else if (kind === 'goal') put(S.goals ||= []); else if (kind === 'trash') put(S.trash ||= []); else if (kind === 'filter') put(S.filters ||= []); else if (kind === 'tpl') put(S.templates); else if (kind === 'log') put(S.logs ||= []); else if (kind === 'phone') (S.phone ||= {})[id] = val; else if (kind === 'pcal') { S.pcal = val; applyPcal(); }
   else if (key === 'meta:cur') S.cur = val.c || null;
@@ -4309,7 +4396,7 @@ function setEntity(key, val) {
   else if (key === 'meta:coach' || key === 'meta:rv') { } else if (key === 'meta:ack') S.remAck = val; else if (key === 'meta:days') S.days = val; else if (key === 'meta:water') S.water = val; else if (key === 'meta:rw') S.rw = val; else if (key === 'meta:plan') S.plan = val; else if (key === 'meta:hsec') S.habitSections = val; else if (key === 'meta:prefs') { Object.assign(S.settings, val); applyTheme(); }
 }
 function removeEntity(key) { sweepSoon();
-  const [kind, ...rest] = key.split(':'); const id = rest.join(':'); const rm = n => { S[n] = S[n].filter(x => x.id !== id); };
+  const [kind, ...rest] = key.split(':'); const id = rest.join(':'); if (kind === 'jday') { delete rf().days[id]; return; } const rm = n => { S[n] = S[n].filter(x => x.id !== id); };
   if (kind === 'task') rm('tasks'); else if (kind === 'project') rm('projects'); else if (kind === 'habit') rm('habits'); else if (kind === 'focus') rm('focus'); else if (kind === 'date') rm('dates'); else if (kind === 'goal') S.goals = (S.goals || []).filter(x => x.id !== id); else if (kind === 'tpl') rm('templates'); else if (kind === 'trash') S.trash = (S.trash || []).filter(x => x.id !== id); else if (kind === 'filter') S.filters = (S.filters || []).filter(x => x.id !== id); else if (kind === 'log') rm('logs'); else if (kind === 'phone') delete (S.phone || {})[id]; else if (kind === 'meet') delete S.meetLog[id]; else if (kind === 'img') { delete IMGS[id]; idb.del(id).catch(() => { }); }
 }
 function startSync() {
@@ -4424,6 +4511,7 @@ function pushItems() {
       if (c.snoozeUntil) B.push({ at: c.snoozeUntil, k: 's' + c.id + '|z' + c.snoozeUntil, body: `Snoozed. Part of ${t.title}`, nags: true });
       const zc = c.snoozeUntil > now ? c.snoozeUntil : 0; run({ id: t.id, sub: c.id, title: c.t, ptitle: t.title, tag: 's' + c.id, p: t.priority, nagBody: `Still not done. Part of ${t.title}` }, zc ? B.filter(a => a.at >= zc || a.at < now - 6e4) : B); });
   });
+  try { rfPings().forEach(x => { if (!(x.at >= lo && x.at <= hi && !quietAt(x.at))) return; out.push(x); }); } catch (e) { }
   return out.sort((a, b) => a.at - b.at).slice(0, 250);
 }
 function pushQueueSoon() { if (!fbUser || lsG('dayline.psub') !== fbUser.uid) return; clearTimeout(pushQT); pushQT = setTimeout(pushQueueNow, 1500); }
@@ -4449,7 +4537,7 @@ setInterval(() => { pushSetup(); pushQueueSoon(); }, 5 * 6e4);
 /* ================= render ================= */
 function viewHtml() {
   const { view, arg } = route();
-  const V = { life: vLife, review: () => vReview(arg), home: vHome, today: vToday, plan: () => vPlan(arg || 'today'), week: vCalendar, inbox: vInbox, upcoming: vUpcoming, someday: vSomeday, calendar: vCalendar, project: () => vProject(arg), done: vDone, habits: vHabits, dates: vDates, templates: vTemplates, focus: vFocus, insights: () => vInsights(arg), progress: vProgress, trash: vTrash, filter: () => vFilter(arg), settings: () => vSettings(arg) };
+  const V = { reflect: () => vReflect(arg), life: vLife, review: () => vReview(arg), home: vHome, today: vToday, plan: () => vPlan(arg || 'today'), week: vCalendar, inbox: vInbox, upcoming: vUpcoming, someday: vSomeday, calendar: vCalendar, project: () => vProject(arg), done: vDone, habits: vHabits, dates: vDates, templates: vTemplates, focus: vFocus, insights: () => vInsights(arg), progress: vProgress, trash: vTrash, filter: () => vFilter(arg), settings: () => vSettings(arg) };
   return (view === 'home' && isWide()) ? vToday() : (V[view] || vToday)();
 }
 function renderMainOnly() {
@@ -4462,7 +4550,7 @@ function renderMainOnly() {
 function renderMainCore() { rwMemo = null; const v = route().view; $('#main').innerHTML = viewHtml(); $('#main').classList.toggle('calw', v === 'calendar' || v === 'week'); $('#main').classList.toggle('setw', v === 'settings'); document.body.classList.toggle('oncal', v === 'calendar' || v === 'week' || v === 'settings'); renderSide(); renderTabs(); renderRail(); wire(v); rewardCheck(); badge(); if (selMode) selPaint(); }
 function render() {
   const { view } = route(); renderMainOnly();
-  $('#fab').style.display = ['settings', 'focus', 'insights', 'habits', 'dates', 'templates', 'home', 'review', 'life', 'progress', 'trash'].includes(view) ? 'none' : '';
+  $('#fab').style.display = ['settings', 'focus', 'insights', 'habits', 'dates', 'templates', 'home', 'review', 'life', 'progress', 'trash', 'reflect'].includes(view) ? 'none' : '';
 }
 function wire(view) {
   { const ab = $('#abIn'); if (ab) { const pv = $('#abPrev'); const apk = $('#abPick'), tools = $('#abTools');
@@ -4795,7 +4883,7 @@ let swReg = null;
 if ('serviceWorker' in navigator && location.protocol !== 'file:') { navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(r => { swReg = r; r.update().catch(() => { }); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') r.update().catch(() => { }); }); }).catch(() => { });
   /* A new version was installed: switch to it when you're not in the middle of typing */
   let swHad = !!navigator.serviceWorker.controller, swReload = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!swHad) { swHad = true; return; } if (swReload || window.QM) return; const go = () => { if (swReload) return; if ($('#sheet').classList.contains('on') || $('#page').classList.contains('on') || /INPUT|TEXTAREA/.test(document.activeElement?.tagName || '') || document.activeElement?.isContentEditable) { setTimeout(go, 4000); return; } swReload = true; saveLocal(); location.reload(); }; go(); }); navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'drain') afterSync(drainActs); else if (e.data && e.data.type === 'card') { if (!$('#sheet').classList.contains('on')) handleAction({ type: 'later', id: e.data.id, sub: e.data.sub }); } else handleAction(e.data); }); }
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!swHad) { swHad = true; return; } if (swReload || window.QM) return; const go = () => { if (swReload) return; if ($('#sheet').classList.contains('on') || $('#page').classList.contains('on') || /INPUT|TEXTAREA/.test(document.activeElement?.tagName || '') || document.activeElement?.isContentEditable) { setTimeout(go, 4000); return; } swReload = true; saveLocal(); location.reload(); }; go(); }); navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'drain') afterSync(drainActs); else if (e.data && e.data.type === 'go') { const h = (e.data.url || '').split('#')[1]; if (h) go(h); } else if (e.data && e.data.type === 'card') { if (!$('#sheet').classList.contains('on')) handleAction({ type: 'later', id: e.data.id, sub: e.data.sub }); } else handleAction(e.data); }); }
 let draining = false;
 // Taps from notifications and the phone app are applied only after sync has caught up, so the fresh copy from your other devices can't undo them
 function afterSync(fn) { const t0 = Date.now(); const go = () => { if (!S.settings.fb || syncState === 'on' || (authKnown && !fbUser) || Date.now() - t0 > 12000) fn(); else setTimeout(go, 250); }; go(); }
@@ -4809,6 +4897,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 function handleAction(d) {
   if (!d || !d.type) return;
   if (d.type === 'water') { waterAdd(+d.ml || water().cup, d.at && Date.now() - d.at < 6 * 3600e3 ? d.at : undefined); return; }
+  if (d.type === 'mood') { const day = ymd(new Date(d.at || Date.now())); const e = rfDay(day, true); if (!e.mood) { e.mood = +d.v; e.facts = rfFacts(day); e.saved = true; e.u = Date.now(); save(); render(); const m = rfMood(+d.v); toast(`Logged ${m[2]} ${m[1]} · add more in Reflect anytime`); } return; }
   if (d.type === 'wsnz') { water().snz = (d.at || Date.now()) + 60 * 6e4; save(); toast('No water nudge for an hour'); return; } const t = getTask(d.id);
   // Only a real answer (Done, Snooze, swiped away, moved) counts as seen. Just showing the card here must not close it on the phone.
   if (t && d.type !== 'later' && d.type !== 'open') { t.seenAt = Date.now(); save(); closeNotifs(t); } if (d.type === 'seen') return;
@@ -4911,6 +5000,7 @@ try { if (!remLeader) navigator.locks.request('sankalp-reminders', () => { remLe
 function tick() {
   sweepSoon(); if (!remLeader) return;
   try { waterTick(Date.now()); } catch (e) { }
+  try { rfTick(Date.now()); } catch (e) { }
   const now = Date.now(), td = today(), hm = nowHM(); let changed = false; const quiet = inQuiet(), shield = shielded(); let missed = 0; const srv = pushLive(); if (srv) pushCardTick();
   const nativeRem = phoneLinked() && Object.keys(S.phone || {}).length && S.remAck && S.remAck.v === remSig();
   S.tasks.forEach(t => {
@@ -4990,6 +5080,578 @@ setInterval(() => {
 let lastDay = today();
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { tick(); lastDay = today(); if (!$('#sheet').classList.contains('on') && !$('#page').classList.contains('on')) render(); if (gValid() && Date.now() - (S.settings.gSynced || 0) > 5 * 60000) gSync(false); } });
 setInterval(() => { if (document.visibilityState !== 'visible' || $('#sheet').classList.contains('on') || $('#page').classList.contains('on')) return; const v = route().view; if (today() !== lastDay) { lastDay = today(); applyLogoAssets(); render(); } else if (v === 'today' || (v === 'home' && isWide())) renderMainOnly(); }, 60000);
+
+/* ================= Reflect: journal, manifest, feelings, insights and a private mentor ================= */
+const RF_MOODS = [[5, 'Great', '😄', '#1f9d6b'], [4, 'Good', '🙂', '#5DBB63'], [3, 'Okay', '😐', '#4f7fb5'], [2, 'Low', '😕', '#E79B3B'], [1, 'Rough', '😣', '#E5484D']];
+const rfMood = v => RF_MOODS.find(m => m[0] === +v);
+const RF_WHEEL = [
+  ['Joy', '#F2B53A', ['Happy', 'Proud', 'Grateful', 'Excited', 'Content', 'Hopeful', 'Playful']],
+  ['Calm', '#14B8A6', ['Peaceful', 'Relaxed', 'Relieved', 'Centred', 'Safe', 'Patient']],
+  ['Love', '#DB2777', ['Loved', 'Connected', 'Caring', 'Appreciated', 'Close']],
+  ['Strong', '#2F86F6', ['Confident', 'Focused', 'Motivated', 'Determined', 'Capable']],
+  ['Anxious', '#8B5CF6', ['Worried', 'Overwhelmed', 'Restless', 'Insecure', 'Nervous', 'Stressed']],
+  ['Sad', '#5B7FB5', ['Lonely', 'Disappointed', 'Hurt', 'Low', 'Guilty', 'Lost']],
+  ['Angry', '#E5484D', ['Irritated', 'Frustrated', 'Resentful', 'Annoyed', 'Jealous']],
+  ['Tired', '#8a8f99', ['Drained', 'Bored', 'Numb', 'Sleepy', 'Burnt out']]];
+const RF_POS = new Set(RF_WHEEL.slice(0, 4).flatMap(w => [w[0], ...w[2]]));
+const RF_QUICK = ['Grateful', 'Calm', 'Focused', 'Happy', 'Proud', 'Hopeful', 'Anxious', 'Stressed', 'Tired', 'Irritated'];
+const RF_BODY = ['Head', 'Jaw', 'Chest', 'Shoulders', 'Stomach', 'Back', 'Hands', 'Nowhere'];
+const RF_AREAS = [['health', '🌿', 'Health', '#14B8A6'], ['family', '👨‍👩‍👦', 'Family', '#F2A33A'], ['career', '💼', 'Career', '#2F86F6'], ['spirit', '🪔', 'Spirit', '#8B5CF6'], ['love', '❤️', 'Love', '#DB2777'], ['wealth', '💰', 'Wealth', '#C9A227']];
+const RF_TITHI = ['Pratipada', 'Dwitiya', 'Tritiya', 'Chaturthi', 'Panchami', 'Shashthi', 'Saptami', 'Ashtami', 'Navami', 'Dashami', 'Ekadashi', 'Dwadashi', 'Trayodashi', 'Chaturdashi'];
+const RF_IC = sv('<path d="M12 20c-4.5 0-8.5-2.6-8.5-6.3 2.3 0 4.6.7 6.2 2.1"/><path d="M12 20c4.5 0 8.5-2.6 8.5-6.3-2.3 0-4.6.7-6.2 2.1"/><path d="M12 20c-2.1-2.6-3.2-5.3-3.2-8.2 0-2.6 1.3-5 3.2-7.3 1.9 2.3 3.2 4.7 3.2 7.3 0 2.9-1.1 5.6-3.2 8.2z"/>', 2);
+function rf() { const j = (S.jr ||= {}); j.days ||= {}; j.vision ||= {}; j.wall ||= []; j.letters ||= []; j.dec ||= []; j.wheel ||= {}; j.chat ||= []; j.notes ||= {}; j.cfg = { eve: '21:30', morn: true, nudge: true, story: true, tone: 'gentle', ...(j.cfg || {}) }; return j; }
+function rfDay(d, make) { const J = rf(); let e = J.days[d]; if (!e && make) e = J.days[d] = { d, feels: [], body: [], grat: [], imgs: [], u: Date.now() }; if (e) { e.feels ||= []; e.body ||= []; e.grat ||= []; e.imgs ||= []; } return e; }
+const rfTouch = e => { e.u = Date.now(); save(); };
+const rfAvg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
+const rfAddMin = (hm, m) => { const x = (hm2m(hm) + m + 1440) % 1440; return pad(Math.floor(x / 60)) + ':' + pad(x % 60); };
+const rfWeekStart = d => addDays(d, -((pYmd(d).getDay() + 6) % 7));
+
+// What the day held, straight from Dayline (so you never type it)
+function rfFacts(d) {
+  const mt = meetingsOn(d).filter(m => !m.dec && !m.allDay);
+  const done = S.tasks.filter(t => t.done && t.doneAt && ymd(new Date(t.doneAt)) === d).length;
+  const focus = (S.focus || []).filter(f => f.start && ymd(new Date(f.start)) === d).reduce((a, f) => a + (+f.mins || 0), 0);
+  const wd = pYmd(d).getDay(); const hd = S.habits.filter(h => h.days.includes(wd));
+  return { meet: mt.length, done, water: waterOn(d), focus, habits: hd.filter(h => hOk(h, d)).map(h => h.name), due: hd.length };
+}
+function rfFactChips(f) {
+  if (!f) return '';
+  const c = [];
+  if (f.meet) c.push(`📅 ${plural(f.meet, 'meeting')}`);
+  c.push(`✓ ${f.done} ${f.done === 1 ? 'task' : 'tasks'} done`);
+  if (f.water) c.push(`💧 ${fmtMl(f.water)}`);
+  if (f.focus) c.push(`⏱ ${fmtMins(f.focus)} focus`);
+  (f.habits || []).slice(0, 4).forEach(h => c.push(`✓ ${esc(h)}`));
+  return c.map(x => `<span class="rf-chip au">${x}</span>`).join('');
+}
+// Moon age to tithi (approximate, good to about a day): 1–15 Shukla, 16–30 Krishna; 15 Purnima, 30 Amavasya
+function rfTithi(d) { const t = pYmd(d).getTime() + 12 * 3600e3; const jd = t / 864e5 + 2440587.5; const P = 29.530588853; const age = (((jd - 2451550.1) % P) + P) % P; return Math.floor(age / P * 30) + 1; }
+function rfTithiName(d) { const n = rfTithi(d); if (n === 15) return 'Purnima'; if (n === 30) return 'Amavasya'; return (n <= 15 ? 'Shukla ' : 'Krishna ') + RF_TITHI[(n - 1) % 15]; }
+// Streak: days with a check-in; one missed day a week is forgiven
+function rfStreak() {
+  const J = rf(), td = today(); let cur = J.days[td]?.mood ? td : addDays(td, -1), n = 0; const used = new Set();
+  for (let i = 0; i < 1500; i++) { if (J.days[cur]?.mood) n++; else { const wk = rfWeekStart(cur); if (used.has(wk) || !n && i > 1) break; used.add(wk); } cur = addDays(cur, -1); }
+  return { n, skipLeft: !Object.keys(J.days).length ? 1 : (used.has(rfWeekStart(td)) ? 0 : 1) };
+}
+// After you save: one small, true thing about your week
+function rfInstant(e) {
+  const J = rf(), d = e.d, wk = rfWeekStart(d); const week = Object.values(J.days).filter(x => x.d >= wk && x.d <= d && x.mood);
+  const st = rfStreak().n;
+  if ([3, 7, 14, 21, 30, 50, 100].includes(st)) return `🔥 ${st} days in a row. This is becoming you.`;
+  for (const f of e.feels || []) { const c = week.filter(x => (x.feels || []).includes(f)).length; if (c >= 2 && RF_POS.has(f)) return `${['', '', '2nd', '3rd', '4th', '5th', '6th', '7th'][c] || c + 'th'} time you felt ${f.toLowerCase()} this week ✨`; }
+  const y = J.days[addDays(d, -1)]; if (y?.mood && e.mood > y.mood) return 'Mood up from yesterday 🌤️';
+  if (week.length >= 3) { const a = rfAvg(week.map(x => x.mood)); return `This week so far: ${rfMood(Math.round(a))[2]} ${rfMood(Math.round(a))[1].toLowerCase()} on average, across ${week.length} days`; }
+  return 'Saved. Thank you for showing up for yourself 🪷';
+}
+// Patterns from your own data (no AI needed)
+const RF_STOP = new Set('the a an and or but so to of in on at for with my me i we you he she they it was is am are be been this that today day just very really got get went had have has not no too also then than from about after before again more some all what when there their our your his her him them us into out up down over off can could would should will did do does done one two three time work'.split(' '));
+function rfPatterns() {
+  const J = rf(); const ds = Object.values(J.days).filter(e => e.mood).sort((a, b) => a.d < b.d ? -1 : 1).slice(-150);
+  if (ds.length < 7) return { need: 7 - ds.length, list: [] };
+  const W = water();
+  const rows = ds.map(e => { const f = e.facts || rfFacts(e.d); const ti = rfTithi(e.d); const tired = (e.feels || []).some(x => ['Anxious', 'Worried', 'Overwhelmed', 'Restless', 'Nervous', 'Stressed', 'Insecure'].includes(x));
+    return { e, mood: e.mood, energy: e.energy, anx: tired, meet5: f.meet >= 5, water: f.water >= W.goal, focus: f.focus >= 60, done5: f.done >= 5, weekend: [0, 6].includes(pYmd(e.d).getDay()), full: Math.abs(ti - 15) <= 1, newm: ti >= 29 || ti <= 1, habits: f.habits || [], lived: e.int?.lived }; });
+  const out = [];
+  const step = d => Math.abs(d) >= .9 ? 'a full mood step' : Math.abs(d) >= .6 ? 'well over half a step' : 'noticeably';
+  const cmp = (key, icon, yes) => { const a = rows.filter(r => r[key]), b = rows.filter(r => !r[key]); if (a.length < 3 || b.length < 3) return; const d = rfAvg(a.map(r => r.mood)) - rfAvg(b.map(r => r.mood)); if (Math.abs(d) >= .4) out.push({ w: Math.abs(d) + .1, icon, text: `${yes}, your mood is <b>${d > 0 ? 'higher' : 'lower'}</b> by ${step(d)}.` }); };
+  cmp('meet5', '📅', 'On days with <b>5+ meetings</b>');
+  cmp('water', '💧', `When you reach your <b>water goal</b>`);
+  cmp('focus', '⏱', 'On days with <b>an hour of focus</b>');
+  cmp('done5', '✅', 'When you finish <b>5+ tasks</b>');
+  cmp('weekend', '🌴', 'On <b>weekends</b>');
+  cmp('full', '🌕', 'Around <b>Purnima</b>');
+  cmp('newm', '🌑', 'Around <b>Amavasya</b>');
+  { const a = rows.filter(r => r.meet5), b = rows.filter(r => !r.meet5); if (a.length >= 3 && b.length >= 3) { const pa = a.filter(r => r.anx).length / a.length, pb = b.filter(r => r.anx).length / b.length; if (pa >= .3 && pa >= pb * 1.5) out.push({ w: 1.2, icon: '😟', text: `On days with <b>5+ meetings</b> you note anxious or stressed feelings <b>${pb ? (pa / pb).toFixed(1).replace(/\.0$/, '') + '×' : 'far'} more</b>.` }); } }
+  { const en = rows.filter(r => r.energy != null); const a = en.filter(r => r.water), b = en.filter(r => !r.water); if (a.length >= 3 && b.length >= 3) { const d = rfAvg(a.map(r => r.energy)) - rfAvg(b.map(r => r.energy)); if (Math.abs(d) >= 10) out.push({ w: Math.abs(d) / 20, icon: '⚡', text: `Your <b>evening energy</b> is ${d > 0 ? 'higher' : 'lower'} on days you reach your water goal.` }); } }
+  const hab = {}; rows.forEach(r => r.habits.forEach(h => hab[h] = (hab[h] || 0) + 1));
+  Object.entries(hab).filter(([, c]) => c >= 3).forEach(([h]) => { const a = rows.filter(r => r.habits.includes(h)), b = rows.filter(r => !r.habits.includes(h)); if (b.length < 3) return; const d = rfAvg(a.map(r => r.mood)) - rfAvg(b.map(r => r.mood)); if (d >= .4) out.push({ w: d, icon: '🌱', text: `Days with <b>${esc(h)}</b> average ${step(d)} better mood.` }); });
+  { // names of people and places you mention (capitalised words inside a sentence), on your best and hardest days
+    const words = r => { const t = ((r.e.line || '') + '. ' + rfText(r.e.text) + '. ' + (r.e.grat || []).join('. ')); const out = new Set(); for (const m of t.matchAll(/(?<![.!?]\s|^)\b([A-Z][\p{Ll}]{2,})/gu)) { const w = m[1]; if (!RF_STOP.has(w.toLowerCase()) && !RF_POS.has(w) && !['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'Today', 'Tomorrow', 'Yesterday'].includes(w)) out.add(w); } return [...out]; };
+    const hi = rows.filter(r => r.mood >= 4), lo = rows.filter(r => r.mood <= 2); const ch = {}, cl = {}; hi.forEach(r => words(r).forEach(w => ch[w] = (ch[w] || 0) + 1)); lo.forEach(r => words(r).forEach(w => cl[w] = (cl[w] || 0) + 1));
+    const top = Object.entries(ch).filter(([w, c]) => c >= 3 && c / Math.max(1, hi.length) >= 2 * ((cl[w] || 0) / Math.max(1, lo.length))).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([w]) => w);
+    if (top.length) out.push({ w: .95, icon: '💛', text: `Your happiest entries often mention <b>${top.map(esc).join('</b> and <b>')}</b>.` });
+    const tl = Object.entries(cl).filter(([w, c]) => c >= 3 && c / Math.max(1, lo.length) >= 2 * ((ch[w] || 0) / Math.max(1, hi.length))).sort((a, b) => b[1] - a[1]).slice(0, 1).map(([w]) => w);
+    if (tl.length) out.push({ w: .85, icon: '🌧️', text: `Harder days often mention <b>${esc(tl[0])}</b>. Worth a closer look.` }); }
+  { const li = rows.filter(r => r.lived != null); if (li.length >= 4) { const a = li.filter(r => r.lived === true), b = li.filter(r => r.lived !== true); if (a.length >= 2 && b.length >= 2) { const d = rfAvg(a.map(r => r.mood)) - rfAvg(b.map(r => r.mood)); if (d >= .4) out.push({ w: d, icon: '🎯', text: `Days you <b>live your intention</b> feel ${step(d)} better.` }); } } }
+  return { need: 0, list: out.sort((a, b) => b.w - a.w).slice(0, 7), rows };
+}
+function rfStory(from, to) {
+  const J = rf(); const days = []; for (let d = from; d <= to; d = addDays(d, 1)) days.push(d);
+  const es = days.map(d => J.days[d]).filter(e => e && e.mood);
+  const cnt = { good: es.filter(e => e.mood >= 4).length, okay: es.filter(e => e.mood === 3).length, low: es.filter(e => e.mood === 2).length, rough: es.filter(e => e.mood === 1).length };
+  const fc = {}; es.forEach(e => (e.feels || []).forEach(f => fc[f] = (fc[f] || 0) + 1));
+  const feels = Object.entries(fc).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const best = [...es].filter(e => e.line || e.text).sort((a, b) => b.mood - a.mood || (b.d > a.d ? 1 : -1))[0];
+  const hard = [...es].filter(e => e.mood <= 2).sort((a, b) => a.mood - b.mood)[0];
+  const done = S.tasks.filter(t => t.done && t.doneAt && (k => k >= from && k <= to)(ymd(new Date(t.doneAt)))).length;
+  const ints = days.map(d => J.days[d]?.int).filter(x => x && x.t); const lived = ints.filter(x => x.lived === true).length;
+  const grat = [...new Set(es.flatMap(e => e.grat || []).map(x => (x || '').trim()).filter(Boolean))];
+  const avg = rfAvg(es.map(e => e.mood));
+  const title = !es.length ? 'A quiet one in your journal' : avg >= 4.3 ? 'A bright stretch ☀️' : avg >= 3.6 ? 'A good one, well handled 🌤️' : avg >= 2.8 ? 'A mixed one, and you kept going 🌥️' : 'A heavy one. Be gentle with yourself 🌧️';
+  const P = rfPatterns();
+  return { from, to, es, cnt, feels, best, hard, done, ints: ints.length, lived, grat, avg, title, tip: P.list[0], n: days.length };
+}
+
+/* ---------- lock (fingerprint or PIN), for Reflect only ---------- */
+const RLOCK = 'dayline.rlock'; let rfOpen = false, rfHid = 0;
+const rfLockKind = () => (lsG(RLOCK) || '').split(':')[0];
+const rfLocked = () => !!lsG(RLOCK) && !rfOpen;
+async function rfSha(s) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('dayline-reflect|' + s)); return Array.from(new Uint8Array(b), x => x.toString(16).padStart(2, '0')).join(''); }
+async function rfUnlock() {
+  const v = lsG(RLOCK) || ''; if (!v) { rfOpen = true; render(); return; }
+  if (v.startsWith('bio:')) { try { await navigator.credentials.get({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), allowCredentials: [{ type: 'public-key', id: unb64(v.slice(4)), transports: ['internal'] }], userVerification: 'required', timeout: 60000, rpId: location.hostname } }); rfOpen = true; render(); } catch (e) { toast('Not unlocked'); } return; }
+  const p = $('#rfPin')?.value || ''; if (!p) { $('#rfPin')?.focus(); return; }
+  if ('pin:' + await rfSha(p) === v) { rfOpen = true; render(); } else { toast('Wrong PIN'); const el = $('#rfPin'); if (el) { el.value = ''; el.focus(); } }
+}
+async function rfSetLock(kind) {
+  if (kind === 'off') { if (rfLocked()) { toast('Unlock Reflect first'); return; } try { localStorage.removeItem(RLOCK); } catch (e) { } toast('Reflect lock off'); rfSettings(); return; }
+  if (kind === 'bio') {
+    if (!await lockAvailable()) { toast('No fingerprint unlock in this browser. Use a PIN instead.'); return; }
+    try { const cred = await navigator.credentials.create({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), rp: { name: 'Dayline', id: location.hostname }, user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'dayline-reflect', displayName: 'Dayline Reflect lock' }, pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }], authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required' }, timeout: 60000 } });
+      lsS(RLOCK, 'bio:' + b64(cred.rawId)); rfOpen = true; toast('Reflect now asks for your fingerprint'); rfSettings(); } catch (e) { toast(e.name === 'NotAllowedError' ? 'Cancelled' : 'Could not set up fingerprint'); }
+    return;
+  }
+  const p = prompt('Choose a 4–6 digit PIN for Reflect'); if (!p) return; if (!/^\d{4,6}$/.test(p)) { toast('Use 4 to 6 digits'); return; }
+  const p2 = prompt('Type the PIN again'); if (p2 !== p) { toast('PINs did not match'); return; }
+  lsS(RLOCK, 'pin:' + await rfSha(p)); rfOpen = true; toast('Reflect PIN set. It stays on this device.'); rfSettings();
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') rfHid = Date.now(); else if (rfOpen && lsG(RLOCK) && rfHid && Date.now() - rfHid > 60000) { rfOpen = false; if (route().view === 'reflect') render(); } });
+
+/* ---------- views ---------- */
+let rfSel = null, rfMonth = null, rfBusy = false;
+function rfHead(tab) {
+  const tabs = [['', 'Today'], ['manifest', 'Manifest'], ['feel', 'Feel'], ['insights', 'Insights'], ['mentor', 'Mentor']];
+  const st = rfStreak();
+  return topbar(`<button class="iconbtn" data-rf="settings" aria-label="Reflect settings">${I.gear}</button>`) + `<div class="pad rf-top"><h1 class="title">Reflect</h1><span class="rf-st">${fmtShort(today())}${st.n ? ` · 🔥 ${st.n}` : ''}</span></div>
+  <nav class="rf-tabs" aria-label="Reflect sections">${tabs.map(([k, l]) => `<a href="#reflect${k ? '/' + k : ''}" class="${tab === k ? 'on' : ''}">${l}</a>`).join('')}</nav>`;
+}
+function vReflect(arg) {
+  const [tab, sub] = (arg || '').split('/');
+  if (rfLocked()) {
+    const bio = rfLockKind() === 'bio';
+    return topbar() + `<div class="rf-lock"><div class="rf-lock-ic">🪷</div><b>Reflect is private</b><p>${bio ? 'Use your fingerprint or screen lock to open.' : 'Enter your Reflect PIN.'}</p>${bio ? '' : `<input class="inp" id="rfPin" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="PIN" aria-label="Reflect PIN">`}<button class="btn acc" data-rf="unlock">${bio ? 'Unlock' : 'Open'}</button></div>`;
+  }
+  if (tab === 'manifest') return rfHead('manifest') + rfManifest();
+  if (tab === 'feel') return rfHead('feel') + rfFeel();
+  if (tab === 'insights') return rfHead('insights') + rfInsights();
+  if (tab === 'mentor') return rfHead('mentor') + rfMentor();
+  if (tab === 'week' || tab === 'month') return rfStoryView(tab, sub);
+  if (tab === 'day') return rfEntryView(sub || today());
+  return rfHead('') + rfToday();
+}
+function rfMoodRow(e, big) { return `<div class="rf-moods${big ? ' big' : ''}" role="radiogroup" aria-label="Mood">${RF_MOODS.map(([v, l, em, c]) => `<button type="button" class="rf-mo${e && e.mood === v ? ' on' : ''}" data-rf="mood" data-v="${v}" role="radio" aria-checked="${!!(e && e.mood === v)}" style="--mc:${c}"><i>${em}</i>${l}</button>`).join('')}</div>`; }
+function rfFeelChips(e, list) { return list.map(f => `<button type="button" class="rf-chip${(e?.feels || []).includes(f) ? ' on' : ''}" data-rf="feel" data-v="${esc(f)}">${esc(f)}</button>`).join(''); }
+function rfQuickFeels() { const c = {}; Object.values(rf().days).forEach(e => (e.feels || []).forEach(f => c[f] = (c[f] || 0) + 1)); const used = Object.keys(c).sort((a, b) => c[b] - c[a]); return [...new Set([...used.slice(0, 6), ...RF_QUICK])].slice(0, 10); }
+function rfToday() {
+  const J = rf(), td = today(), e = rfDay(td), hr = new Date().getHours(); let h = '';
+  // Letters that open today, decisions due for review
+  J.letters.filter(l => !l.opened && l.open <= td).forEach(l => h += `<section class="rf-card rf-letter"><b>✉️ A letter from your past self</b><span>Written ${fmtShort(l.at)} · it opens today</span><button class="btn acc" data-rf="letter" data-id="${l.id}">Open it</button></section>`);
+  J.dec.filter(x => !x.outcome && x.due <= td).slice(0, 1).forEach(x => h += `<section class="rf-card"><b>⚖️ How did it turn out?</b><span>${fmtShort(x.at)}: ${esc(x.q)}</span><span class="rf-mut">You chose: ${esc(x.choice || '')}</span><button class="btn sec" data-rf="decreview" data-id="${x.id}">Tell your mentor</button></section>`);
+  // Month end: does the nudge time still suit you?
+  { const t = pYmd(td), last = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate(), mk = td.slice(0, 7); if (t.getDate() >= last - 2 && J.cfg.asked !== mk && Object.keys(J.days).length >= 5) h += `<section class="rf-card"><b>🗓 Quick check for next month</b><span>Your check-in nudge comes at ${fmtTime(J.cfg.eve || '21:30')}. Still the right time?</span><div class="rf-row" style="margin-top:10px">${['20:30', '21:00', '21:30', '22:00'].map(x => `<button type="button" class="rf-chip${(J.cfg.eve || '21:30') === x ? ' on' : ''}" data-rf="evepick" data-v="${x}">${fmtTime(x)}</button>`).join('')}<button type="button" class="rf-chip" data-rf="evepick" data-v="keep">Keep it</button></div></section>`; }
+  // Morning: intention and affirmation
+  const int = e?.int || {};
+  if (!int.t) h += `<section class="rf-card rf-int"><div class="rf-k">${hr < 14 ? 'This morning' : 'Today'} I intend to</div><textarea class="inp rf-ta" id="rfInt" rows="2" placeholder="One thing that would make today feel right"></textarea>${rfIntIdeas()}<button class="btn acc" data-rf="intsave">Set intention</button></section>`;
+  else h += `<section class="rf-card rf-int"><div class="rf-k">Today I intend to</div><div class="rf-intt">${esc(int.t)}</div>${hr >= 17 || e?.mood ? `<div class="rf-k" style="margin-top:12px">Did you live it?</div><div class="rf-row">${[[true, 'Yes 🌱'], ['part', 'Partly'], [false, 'Not today']].map(([v, l]) => `<button type="button" class="rf-chip${int.lived === v ? ' on' : ''}" data-rf="lived" data-v="${v}">${l}</button>`).join('')}</div>` : `<button class="rf-link" data-rf="intedit">Change</button>`}</section>`;
+  if (J.aff && J.aff.text) { const a = J.aff, c = (a.log || {})[td] || {}; const n = Math.min(21, dayDiff(a.start, td) + 1); h += `<section class="rf-card rf-affc"><div class="rf-k">Affirmation · day ${Math.max(1, n)} of 21</div><div class="rf-aff">“${esc(a.text)}”</div>${rf369(c)}</section>`; }
+  // Evening check-in
+  const y = J.days[addDays(td, -1)];
+  if (!y?.mood && hr < 12 && !e?.mood) h += `<section class="rf-card rf-yday"><b>Yesterday in 30 seconds?</b>${rfMoodRow(null).replace(/data-rf="mood"/g, 'data-rf="ymood"')}</section>`;
+  const f = e?.facts || rfFacts(td);
+  h += `<section class="rf-card"><div class="rf-k">${e?.mood ? 'Today' : 'How was today?'}</div>${rfMoodRow(e, true)}
+   <div class="rf-k">Energy</div><input type="range" class="rf-range" id="rfEn" min="0" max="100" step="5" value="${e?.energy ?? 50}" aria-label="Energy, drained to charged"><div class="rf-lab"><span>Drained</span><span>Charged</span></div>
+   <div class="rf-k">I felt</div><div class="rf-chips">${rfFeelChips(e, [...new Set([...rfQuickFeels(), ...(e?.feels || [])])])}<a class="rf-chip more" href="#reflect/feel">More feelings…</a></div>
+   <div class="rf-k">Today had · added by Dayline</div><div class="rf-chips">${rfFactChips(f)}</div>
+   <div class="rf-k">One line about today</div><div class="rf-line"><textarea class="inp rf-ta" id="rfLine" rows="2" placeholder="What stood out?">${esc(e?.line || '')}</textarea>${rfMicBtn('rfLine')}</div>
+   <details class="rf-grat"${e?.grat?.some(Boolean) ? ' open' : ''}><summary>🙏 Three good things <span>optional</span></summary>${[0, 1, 2].map(i => `<input class="inp" id="rfG${i}" value="${esc(e?.grat?.[i] || '')}" placeholder="${['Something I am grateful for', 'Someone who made it better', 'A small win'][i]}">`).join('')}</details>
+   <div class="rf-row rf-act"><button class="btn acc" data-rf="save">${e?.mood ? 'Update' : 'Save'}</button><a class="btn sec" href="#reflect/day/${td}">Write more →</a></div></section>`;
+  // Low day: something you were grateful for before
+  if (e?.mood && e.mood <= 2) { const g = Object.values(J.days).filter(x => x.d !== td).flatMap(x => (x.grat || []).filter(Boolean).map(t => [t, x.d])); if (g.length) { const [t, d] = g[(new Date().getDate() + g.length) % g.length]; h += `<section class="rf-card rf-jar"><b>🫙 From your gratitude jar</b><p>“${esc(t)}”</p><span class="rf-mut">${fmtShort(d)}</span></section>`; } }
+  // On this day
+  const otd = [[addDays(td, -365), 'a year ago'], [rfMonthAgo(td), 'a month ago'], [addDays(td, -7), 'a week ago']].find(([d]) => J.days[d] && (J.days[d].line || J.days[d].text));
+  if (otd) { const o = J.days[otd[0]]; const im = (o.imgs || []).find(i => IMGS[i]); h += `<a class="rf-card rf-otd" href="#reflect/day/${o.d}">${im ? `<img src="${IMGS[im]}" alt="">` : `<span class="rf-otd-m">${rfMood(o.mood)?.[2] || '📖'}</span>`}<span><b>On this day, ${otd[1]}</b><span>“${esc(rfTrim(o.line || rfText(o.text), 120))}”</span></span></a>`; }
+  // Recent days
+  const recent = Object.values(J.days).filter(x => x.mood && x.d !== td).sort((a, b) => a.d < b.d ? 1 : -1).slice(0, 6);
+  if (recent.length) h += `<div class="rf-k rf-sec">Recent</div><div class="rf-list">${recent.map(x => `<a href="#reflect/day/${x.d}" class="rf-li"><span class="rf-dot" style="background:${rfMood(x.mood)[3]}">${rfMood(x.mood)[2]}</span><span><b>${fmtDate(x.d)}</b><span>${esc(rfTrim(x.line || rfText(x.text) || (x.feels || []).join(', '), 90))}</span></span></a>`).join('')}</div>`;
+  const wk = rfWeekStart(td); h += `<div class="rf-row rf-stories"><a class="btn sec" href="#reflect/week">📖 Week in a page</a><a class="btn sec" href="#reflect/month">🗓 Month story</a></div>`;
+  return h + `<p class="rf-priv">🔒 Only you can see Reflect. ${lsG(RLOCK) ? 'Locked on this device.' : '<button class="rf-link" data-rf="settings">Add a lock</button>'}</p>`;
+}
+const rfMonthAgo = d => { const x = pYmd(d); x.setMonth(x.getMonth() - 1); return ymd(x); };
+const rfText = html => (html || '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/[ \t]+/g, ' ').trim();
+const rfTrim = (s, n) => { s = (s || '').replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
+function rfIntIdeas() { const D = todayData(); const ideas = [...D.overdue, ...D.day].filter(t => t.priority <= 2).slice(0, 2).map(t => t.title); const base = ['Stay calm between meetings', 'Be fully present at dinner']; const all = [...ideas.map(t => 'Give ' + t + ' my best'), ...base].slice(0, 3); return `<div class="rf-chips rf-ideas">${all.map(x => `<button type="button" class="rf-chip" data-rf="intidea">${esc(x)}</button>`).join('')}</div>`; }
+function rf369(c) { return `<div class="rf-369">${[['m', 'Morning', 3], ['a', 'Afternoon', 6], ['n', 'Night', 9]].map(([k, l, n]) => `<button type="button" class="rf-369r" data-rf="aff" data-v="${k}"><span>${l}</span><span class="rf-dots">${Array.from({ length: n }, (_, i) => `<i class="${i < (c[k] || 0) ? 'on' : ''}"></i>`).join('')}</span></button>`).join('')}<span class="rf-mut">Say it once, tap once.</span></div>`; }
+function rfMicBtn(id) { return (window.SpeechRecognition || window.webkitSpeechRecognition) ? `<button type="button" class="rf-mic" data-rf="mic" data-v="${id}" aria-label="Speak instead of typing">🎙️</button>` : ''; }
+let rfRec = null;
+function rfMic(id, btn) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SR) return;
+  if (rfRec) { rfRec.stop(); return; }
+  const el = document.getElementById(id); if (!el) return; const r = new SR(); rfRec = r; r.lang = 'en-IN'; r.interimResults = false; r.continuous = true;
+  btn.classList.add('on'); toast('Listening… tap 🎙️ again to stop');
+  r.onresult = ev => { let t = ''; for (let i = ev.resultIndex; i < ev.results.length; i++) if (ev.results[i].isFinal) t += ev.results[i][0].transcript; if (t) { el.value = (el.value ? el.value.replace(/\s*$/, ' ') : '') + t.trim(); el.dispatchEvent(new Event('input', { bubbles: true })); } };
+  r.onend = () => { rfRec = null; btn.classList.remove('on'); };
+  r.onerror = () => { rfRec = null; btn.classList.remove('on'); toast('Could not hear you. Check microphone permission.'); };
+  try { r.start(); } catch (e) { rfRec = null; btn.classList.remove('on'); }
+}
+function rfEntryView(d) {
+  const e = rfDay(d) || { d, feels: [], body: [], grat: [], imgs: [] }; const isToday = d === today();
+  let h = topbar(`<button class="iconbtn" data-rf="settings" aria-label="Reflect settings">${I.gear}</button>`) + `<div class="pad"><a class="rf-link" href="#reflect">← Reflect</a><h1 class="title" style="margin-top:6px">${isToday ? 'Today' : fmtDate(d)}</h1><p class="sub" style="margin:4px 0 0">${rfTithiName(d)} · ${fmtShort(d)}</p></div>`;
+  h += `<section class="rf-card">${rfMoodRow(e)}${e.feels.length ? `<div class="rf-chips" style="margin-top:10px">${e.feels.map(f => `<span class="rf-chip on">${esc(f)}</span>`).join('')}</div>` : ''}${e.facts ? `<div class="rf-chips" style="margin-top:8px">${rfFactChips(e.facts)}</div>` : ''}</section>`;
+  if (e.int?.t) h += `<section class="rf-card"><div class="rf-k">Intention</div><div>${esc(e.int.t)} ${e.int.lived === true ? '🌱' : e.int.lived === 'part' ? '· partly' : e.int.lived === false ? '· not this time' : ''}</div></section>`;
+  h += `<section class="rf-card"><div class="rf-k">One line</div><div class="rf-line"><textarea class="inp rf-ta" id="rfLineE" rows="2" placeholder="What stood out?">${esc(e.line || '')}</textarea>${rfMicBtn('rfLineE')}</div>
+   <div class="rf-k">Write freely</div>${e.q ? `<div class="rf-ai">✨ ${esc(e.q)}</div>` : ''}<div class="rf-line"><textarea class="inp rf-ta rf-big" id="rfText" rows="7" placeholder="What happened, how it felt, what you are thinking about…">${esc(rfText(e.text))}</textarea>${rfMicBtn('rfText')}</div>
+   <div class="rf-row" style="margin-top:8px"><button class="btn sec" data-rf="ask" data-v="${d}">✨ Ask me a question</button><button class="btn sec" data-rf="photo" data-v="${d}">📷 Add photo</button></div>
+   ${e.imgs.length ? `<div class="rf-imgs">${e.imgs.filter(i => IMGS[i]).map(i => `<button type="button" data-rf="img" data-v="${i}" data-d="${d}"><img src="${IMGS[i]}" alt="Photo"></button>`).join('')}</div>` : ''}
+   <div class="rf-k">Three good things</div>${[0, 1, 2].map(i => `<input class="inp rf-gi" id="rfGE${i}" value="${esc(e.grat?.[i] || '')}" placeholder="${['Grateful for', 'Someone who made it better', 'A small win'][i]}">`).join('')}
+   ${(e.untangle || []).length ? `<div class="rf-k">Untangled</div>${e.untangle.map(u => `<div class="rf-unt"><span>${esc(u.what)}</span><span>“${esc(u.thought)}”</span><b>${esc(u.kind)}</b></div>`).join('')}` : ''}
+   <div class="setrow" style="padding:12px 0 0"><span class="l"><b>Keep from mentor</b><span>This day is never sent to the AI mentor</span></span><button type="button" class="switch${e.priv ? ' on' : ''}" data-rf="priv" data-v="${d}" role="switch" aria-checked="${!!e.priv}" aria-label="Keep from mentor"></button></div>
+   <div class="rf-row rf-act"><button class="btn acc" data-rf="saveentry" data-v="${d}">Save</button>${rf().days[d] ? `<button class="btn sec rf-del" data-rf="delentry" data-v="${d}">Delete day</button>` : ''}</div></section>`;
+  return h;
+}
+
+/* Manifest */
+function rfManifest() {
+  const J = rf(), td = today(); let h = `<div class="rf-row rf-mhead"><p class="sub">Write each as if it is already true.</p><button class="btn acc" data-rf="visualise">▶ Visualise · 1 min</button></div><div class="rf-vb">`;
+  RF_AREAS.forEach(([k, em, l, c]) => { const v = J.vision[k] || {}; const img = v.img && IMGS[v.img]; h += `<button type="button" class="rf-vbc" data-rf="vision" data-v="${k}" style="--vc:${c}${img ? `;background-image:linear-gradient(180deg,transparent 30%,rgba(0,0,0,.65)),url('${img}')` : ''}"><b>${em} ${l}</b><span>${v.line ? esc(v.line) : 'Tap to write yours'}</span></button>`; });
+  h += `</div>`;
+  const a = J.aff;
+  h += `<section class="rf-card"><div class="rf-row" style="justify-content:space-between"><div class="rf-k" style="margin:0">3 · 6 · 9 affirmation</div><button class="rf-link" data-rf="affedit">${a?.text ? 'Change' : 'Set one'}</button></div>${a?.text ? `<div class="rf-aff">“${esc(a.text)}”</div><div class="rf-mut">Day ${Math.max(1, Math.min(21, dayDiff(a.start, td) + 1))} of 21 · ${rfAffDays(a)} full days done</div>${rf369((a.log || {})[td] || {})}` : `<p class="rf-mut">Pick one sentence. Say it 3 times in the morning, 6 in the afternoon and 9 at night, for 21 days.</p>`}</section>`;
+  h += `<div class="rf-k rf-sec">Manifested ✨ wall · ${J.wall.length}</div>`;
+  h += J.wall.length ? `<div class="rf-list">${[...J.wall].reverse().map(w => { const A = RF_AREAS.find(x => x[0] === w.area); return `<div class="rf-li rf-wall"><span class="rf-dot" style="background:${A ? A[3] : 'var(--accent)'}">✨</span><span><b>${esc(w.title)}</b><span>Written ${fmtShort(w.wrote)} · came true ${fmtShort(w.came)}</span></span></div>`; }).join('')}</div>` : `<p class="rf-mut rf-pad">When something on your board comes true, open it and tap <b>Manifested ✨</b>. It lands here as proof.</p>`;
+  h += `<div class="rf-k rf-sec">Letters to future me</div><div class="rf-list">${J.letters.map(l => `<div class="rf-li"><span class="rf-dot" style="background:#8B5CF6">✉️</span><span><b>${l.opened ? 'Opened' : 'Sealed'} · opens ${fmtShort(l.open)}</b><span>${l.opened ? esc(rfTrim(l.text, 90)) : `Written ${fmtShort(l.at)} · ${Math.max(0, dayDiff(today(), l.open))} days to go`}</span></span>${l.opened ? `<button class="rf-link" data-rf="letter" data-id="${l.id}">Read</button>` : ''}</div>`).join('')}</div><button class="btn sec rf-wide" data-rf="newletter">✉️ Write a letter to future me</button>`;
+  return h;
+}
+const rfAffDays = a => Object.values(a.log || {}).filter(c => (c.m || 0) >= 3 && (c.a || 0) >= 6 && (c.n || 0) >= 9).length;
+
+/* Feel */
+function rfFeel() {
+  const e = rfDay(today()); const sel = rfSel || (RF_WHEEL.find(w => (e?.feels || []).some(f => w[2].includes(f) || f === w[0])) || RF_WHEEL[0])[0];
+  const W = RF_WHEEL.find(w => w[0] === sel);
+  let h = `<section class="rf-card"><div class="rf-k">How do I feel?</div><div class="rf-wheel">${rfWheelSvg(sel)}<div class="rf-wc"><b>${sel}</b><span>tap a colour</span></div></div><div class="rf-chips" style="justify-content:center">${rfFeelChips(e, [W[0], ...W[2]])}</div>
+   ${(e?.feels || []).length ? `<p class="rf-mut" style="text-align:center;margin:10px 0 0">Today: ${e.feels.map(esc).join(', ')}</p>` : ''}</section>`;
+  h += `<section class="rf-card"><div class="rf-k">Where do I feel it?</div><div class="rf-chips">${RF_BODY.map(b => `<button type="button" class="rf-chip${(e?.body || []).includes(b) ? ' on' : ''}" data-rf="body" data-v="${b}">${b}</button>`).join('')}</div></section>`;
+  h += `<section class="rf-card"><div class="rf-k">Untangle a thought · 3 steps</div>
+   <label class="rf-ul" for="rfU1">1 · What happened?</label><textarea class="inp rf-ta" id="rfU1" rows="2" placeholder="Just the facts"></textarea>
+   <label class="rf-ul" for="rfU2">2 · What am I telling myself?</label><textarea class="inp rf-ta" id="rfU2" rows="2" placeholder="The thought in my head"></textarea>
+   <label class="rf-ul" for="rfU3">3 · A kinder, truer view?</label><textarea class="inp rf-ta" id="rfU3" rows="2" placeholder="What would I tell a friend?"></textarea>
+   <button class="btn acc" data-rf="untangle">Save to today</button></section>`;
+  h += `<section class="rf-card rf-burnc"><div class="rf-k">Let it go</div><p class="rf-mut" style="margin:0 0 8px">Write a worry, then burn it. It is never saved.</p><textarea class="inp rf-ta" id="rfBurn" rows="3" placeholder="What is weighing on me…"></textarea><button class="btn rf-burnb" data-rf="burn">🔥 Let it go</button></section>`;
+  h += `<div class="rf-k rf-sec">Feel better in a minute</div><div class="rf-row rf-tools"><button class="btn sec" data-rf="breathe">🌬️ Breathe</button><button class="btn sec" data-rf="walk">🚶 5-min walk</button><button class="btn sec" data-rf="grat3">🙏 3 gratitudes</button></div>`;
+  return h;
+}
+function rfWheelSvg(sel) {
+  const n = RF_WHEEL.length, R = 110, r = 58, cx = 120, cy = 120; let p = '';
+  RF_WHEEL.forEach(([l, c], i) => { const a0 = (i / n) * 2 * Math.PI - Math.PI / 2, a1 = ((i + 1) / n) * 2 * Math.PI - Math.PI / 2; const P = (rr, a) => `${(cx + rr * Math.cos(a)).toFixed(1)},${(cy + rr * Math.sin(a)).toFixed(1)}`; const am = (a0 + a1) / 2;
+    p += `<path d="M${P(R, a0)} A${R},${R} 0 0 1 ${P(R, a1)} L${P(r, a1)} A${r},${r} 0 0 0 ${P(r, a0)} Z" fill="${c}" opacity="${l === sel ? 1 : .55}" stroke="var(--bg)" stroke-width="2" data-rf="core" data-v="${l}" style="cursor:pointer"><title>${l}</title></path><text x="${(cx + (R + r) / 2 * Math.cos(am)).toFixed(1)}" y="${(cy + (R + r) / 2 * Math.sin(am) + 4).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" pointer-events="none">${l}</text>`; });
+  return `<svg viewBox="0 0 240 240" width="240" height="240" role="img" aria-label="Emotion wheel">${p}</svg>`;
+}
+
+/* Insights */
+function rfInsights() {
+  const J = rf(), td = today(); const m0 = rfMonth || td.slice(0, 7); const first = m0 + '-01'; const fd = pYmd(first); const dim = new Date(fd.getFullYear(), fd.getMonth() + 1, 0).getDate(); const lead = (fd.getDay() + 6) % 7;
+  let cells = Array.from({ length: lead }, () => `<i class="na"></i>`).join('');
+  for (let i = 1; i <= dim; i++) { const d = m0 + '-' + pad(i); const e = J.days[d]; cells += `<a href="#reflect/day/${d}" class="${d === td ? 'td' : ''}${d > td ? ' fut' : ''}" style="${e?.mood ? `background:${rfMood(e.mood)[3]}` : ''}" title="${fmtShort(d)}${e?.mood ? ': ' + rfMood(e.mood)[1] : ''}">${i}</a>`; }
+  let h = `<section class="rf-card"><div class="rf-row" style="justify-content:space-between"><button class="iconbtn" data-rf="mon" data-v="-1" aria-label="Previous month">‹</button><b>${MONS[fd.getMonth()]} ${fd.getFullYear()}</b><button class="iconbtn" data-rf="mon" data-v="1" aria-label="Next month" ${m0 >= td.slice(0, 7) ? 'disabled' : ''}>›</button></div><div class="rf-cal"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>${cells}</div><div class="rf-leg">${RF_MOODS.map(m => `<span><i style="background:${m[3]}"></i>${m[1]}</span>`).join('')}</div></section>`;
+  const wk = Array.from({ length: 7 }, (_, i) => addDays(td, i - 6));
+  h += `<section class="rf-card"><div class="rf-k">Mood and meetings · last 7 days</div><div class="rf-bars">${wk.map(d => { const e = J.days[d]; const f = e?.facts || rfFacts(d); return `<div><i style="height:${e?.mood ? e.mood * 20 : 4}%;background:${e?.mood ? rfMood(e.mood)[3] : 'var(--line)'}"></i><em>${f.meet ? f.meet + '📅' : ''}</em><span>${'SMTWTFS'[pYmd(d).getDay()]}</span></div>`; }).join('')}</div></section>`;
+  const P = rfPatterns();
+  h += `<section class="rf-card"><div class="rf-k">Patterns from your days</div>${P.need ? `<p class="rf-mut">Patterns appear after 7 check-ins. ${P.need} to go 🌱</p><div class="rf-prog"><i style="width:${(7 - P.need) / 7 * 100}%"></i></div>` : P.list.length ? P.list.map(x => `<div class="rf-pat"><em>${x.icon}</em><span>${x.text}</span></div>`).join('') : `<p class="rf-mut">No strong patterns yet. Keep going, they get clearer every week.</p>`}</section>`;
+  const mDays = Object.values(J.days).filter(e => e.d.startsWith(m0) && e.mood); const fc = {}; mDays.forEach(e => (e.feels || []).forEach(f => fc[f] = (fc[f] || 0) + 1)); const tf = Object.entries(fc).sort((a, b) => b[1] - a[1]).slice(0, 6); const mx = Math.max(1, ...tf.map(x => x[1]));
+  if (tf.length) h += `<section class="rf-card"><div class="rf-k">Top feelings this month</div>${tf.map(([f, c]) => `<div class="rf-fb"><span>${esc(f)}</span><i style="width:${c / mx * 100}%;background:${RF_POS.has(f) ? '#5DBB63' : '#8B5CF6'}"></i><b>${c}</b></div>`).join('')}</section>`;
+  const ints = mDays.filter(e => e.int?.t); if (ints.length) { const lv = ints.filter(e => e.int.lived === true).length; h += `<section class="rf-card rf-row" style="justify-content:space-between"><span><b>🎯 Intentions lived</b><br><span class="rf-mut">${MONS[fd.getMonth()]}</span></span><span class="rf-num">${lv}/${ints.length}</span></section>`; }
+  h += rfWheelCard();
+  const ti = rfTithiName(td); const cyc = P.list.filter(x => /Purnima|Amavasya/.test(x.text));
+  h += `<section class="rf-card"><div class="rf-k">Mood and your cycles</div><p style="margin:0 0 6px">Today is <b>${ti}</b> <span class="rf-mut">(approximate)</span></p>${cyc.length ? cyc.map(x => `<div class="rf-pat"><em>${x.icon}</em><span>${x.text}</span></div>`).join('') : `<p class="rf-mut" style="margin:0">After a couple of months of check-ins, Dayline shows whether Purnima or Amavasya change how you feel.</p>`}</section>`;
+  h += `<div class="rf-row rf-stories"><a class="btn sec" href="#reflect/week">📖 Week in a page</a><a class="btn sec" href="#reflect/month">🗓 Month story</a></div>`;
+  return h;
+}
+function rfWheelCard() {
+  const J = rf(), mk = today().slice(0, 7); const keys = Object.keys(J.wheel).sort(); const cur = J.wheel[mk] || J.wheel[keys.at(-1)]; const curK = J.wheel[mk] ? mk : keys.at(-1);
+  const prevK = keys.filter(k => k < (curK || mk)).at(-3) || keys.filter(k => k < (curK || mk)).at(-1); const prev = prevK ? J.wheel[prevK] : null;
+  const pts = (v, R) => RF_AREAS.map(([k], i) => { const a = -Math.PI / 2 + i * Math.PI / 3; const r = R * ((v?.[k] ?? 0) / 10); return `${(r * Math.cos(a)).toFixed(1)},${(r * Math.sin(a)).toFixed(1)}`; }).join(' ');
+  const grid = [1, .66, .33].map(s => `<polygon points="${RF_AREAS.map((_, i) => { const a = -Math.PI / 2 + i * Math.PI / 3; return `${(90 * s * Math.cos(a)).toFixed(1)},${(90 * s * Math.sin(a)).toFixed(1)}`; }).join(' ')}" fill="none" stroke="var(--line)"/>`).join('');
+  const labels = RF_AREAS.map(([, , l], i) => { const a = -Math.PI / 2 + i * Math.PI / 3; return `<text x="${(108 * Math.cos(a)).toFixed(1)}" y="${(108 * Math.sin(a) + 4).toFixed(1)}" text-anchor="middle" font-size="11.5" fill="var(--muted)">${l}</text>`; }).join('');
+  let grew = ''; if (cur && prev) { const g = RF_AREAS.map(([k, , l]) => [l, (cur[k] || 0) - (prev[k] || 0)]).sort((a, b) => b[1] - a[1]); if (g[0][1] > 0) grew = ` · ${g[0][0]} grew the most`; }
+  return `<section class="rf-card"><div class="rf-row" style="justify-content:space-between"><div class="rf-k" style="margin:0">Wheel of life</div><button class="rf-link" data-rf="wheel">${J.wheel[mk] ? 'Re-rate' : 'Rate this month'}</button></div>${cur ? `<svg viewBox="-135 -120 270 240" width="100%" style="max-width:320px;display:block;margin:6px auto 0" role="img" aria-label="Wheel of life">${grid}${prev ? `<polygon points="${pts(prev, 90)}" fill="color-mix(in srgb,var(--muted) 18%,transparent)" stroke="var(--muted)" stroke-dasharray="4 4"/>` : ''}<polygon points="${pts(cur, 90)}" fill="color-mix(in srgb,#F5B66B 30%,transparent)" stroke="#F5B66B" stroke-width="2.5"/>${labels}</svg><p class="rf-mut" style="text-align:center;margin:4px 0 0">🟠 ${rfMonName(curK)}${prev ? ` · ⚪ ${rfMonName(prevK)}` : ''}${grew}</p>` : `<p class="rf-mut">Rate your six life areas once a month (1 to 10). Watch them change over time.</p>`}</section>`;
+}
+const rfMonName = k => k ? MONS[+k.slice(5, 7) - 1] + ' ' + k.slice(0, 4) : '';
+
+/* Week / month story */
+function rfStoryRange(kind, sub) {
+  const td = today();
+  if (kind === 'week') { let end = sub && /^\d{4}-\d\d-\d\d$/.test(sub) ? sub : td; const dow = pYmd(end).getDay(); if (!sub) end = dow === 0 ? td : addDays(td, -dow); else end = addDays(end, (7 - pYmd(end).getDay()) % 7); return [addDays(end, -6), end]; }
+  let m = sub && /^\d{4}-\d\d$/.test(sub) ? sub : null; if (!m) { const t = pYmd(td); const last = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate(); m = t.getDate() >= last - 0 || t.getDate() >= 28 ? td.slice(0, 7) : rfMonthAgo(td).slice(0, 7); }
+  const f = pYmd(m + '-01'); return [m + '-01', ymd(new Date(f.getFullYear(), f.getMonth() + 1, 0))];
+}
+function rfStoryView(kind, sub) {
+  const [from, to] = rfStoryRange(kind, sub); const s = rfStory(from, to > today() ? today() : to);
+  const prev = kind === 'week' ? addDays(from, -1) : rfMonthAgo(from).slice(0, 7); const next = kind === 'week' ? addDays(to, 7) : (k => k)(ymd(new Date(pYmd(to).getTime() + 864e5)).slice(0, 7));
+  const canNext = (kind === 'week' ? addDays(to, 1) : next + '-01') <= today();
+  const tot = s.es.length || 1; const g = s.cnt.good / tot * 100, o = s.cnt.okay / tot * 100, l = s.cnt.low / tot * 100;
+  const J = rf(); const nk = kind + ':' + from; const note = J.notes[nk];
+  let h = topbar() + `<div class="pad"><a class="rf-link" href="#reflect">← Reflect</a></div><section class="rf-story">
+   <div class="rf-row" style="justify-content:space-between"><a class="iconbtn" href="#reflect/${kind}/${prev}" aria-label="Earlier">‹</a><span class="rf-mut">${kind === 'week' ? `Week of ${fmtShort(from)} – ${fmtShort(to)}` : rfMonName(from.slice(0, 7))}</span>${canNext ? `<a class="iconbtn" href="#reflect/${kind}/${next}" aria-label="Later">›</a>` : '<span style="width:40px"></span>'}</div>
+   <h1 class="rf-st-t">${s.title}</h1>`;
+  if (!s.es.length) return h + `<p class="rf-mut">No check-ins in this ${kind}. Your story starts with one tap tonight.</p></section>`;
+  h += `<div class="rf-row" style="gap:18px;align-items:center"><div class="rf-ring" style="background:conic-gradient(#5DBB63 0 ${g}%,#4f7fb5 ${g}% ${g + o}%,#E79B3B ${g + o}% ${g + o + l}%,#E5484D ${g + o + l}% 100%)"><b>${rfMood(Math.round(s.avg))[2]}</b></div><div class="rf-legv"><span><i style="background:#5DBB63"></i>Good days ${s.cnt.good}</span><span><i style="background:#4f7fb5"></i>Okay ${s.cnt.okay}</span><span><i style="background:#E79B3B"></i>Low ${s.cnt.low}</span><span><i style="background:#E5484D"></i>Rough ${s.cnt.rough}</span></div></div>`;
+  if (s.feels.length) h += `<div class="rf-k">Top feelings</div><div class="rf-chips">${s.feels.map(([f, c]) => `<span class="rf-chip on">${esc(f)} ×${c}</span>`).join('')}</div>`;
+  if (s.best) h += `<div class="rf-k">Highlight</div><a class="rf-card rf-q" href="#reflect/day/${s.best.d}">“${esc(rfTrim(s.best.line || rfText(s.best.text), 180))}”<span class="rf-mut">${fmtDate(s.best.d)} · ${rfMood(s.best.mood)[2]} ${rfMood(s.best.mood)[1]}</span></a>`;
+  if (s.grat.length) h += `<div class="rf-k">Grateful for</div><div class="rf-chips">${s.grat.slice(0, 6).map(t => `<span class="rf-chip">🙏 ${esc(rfTrim(t, 40))}</span>`).join('')}</div>`;
+  h += `<div class="rf-k">In numbers</div><div class="rf-nums"><div><b>${s.done}</b><span>tasks done</span></div><div><b>${s.es.length}/${s.n}</b><span>journal days</span></div><div><b>${s.ints ? s.lived + '/' + s.ints : '–'}</b><span>intentions lived</span></div></div>`;
+  if (s.tip) h += `<div class="rf-k">Worth knowing</div><div class="rf-ai"><span>${s.tip.icon} ${s.tip.text}</span></div>`;
+  h += `<div class="rf-k">Mentor's note</div>${note ? `<div class="rf-ai rf-md">${rfMd(note.t)}</div>` : aiKey() ? `<button class="btn sec rf-wide" data-rf="note" data-v="${nk}" data-f="${from}" data-t="${to}" ${rfBusy ? 'disabled' : ''}>${rfBusy ? 'Writing…' : `✨ Write my ${kind === 'week' ? 'weekly' : 'monthly'} note`}</button>` : `<p class="rf-mut">Add your Claude key in Settings, AI, and your mentor writes a personal note here each ${kind}.</p>`}`;
+  return h + `</section>`;
+}
+
+/* Mentor */
+const RF_MENTOR_SYS = tone => `You are the private mentor inside Dayline's Reflect journal, talking with Mehul, a sales and business development leader in Mumbai, India, who is married with a young son. You know him only through the journal data given to you. Speak like a wise, warm friend who has known him for years: ${tone === 'direct' ? 'direct and straight-talking, no sugar-coating' : 'gentle and encouraging, but always honest'}.
+Rules:
+- Ground everything in his own data: quote dates, feelings, moods, patterns, his vision board and past decisions. Never invent facts. If the data is thin, say so.
+- Keep replies short for a phone: under 150 words unless he asks for more. Plain text, short paragraphs, "•" bullets, **bold** for key words. No headings.
+- Ask at most one question at a time.
+- When he asks for help deciding: ask at most two short clarifying questions (one per message) only if truly needed; then reply with "What your own data says:" (2–4 bullets), then options "A ·", "B ·", "C ·" each with a one-line trade-off against his values and life areas, then "My recommendation:" with one clear choice and why. He wants a single clear recommendation.
+- Respect his spiritual side (Vedic astrology, manifestation, gratitude) without overclaiming.
+- You are not a therapist. If he expresses hopelessness, thoughts of self-harm or a crisis, respond with care, encourage him to talk to someone he trusts or a professional today, and share that in India he can call Tele-MANAS on 14416.`;
+function rfContext() {
+  const J = rf(); const td = today(); const from = addDays(td, -60);
+  const days = Object.values(J.days).filter(e => e.d >= from && !e.priv && (e.mood || e.line || e.text)).sort((a, b) => a.d < b.d ? -1 : 1).map(e => ({ date: e.d, mood: e.mood ? rfMood(e.mood)[1] : null, energy: e.energy, feelings: e.feels, body: e.body?.length ? e.body : undefined, line: e.line || undefined, text: e.text ? rfTrim(rfText(e.text), 500) : undefined, grateful: (e.grat || []).filter(Boolean), intention: e.int?.t ? { text: e.int.t, lived: e.int.lived } : undefined, untangled: e.untangle, day: e.facts }));
+  const vision = Object.fromEntries(RF_AREAS.map(([k, , l]) => [l, J.vision[k]?.line || null]));
+  const P = rfPatterns();
+  return { today: td, weekday: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][pYmd(td).getDay()], tithi: rfTithiName(td), streak: rfStreak().n, vision_board: vision, affirmation: J.aff?.text || null, manifested: J.wall.map(w => ({ goal: w.title, written: w.wrote, came_true: w.came })), wheel_of_life: J.wheel, patterns: P.list.map(x => x.text.replace(/<[^>]+>/g, '')), what_mentor_knows: J.about, past_decisions: J.dec.slice(-10).map(x => ({ date: x.at, question: x.q, chose: x.choice, outcome: x.outcome, felt: x.rating })), journal: days };
+}
+async function aiChat(system, messages, maxTok) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'x-api-key': aiKey(), 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' }, body: JSON.stringify({ model: S.settings.aiModel || AI_MODELS[0][0], max_tokens: maxTok || 1200, system, messages }) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(r.status === 401 ? 'The API key was not accepted. Check it in console.anthropic.com.' : r.status === 429 ? 'Too many requests, or no credit left on your Anthropic account.' : r.status === 404 ? 'That model is not available on your key. Pick another in Settings, AI.' : (j.error?.message || 'HTTP ' + r.status));
+  return (j.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n').trim();
+}
+const rfMd = t => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+function rfMentor() {
+  const J = rf();
+  if (!aiKey()) return `<section class="rf-card"><b>🧭 Your private mentor</b><p class="rf-mut" style="line-height:1.5">It reads your journal, vision board and patterns, and helps you think and decide. It uses your own Claude key, straight from this device to Claude. Nothing goes anywhere else.</p><a class="btn acc" href="#settings/ai">Add your Claude key</a></section>`;
+  let h = `<p class="rf-priv" style="margin-top:0">🔒 Private: this device → your Claude key. Days marked “keep from mentor” are never sent.</p>`;
+  h += `<div class="rf-chips rf-modes"><button class="rf-chip" data-rf="mstart" data-v="decide">⚖️ Help me decide</button><button class="rf-chip" data-rf="mstart" data-v="how">🪞 How am I doing?</button><button class="rf-chip" data-rf="mstart" data-v="stress">🌧️ What is stressing me?</button><button class="rf-chip" data-rf="mstart" data-v="manifest">✨ Am I moving towards my vision?</button></div>`;
+  h += `<div class="rf-chat" id="rfChat">${J.chat.length ? J.chat.map((m, i) => m.r === 'u' ? `<div class="rf-me">${esc(m.t)}</div>` : `<div class="rf-ai rf-md">${rfMd(m.t)}${/recommendation/i.test(m.t) ? `<button class="rf-link rf-savedec" data-rf="savedec" data-i="${i}">Save this decision · review in 30 days</button>` : ''}</div>`).join('') : `<div class="rf-ai">✨ Hi Mehul. Ask me anything about your life, your days or a decision. I'll answer from what you've written here.</div>`}${rfBusy ? `<div class="rf-ai rf-typing"><i></i><i></i><i></i></div>` : ''}</div>`;
+  h += `<div class="rf-send"><textarea class="inp rf-ta" id="rfAsk" rows="2" placeholder="${J.mode === 'decide' ? 'Describe the decision…' : 'Ask your mentor…'}"></textarea>${rfMicBtn('rfAsk')}<button class="btn acc" data-rf="send" ${rfBusy ? 'disabled' : ''}>Send</button></div>`;
+  if (J.chat.length) h += `<button class="rf-link" data-rf="newchat" style="margin:8px 18px 0">Start a new conversation</button>`;
+  const ab = J.about;
+  h += `<details class="rf-card rf-about"${ab ? '' : ' open'}><summary><b>What my mentor knows about me</b></summary>${ab ? Object.entries({ values: 'What matters to me', lifts: 'What lifts me', drains: 'What drains me', strengths: 'My strengths', triggers: 'My stress triggers' }).map(([k, l]) => (ab[k] || []).length ? `<div class="rf-k">${l}</div><div class="rf-chips">${ab[k].map((x, i) => `<span class="rf-chip">${esc(x)}<button type="button" data-rf="abdel" data-k="${k}" data-i="${i}" aria-label="Remove">×</button></span>`).join('')}</div>` : '').join('') : '<p class="rf-mut">Nothing yet. After a week of check-ins, tap below and it builds this from your journal. You can remove anything.</p>'}<button class="btn sec rf-wide" data-rf="about" ${rfBusy ? 'disabled' : ''}>✨ ${ab ? 'Update' : 'Build'} from my journal</button></details>`;
+  if (J.dec.length) h += `<div class="rf-k rf-sec">Decisions</div><div class="rf-list">${[...J.dec].reverse().map(x => `<div class="rf-li"><span class="rf-dot" style="background:${x.outcome ? '#5DBB63' : '#8B5CF6'}">⚖️</span><span><b>${esc(rfTrim(x.q, 70))}</b><span>${fmtShort(x.at)} · ${x.outcome ? esc(x.rating || '') + ' · ' + esc(rfTrim(x.outcome, 60)) : 'review on ' + fmtShort(x.due)}</span></span></div>`).join('')}</div>`;
+  return h;
+}
+const RF_STARTS = { decide: 'Help me decide something.', how: 'How am I really doing lately? Be honest, and tell me one thing to keep and one thing to change.', stress: 'Looking at my journal, what is stressing me most, and what can I do about it this week?', manifest: 'Am I moving towards my vision board? Where am I on track, and where am I drifting?' };
+async function rfSend(text) {
+  const J = rf(); text = (text || '').trim(); if (!text || rfBusy) return;
+  J.chat.push({ r: 'u', t: text, at: Date.now() }); if (J.chat.length > 60) J.chat = J.chat.slice(-60); rfBusy = true; save(); render(); rfScrollChat();
+  try {
+    const ctx = rfContext(); const msgs = J.chat.slice(-20).map(m => ({ role: m.r === 'u' ? 'user' : 'assistant', content: m.t }));
+    while (msgs.length && msgs[0].role !== 'user') msgs.shift();
+    msgs[0] = { role: 'user', content: `My Reflect data (JSON):\n${JSON.stringify(ctx)}\n\n${msgs[0].content}` };
+    const t = await aiChat(RF_MENTOR_SYS(J.cfg.tone) + (J.mode === 'decide' ? '\nHe has asked for help with a decision.' : ''), msgs, 1400);
+    J.chat.push({ r: 'a', t: t || '…', at: Date.now() });
+  } catch (e) { toast(e.message.includes('Failed to fetch') ? 'Could not reach Claude. Check your internet.' : e.message); J.chat.pop(); }
+  finally { rfBusy = false; save(); render(); rfScrollChat(); }
+}
+function rfScrollChat() { setTimeout(() => { const c = $('#rfChat'); if (c) c.lastElementChild?.scrollIntoView({ block: 'end', behavior: 'smooth' }); }, 60); }
+async function rfAbout() {
+  if (rfBusy) return; const J = rf(); rfBusy = true; render();
+  try { const t = await aiCall(RF_MENTOR_SYS(J.cfg.tone), `From this journal data, write what you have learned about him. Reply with ONLY JSON: {"values":[3-5 short phrases],"lifts":[3-5],"drains":[3-5],"strengths":[3-5],"triggers":[2-4]}. Each item under 8 words, specific to his data, no generic advice.\nData:\n${JSON.stringify(rfContext())}`, 900);
+    const r = jsonLoose(t); if (!r) throw new Error('Could not read the reply. Try again.'); J.about = { values: r.values || [], lifts: r.lifts || [], drains: r.drains || [], strengths: r.strengths || [], triggers: r.triggers || [], at: Date.now() }; save(); toast('Updated'); }
+  catch (e) { toast(e.message.includes('Failed to fetch') ? 'Could not reach Claude. Check your internet.' : e.message); }
+  finally { rfBusy = false; render(); }
+}
+async function rfNote(nk, from, to) {
+  if (rfBusy) return; const J = rf(); rfBusy = true; render();
+  try { const s = rfStory(from, to); const t = await aiCall(RF_MENTOR_SYS(J.cfg.tone), `Write his ${nk.startsWith('week') ? 'weekly' : 'monthly'} mentor note for ${from} to ${to}: 80–120 words, warm and honest. Name one thing to keep doing and one thing to change next ${nk.startsWith('week') ? 'week' : 'month'}, grounded in the entries. Summary: ${JSON.stringify({ moods: s.cnt, feelings: s.feels, intentions: [s.lived, s.ints], tasks_done: s.done })}\nData:\n${JSON.stringify(rfContext())}`, 700);
+    J.notes[nk] = { t, at: Date.now() }; const ks = Object.keys(J.notes).sort(); while (ks.length > 30) delete J.notes[ks.shift()]; save(); }
+  catch (e) { toast(e.message.includes('Failed to fetch') ? 'Could not reach Claude. Check your internet.' : e.message); }
+  finally { rfBusy = false; render(); }
+}
+async function rfAskQ(d) {
+  const e = rfDay(d, true); const txt = ($('#rfText')?.value || '') + ' ' + ($('#rfLineE')?.value || '');
+  if (aiKey()) { const b = $('[data-rf="ask"]'); if (b) { b.disabled = true; b.textContent = '✨ Thinking…'; }
+    try { e.q = (await aiCall(RF_MENTOR_SYS(rf().cfg.tone), `He is journaling for ${d} and wants one thoughtful question to help him go deeper. Ask exactly ONE question, under 25 words, specific to what he wrote today and his recent patterns. Reply with only the question.\nToday so far: ${JSON.stringify({ mood: e.mood && rfMood(e.mood)[1], feelings: e.feels, line: e.line, text: rfTrim(txt, 800) })}\nRecent data:\n${JSON.stringify({ patterns: rfPatterns().list.map(x => x.text.replace(/<[^>]+>/g, '')), vision: rfContext().vision_board })}`, 200)).replace(/^["“]|["”]$/g, ''); }
+    catch (err) { e.q = rfLocalQ(e); } }
+  else e.q = rfLocalQ(e);
+  rfSaveEntryFields(d); rfTouch(e); render();
+}
+function rfLocalQ(e) {
+  const neg = (e.feels || []).find(f => !RF_POS.has(f)), pos = (e.feels || []).find(f => RF_POS.has(f));
+  const Q = neg ? [`What made you feel ${neg.toLowerCase()} today, and what is one small thing in your control?`, `If a close friend felt ${neg.toLowerCase()} like this, what would you tell them?`, `What do you need right now that you have not asked for?`]
+    : pos ? [`What made you feel ${pos.toLowerCase()} today, and how can you have more of that tomorrow?`, `Who played a part in today's good moments?`, `What did you do today that your future self will thank you for?`]
+    : ['What took most of your energy today?', 'What are you avoiding thinking about?', 'What would make tomorrow 10% better?', 'What did you learn about yourself today?'];
+  return Q[(new Date().getDate() + (e.feels || []).length) % Q.length];
+}
+
+/* ---------- saving ---------- */
+function rfSaveCheckin(silent) {
+  const td = today(); const e = rfDay(td, true);
+  const ln = $('#rfLine'); if (ln) e.line = ln.value.trim();
+  const en = $('#rfEn'); if (en && (e.mood || en.dataset.moved)) e.energy = +en.value;
+  if ($('#rfG0')) e.grat = [0, 1, 2].map(i => $('#rfG' + i).value.trim());
+  e.facts = rfFacts(td); rfTouch(e);
+  if (!silent) { if (!e.mood) { toast('Tap a mood first'); return; } const first = !e.saved; e.saved = true; rfTouch(e); render(); if (first) { if (S.settings.fx !== false) celebrate(); rewardToast('🪷', 'Check-in saved', rfInstant(e)); } else toast(rfInstant(e)); }
+}
+function rfSaveEntryFields(d) {
+  const e = rfDay(d, true);
+  if ($('#rfLineE')) e.line = $('#rfLineE').value.trim();
+  if ($('#rfText')) e.text = esc($('#rfText').value.trim()).replace(/\n/g, '<br>');
+  if ($('#rfGE0')) e.grat = [0, 1, 2].map(i => $('#rfGE' + i).value.trim());
+  if (d === today()) e.facts = rfFacts(d);
+}
+let rfTypeT = 0;
+document.addEventListener('input', ev => {
+  const id = ev.target.id || ''; if (route().view !== 'reflect') return;
+  if (id === 'rfEn') ev.target.dataset.moved = '1';
+  if (['rfLine', 'rfEn', 'rfG0', 'rfG1', 'rfG2'].includes(id)) { clearTimeout(rfTypeT); rfTypeT = setTimeout(() => rfSaveCheckin(true), 900); }
+  if (['rfLineE', 'rfText', 'rfGE0', 'rfGE1', 'rfGE2'].includes(id)) { const d = route().arg.split('/')[1] || today(); clearTimeout(rfTypeT); rfTypeT = setTimeout(() => { rfSaveEntryFields(d); rfTouch(rfDay(d, true)); }, 1200); }
+});
+document.addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.id === 'rfPin') rfUnlock(); if (ev.key === 'Enter' && !ev.shiftKey && ev.target.id === 'rfAsk' && isWide()) { ev.preventDefault(); const v = ev.target.value; ev.target.value = ''; rfSend(v); } });
+
+/* ---------- overlays: visualise, breathe, walk timer, burn ---------- */
+function rfOverlay(html, onClose) { const o = document.createElement('div'); o.className = 'rf-ov'; o.innerHTML = `<button class="rf-ovx" aria-label="Close">✕</button>${html}`; document.body.appendChild(o); let done = false; const close = () => { if (done) return; done = true; o.remove(); onClose && onClose(); }; o.querySelector('.rf-ovx').onclick = close; return { o, close }; }
+function rfBreathe(sec = 60, slides) {
+  const { o, close } = rfOverlay(`<div class="rf-ov-slide"></div><div class="rf-breath"><i></i><b>Breathe in</b></div><div class="rf-ov-t"></div>`);
+  const b = o.querySelector('.rf-breath b'), ci = o.querySelector('.rf-breath i'), sl = o.querySelector('.rf-ov-slide'), tl = o.querySelector('.rf-ov-t'); let t = 0;
+  const step = () => { if (!o.isConnected) return; const ph = t % 10; if (ph === 0) { b.textContent = 'Breathe in'; ci.style.transform = 'scale(1)'; } if (ph === 4) { b.textContent = 'Hold'; } if (ph === 5) { b.textContent = 'Breathe out'; ci.style.transform = 'scale(.55)'; }
+    if (slides && t % 10 === 0) { const s = slides[(t / 10) % slides.length]; sl.innerHTML = s; }
+    tl.textContent = `${Math.max(0, sec - t)}s`; if (t >= sec) { close(); toast(slides ? 'Carry that feeling into your day ✨' : 'Well done 🌬️'); return; } t++; setTimeout(step, 1000); };
+  ci.style.transform = 'scale(.55)'; setTimeout(step, 60);
+}
+function rfVisualise() {
+  const J = rf(); const S2 = RF_AREAS.filter(([k]) => J.vision[k]?.line).map(([k, em, l, c]) => { const v = J.vision[k]; const img = v.img && IMGS[v.img]; return `<div class="rf-vis" style="--vc:${c}${img ? `;background-image:linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.7)),url('${img}')` : ''}"><span>${em} ${l}</span><b>${esc(v.line)}</b></div>`; });
+  if (!S2.length) { toast('Write at least one line on your board first'); return; }
+  rfBreathe(60, S2); const J2 = rf(); J2.vis = { ...(J2.vis || {}), [today()]: 1 }; save();
+}
+function rfWalk() {
+  let left = 300; const { o, close } = rfOverlay(`<div class="rf-walk"><span>🚶</span><b>5:00</b><p>Leave the phone. Notice five things you can see, four you can hear.</p><button class="btn acc">I'm back</button></div>`);
+  const t = o.querySelector('b'); o.querySelector('.btn').onclick = () => { close(); toast('Nice. A short walk resets more than you think 🌿'); };
+  const tick = () => { if (!o.isConnected) return; left--; t.textContent = `${Math.floor(left / 60)}:${pad(left % 60)}`; if (left <= 0) { try { navigator.vibrate?.([200, 100, 200]); } catch (e) { } t.textContent = 'Done'; return; } setTimeout(tick, 1000); }; setTimeout(tick, 1000);
+}
+function rfBurn() {
+  const ta = $('#rfBurn'); if (!ta || !ta.value.trim()) { toast('Write what you want to let go of first'); return; }
+  const card = ta.closest('.rf-burnc'); card.classList.add('burning'); ta.readOnly = true;
+  setTimeout(() => { ta.value = ''; ta.readOnly = false; card.classList.remove('burning'); toast('Let go. It is gone 🔥'); }, 1900);
+}
+
+/* ---------- sheets ---------- */
+function rfVisionSheet(k) {
+  const J = rf(), A = RF_AREAS.find(x => x[0] === k), v = J.vision[k] || {};
+  openSheet(sheetHead(`${A[1]} ${A[2]}`, 'Save', 'rfvOk') + `<div class="field"><label for="rfvL">Written as if it is already true</label><textarea class="inp" id="rfvL" rows="3" placeholder="${{ health: 'I wake up light and full of energy', family: 'Sunday evenings are ours, phones away', career: 'I lead with calm and close my biggest deals', spirit: 'I am calm, guided and grateful', love: 'We laugh together every single day', wealth: 'I am free of debt and give generously' }[k]}">${esc(v.line || '')}</textarea></div>
+   <div class="field"><span class="flabel">Picture</span>${v.img && IMGS[v.img] ? `<img src="${IMGS[v.img]}" alt="" style="width:100%;max-height:200px;object-fit:cover;border-radius:14px"><button class="btn sec" id="rfvRm" style="margin-top:8px">Remove picture</button>` : `<button class="btn sec" id="rfvImg">📷 Add a picture</button>`}</div>
+   ${v.line ? `<button class="btn acc rf-wide" id="rfvMan" style="margin-top:8px">✨ It came true. Manifested!</button>` : ''}`);
+  const keep = () => { const t = $('#rfvL').value.trim(); J.vision[k] = { ...(J.vision[k] || {}), line: t, since: J.vision[k]?.line === t ? (J.vision[k].since || today()) : today() }; };
+  $('#rfvOk').onclick = () => { keep(); save(); closeSheet(true); render(); toast('Saved to your board'); };
+  $('#rfvImg') && ($('#rfvImg').onclick = () => rfPick(async f => { const data = await compressImage(f); const id = 'i' + uid(); IMGS[id] = data; idb.put(id, data).catch(() => { }); keep(); J.vision[k].img = id; save(); rfVisionSheet(k); }));
+  $('#rfvRm') && ($('#rfvRm').onclick = () => { keep(); J.vision[k].img = null; save(); rfVisionSheet(k); });
+  $('#rfvMan') && ($('#rfvMan').onclick = () => { const t = J.vision[k].line; J.wall.push({ id: uid(), area: k, title: t, wrote: J.vision[k].since || today(), came: today() }); J.vision[k] = { ...J.vision[k], line: '', since: null }; save(); closeSheet(true); go('reflect/manifest'); if (S.settings.fx !== false) celebrate(); rewardToast('✨', 'Manifested!', 'Added to your wall. Write your next one.'); });
+}
+function rfPick(cb) { const fi = $('#fileIn'); fi.accept = 'image/*'; fi.multiple = false; fi.onchange = () => { const f = fi.files[0]; fi.value = ''; if (f) cb(f).catch?.(() => toast('Could not add that picture')); }; fi.click(); }
+function rfAffSheet() {
+  const J = rf(); const ideas = ['Everything I need comes to me at the right time.', 'I am calm, focused and grateful.', 'I close deals with patience. I don’t have to rush to be great.', 'My family is healthy, happy and close.', 'Money flows to me easily and I use it wisely.'];
+  openSheet(sheetHead('Affirmation', 'Start 21 days', 'rfaOk') + `<div class="field"><label for="rfaT">One sentence, present tense</label><textarea class="inp" id="rfaT" rows="3">${esc(J.aff?.text || '')}</textarea></div><div class="optchips">${ideas.map(x => `<button type="button" class="rfai">${esc(x)}</button>`).join('')}</div>`);
+  $$('#sheet .rfai').forEach(b => b.onclick = () => { $('#rfaT').value = b.textContent; });
+  $('#rfaOk').onclick = () => { const t = $('#rfaT').value.trim(); if (!t) return; J.aff = { text: t, start: J.aff?.text === t ? J.aff.start : today(), log: J.aff?.text === t ? (J.aff.log || {}) : {} }; save(); closeSheet(true); render(); toast('Day 1 of 21. Say it, then tap ✨'); };
+}
+function rfLetterSheet() {
+  const J = rf(); const opts = [[30, 'In a month'], [90, 'In 3 months'], [182, 'In 6 months'], [365, 'In a year']]; let days = 182;
+  openSheet(sheetHead('Letter to future me', 'Seal it', 'rflOk') + `<div class="field"><label for="rflT">Dear future me…</label><textarea class="inp" id="rflT" rows="8" placeholder="Where I am now, what I hope for, what I want you to remember"></textarea></div><div class="field"><span class="flabel">Opens</span><div class="optchips" id="rflD">${opts.map(([v, l]) => `<button type="button" data-v="${v}" class="${v === days ? 'on' : ''}">${l}</button>`).join('')}</div></div><p class="hint">It stays sealed until then. Dayline tells you the morning it opens.</p>`);
+  $$('#rflD button').forEach(b => b.onclick = () => { days = +b.dataset.v; $$('#rflD button').forEach(z => z.classList.toggle('on', z === b)); });
+  $('#rflOk').onclick = () => { const t = $('#rflT').value.trim(); if (!t) { $('#rflT').focus(); return; } J.letters.push({ id: uid(), text: t, at: today(), open: addDays(today(), days) }); save(); closeSheet(true); render(); toast(`Sealed until ${fmtShort(addDays(today(), days))} ✉️`); };
+}
+function rfLetterOpen(id) { const J = rf(), l = J.letters.find(x => x.id === id); if (!l) return; if (!l.opened) { l.opened = today(); save(); } openSheet(sheetHead(`From ${fmtShort(l.at)}`, 'Close', 'rfloOk') + `<div class="rf-letterx">${esc(l.text).replace(/\n/g, '<br>')}</div>`); $('#rfloOk').onclick = () => { closeSheet(true); render(); }; }
+function rfWheelSheet() {
+  const J = rf(), mk = today().slice(0, 7), cur = J.wheel[mk] || Object.values(J.wheel).at(-1) || {};
+  openSheet(sheetHead('Wheel of life · ' + rfMonName(mk), 'Save', 'rfwOk') + `<p class="hint" style="margin-top:0">How satisfied are you with each area right now? 1 to 10.</p>${RF_AREAS.map(([k, em, l]) => `<div class="field"><label for="rfw_${k}">${em} ${l} · <b id="rfwv_${k}">${cur[k] || 5}</b></label><input type="range" class="rf-range" id="rfw_${k}" min="1" max="10" value="${cur[k] || 5}"></div>`).join('')}`);
+  RF_AREAS.forEach(([k]) => { $('#rfw_' + k).oninput = ev => { $('#rfwv_' + k).textContent = ev.target.value; }; });
+  $('#rfwOk').onclick = () => { J.wheel[mk] = Object.fromEntries(RF_AREAS.map(([k]) => [k, +$('#rfw_' + k).value])); save(); closeSheet(true); render(); toast('Saved. See how it changes next month.'); };
+}
+function rfGratSheet() {
+  const e = rfDay(today(), true);
+  openSheet(sheetHead('Three good things', 'Save', 'rfgOk') + [0, 1, 2].map(i => `<div class="field"><input class="inp" id="rfgs${i}" value="${esc(e.grat[i] || '')}" placeholder="${['I am grateful for…', 'Someone who made today better', 'A small win'][i]}"></div>`).join(''));
+  setTimeout(() => $('#rfgs0')?.focus(), 250);
+  $('#rfgOk').onclick = () => { e.grat = [0, 1, 2].map(i => $('#rfgs' + i).value.trim()); rfTouch(e); closeSheet(true); render(); toast('Added to your gratitude jar 🫙'); };
+}
+function rfDecSheet(i) {
+  const J = rf(); const ans = J.chat[i]; const q = [...J.chat.slice(0, i)].reverse().find(m => m.r === 'u' && m.t.length > 20)?.t || J.chat.slice(0, i).reverse().find(m => m.r === 'u')?.t || '';
+  const rec = (ans.t.match(/My recommendation:?\s*([^\n]+)/i) || [])[1] || '';
+  openSheet(sheetHead('Save decision', 'Save', 'rfdOk') + `<div class="field"><label for="rfdQ">The decision</label><textarea class="inp" id="rfdQ" rows="2">${esc(rfTrim(q, 200))}</textarea></div><div class="field"><label for="rfdC">What I chose</label><textarea class="inp" id="rfdC" rows="2">${esc(rec.replace(/\*\*/g, ''))}</textarea></div><p class="hint">In 30 days Dayline asks how it turned out, so your mentor learns what works for you.</p>`);
+  $('#rfdOk').onclick = () => { J.dec.push({ id: uid(), q: $('#rfdQ').value.trim(), choice: $('#rfdC').value.trim(), rec: rfTrim(ans.t, 800), at: today(), due: addDays(today(), 30) }); save(); closeSheet(true); render(); toast('Saved. I will ask you on ' + fmtShort(addDays(today(), 30))); };
+}
+function rfDecReview(id) {
+  const J = rf(), x = J.dec.find(z => z.id === id); if (!x) return; let rating = '';
+  openSheet(sheetHead('How did it turn out?', 'Save', 'rfrOk') + `<p style="margin:0 0 6px"><b>${esc(x.q)}</b></p><p class="hint" style="margin-top:0">You chose: ${esc(x.choice || '')}</p><div class="optchips" id="rfrR">${['Better than expected', 'As expected', 'Worse than expected'].map(l => `<button type="button">${l}</button>`).join('')}</div><div class="field" style="margin-top:12px"><label for="rfrN">What happened?</label><textarea class="inp" id="rfrN" rows="3"></textarea></div>`);
+  $$('#rfrR button').forEach(b => b.onclick = () => { rating = b.textContent; $$('#rfrR button').forEach(z => z.classList.toggle('on', z === b)); });
+  $('#rfrOk').onclick = () => { if (!rating) { toast('Pick how it went'); return; } x.rating = rating; x.outcome = $('#rfrN').value.trim() || rating; save(); closeSheet(true); render(); toast('Thank you. Your mentor will learn from this.'); };
+}
+function rfSettings() {
+  const J = rf(), c = J.cfg, lk = rfLockKind();
+  openSheet(sheetHead('Reflect settings', 'Done', 'rfsOk') + `
+  <div class="setrow"><span class="l"><b>Lock Reflect</b><span>${lk === 'bio' ? 'Fingerprint or screen lock' : lk === 'pin' ? 'PIN' : 'Off'} · on this device</span></span><select class="inp" id="rfsL" style="width:auto">${[['off', 'Off'], ['bio', 'Fingerprint'], ['pin', 'PIN']].map(([v, l]) => `<option value="${v}"${(lk || 'off') === v ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
+  <div class="setrow"><span class="l"><b>Evening check-in nudge</b><span>Only if you have not checked in. Mood buttons work from the lock screen and watch.</span></span><button type="button" class="switch${c.nudge !== false ? ' on' : ''}" id="rfsN" role="switch" aria-checked="${c.nudge !== false}" aria-label="Evening nudge"></button></div>
+  <div class="setrow"><span class="l"><b>Nudge time</b></span><input class="inp" type="time" id="rfsE" value="${c.eve || '21:30'}" style="width:130px"></div>
+  <div class="setrow"><span class="l"><b>Morning intention</b><span>A gentle prompt after your morning plan</span></span><button type="button" class="switch${c.morn !== false ? ' on' : ''}" id="rfsM" role="switch" aria-checked="${c.morn !== false}" aria-label="Morning intention"></button></div>
+  <div class="setrow"><span class="l"><b>Sunday story</b><span>Your week in a page, Sunday 8 pm</span></span><button type="button" class="switch${c.story !== false ? ' on' : ''}" id="rfsS" role="switch" aria-checked="${c.story !== false}" aria-label="Sunday story"></button></div>
+  <div class="setrow"><span class="l"><b>Mentor's tone</b></span><select class="inp" id="rfsT" style="width:auto"><option value="gentle"${c.tone !== 'direct' ? ' selected' : ''}>Gentle</option><option value="direct"${c.tone === 'direct' ? ' selected' : ''}>Straight-talking</option></select></div>`);
+  $$('#sheet .switch').forEach(b => b.onclick = () => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
+  $('#rfsL').onchange = ev => { const v = ev.target.value; closeSheet(true); rfSetLock(v); };
+  $('#rfsOk').onclick = () => { Object.assign(c, { nudge: $('#rfsN').classList.contains('on'), eve: $('#rfsE').value || '21:30', morn: $('#rfsM').classList.contains('on'), story: $('#rfsS').classList.contains('on'), tone: $('#rfsT').value }); save(); closeSheet(true); render(); toast('Reflect settings saved'); };
+}
+
+/* ---------- taps ---------- */
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-rf]'); if (!b) return; const a = b.dataset.rf, v = b.dataset.v; const td = today(); const J = rf();
+  const M = {
+    unlock: rfUnlock, settings: rfSettings,
+    mood: () => { const d = route().arg.startsWith('day/') ? route().arg.split('/')[1] : td; if (d === td && $('#rfLine')) rfSaveCheckin(true); else if ($('#rfText')) rfSaveEntryFields(d); const e = rfDay(d, true); e.mood = +v; if (d === td) e.facts = rfFacts(td); rfTouch(e); renderMainOnly(); },
+    ymood: () => { const d = addDays(td, -1); const e = rfDay(d, true); e.mood = +v; e.facts = rfFacts(d); e.saved = true; rfTouch(e); render(); toast(`Yesterday: ${rfMood(+v)[2]} ${rfMood(+v)[1]}. Tap it in Recent to add more.`); },
+    feel: () => { const onPage = route().arg.startsWith('day/'); const d = onPage ? route().arg.split('/')[1] : td; if (!onPage && $('#rfLine')) rfSaveCheckin(true); const e = rfDay(d, true); e.feels = e.feels.includes(v) ? e.feels.filter(x => x !== v) : [...e.feels, v]; rfTouch(e); renderMainOnly(); },
+    core: () => { rfSel = v; renderMainOnly(); },
+    body: () => { const e = rfDay(td, true); e.body = e.body.includes(v) ? e.body.filter(x => x !== v) : [...e.body, v]; rfTouch(e); renderMainOnly(); },
+    save: () => rfSaveCheckin(false),
+    intsave: () => { const t = $('#rfInt')?.value.trim(); if (!t) { $('#rfInt')?.focus(); return; } const e = rfDay(td, true); e.int = { t, lived: null }; rfTouch(e); render(); toast('Intention set. Dayline asks tonight if you lived it 🎯'); },
+    intidea: () => { const el = $('#rfInt'); if (el) { el.value = b.textContent; el.focus(); } },
+    intedit: () => { const e = rfDay(td, true); const t = prompt('Today I intend to…', e.int?.t || ''); if (t == null) return; e.int = t.trim() ? { t: t.trim(), lived: null } : null; rfTouch(e); render(); },
+    lived: () => { const e = rfDay(td, true); e.int.lived = v === 'true' ? true : v === 'false' ? false : 'part'; rfTouch(e); renderMainOnly(); if (e.int.lived === true) toast('Lived it 🌱 That is how change happens.'); },
+    aff: () => { if (!J.aff) return; const lim = { m: 3, a: 6, n: 9 }[v]; const c = ((J.aff.log ||= {})[td] ||= {}); if ((c[v] || 0) >= lim) { toast('Done for this part of the day ✨'); return; } c[v] = (c[v] || 0) + 1; save(); renderMainOnly(); try { navigator.vibrate?.(15); } catch (e) { } if (c[v] === lim) toast({ m: 'Morning done ☀️', a: 'Afternoon done 🌤️', n: 'Night done 🌙' }[v]); if ((c.m || 0) >= 3 && (c.a || 0) >= 6 && (c.n || 0) >= 9) rewardToast('✨', '3 · 6 · 9 complete', `Day ${Math.min(21, dayDiff(J.aff.start, td) + 1)} of 21`); },
+    affedit: rfAffSheet, vision: () => rfVisionSheet(v), visualise: rfVisualise, newletter: rfLetterSheet, letter: () => rfLetterOpen(b.dataset.id),
+    untangle: () => { const w = $('#rfU1').value.trim(), t = $('#rfU2').value.trim(), k = $('#rfU3').value.trim(); if (!w || !t || !k) { toast('Fill all three steps'); return; } const e = rfDay(td, true); (e.untangle ||= []).push({ what: w, thought: t, kind: k, at: Date.now() }); rfTouch(e); render(); toast('Untangled and saved to today 🌿'); },
+    burn: rfBurn, breathe: () => rfBreathe(60), walk: rfWalk, grat3: rfGratSheet,
+    mic: () => rfMic(v, b),
+    mon: () => { const m = rfMonth || td.slice(0, 7); const d = pYmd(m + '-01'); d.setMonth(d.getMonth() + +v); rfMonth = ymd(d).slice(0, 7); renderMainOnly(); },
+    wheel: rfWheelSheet,
+    saveentry: () => { rfSaveEntryFields(v); const e = rfDay(v, true); e.saved = true; rfTouch(e); go('reflect'); toast(e.mood ? rfInstant(e) : 'Saved'); },
+    delentry: () => { if (!confirm('Delete everything written for ' + fmtDate(v) + '?')) return; delete J.days[v]; save(); go('reflect'); toast('Deleted'); },
+    priv: () => { rfSaveEntryFields(v); const e = rfDay(v, true); e.priv = !e.priv; rfTouch(e); renderMainOnly(); },
+    ask: () => { rfSaveEntryFields(v); rfAskQ(v); },
+    photo: () => { rfSaveEntryFields(v); rfPick(async f => { const data = await compressImage(f); const id = 'i' + uid(); IMGS[id] = data; idb.put(id, data).catch(() => { }); const e = rfDay(v, true); e.imgs.push(id); rfTouch(e); render(); toast('Photo added'); }); },
+    img: () => { const e = rfDay(b.dataset.d); if (!e) return; viewerCtx = { t: e, id: v, rf: true }; $('#vImg').src = IMGS[v]; $('#viewer').classList.add('on'); },
+    note: () => rfNote(v, b.dataset.f, b.dataset.t),
+    send: () => { const el = $('#rfAsk'); const t = el.value; el.value = ''; rfSend(t); },
+    mstart: () => { J.mode = v === 'decide' ? 'decide' : null; save(); if (v === 'decide') { const el = $('#rfAsk'); el.placeholder = 'Describe the decision…'; el.focus(); toast('Tell me the decision, and what is pulling you each way'); } else rfSend(RF_STARTS[v]); },
+    newchat: () => { if (!confirm('Start a new conversation? This one is cleared.')) return; J.chat = []; J.mode = null; save(); render(); },
+    savedec: () => rfDecSheet(+b.dataset.i), decreview: () => rfDecReview(b.dataset.id),
+    evepick: () => { if (v !== 'keep') J.cfg.eve = v; J.cfg.asked = td.slice(0, 7); save(); render(); toast(v === 'keep' ? 'Keeping it as is' : 'Nudge moved to ' + fmtTime(v)); },
+    about: rfAbout, abdel: () => { J.about[b.dataset.k].splice(+b.dataset.i, 1); save(); renderMainOnly(); },
+  };
+  if (M[a]) { ev.preventDefault(); M[a](); }
+});
+
+/* ---------- reminders: evening nudge, morning intention, Sunday story, letters ---------- */
+function rfPings() {
+  const J = rf(), c = J.cfg, td = today(), now = Date.now(), out = []; const at = (d, hm) => pYmd(d).getTime() + hm2m(hm) * 6e4; const st = rfStreak().n;
+  for (const d of [td, addDays(td, 1)]) {
+    if (c.nudge !== false && !J.days[d]?.mood) out.push({ k: 'rf|eve|' + d, at: at(d, c.eve || '21:30'), ping: 1, title: '🪷 How was today?', body: `${st ? `🔥 ${st}-day streak · ` : ''}Tap a mood, or open Reflect for 60 seconds`, tag: 'reflect', actions: [{ action: 'm4', title: '🙂 Good' }, { action: 'm3', title: '😐 Okay' }, { action: 'm2', title: '😕 Low' }], url: './#reflect' });
+    if (c.morn !== false && !J.days[d]?.int?.t) out.push({ k: 'rf|morn|' + d, at: at(d, rfAddMin(S.settings.morning || '08:30', 10)), ping: 1, title: '🌅 One intention for today', body: J.days[addDays(d, -1)]?.mood ? 'Set it in 20 seconds' : 'Set it in 20 seconds, and yesterday in 30?', tag: 'reflect', url: './#reflect' });
+    if (c.story !== false && pYmd(d).getDay() === 0) out.push({ k: 'rf|week|' + d, at: at(d, '20:00'), ping: 1, title: '📖 Your week in a page', body: 'Highs, lows, feelings and one idea for next week', tag: 'reflect-story', url: './#reflect/week' });
+  }
+  J.letters.filter(l => !l.opened && l.open >= td && l.open <= addDays(td, 1)).forEach(l => out.push({ k: 'rf|letter|' + l.id, at: at(l.open, '09:00'), ping: 1, title: '✉️ A letter from your past self', body: `Written ${fmtShort(l.at)}. It opens today.`, tag: 'reflect-letter', url: './#reflect' }));
+  return out.filter(x => x.at > now - 20 * 6e4 && x.at < now + 36 * 3600e3);
+}
+function rfTick(now) {
+  if (pushLive()) return; // the reminder service sends these, even when Dayline sleeps
+  rfPings().forEach(x => { if (x.at <= now && now - x.at < 15 * 6e4 && !S.fired[x.k] && !inQuiet()) { S.fired[x.k] = 1; save(); notify(x.title, x.body, x.tag, { url: x.url, reflect: 1 }, x.actions || [{ action: 'open', title: 'Open' }], x.k); } });
+}
 
 /* ================= start ================= */
 document.addEventListener('focusin', e => { if (!isWide() && e.target.matches && e.target.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,[contenteditable=true]')) document.body.classList.add('typing'); });

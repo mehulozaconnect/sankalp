@@ -1,5 +1,5 @@
 // Dayline service worker: offline app shell + notification buttons
-const CACHE = 'sankalp-v120';
+const CACHE = 'sankalp-v121';
 const ACTS = 'dayline-acts'; // taps on Done/Snooze waiting for the app (works even if the app was asleep or closed)
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
@@ -74,6 +74,12 @@ self.addEventListener('notificationclick', e => {
   const sm = /^s(\d+)$/.exec(e.action || ''); // "10 min" / "30 min" buttons on the second card
   const type = e.action === 'done' ? 'done' : (e.action === 'snooze' || sm) ? 'snooze' : e.action === 'resched' ? 'resched' : e.action === 'later' ? 'pick' : data.step === 'pick' ? 'later' : 'open';
   const wm = /^w(\d+)$/.exec(e.action || '');
+  const mm = /^m([1-5])$/.exec(e.action || '');
+  if (mm) { // Reflect: mood straight from the notification (or the watch)
+    e.waitUntil((async () => { const at = Date.now(); const c = await caches.open(ACTS); await c.put(new Request('./__act/' + at + '-m'), new Response(JSON.stringify({ type: 'mood', v: +mm[1], at }))); (await self.clients.matchAll({ type: 'window', includeUncontrolled: true })).forEach(w => w.postMessage({ type: 'drain' })); })());
+    return;
+  }
+  if (data.reflect && !e.action) { e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(all => { const w = all[0]; if (w) { w.postMessage({ type: 'go', url: data.url || './#reflect' }); return w.focus(); } return self.clients.openWindow(data.url || './#reflect'); })); return; }
   if (wm || e.action === 'wsnz') { // water: +1 glass or remind later, straight from the notification (or the watch)
     e.waitUntil((async () => { const at = Date.now(); const c = await caches.open(ACTS); await c.put(new Request('./__act/' + at + '-' + Math.random().toString(36).slice(2)), new Response(JSON.stringify(wm ? { type: 'water', ml: +wm[1], at } : { type: 'wsnz', at }))); (await self.clients.matchAll({ type: 'window', includeUncontrolled: true })).forEach(w => w.postMessage({ type: 'drain' })); await tellServer(data, wm ? { type: 'water', ml: +wm[1], at, id: 'w' } : { type: 'wsnz', at, id: 'w' }); })());
     return;
