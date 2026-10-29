@@ -20,12 +20,10 @@ jobs:
           set +e
           {
             T=$(gcloud auth print-access-token); B="https://firestore.googleapis.com/v1/projects/$P/databases/(default)/documents"; U=yGkm2hVTyqTOYtbYp87STmgTDTx2
-            q() { curl -sS -H "Authorization: Bearer $T" -X POST "$B/users/$U:runQuery" -d '{"structuredQuery":{"from":[{"collectionId":"items"}],"where":{"fieldFilter":{"field":{"fieldPath":"k"},"op":"EQUAL","value":{"stringValue":"'$1'"}}}}}'; }
-            echo "== phone docs"; q phone | tee /tmp/ph.json | python3 -c "import sys,json; [print(d['document']['name'].split('/')[-1], d['document']['fields'].get('u',{}).get('integerValue'), d['document']['fields']['d']['stringValue'][:300]) for d in json.load(sys.stdin) if 'document' in d]"
-            echo "== meta"; for k in meta%253Aack meta%253Arv; do curl -sS -H "Authorization: Bearer $T" "$B/users/$U/items/$k" | python3 -c "import sys,json; d=json.load(sys.stdin); f=d.get('fields',{}); print('$k', f.get('u',{}).get('integerValue'), f.get('d',{}).get('stringValue','')[:200])"; done
-            echo "== pushq"; curl -sS -H "Authorization: Bearer $T" "$B/pushq/$U" | python3 -c "import sys,json; d=json.load(sys.stdin); f=d.get('fields',{}); print({k:(v.get('booleanValue', v.get('integerValue','..'))) for k,v in f.items() if k!='items' and k!='water'}, 'items', len(f.get('items',{}).get('arrayValue',{}).get('values',[])))"
-            echo "== subs"; curl -sS -H "Authorization: Bearer $T" "$B/pushq/$U/subs" | python3 -c "import sys,json; [print(d['name'].split('/')[-1], d['fields'].get('phone'), d['fields'].get('u'), d['fields'].get('ua',{}).get('stringValue','')[:60]) for d in json.load(sys.stdin).get('documents',[])]"
-            echo "== raw"; head -c 600 /tmp/ph.json; echo; echo "== now"; date -u +%s
+            echo "== pushq"; curl -sS -H "Authorization: Bearer $T" "$B/pushq/$U" | python3 -c "import sys,json; d=json.load(sys.stdin); f=d.get('fields',{}); print({k:(v.get('booleanValue', v.get('integerValue','..'))) for k,v in f.items() if k not in ('items','water')})"
+            for k in meta%253Aack meta%253Arv; do curl -sS -H "Authorization: Bearer $T" "$B/users/$U/items/$k" | python3 -c "import sys,json; d=json.load(sys.stdin); f=d.get('fields',{}); print('$k', f.get('u',{}).get('integerValue'), f.get('d',{}).get('stringValue','')[:120])"; done
+            echo "== push sends (last 18h)"; gcloud logging read 'timestamp>="'$(date -u -d '-18 hours' +%FT%TZ)'" AND resource.type="cloud_run_revision" AND resource.labels.service_name="tick" AND severity>=WARNING' --project $P --limit 15 --format='value(timestamp,textPayload)' 2>&1 | cut -c1-200
+            date -u +%s
           } > out.txt
           git config user.name bot; git config user.email bot@example.invalid
           git checkout -B diag-out; git add -f out.txt; git commit -qm out; git push -f origin diag-out
