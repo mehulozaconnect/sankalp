@@ -31,31 +31,20 @@
  ],
  "shortcuts": [
   {
-   "name": "+1 glass of water",
-   "short_name": "+1 glass",
-   "url": "./?water=glass",
-   "icons": [
-    {
-     "src": "icon-192.png",
-     "sizes": "192x192"
-    }
-   ]
-  },
-  {
-   "name": "+1 bottle of water",
-   "short_name": "+1 bottle",
-   "url": "./?water=bottle",
-   "icons": [
-    {
-     "src": "icon-192.png",
-     "sizes": "192x192"
-    }
-   ]
-  },
-  {
    "name": "Add a task",
    "short_name": "Add task",
    "url": "./?add=1",
+   "icons": [
+    {
+     "src": "icon-192.png",
+     "sizes": "192x192"
+    }
+   ]
+  },
+  {
+   "name": "Reflect: how was today?",
+   "short_name": "Reflect",
+   "url": "./#reflect",
    "icons": [
     {
      "src": "icon-192.png",

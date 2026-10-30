@@ -2616,6 +2616,7 @@ function waterDecideLocal(now) {
   return { title: kind === 'meet' ? '💧 Meeting done. Have a glass' : kind === 'meal' ? '💧 A glass with your meal' : g === 1 ? '💧 1 glass behind' : '💧 Time for a glass', body: `${fmtMl(tot)} of ${fmtMl(P.goal)} · ${g >= 2 && behind >= P.cup ? g + ' glasses behind · tap +2' : behind >= P.cup ? 'one now keeps you on track' : fmtMl(P.goal - tot) + ' to go'}` };
 }
 function waterTick(now) {
+  return; // water moved to the Arogya app
   if (pushLive()) return; // the reminder service sends these, even when Dayline sleeps
   const n = waterDecideLocal(now); if (!n) return; save(); const W = water();
   notify(n.title, n.body, 'water', { url: './#habits', water: 1 }, [{ action: 'w' + W.cup, title: '+1 glass' }, { action: 'w' + W.cup * 2, title: '+2' }, { action: 'wsnz', title: 'Later' }], 'water|' + now);
@@ -2630,7 +2631,7 @@ function rwIndex() {
   const done = {}, focus = {}, top = {};
   S.tasks.forEach(t => { if (t.done && t.doneAt) (done[ymd(new Date(t.doneAt))] ||= []).push(t); });
   S.focus.forEach(f => { const k = ymd(new Date(f.start)); focus[k] = (focus[k] || 0) + (+f.mins || 0); });
-  const W = water(); const wUsed = Object.keys(W.log).length > 0;
+  const W = water(); const wUsed = false; // water now lives in the Arogya app
   const score = d => {
     const ids = S.plan[d] || []; const dn = (done[d] || []); const dnPlan = dn.filter(t => ids.includes(t.id) || ids.includes(t.orig)).length; const p = Math.max(ids.length, dnPlan);
     const wd = pYmd(d).getDay(); const hd = S.habits.filter(h => h.days.includes(wd) && d >= hStart(h)); const hDone = hd.filter(h => hOk(h, d)).length;
@@ -2660,7 +2661,6 @@ const BADGES = [
   ['first', '✅', 'First win', 'Finish your first task', X => [X.tasks, 1]],
   ['streak3', '🔥', '3-day glow', '3 good days in a row', X => [X.best, 3]],
   ['perfect1', '💯', 'Perfect day', 'Everything done in one day', X => [X.perfect, 1]],
-  ['water7', '💧', 'Hydrated week', 'Water goal 7 days in a row', X => [X.wBest, 7]],
   ['early', '🐦', 'Early bird', '10 tasks done before 9 AM', X => [X.early, 10]],
   ['streak7', '🔥', 'Week on fire', '7 good days in a row', X => [X.best, 7]],
   ['review7', '📝', 'Reflective', 'Close 7 days with Day review', X => [X.reviews, 7]],
@@ -2669,7 +2669,6 @@ const BADGES = [
   ['habit21', '🌱', 'Habit formed', 'Any habit, 21 days in a row', X => [X.habitBestAll, 21]],
   ['focus10', '🧠', 'Deep diver', '10 hours of focus sessions', X => [Math.floor(X.focusH), 10]],
   ['perfect10', '🌈', 'Ten perfect days', '10 days with everything done', X => [X.perfect, 10]],
-  ['water30', '🌊', 'Well watered', 'Water goal on 30 days', X => [X.wDays, 30]],
   ['tasks250', '🏹', 'Machine', '250 tasks finished', X => [X.tasks, 250]],
   ['streak30', '☄️', '30-day glow', '30 good days in a row', X => [X.best, 30]],
   ['tasks1000', '🏆', 'Legend', '1,000 tasks finished', X => [X.tasks, 1000]]
@@ -2717,7 +2716,6 @@ function vProgress() {
   h += `<section class="pgday"><div class="pgring">${ringSvg(s / 100, 132, 12, s >= 100 ? '#22C55E' : 'var(--accent)')}<div><b>${s}%</b><small>today</small></div></div><div class="pgparts">
     <div><span>Tasks</span><b>${D.doneToday.length}<small> / ${D.doneToday.length + D.openCount}</small></b></div>
     ${hd.length ? `<div><span>Habits</span><b>${hd.filter(x => hOk(x, td)).length}<small> / ${hd.length}</small></b></div>` : ''}
-    <div><span>Water</span><b>${fmtMl(waterOn(td))}<small> / ${fmtMl(W.goal)}</small></b></div>
     <div class="xp"><span>Earned today</span><b>+${xpT} XP</b></div></div></section>`;
   const dots = Array.from({ length: 14 }, (_, i) => addDays(td, i - 13)).map(d => { const v = X.score(d); return `<i class="${v == null ? 'na' : v >= 100 ? 'pf' : v >= 60 ? 'ok' : 'lo'}${d === td ? ' td' : ''}" title="${fmtShort(d)}: ${v == null ? 'nothing planned' : v + '%'}"></i>`; }).join('');
   h += `<section class="pgst"><div class="pgst-h"><span class="pgfl">🔥</span><div><b>${X.streak ? X.streak + '-day glow' : 'Start your glow'}</b><small>${X.streak ? 'Days at 60% or more, in a row. Best: ' + X.best : 'Reach 60% today to start one'}</small></div></div><div class="pgdots">${dots}</div><div class="pgleg"><span><i class="ok"></i>Good day</span><span><i class="pf"></i>Perfect</span><span><i class="lo"></i>Low</span></div></section>`;
@@ -2726,7 +2724,7 @@ function vProgress() {
   h += `<div class="wsec pgsec">This week</div><div class="pgxp">${seven.map(d => { const v = X.xpOn(d); return `<div class="${d === td ? 'td' : ''}"><em>${v || ''}</em><i style="height:${Math.max(v ? 8 : 2, v / mx * 100)}%"></i><span>${'SMTWTFS'[pYmd(d).getDay()]}</span></div>`; }).join('')}</div>`;
   const R = S.rw || { seen: [] };
   h += `<div class="wsec pgsec">Badges <span>${BADGES.filter(b => { const [c, n] = b[4](X); return c >= n; }).length} of ${BADGES.length}</span></div><div class="pgbadges">${BADGES.map(b => { const [c, n] = b[4](X); const on = c >= n; return `<div class="pgb${on ? ' on' : ''}" title="${esc(b[3])}"><span>${b[1]}</span><b>${esc(b[2])}</b><small>${on ? 'Unlocked' : `${Math.min(c, n)} / ${n}`}</small></div>`; }).join('')}</div>`;
-  h += `<details class="pghow"><summary>How you earn XP</summary><div><p>Task done <b>+10</b> · P1 <b>+10</b> extra · P2 <b>+5</b> extra · one of your top 3 <b>+10</b> extra</p><p>Habit done <b>+10</b> · Water goal <b>+20</b> · Day review <b>+15</b> · Focus <b>+1</b> per 5 min</p><p>Perfect day (100%) <b>+30</b> bonus</p><p>Your day % mixes tasks you planned (half), habits due today and water.</p></div></details>`;
+  h += `<details class="pghow"><summary>How you earn XP</summary><div><p>Task done <b>+10</b> · P1 <b>+10</b> extra · P2 <b>+5</b> extra · one of your top 3 <b>+10</b> extra</p><p>Habit done <b>+10</b> · Reflect check-in <b>+10</b> · Day review <b>+15</b> · Focus <b>+1</b> per 5 min</p><p>Perfect day (100%) <b>+30</b> bonus</p><p>Your day % mixes tasks you planned and habits due today.</p></div></details>`;
   h += `<div class="setrow pgfx"><span class="l"><b>Celebrations</b><span>Confetti and +XP when you finish things</span></span><button type="button" class="switch${S.settings.fx === false ? '' : ' on'}" data-act="fxtog" role="switch" aria-checked="${S.settings.fx !== false}" aria-label="Celebrations"></button></div>`;
   return h;
 }
@@ -2734,7 +2732,6 @@ function vProgress() {
 function vHabits() {
   const td = today(), wd = new Date().getDay();
   let h = topbar(`<button class="iconbtn" data-act="newhabit" aria-label="New habit">${I.plus}</button>`) + `<div class="pad"><h1 class="title">Habits</h1><p class="sub" style="margin:6px 0 0;line-height:1.45">Tap the emoji when done today. Tap any day: once for done, twice for missed, again to clear.</p><div class="legend2"><span><i style="background:var(--accent);border-color:var(--accent);color:var(--on-accent)">${I.check}</i>Done</span><span><i style="background:color-mix(in srgb,var(--danger) 13%,var(--bg));border-color:color-mix(in srgb,var(--danger) 50%,var(--bg));color:var(--danger)">${I.x}</i>Missed</span><span><i style="border-style:dashed"></i>Rest day</span></div></div>`;
-  h += waterCard();
   if (!S.habits.length) return h + `<div class="empty">No habits yet.<br><button class="btn" data-act="newhabit" style="margin-top:14px">${I.plus}Add a habit</button></div>`;
   const secs = [...S.habitSections.map(x => x.n)]; S.habits.forEach(x => { if (!secs.includes(x.section)) secs.push(x.section); });
   secs.forEach(sn => {
@@ -3429,7 +3426,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '5.5.2';
+const APPV = '5.6';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4517,7 +4514,7 @@ function pushItems() {
 function pushQueueSoon() { if (!fbUser || lsG('dayline.psub') !== fbUser.uid) return; clearTimeout(pushQT); pushQT = setTimeout(pushQueueNow, 1500); }
 async function pushQueueNow() {
   clearTimeout(pushQT); if (!fbUser || syncState !== 'on' || lsG('dayline.psub') !== fbUser.uid) return;
-  try { const items = S.settings.srvPush === false ? [] : pushItems(); const extra = { water: S.settings.srvPush === false ? null : waterPush(), pop: S.settings.popRem !== false, card: S.settings.inCard !== false, native: !S.settings.phoneOff && Object.keys(S.phone || {}).length > 0 && !!S.remAck && S.remAck.v === remSig() };
+  try { const items = S.settings.srvPush === false ? [] : pushItems(); const extra = { water: null, pop: S.settings.popRem !== false, card: S.settings.inCard !== false, native: !S.settings.phoneOff && Object.keys(S.phone || {}).length > 0 && !!S.remAck && S.remAck.v === remSig() };
     const h = JSON.stringify([items, extra]); if (h === pushHash) return; pushHash = h;
     await firebase.firestore().doc(`pushq/${fbUser.uid}`).set({ items, ...extra, u: Date.now(), by: devId() });
   } catch (e) { pushHash = ''; console.warn('reminder queue', e); lsS('dayline.perr', 'queue: ' + ((e && e.message) || e)); }
@@ -4896,9 +4893,10 @@ async function drainActs() {
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') afterSync(drainActs); });
 function handleAction(d) {
   if (!d || !d.type) return;
-  if (d.type === 'water') { waterAdd(+d.ml || water().cup, d.at && Date.now() - d.at < 6 * 3600e3 ? d.at : undefined); return; }
+  if (d.type === 'water') return; // water moved to the Arogya app
+  if (d.type === 'waterOld') { waterAdd(+d.ml || water().cup, d.at && Date.now() - d.at < 6 * 3600e3 ? d.at : undefined); return; }
   if (d.type === 'mood') { const day = ymd(new Date(d.at || Date.now())); const e = rfDay(day, true); if (!e.mood) { e.mood = +d.v; e.facts = rfFacts(day); e.saved = true; e.u = Date.now(); save(); render(); const m = rfMood(+d.v); toast(`Logged ${m[2]} ${m[1]} · add more in Reflect anytime`); } return; }
-  if (d.type === 'wsnz') { water().snz = (d.at || Date.now()) + 60 * 6e4; save(); toast('No water nudge for an hour'); return; } const t = getTask(d.id);
+  if (d.type === 'wsnz') return; const t = getTask(d.id);
   // Only a real answer (Done, Snooze, swiped away, moved) counts as seen. Just showing the card here must not close it on the phone.
   if (t && d.type !== 'later' && d.type !== 'open') { t.seenAt = Date.now(); save(); closeNotifs(t); } if (d.type === 'seen') return;
   const c = t && d.sub ? t.subs.find(x => x.id === d.sub) : null;
@@ -5123,14 +5121,13 @@ function rfFacts(d) {
   const done = S.tasks.filter(t => t.done && t.doneAt && ymd(new Date(t.doneAt)) === d).length;
   const focus = (S.focus || []).filter(f => f.start && ymd(new Date(f.start)) === d).reduce((a, f) => a + (+f.mins || 0), 0);
   const wd = pYmd(d).getDay(); const hd = S.habits.filter(h => h.days.includes(wd));
-  return { meet: mt.length, done, water: waterOn(d), focus, habits: hd.filter(h => hOk(h, d)).map(h => h.name), due: hd.length };
+  return { meet: mt.length, done, focus, habits: hd.filter(h => hOk(h, d)).map(h => h.name), due: hd.length };
 }
 function rfFactChips(f) {
   if (!f) return '';
   const c = [];
   if (f.meet) c.push(`📅 ${plural(f.meet, 'meeting')}`);
   c.push(`✓ ${f.done} ${f.done === 1 ? 'task' : 'tasks'} done`);
-  if (f.water) c.push(`💧 ${fmtMl(f.water)}`);
   if (f.focus) c.push(`⏱ ${fmtMins(f.focus)} focus`);
   (f.habits || []).slice(0, 4).forEach(h => c.push(`✓ ${esc(h)}`));
   return c.map(x => `<span class="rf-chip au">${x}</span>`).join('');
@@ -5166,14 +5163,12 @@ function rfPatterns() {
   const step = d => Math.abs(d) >= .9 ? 'a full mood step' : Math.abs(d) >= .6 ? 'well over half a step' : 'noticeably';
   const cmp = (key, icon, yes) => { const a = rows.filter(r => r[key]), b = rows.filter(r => !r[key]); if (a.length < 3 || b.length < 3) return; const d = rfAvg(a.map(r => r.mood)) - rfAvg(b.map(r => r.mood)); if (Math.abs(d) >= .4) out.push({ w: Math.abs(d) + .1, icon, text: `${yes}, your mood is <b>${d > 0 ? 'higher' : 'lower'}</b> by ${step(d)}.` }); };
   cmp('meet5', '📅', 'On days with <b>5+ meetings</b>');
-  cmp('water', '💧', `When you reach your <b>water goal</b>`);
   cmp('focus', '⏱', 'On days with <b>an hour of focus</b>');
   cmp('done5', '✅', 'When you finish <b>5+ tasks</b>');
   cmp('weekend', '🌴', 'On <b>weekends</b>');
   cmp('full', '🌕', 'Around <b>Purnima</b>');
   cmp('newm', '🌑', 'Around <b>Amavasya</b>');
   { const a = rows.filter(r => r.meet5), b = rows.filter(r => !r.meet5); if (a.length >= 3 && b.length >= 3) { const pa = a.filter(r => r.anx).length / a.length, pb = b.filter(r => r.anx).length / b.length; if (pa >= .3 && pa >= pb * 1.5) out.push({ w: 1.2, icon: '😟', text: `On days with <b>5+ meetings</b> you note anxious or stressed feelings <b>${pb ? (pa / pb).toFixed(1).replace(/\.0$/, '') + '×' : 'far'} more</b>.` }); } }
-  { const en = rows.filter(r => r.energy != null); const a = en.filter(r => r.water), b = en.filter(r => !r.water); if (a.length >= 3 && b.length >= 3) { const d = rfAvg(a.map(r => r.energy)) - rfAvg(b.map(r => r.energy)); if (Math.abs(d) >= 10) out.push({ w: Math.abs(d) / 20, icon: '⚡', text: `Your <b>evening energy</b> is ${d > 0 ? 'higher' : 'lower'} on days you reach your water goal.` }); } }
   const hab = {}; rows.forEach(r => r.habits.forEach(h => hab[h] = (hab[h] || 0) + 1));
   Object.entries(hab).filter(([, c]) => c >= 3).forEach(([h]) => { const a = rows.filter(r => r.habits.includes(h)), b = rows.filter(r => !r.habits.includes(h)); if (b.length < 3) return; const d = rfAvg(a.map(r => r.mood)) - rfAvg(b.map(r => r.mood)); if (d >= .4) out.push({ w: d, icon: '🌱', text: `Days with <b>${esc(h)}</b> average ${step(d)} better mood.` }); });
   { // names of people and places you mention (capitalised words inside a sentence), on your best and hardest days
@@ -5678,7 +5673,7 @@ setTimeout(() => afterSync(drainActs), 400);
 (function handleUrl() {
   const q = new URLSearchParams(location.search);
   const sub = q.get('sub') || undefined;
-  if (q.get('water')) setTimeout(() => { const w = q.get('water'), W = water(); waterAdd(w === 'bottle' ? Math.max(500, W.cup * 2) : (+w || W.cup)); }, 300); // Home Screen shortcut: +1 glass / bottle
+  if (false && q.get('water')) setTimeout(() => { const w = q.get('water'), W = water(); waterAdd(w === 'bottle' ? Math.max(500, W.cup * 2) : (+w || W.cup)); }, 300); // Home Screen shortcut: +1 glass / bottle
   if (q.get('done')) { const id = q.get('done'); afterSync(() => { const t = getTask(id); handleAction({ type: 'done', id, sub }); if (t && !sub) toast(`Done: ${t.title}`); }); }
   if (q.get('snooze')) { const id = q.get('snooze'); afterSync(() => handleAction({ type: 'snooze', id, sub })); }
   if (q.get('later')) setTimeout(() => handleAction({ type: 'later', id: q.get('later'), sub }), 500);
