@@ -1242,6 +1242,26 @@ button.warn{display:block;width:100%;text-align:left}
 .sm-cc textarea.rf-ta,#smInt{height:72px!important;min-height:0!important}
 .sm-lh{display:flex;justify-content:space-between;align-items:center}.sm-lh button{text-transform:none;letter-spacing:0;font-size:13px;color:var(--accent-text);font-weight:700}
 .sm-fix span b{display:block;margin-bottom:2px}
+.sm-askb{height:34px;padding:0 12px;font-size:13.5px;background:color-mix(in srgb,var(--meet) 16%,var(--bg));color:var(--ink)}
+.sm-fu,.sm-wait{margin:0 16px 10px;padding:14px 16px;border-radius:20px;background:var(--surface)}.sm-fu>b,.sm-wait>b{display:block;font-family:var(--fd);font-size:18px;font-weight:800;margin:6px 0 2px}
+.sm-wait>span{display:block;font-size:13.5px;color:var(--muted);line-height:1.45}.sm-wait a{color:var(--accent-text);font-weight:700}.sm-wait{border-left:4px solid #F59E0B}
+.sm-fuc{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.sm-fuc button{display:inline-flex;align-items:center;gap:4px;height:36px;padding:0 12px;border-radius:18px;background:var(--bg);font-weight:700;font-size:13.5px;color:var(--ink)}.sm-fuc button svg{width:15px;height:15px}.sm-fuc button.on{background:color-mix(in srgb,#22A06B 18%,var(--bg));color:#1C8A5A}
+.sm-fui{margin-top:10px}.sm-fui textarea{width:100%;background:var(--bg)}
+.sm-fu .sm-b,.sm-wait .sm-b{background:var(--bg)}.sm-fu .sm-b.pri,.sm-wait .sm-b.pri{background:var(--ink);color:var(--bg)}
+.sm-wh{font-size:12px;font-weight:800;color:#C27803}
+.mo-tools button{display:flex;flex-direction:column;gap:2px;padding:14px;border-radius:18px;background:var(--surface);color:var(--ink);text-align:left}.mo-tools button i{font-style:normal;font-size:20px;line-height:1}.mo-tools button b{font-size:15px;margin-top:6px}.mo-tools button span{font-size:12.5px;color:var(--muted);font-weight:600}
+.qa-row2{display:flex;gap:8px;flex-wrap:wrap}
+.sm-dmi{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;padding:10px 4px;border-bottom:1px solid var(--line);color:var(--ink)}.sm-dmi>i{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--ring);display:grid;place-items:center;margin-top:1px}.sm-dmi>i svg{width:14px;height:14px}.sm-dmi.on>i{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.sm-dmi>span{display:flex;flex-direction:column;gap:4px;min-width:0}.sm-dmi b{font-size:15px;font-weight:700}.sm-dmi small{font-size:12px;color:var(--muted)}.sm-dmc .chip{pointer-events:none}.sm-dmi:not(.on) b{color:var(--muted);text-decoration:line-through}
+.sm-lrn+.sm-lrn{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.sm-ask{display:flex;flex-direction:column;min-height:52vh}.sm-chat{flex:1;display:flex;flex-direction:column;gap:10px;padding:4px 0 10px}
+.sm-cu{align-self:flex-end;max-width:85%;background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:18px 18px 4px 18px;font-weight:600;font-size:15px;line-height:1.4}
+.sm-ca{align-self:flex-start;max-width:92%;background:var(--surface);padding:12px 14px;border-radius:18px 18px 18px 4px;font-size:15px;line-height:1.5;white-space:pre-wrap}.sm-ca.err{color:var(--danger)}
+.sm-cx{display:flex;flex-direction:column;gap:4px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);white-space:normal}.sm-cx span{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:700;color:#1C8A5A}.sm-cx span svg{width:15px;height:15px}.sm-cx button{align-self:flex-start;margin-top:4px;font-weight:800;color:var(--accent-text);font-size:14px}
+.sm-sugg{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}.sm-sugg button{text-align:left;padding:11px 14px;border-radius:14px;border:1px solid var(--line);font-weight:600;font-size:14.5px;color:var(--ink)}
+.sm-ask .rf-send{margin:0;position:sticky;bottom:0;background:var(--card);padding:8px 0 4px}
+.sm-dots3{display:inline-flex;gap:4px}.sm-dots3 i{width:7px;height:7px;border-radius:4px;background:var(--muted);animation:smd 1s infinite}.sm-dots3 i:nth-child(2){animation-delay:.15s}.sm-dots3 i:nth-child(3){animation-delay:.3s}@keyframes smd{50%{opacity:.25}}
+#smAsk{height:48px!important;min-height:0!important}
 </style>
 </head>
 <body>
@@ -1906,7 +1926,7 @@ function chipsFor(r) {
 /* ================= task actions ================= */
 function toggleDone(id) {
   const t = getTask(id); if (!t) return;
-  if (!t.done) pushClose(id);
+  if (!t.done) { pushClose(id); smLearnDone(t); }
   if (!t.done) {
     if (t.repeat && t.date) {
       const nd = nextDate(t);
@@ -2445,7 +2465,7 @@ function vToday() {
   const doneN = D.doneToday.length, tot = doneN + D.openCount, bday = S.dates.filter(x => occOf(x) === td);
   const P = smPlan(td, true), [w0, w1] = workWin(), late = !!rec.started && P.over.length > 0;
   const gl = { time: 'Time', priority: 'Priority', project: 'Project' }[st.todayGroup] || 'Time';
-  let h = topbar(glowChip());
+  let h = topbar(`<button class="pill sm-askb" data-sm="ask" aria-label="Ask Dayline">✨ Ask</button>` + glowChip());
   h += `<div class="thead"><h1>Today</h1><span>${DAYS[d.getDay()]}, ${d.getDate()} ${MONS[d.getMonth()]}${bday.length ? ' · 🎂 ' + bday.map(x => esc(x.name)).join(', ') : ''}<br>${tot ? `${doneN} of ${tot} done` : 'Nothing planned'}${D.overdue.length ? ` · <b>${D.overdue.length} overdue</b>` : ''}${rec.started && D.openCount && !rec.wrap && nm < w1 ? ` · <em class="${late ? 'lt' : 'ok'}">${late ? 'running late' : 'on track'}</em>` : ''}</span></div>`;
   h += bannersHtml();
   if (st.gOn && !gValid() && !S.pcal) h += `<button class="gnote" data-act="gref">${I.gcal}Google Calendar paused. Tap to refresh.</button>`;
@@ -2456,9 +2476,10 @@ function vToday() {
   else if (!rec.started && nm < 14 * 60 && P.pool.length >= 2) h += smPlanCard(P);
   else {
     if ((rec.started || nm >= 12 * 60) && P.over.length && !(rec.replanOff > now) && nm >= w0 && nm < w1 - 30) h += smReplanCard(P);
-    N = smNext(); if (N) h += smNextCard(N);
+    N = smNext(); if (N) { h += smNextCard(N); const r0 = dayRec(td); if (!r0.nx || r0.nx.id !== N.t.id) { r0.nx = { id: N.t.id, at: now }; saveLocal(); } }
     h += smPrepHtml();
   }
+  h += smFollowHtml() + smWaitHtml();
   h += dayBand();
   if (isWide()) h += addBar('Add a task for today');
   h += smHabitsHtml();
@@ -3520,7 +3541,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.0';
+const APPV = '6.1';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -3836,7 +3857,7 @@ function quickAdd(ctxOverride) {
   <div class="qa-wrap"><div class="qa-pick" id="qaPick" role="listbox" hidden></div></div>
   <label for="qaNote" class="sr">Notes</label><div class="qa-note qa-rich" id="qaNote" contenteditable="true" data-ph="Notes" role="textbox" aria-multiline="true" aria-label="Notes"></div><div class="ntool" id="qaNoteBar" style="display:none"></div>
   <div class="chips" id="qaChips"></div><div class="qa-quick" id="qaQuick"><button type="button" data-qd="0">Today</button><button type="button" data-qd="1">Tomorrow</button><button type="button" data-qd="w">This weekend</button><button type="button" data-qi="#"><b>#</b>Project</button><button type="button" data-qi="@"><b>@</b>Tag</button></div><div class="preview" id="qaPrev"></div><input type="date" id="qaD" class="qa-hid" tabindex="-1" aria-label="Pick date"><input type="time" id="qaT" class="qa-hid" tabindex="-1" aria-label="Pick time"></div>
-  ${ctx.tpl ? '' : `<button type="button" class="tplbtn" id="qaTplBtn" aria-expanded="false">${I.layers}Templates</button><div class="tplrow" id="qaTpl" hidden>${S.templates.map(t => `<button class="tplchip" data-tpl="${t.id}">${t.emoji} ${esc(t.name)}</button>`).join('')}<button class="tplchip" id="qaNewTpl" style="border-style:dashed;color:var(--muted)">${I.plus} New</button></div>`}
+  ${ctx.tpl ? '' : `<div class="qa-row2"><button type="button" class="tplbtn" id="qaTplBtn" aria-expanded="false">${I.layers}Templates</button><button type="button" class="tplbtn" data-sm="dump">🧠 Brain dump</button></div><div class="tplrow" id="qaTpl" hidden>${S.templates.map(t => `<button class="tplchip" data-tpl="${t.id}">${t.emoji} ${esc(t.name)}</button>`).join('')}<button class="tplchip" id="qaNewTpl" style="border-style:dashed;color:var(--muted)">${I.plus} New</button></div>`}
   `, ctx.quick ? () => window.close() : null, !!ctx.quick);
   const inp = $('#qaIn'), addB = $('#qaAdd');
   const ov = {};
@@ -4478,7 +4499,7 @@ const dkey = k => decodeURIComponent(k);
 function entities() {
   const o = {}; S.tasks.forEach(t => o['task:' + t.id] = t); S.projects.forEach(p => o['project:' + p.id] = p); S.habits.forEach(h => o['habit:' + h.id] = h);
   S.focus.forEach(f => o['focus:' + f.id] = f); S.dates.forEach(d => o['date:' + d.id] = d); (S.goals || []).forEach(g => o['goal:' + g.id] = g); S.templates.forEach(t => o['tpl:' + t.id] = t); Object.values(S.meetLog).forEach(m => { if (m.src !== 'pcal') o['meet:' + m.id] = m; }); if (S.pcal) o['pcal:' + (S.pcal.id || 'all')] = S.pcal; o['meta:coach'] = coachBrief(); Object.keys(IMGS).forEach(id => o['img:' + id] = { id, data: IMGS[id] }); (S.logs || []).forEach(l => o['log:' + l.id] = l); Object.values(S.phone || {}).forEach(p => o['phone:' + p.id] = p); o['meta:cur'] = { c: S.cur || null }; o['meta:rv'] = { v: remSig() }; if (S.remAck) o['meta:ack'] = S.remAck;
-  const st = S.settings; o['meta:days'] = S.days; if (S.water) o['meta:water'] = S.water; (S.trash || []).forEach(x => o['trash:' + x.id] = x); (S.filters || []).forEach(f => o['filter:' + f.id] = f); if (S.rw) o['meta:rw'] = S.rw; o['meta:plan'] = S.plan; o['meta:hsec'] = S.habitSections; { const J = rf(); Object.values(J.days).forEach(e => o['jday:' + e.d] = e); const { days, ...jm } = J; o['meta:jr'] = jm; }
+  const st = S.settings; o['meta:days'] = S.days; if (S.water) o['meta:water'] = S.water; (S.trash || []).forEach(x => o['trash:' + x.id] = x); (S.filters || []).forEach(f => o['filter:' + f.id] = f); if (S.rw) o['meta:rw'] = S.rw; o['meta:plan'] = S.plan; if (S.learn) o['meta:learn'] = S.learn; o['meta:hsec'] = S.habitSections; { const J = rf(); Object.values(J.days).forEach(e => o['jday:' + e.d] = e); const { days, ...jm } = J; o['meta:jr'] = jm; }
   o['meta:prefs'] = { phoneOff: !!st.phoneOff, coach: coachSet(), appmap: st.appmap, nagDef: st.nagDef, workStart: st.workStart, checkin: st.checkin, catv: st.catv, aiModel: st.aiModel, aiPrivate: st.aiPrivate, logo: st.logo, darkStyle: st.darkStyle, gcid: st.gcid, theme: st.theme, mode: st.mode, accent: st.accent, font: st.font, pomo: st.pomo, brk: st.brk, morning: st.morning, shutdown: st.shutdown, meetBefore: st.meetBefore, quietOn: st.quietOn, quietStart: st.quietStart, quietEnd: st.quietEnd, shield: st.shield, showDone: st.showDone, todayGroup: st.todayGroup, fx: st.fx, popRem: st.popRem, inCard: st.inCard, srvPush: st.srvPush };
   return o;
 }
@@ -4490,7 +4511,7 @@ function setEntity(key, val) {
   else if (key === 'meta:cur') S.cur = val.c || null;
   else if (kind === 'meet') S.meetLog[id] = val;
   else if (kind === 'img') { IMGS[id] = val.data; idb.put(id, val.data).catch(() => { }); }
-  else if (key === 'meta:coach' || key === 'meta:rv') { } else if (key === 'meta:ack') S.remAck = val; else if (key === 'meta:days') S.days = val; else if (key === 'meta:water') S.water = val; else if (key === 'meta:rw') S.rw = val; else if (key === 'meta:plan') S.plan = val; else if (key === 'meta:hsec') S.habitSections = val; else if (key === 'meta:prefs') { Object.assign(S.settings, val); applyTheme(); }
+  else if (key === 'meta:coach' || key === 'meta:rv') { } else if (key === 'meta:ack') S.remAck = val; else if (key === 'meta:days') S.days = val; else if (key === 'meta:water') S.water = val; else if (key === 'meta:rw') S.rw = val; else if (key === 'meta:plan') S.plan = val; else if (key === 'meta:learn') S.learn = val; else if (key === 'meta:hsec') S.habitSections = val; else if (key === 'meta:prefs') { Object.assign(S.settings, val); applyTheme(); }
 }
 function removeEntity(key) { sweepSoon();
   const [kind, ...rest] = key.split(':'); const id = rest.join(':'); if (kind === 'jday') { delete rf().days[id]; return; } const rm = n => { S[n] = S[n].filter(x => x.id !== id); };
@@ -4634,7 +4655,7 @@ setInterval(() => { pushSetup(); pushQueueSoon(); }, 5 * 6e4);
 /* ================= render ================= */
 function viewHtml() {
   const { view, arg } = route();
-  const V = { reflect: () => vReflect(arg), life: vLife, review: () => arg === 'week' ? vWeekReview() : vClose(), you: vYou, close: vClose, home: vHome, today: vToday, plan: () => vPlan(arg || 'today'), week: vCalendar, inbox: vInbox, upcoming: vUpcoming, someday: vSomeday, calendar: vCalendar, project: () => vProject(arg), done: vDone, habits: vHabits, dates: vDates, templates: vTemplates, focus: vFocus, insights: () => vInsights(arg), progress: vProgress, trash: vTrash, filter: () => vFilter(arg), settings: () => vSettings(arg) };
+  const V = { reflect: () => vReflect(arg), life: vLife, review: () => arg === 'week' ? vWeekReview() : vClose(), you: vYou, close: vClose, waiting: vWaiting, home: vHome, today: vToday, plan: () => vPlan(arg || 'today'), week: vCalendar, inbox: vInbox, upcoming: vUpcoming, someday: vSomeday, calendar: vCalendar, project: () => vProject(arg), done: vDone, habits: vHabits, dates: vDates, templates: vTemplates, focus: vFocus, insights: () => vInsights(arg), progress: vProgress, trash: vTrash, filter: () => vFilter(arg), settings: () => vSettings(arg) };
   return (view === 'home' && isWide()) ? vToday() : (V[view] || vToday)();
 }
 function renderMainOnly() {
@@ -5787,7 +5808,7 @@ function smPlan(d, fromNow, skipIds) {
   const pool = smPool(d).filter(t => !(skipIds && skipIds.has(t.id))); const fixed = pool.filter(t => t.time).sort((a, b) => a.time < b.time ? -1 : 1), eve = pool.filter(t => !t.time && t.evening), flex = smOrder(pool.filter(t => !t.time && !t.evening));
   const gaps = smGaps(d, from).map(g => [...g]); const low = smLowEnergy(d); const free = gaps.reduce((a, g) => a + g[1] - g[0], 0); const cap = low ? Math.round(free * .8) : free;
   const slots = [], over = []; let used = 0;
-  flex.forEach(t => { const n = smEst(t); const g = used + n <= cap ? gaps.find(x => x[1] - x[0] >= n) : null; if (!g) { over.push(t); return; } slots.push({ t, s: g[0], e: g[0] + n }); g[0] += n + 5; used += n; });
+  const bw = smBest(); flex.forEach(t => { const n = smEst(t); const fits = used + n <= cap ? gaps.filter(x => x[1] - x[0] >= n) : []; const g = (bw && t.priority <= 2 && fits.find(x => x[0] >= bw[0] * 60 && x[0] < bw[1] * 60)) || fits[0] || null; if (!g) { over.push(t); return; } slots.push({ t, s: g[0], e: g[0] + n }); g[0] += n + 5; used += n; });
   const need = flex.reduce((a, t) => a + smEst(t), 0);
   return { d, pool, fixed, eve, flex, slots, over, need, free, low, meets: meetingsOn(d) };
 }
@@ -5954,8 +5975,8 @@ function vHome() {
   const li = (href, ic, col, name, c) => `<a class="navi" href="#${href}"><span style="color:${col};display:flex">${ic}</span><span class="nm">${name}</span>${c ? `<span class="c">${c}</span>` : ''}</a>`;
   const tool = (href, ic, col, name, sub) => `<a href="#${href}"><i style="color:${col}">${ic}</i><b>${name}</b><span>${sub}</span></a>`;
   return `<div class="topbar" style="padding-left:20px"><span class="brand">${LOGO(32)}<b>Dayline</b></span><div class="acts"><button class="iconbtn" data-act="search" aria-label="Search">${I.search}</button><a class="iconbtn" href="#settings" aria-label="Settings">${I.gear}</a></div></div>
-  <div class="mo-h">Lists</div><div class="nav">${li('inbox', I.inbox, '#3B9EFF', 'Inbox', inb)}${li('upcoming', I.cal, '#2BB5A6', 'Next 7 days', '')}${li('someday', I.box, '#C9A66B', 'Someday', sd)}${li('done', I.done, '#22C55E', 'Completed', '')}${li('trash', I.trash, 'var(--muted)', 'Trash', tr)}</div>
-  <div class="mo-h">Tools</div><div class="mo-tools">${tool('focus', I.timer, '#F97316', 'Focus timer', S.timer.running ? 'Running now' : `${S.settings.pomo} min sessions`)}${tool('dates', I.gift, '#FB7185', 'Birthdays', nextD === 0 ? 'One today' : nextD != null ? `Next in ${plural(nextD, 'day')}` : 'and dates')}${tool('templates', I.layers, '#8B5CF6', 'Templates', `${S.templates.length} saved`)}${tool('life', I.target, '#10B981', 'Life list', act ? `${act} active` : 'Big goals')}</div>
+  <div class="mo-h">Lists</div><div class="nav">${li('inbox', I.inbox, '#3B9EFF', 'Inbox', inb)}${li('upcoming', I.cal, '#2BB5A6', 'Next 7 days', '')}${li('someday', I.box, '#C9A66B', 'Someday', sd)}${li('waiting', I.clock, '#F59E0B', 'Waiting on', open().filter(smIsWait).length || '')}${li('done', I.done, '#22C55E', 'Completed', '')}${li('trash', I.trash, 'var(--muted)', 'Trash', tr)}</div>
+  <div class="mo-h">Tools</div><div class="mo-tools">${tool('focus', I.timer, '#F97316', 'Focus timer', S.timer.running ? 'Running now' : `${S.settings.pomo} min sessions`)}${tool('dates', I.gift, '#FB7185', 'Birthdays', nextD === 0 ? 'One today' : nextD != null ? `Next in ${plural(nextD, 'day')}` : 'and dates')}${tool('templates', I.layers, '#8B5CF6', 'Templates', `${S.templates.length} saved`)}${tool('life', I.target, '#10B981', 'Life list', act ? `${act} active` : 'Big goals')}<button data-sm="ask"><i>✨</i><b>Ask Dayline</b><span>Ask or tell, in plain words</span></button><button data-sm="dump"><i>🧠</i><b>Brain dump</b><span>A messy note into tasks</span></button></div>
   <div class="mo-h">Projects<button data-act="newproject" aria-label="New project">${I.plus}New</button></div><div class="nav">${projectsNav('', '')}${filtersNav('', '')}</div>
   <div class="mo-foot"><button data-sm="reorder">${I.edit}Reorder projects</button></div>`;
 }
@@ -6022,8 +6043,164 @@ function smWaitSheet(id) {
   });
 }
 /* learning: filled in by release 3 */
-function smLearned(t) { return 0; }
-function smLearnHtml() { return ''; }
+
+/* ================= 6.1: capture and unblock (brain dump, after-meeting follow-ups, waiting on others) ================= */
+const smIsWait = t => !t.done && (t.wait || (t.tags || []).includes('waiting'));
+const smWaitSince = t => (t.wait && t.wait.since) || ymd(new Date(t.createdAt));
+function smDumpSplit(txt) {
+  return String(txt || '').split(/\r?\n|;|•|(?<=[.!?])\s+(?=[A-Z])/).flatMap(l => l.split(/,\s+|\s+(?:and then|then|and also|also)\s+/i)).map(x => x.replace(/^\s*(?:[-*]|\d+[.)])\s*/, '').replace(/[.\s]+$/, '').trim()).filter(x => x.split(/\s+/).length >= 2 || x.length >= 8);
+}
+async function smDumpAi(txt) {
+  const projs = S.projects.map(p => '#' + (pslug(p.name) || p.name)).join(' ');
+  const r = await aiCall(`You turn a busy person's messy note into clean tasks for the app Dayline. Today is ${DAYSL[new Date().getDay()]} ${today()}. Reply with ONLY JSON.`,
+    `Write each task as ONE line in Dayline's quick-add syntax: a short clear title (start with a verb, keep names), then optional date words (today, tomorrow, fri, 15 nov, next week), optional time (5pm), optional project from this list only: ${projs || '(none)'}, optional priority p1/p2/p3 only if the note says it is urgent or important, optional tags like @waiting when he is waiting on someone else. Do not invent dates, projects or tasks that are not in the note.\nJSON: {"lines":["..."]}\nNote:\n${txt.slice(0, 4000)}`, 900);
+  const j = jsonLoose(r); return ((j && j.lines) || []).map(x => String(x).trim()).filter(Boolean).slice(0, 25);
+}
+function smDumpSheet(prefill) {
+  const mic = (window.SpeechRecognition || window.webkitSpeechRecognition) ? `<button type="button" class="rf-mic" id="smDmMic" aria-label="Speak instead of typing">🎙️</button>` : '';
+  openSheet(sheetHead('Brain dump', '', '') + `<div class="sm-sheet"><p class="sm-lead"><span>Type, paste or speak everything on your mind. Dayline splits it into tasks with dates, projects and priority. Nothing is added until you tap Add.</span></p>
+  <div class="rf-line"><textarea class="inp rf-ta" id="smDm" rows="6" aria-label="Brain dump">${esc(prefill || '')}</textarea>${mic}</div>
+  <button class="btn acc sm-full" id="smDmGo">${aiKey() ? '✨ Find the tasks' : 'Find the tasks'}</button>${aiKey() ? '' : `<p class="sm-fine">Without a Claude key Dayline splits by line, comma and "and". With your key (Reflect, Mentor) it understands messy notes much better.</p>`}<div id="smDmOut"></div></div>`);
+  const ta = $('#smDm'); setTimeout(() => ta.focus(), 250);
+  const mb = $('#smDmMic'); if (mb) mb.onclick = () => rfMic('smDm', mb);
+  $('#smDmGo').onclick = async () => {
+    const v = ta.value.trim(); if (!v) { ta.focus(); return; } const go = $('#smDmGo'); let lines = null;
+    if (aiKey()) { go.disabled = true; go.textContent = '✨ Reading…'; try { lines = await smDumpAi(v); } catch (e) { toast((/Failed to fetch/.test(e.message) ? 'Could not reach Claude' : e.message) + '. Split it the simple way instead.'); } go.disabled = false; go.textContent = '✨ Find again'; }
+    if (!lines || !lines.length) lines = smDumpSplit(v);
+    const items = lines.map(l => ({ l, r: parseTask(l), on: true })).filter(x => x.r.title || x.r.meeting);
+    const draw = () => {
+      const n = items.filter(x => x.on).length;
+      $('#smDmOut').innerHTML = items.length ? `<div class="wsec">${plural(items.length, 'task')} found</div>${items.map((x, i) => { const r = { ...x.r, _edit: true }; return `<button type="button" class="sm-dmi${x.on ? ' on' : ''}" data-i="${i}" aria-pressed="${x.on}"><i>${x.on ? I.check : ''}</i><span><b>${esc(x.r.meeting ? 'Meeting: ' + x.r.title : x.r.title)}</b>${(r.date || r.time || r.priority || r.projectId || r.newProject || (r.tags || []).length) ? `<span class="sm-dmc">${chipsFor(r)}</span>` : '<small>Inbox</small>'}</span></button>`; }).join('')}<button class="btn acc sm-full" id="smDmAdd"${n ? '' : ' disabled'}>Add ${plural(n, 'task')}</button>` : `<div class="wempty">No tasks found. Write a few words per task.</div>`;
+      $$('#smDmOut [data-i]').forEach(b => b.onclick = () => { items[+b.dataset.i].on = !items[+b.dataset.i].on; draw(); });
+      const ad = $('#smDmAdd'); if (ad) ad.onclick = () => { const ids = [], ms = []; items.filter(x => x.on).forEach(x => { const t = addFromText(x.l, { view: 'inbox' }); if (!t) return; if (t.meeting) ms.push(t.meeting.id); else { ids.push(t.id); if ((t.tags || []).includes('waiting')) { t.wait = { who: '', since: today() }; if (!t.date && !t.someday) setDate(t, addDays(today(), 3)); } } }); save(); closeSheet(true); render();
+        toast(`Added ${plural(ids.length + ms.length, 'task')}`, () => { S.tasks = S.tasks.filter(t => !ids.includes(t.id)); ms.forEach(id => delete S.meetLog[id]); ids.forEach(id => Object.keys(S.plan).forEach(d => S.plan[d] = S.plan[d].filter(x => x !== id))); save(); render(); }); };
+    };
+    draw();
+  };
+}
+// A meeting just ended: catch the follow-ups while they are fresh
+const SM_FU = ['Send proposal', 'Share notes', 'Schedule next call'];
+function smFollowHtml() {
+  const td = today(), now = Date.now(), rec = S.days[td] || {}, fu = rec.fu || {};
+  const m = meetingsOn(td).filter(x => x.e <= now && now - x.e < 45 * 6e4 && x.e - x.s >= 15 * 6e4 && !fu[x.id]).pop(); if (!m) return '';
+  const got = (rec.fuAdd || {})[m.id] || []; const short = m.t.length > 40 ? m.t.slice(0, 39) + '…' : m.t;
+  return `<section class="sm-fu" data-mid="${esc(m.id)}"><div class="sm-k">${I.cal}${esc(short)} just ended</div><b>Any follow-ups?</b><div class="sm-fuc">${SM_FU.map(x => `<button type="button" class="${got.includes(x) ? 'on' : ''}" data-sm="fuadd" data-id="${esc(m.id)}" data-v="${x}">${got.includes(x) ? I.check : I.plus}${x}</button>`).join('')}</div><div class="sm-fui"><textarea class="inp one" rows="1" id="smFuIn" aria-label="Another follow-up" placeholder="Another one… e.g. send deck fri" enterkeyhint="done"></textarea></div><div class="sm-btns"><button class="sm-b" data-sm="fudone" data-id="${esc(m.id)}">${got.length ? 'Done' : 'Nothing to add'}</button></div></section>`;
+}
+function smFuAdd(mid, text) {
+  const m = S.meetLog[mid]; const td = today(), rec = dayRec(td); const short = m ? m.t.replace(/\s*[-·|:].*$/, '').slice(0, 40) : '';
+  const t = addFromText(/\b(today|tomorrow|tmrw|mon|tue|wed|thu|fri|sat|sun|next|\d{1,2}\s*(am|pm)|\d{1,2}\s+[a-z]{3})\b/i.test(text) ? text : text + ' tomorrow', { view: 'today' }); if (!t || t.meeting) return null;
+  if (short && !t.title.toLowerCase().includes(short.toLowerCase())) t.title += ' · ' + short; t.notes = t.notes || (m ? esc('After: ' + m.t) : '');
+  ((rec.fuAdd ||= {})[mid] ||= []).push(text); save(); return t;
+}
+function smWaitHtml() {
+  const td = today(), now = Date.now(), skip = (S.days[td] || {}).skip || {};
+  const due = open().filter(t => smIsWait(t) && !t.someday && t.date && t.date <= td && !(skip[t.id] > now)).sort((a, b) => smWaitSince(a) < smWaitSince(b) ? -1 : 1); if (!due.length) return '';
+  const t = due[0], n = Math.max(1, dayDiff(smWaitSince(t), td)), who = t.wait && t.wait.who;
+  return `<section class="sm-wait"><div class="sm-k">⏳ Waiting on ${who ? esc(who) : 'a reply'} · ${plural(n, 'day')}</div><b>${esc(t.title)}</b><span>${who ? `No reply from ${esc(who)} since ${fmtShort(smWaitSince(t))}.` : `Marked as waiting since ${fmtShort(smWaitSince(t))}.`}${due.length > 1 ? ` <a href="#waiting">${due.length - 1} more waiting</a>` : ''}</span><div class="sm-btns"><button class="sm-b pri" data-sm="wgot" data-id="${t.id}">${I.check}Got it</button><button class="sm-b" data-sm="wnudge" data-id="${t.id}">Nudge today</button><button class="sm-b" data-sm="wmore" data-id="${t.id}">Wait 3 days</button></div></section>`;
+}
+function vWaiting() {
+  const l = open().filter(smIsWait).sort((a, b) => smWaitSince(a) < smWaitSince(b) ? -1 : 1);
+  return topbar('', 'Waiting on') + `<div class="pad"><h1 class="title">Waiting on</h1><p class="sub" style="margin:6px 0 0;line-height:1.45">Things others owe you. Each one comes back on its date so you can nudge or close it.</p></div><div style="height:8px"></div>` + (l.length ? `<div class="list">${l.map(t => { const n = dayDiff(smWaitSince(t), today()); return row(t, { showDate: true }).replace('<span class="rt">', `<span class="sm-wh">${t.wait && t.wait.who ? esc(t.wait.who) + ' · ' : ''}${n ? plural(n, 'day') : 'today'}</span><span class="rt">`); }).join('')}</div>` : `<div class="empty">Nobody owes you anything right now. Open a task, tap ⋯, then Waiting on someone.</div>`);
+}
+
+/* ================= 6.1: learning (your real timings, best hours) and Ask Dayline ================= */
+const SM_CLS = [['call', /\b(call|ring|phone)\b/i, 'Calls'], ['follow', /follow.?up|\bremind|\bnudge|\bchase/i, 'Follow-ups'], ['mail', /\b(e-?mail|mail|reply|whatsapp|message|text)\b/i, 'Emails and messages'], ['pay', /\b(pay|bill|renew|recharge|invoice)\b/i, 'Payments'], ['prep', /\b(prep|prepare|draft|write|deck|proposal|slides?|plan|review)\b/i, 'Drafting and prep'], ['buy', /\b(buy|order|shop|book)\b/i, 'Buying and booking']];
+const smCls = t => (SM_CLS.find(c => c[1].test(t.title || '')) || ['other'])[0];
+const smLearn = () => (S.learn ||= { s: [] });
+const smMed = a => { const s = [...a].sort((x, y) => x - y); return s.length ? s[Math.floor(s.length / 2)] : 0; };
+// When you finish a task: how long did it really take? From focus sessions on it, or from when it became Next up
+function smLearnDone(t) {
+  try { const now = Date.now(); let m = S.focus.filter(f => f.taskId === t.id && now - f.start < 2 * 864e5).reduce((a, f) => a + (+f.mins || 0), 0); let src = 'f';
+    if (m < 5) { const nx = (S.days[today()] || {}).nx; if (nx && nx.id === t.id) { m = (now - nx.at) / 6e4; src = 'n'; } }
+    if (m < 3 || m > 150) return; const L = smLearn(); L.s.push([smCls(t), Math.round(m), now, src, t.projectId || '']); if (L.s.length > 400) L.s = L.s.slice(-400); } catch (e) { }
+}
+function smLearned(t) { const k = smCls(t); if (k === 'other') return 0; const a = (S.learn?.s || []).filter(x => x[0] === k).slice(-30).map(x => x[1]); return a.length >= 3 ? Math.max(5, Math.round(smMed(a) / 5) * 5) : 0; }
+function smBest() {
+  const cut = Date.now() - 42 * 864e5; const h = Array(24).fill(0); let n = 0;
+  S.tasks.forEach(t => { if (t.done && t.doneAt > cut && t.priority <= 2) { h[new Date(t.doneAt).getHours()]++; n++; } }); if (n < 15) return null;
+  const [w0, w1] = workWin(); let best = null; for (let s = Math.floor(w0 / 60); s + 2 <= Math.ceil(w1 / 60); s++) { const c = h[s] + h[s + 1]; if (!best || c > best.c) best = { s, c }; }
+  const span = Math.max(1, Math.ceil(w1 / 60) - Math.floor(w0 / 60)); return best && best.c >= 2 * (n / span) * 1.5 ? [best.s, best.s + 2] : null;
+}
+function smLearnHtml() {
+  const L = S.learn?.s || [], out = [];
+  SM_CLS.forEach(([k, , name]) => { const a = L.filter(x => x[0] === k).slice(-30).map(x => x[1]); if (a.length < 3) return; const m = Math.max(5, Math.round(smMed(a) / 5) * 5), def = k === 'prep' || k === 'buy' ? 30 : 15; if (Math.abs(m - def) / def >= .3) out.push(['⏱', `${name} take you about ${fmtMins(m)}`, `Not ${fmtMins(def)}. I now plan them at ${fmtMins(m)}.`]); });
+  const b = smBest(); if (b) out.push(['⚡', `You finish important work between ${hrLabel(b[0])} and ${hrLabel(b[1])}`, 'I put P1 and P2 tasks there first when I plan your day.']);
+  const f = smFix(); if (f && f.cap) out.push(['📅', f.title, f.text]);
+  if (!rfLocked()) { const p = rfPatterns().list.find(x => /walk|habit|meeting|focus|tasks/i.test(x.text)) || rfPatterns().list[0]; if (p) out.push(['🪷', 'Mood link', p.text.replace(/<[^>]+>/g, '')]); }
+  if (!out.length) { const n = L.length; return `<section class="rf-card sm-cc"><div class="rf-k">Dayline is learning you</div><span class="rf-mut">Finish tasks from Next up or with Focus, and Dayline learns how long things really take you and when you work best. ${n ? `${plural(n, 'task')} timed so far.` : ''} Give it 2–3 weeks.</span></section>`; }
+  return `<section class="rf-card sm-cc"><div class="rf-k">Dayline learned about you</div>${out.map(([i, b, s]) => `<div class="sm-fix sm-lrn"><i>${i}</i><span><b>${esc(b)}</b>${esc(s)}</span></div>`).join('')}</section>`;
+}
+
+// Ask Dayline: questions in plain words, and changes to your tasks with Undo
+let smChat = [];
+function smAskCtx() {
+  const td = today(), now = Date.now(), P = smPlan(td, true), b = smBest();
+  const tk = open().filter(t => !t.someday || t.priority <= 2).sort((a, c) => (a.date || '9') < (c.date || '9') ? -1 : 1).slice(0, 140).map(t => { const p = proj(t.projectId); return { id: t.id, title: t.title, date: t.date, time: t.time, p: t.priority, project: p ? p.name : null, mins: smEst(t), moved: t.pushed || 0, tags: t.tags, waiting: smIsWait(t) ? (t.wait && t.wait.who) || true : undefined, someday: t.someday || undefined, subtasks: (t.subs || []).filter(c => !c.d).map(c => c.t).slice(0, 5) }; });
+  const meets = Object.values(S.meetLog).filter(m => !m.allDay && m.e > now - 864e5 && m.s < now + 7 * 864e5).sort((a, c) => a.s - c.s).slice(0, 40).map(m => ({ title: m.t, start: new Date(m.s).toString().slice(0, 21), mins: Math.round((m.e - m.s) / 6e4) }));
+  const done = S.tasks.filter(t => t.done && t.doneAt > now - 7 * 864e5).slice(-40).map(t => ({ title: t.title, done: ymd(new Date(t.doneAt)), notes: textOf(t.notes).slice(0, 120) || undefined }));
+  return { now: new Date().toString().slice(0, 21), today: td, work_hours: `${S.settings.workStart || '09:30'}-${S.settings.shutdown || '19:00'}`, free_minutes_left_today: P.free, top3_today: ((S.days[td] || {}).top || []).map(id => getTask(id)?.title).filter(Boolean), best_hours: b ? `${b[0]}:00-${b[1]}:00` : 'not learned yet', projects: S.projects.map(p => p.name), open_tasks: tk, meetings: meets, done_last_7_days: done, habits_today: S.habits.filter(h => h.days.includes(new Date().getDay())).map(h => ({ name: h.name, done: hOk(h, td) })) };
+}
+const SM_ASK_SYS = `You are Dayline, the private assistant inside Mehul's own task app. He works in B2B sales and business development in Mumbai. Be brief, warm and concrete: 1 to 4 short sentences, name actual tasks and times. You may change his tasks only through the actions below, and only when he asks you to change something. Never delete tasks. If the request is unclear, ask one short question and make no changes.
+Reply with ONLY JSON: {"reply":"...","actions":[...]}
+Actions (use task ids from the data):
+{"type":"move","ids":[...],"date":"YYYY-MM-DD"|null,"time":"HH:MM"|null}  (date null = no date)
+{"type":"done","ids":[...]}
+{"type":"priority","ids":[...],"p":1|2|3|4}
+{"type":"someday","ids":[...]}
+{"type":"top3","ids":[up to 3 ids for today]}
+{"type":"add","line":"one task in quick-add syntax, e.g. Send deck to Amit fri 5pm #sales p2"}
+{"type":"focus","id":"..."}  (start a focus session on that task)`;
+function smApply(acts) {
+  const td = today(), snap = {}, added = [], out = []; let topSnap; let focusId = null;
+  const keep = t => { if (!snap[t.id]) snap[t.id] = JSON.stringify(t); };
+  (acts || []).slice(0, 30).forEach(a => { const ts = (a.ids || []).map(getTask).filter(Boolean);
+    if (a.type === 'move' && ts.length) { const d = a.date && /^\d{4}-\d\d-\d\d$/.test(a.date) ? a.date : null; ts.forEach(t => { keep(t); if (d) setDate(t, d); else { t.date = null; t.firedKeys = []; } t.someday = false; if (a.time !== undefined) { t.time = a.time && /^\d\d:\d\d$/.test(a.time) ? a.time : null; t.firedKeys = []; if (t.time && !t.reminders.length) t.reminders = [0]; } }); out.push(`Moved ${plural(ts.length, 'task')} to ${d ? fmtDate(d) : 'no date'}${a.time ? ', ' + fmtTime(a.time) : ''}`); }
+    else if (a.type === 'done' && ts.length) { ts.forEach(t => { keep(t); if (t.repeat) toggleDone(t.id); else { t.done = true; t.doneAt = Date.now(); pushClose(t.id); } }); out.push(`Marked ${plural(ts.length, 'task')} done`); }
+    else if (a.type === 'priority' && ts.length && [1, 2, 3, 4].includes(+a.p)) { ts.forEach(t => { keep(t); t.priority = +a.p; }); out.push(`Set ${plural(ts.length, 'task')} to ${+a.p < 4 ? 'P' + a.p : 'no priority'}`); }
+    else if (a.type === 'someday' && ts.length) { ts.forEach(t => { keep(t); t.someday = true; t.date = null; }); out.push(`Moved ${plural(ts.length, 'task')} to Someday`); }
+    else if (a.type === 'top3' && ts.length) { const r = dayRec(td); topSnap = JSON.stringify(r.top || []); r.top = ts.slice(0, 3).map(t => t.id); ts.slice(0, 3).forEach(t => { if (!t.date || t.date > td) { keep(t); setDate(t, td); } }); out.push('Set your top 3'); }
+    else if (a.type === 'add' && a.line) { const t = addFromText(String(a.line), { view: 'inbox' }); if (t && !t.meeting) { added.push(t.id); out.push(`Added “${t.title}”`); } }
+    else if (a.type === 'focus' && getTask(a.id)) focusId = a.id; });
+  save(); render();
+  const undo = () => { Object.entries(snap).forEach(([id, j]) => { const o = JSON.parse(j), i = S.tasks.findIndex(t => t.id === id); if (i >= 0) S.tasks[i] = o; else S.tasks.push(o); S.tasks = S.tasks.filter(t => !(t.orig === id && t.done && t.doneAt > Date.now() - 36e5)); }); S.tasks = S.tasks.filter(t => !added.includes(t.id)); if (topSnap) dayRec(td).top = JSON.parse(topSnap); save(); render(); };
+  return { out, undo: out.length ? undo : null, focusId };
+}
+function smAskSheet(q) {
+  if (!aiKey()) { openSheet(sheetHead('Ask Dayline', '', '') + `<div class="sm-sheet"><div class="sm-lead"><b>Ask in plain words</b><span>“I have 40 minutes, what should I do?” · “Move all Sales tasks except P1 to Friday” · “What did I promise Mahaveer?”</span></div><p class="sm-fine" style="font-size:14px">Ask Dayline uses your own Claude key, the same one as your Mentor in Reflect. Each question costs about 1–3 US cents.</p><a class="btn acc sm-full" href="#reflect/mentor" data-close>Add your key in Reflect, Mentor</a></div>`); return; }
+  const mic = (window.SpeechRecognition || window.webkitSpeechRecognition) ? `<button type="button" class="rf-mic" id="smAskMic" aria-label="Speak your question">🎙️</button>` : '';
+  openSheet(sheetHead('Ask Dayline', '', '') + `<div class="sm-sheet sm-ask"><div id="smChat" class="sm-chat"></div><div class="sm-sugg" id="smSugg"></div><div class="rf-send"><textarea class="inp rf-ta" id="smAsk" rows="1" aria-label="Ask or tell Dayline" placeholder="Ask or tell Dayline…" enterkeyhint="send"></textarea>${mic}<button class="btn acc" id="smAskGo">Send</button></div></div>`);
+  const draw = () => { $('#smChat').innerHTML = smChat.map((m, i) => m.r === 'u' ? `<div class="sm-cu">${esc(m.t)}</div>` : `<div class="sm-ca${m.err ? ' err' : ''}">${m.wait ? '<span class="sm-dots3"><i></i><i></i><i></i></span>' : esc(m.t)}${m.out && m.out.length ? `<div class="sm-cx">${m.out.map(x => `<span>${I.check}${esc(x)}</span>`).join('')}${m.undo ? `<button data-undo="${i}">${m.undone ? 'Undone' : 'Undo'}</button>` : ''}</div>` : ''}${m.focus ? `<button class="btn sec" data-fc="${m.focus}" style="margin-top:8px">${I.play}Start focus</button>` : ''}</div>`).join('');
+    $('#smSugg').innerHTML = smChat.length ? '' : ['I have 40 minutes. What should I do?', 'What is still open for Sales?', 'Plan tomorrow for me', 'What am I waiting on?'].map(x => `<button type="button">${x}</button>`).join('');
+    $$('#smSugg button').forEach(b => b.onclick = () => send(b.textContent));
+    $$('#smChat [data-undo]').forEach(b => b.onclick = () => { const m = smChat[+b.dataset.undo]; if (m.undone) return; m.undo(); m.undone = true; draw(); toast('Undone'); });
+    $$('#smChat [data-fc]').forEach(b => b.onclick = () => { closeSheet(true); S.timer.taskId = b.dataset.fc; resetTimer('work'); startTimer(); go('focus'); });
+    const c = $('#smChat'); c.lastElementChild?.scrollIntoView({ block: 'end' }); };
+  const send = async txt => { txt = (txt || '').trim(); if (!txt) return; $('#smAsk').value = ''; smChat.push({ r: 'u', t: txt }); const a = { r: 'a', wait: 1 }; smChat.push(a); draw();
+    try { const hist = smChat.slice(-9, -2).map(m => (m.r === 'u' ? 'He: ' : 'You: ') + (m.t || '')).join('\n');
+      const raw = await aiCall(SM_ASK_SYS, `${hist ? 'Earlier in this chat:\n' + hist + '\n\n' : ''}His data:\n${JSON.stringify(smAskCtx())}\n\nHe says: ${txt}`, 1200);
+      const j = jsonLoose(raw) || { reply: raw }; const r = smApply(j.actions); Object.assign(a, { wait: 0, t: j.reply || (r.out.length ? 'Done.' : '…'), out: r.out, undo: r.undo, focus: r.focusId }); }
+    catch (e) { Object.assign(a, { wait: 0, err: 1, t: /Failed to fetch/.test(e.message) ? 'Could not reach Claude. Check your internet.' : e.message }); }
+    if (smChat.length > 30) smChat = smChat.slice(-30); if ($('#smChat')) draw(); };
+  $('#smAskGo').onclick = () => send($('#smAsk').value);
+  $('#smAsk').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(e.target.value); } };
+  const mb = $('#smAskMic'); if (mb) mb.onclick = () => rfMic('smAsk', mb);
+  draw(); if (q) send(q); else setTimeout(() => $('#smAsk')?.focus(), 250);
+}
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-sm]'); if (!b) return; const a = b.dataset.sm, id = b.dataset.id, td = today();
+  const A = {
+    dump: () => { const v = ($('#qaIn')?.value || '').trim(); if ($('#sheet').classList.contains('on')) { closeSheet(true); setTimeout(() => smDumpSheet(v), 240); } else smDumpSheet(v); },
+    ask: () => smAskSheet(),
+    fuadd: () => { const t = smFuAdd(id, b.dataset.v); if (t) { render(); toast(`Added for ${fmtDate(t.date)}`); } },
+    fudone: () => { (dayRec(td).fu ||= {})[id] = 1; save(); render(); },
+    wgot: () => { const t = getTask(id); if (!t) return; delete t.wait; t.tags = t.tags.filter(x => x !== 'waiting'); save(); toggleDone(id); },
+    wnudge: () => { const t = getTask(id); if (!t) return; setDate(t, td); (dayRec(td).skip ||= {})[id] = Date.now() + 864e5; if (t.wait) t.wait.nudged = td; save(); render(); toast('On today’s list. Send the nudge, then tap it done'); },
+    wmore: () => { const t = getTask(id); if (!t) return; setDate(t, addDays(td, 3)); t.pushed = Math.max(0, (t.pushed || 1) - 1); save(); render(); toast(`Back on ${fmtDate(t.date)}`); },
+  };
+  if (A[a]) { ev.preventDefault(); A[a](); }
+});
+document.addEventListener('keydown', ev => { if (ev.target.id !== 'smFuIn' || ev.key !== 'Enter') return; ev.preventDefault(); const v = ev.target.value.trim(), sec = ev.target.closest('.sm-fu'); if (!v || !sec) return; const t = smFuAdd(sec.dataset.mid, v); if (t) { render(); toast(`Added for ${fmtDate(t.date)}`); } });
+document.addEventListener('input', ev => { if (ev.target.id === 'smFuIn' && ev.target.value.includes('\n')) { ev.target.value = ev.target.value.replace(/\n/g, ''); ev.target.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); } });
 
 /* ================= start ================= */
 document.addEventListener('focusin', e => { if (!isWide() && e.target.matches && e.target.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,[contenteditable=true]')) document.body.classList.add('typing'); });
@@ -6043,7 +6220,7 @@ setTimeout(() => afterSync(drainActs), 400);
   if (q.get('quick')) { window.QM = true; document.body.classList.add('qm'); document.title = 'Add to Dayline'; setTimeout(() => quickAdd({ quick: true }), 120); }
   else if (q.get('add') || shared) { const txt = (q.get('text') || '').trim(), url = (q.get('url') || '').trim(); const lines = txt.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
     const title = (q.get('prefill') || q.get('title') || lines.shift() || url || '').slice(0, 200); const rest = [...lines, url && !title.includes(url) ? url : ''].filter(Boolean).join('\n');
-    setTimeout(() => quickAdd({ prefill: title, prenote: rest }), 400); }
+    if (lines.length >= 2 && !q.get('prefill')) setTimeout(() => smDumpSheet(txt), 400); else setTimeout(() => quickAdd({ prefill: title, prenote: rest }), 400); }
   if (q.get('focus') && getTask(q.get('focus'))) setTimeout(() => { S.timer.taskId = q.get('focus'); resetTimer('work'); startTimer(); go('focus'); }, 400);
   if (q.toString()) history.replaceState({ sk: 'app' }, '', location.pathname + location.hash);
 })();
