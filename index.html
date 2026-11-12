@@ -1275,6 +1275,7 @@ button.warn{display:block;width:100%;text-align:left}
 .sm-wk i{width:22px;height:56px;border-radius:7px;background:var(--surface);display:flex;align-items:flex-end;overflow:hidden}.sm-wk u{display:block;width:100%;background:#2F7BEA;border-radius:7px}.sm-wk .over u{background:#E5484D}.sm-wk small{font-size:11px;color:var(--muted);font-weight:700}
 .sm-wt{padding:10px 0;border-bottom:1px solid var(--line)}.sm-wt .tt{display:flex;gap:8px;align-items:flex-start;font-weight:600;font-size:14.5px}.sm-wt .tt .pdot{margin-top:7px}.sm-wt .tt span{display:flex;flex-direction:column}.sm-wt small{font-size:12px;color:var(--muted);font-weight:600}
 .sm-wd{display:flex;gap:6px;overflow-x:auto;margin-top:8px;scrollbar-width:none}.sm-wd::-webkit-scrollbar{display:none}.sm-wd button{flex:none;height:32px;padding:0 11px;border-radius:10px;background:var(--surface);font-weight:700;font-size:13px;color:var(--ink)}.sm-wd button:active{background:var(--ink);color:var(--bg)}
+.qa-multi{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 4px;padding:10px 12px;border-radius:14px;background:color-mix(in srgb,var(--accent) 12%,var(--bg))}.qa-multi span{font-size:14px;font-weight:700}.qa-multi button{height:34px;padding:0 14px;border-radius:10px;background:var(--accent);color:var(--on-accent);font-weight:800;font-size:13.5px}
 </style>
 </head>
 <body>
@@ -3558,7 +3559,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.2';
+const APPV = '6.2.1';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -3873,14 +3874,21 @@ function quickAdd(ctxOverride) {
   <div id="qaForm"><div class="qa-in"><label for="qaIn" class="sr">New task</label><textarea id="qaIn" rows="1" placeholder="Task name" enterkeyhint="done" autocomplete="off" autocapitalize="sentences" spellcheck="true" data-form-type="other">${ctx.tpl ? esc(ctx.tpl.title) : ''}</textarea>${('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) ? `<button type="button" class="iconbtn" id="qaMic" aria-label="Speak the task">${I.mic}</button>` : ''}</div>
   <div class="qa-wrap"><div class="qa-pick" id="qaPick" role="listbox" hidden></div></div>
   <label for="qaNote" class="sr">Notes</label><div class="qa-note qa-rich" id="qaNote" contenteditable="true" data-ph="Notes" role="textbox" aria-multiline="true" aria-label="Notes"></div><div class="ntool" id="qaNoteBar" style="display:none"></div>
-  <div class="chips" id="qaChips"></div><div class="qa-quick" id="qaQuick"><button type="button" data-qd="0">Today</button><button type="button" data-qd="1">Tomorrow</button><button type="button" data-qd="w">This weekend</button><button type="button" data-qi="#"><b>#</b>Project</button><button type="button" data-qi="@"><b>@</b>Tag</button></div><div class="preview" id="qaPrev"></div><input type="date" id="qaD" class="qa-hid" tabindex="-1" aria-label="Pick date"><input type="time" id="qaT" class="qa-hid" tabindex="-1" aria-label="Pick time"></div>
-  ${ctx.tpl ? '' : `<div class="qa-row2"><button type="button" class="tplbtn" id="qaTplBtn" aria-expanded="false">${I.layers}Templates</button><button type="button" class="tplbtn" data-sm="dump">🧠 Brain dump</button></div><div class="tplrow" id="qaTpl" hidden>${S.templates.map(t => `<button class="tplchip" data-tpl="${t.id}">${t.emoji} ${esc(t.name)}</button>`).join('')}<button class="tplchip" id="qaNewTpl" style="border-style:dashed;color:var(--muted)">${I.plus} New</button></div>`}
+  <div class="chips" id="qaChips"></div><div class="qa-multi" id="qaMulti" hidden></div><div class="qa-quick" id="qaQuick"><button type="button" data-qd="0">Today</button><button type="button" data-qd="1">Tomorrow</button><button type="button" data-qd="w">This weekend</button><button type="button" data-qi="#"><b>#</b>Project</button><button type="button" data-qi="@"><b>@</b>Tag</button></div><div class="preview" id="qaPrev"></div><input type="date" id="qaD" class="qa-hid" tabindex="-1" aria-label="Pick date"><input type="time" id="qaT" class="qa-hid" tabindex="-1" aria-label="Pick time"></div>
+  ${ctx.tpl ? '' : `<button type="button" class="tplbtn" id="qaTplBtn" aria-expanded="false">${I.layers}Templates</button><div class="tplrow" id="qaTpl" hidden>${S.templates.map(t => `<button class="tplchip" data-tpl="${t.id}">${t.emoji} ${esc(t.name)}</button>`).join('')}<button class="tplchip" id="qaNewTpl" style="border-style:dashed;color:var(--muted)">${I.plus} New</button></div>`}
   `, ctx.quick ? () => window.close() : null, !!ctx.quick);
   const inp = $('#qaIn'), addB = $('#qaAdd');
   const ov = {};
   const upd = () => { const v = inp.value.trim(); addB.disabled = !v; $('#qaExp').disabled = !v; if (!v) { $('#qaChips').innerHTML = ''; $('#qaPrev').innerHTML = ''; return; } const r = parseTask(v); if (ov.date) { r.date = ov.date; r.someday = false; } if (ov.time) { r.time = ov.time; if (!r.reminders.length) r.reminders = [0]; } r._edit = true; const nagOn = ov.nag ?? !!r.nag; $('#qaChips').innerHTML = chipsFor(r) + (r.reminders.length || r.time ? `<button type="button" class="chip nagt${nagOn ? ' on' : ''}" data-nagt aria-pressed="${nagOn}" title="Repeat the reminder every 10 minutes until you tick Done">${I.repeat}${nagOn ? 'Keep reminding: on' : 'Keep reminding'}</button>` : ''); { const nb = $('#qaChips [data-nagt]'); if (nb) { nb.onpointerdown = e => e.preventDefault(); nb.onclick = () => { ov.nag = !nagOn; upd(); }; } } $$('#qaChips [data-chip]').forEach(b => { b.onpointerdown = e => e.preventDefault(); b.onclick = () => { const el = $(b.dataset.chip === 'date' ? '#qaD' : '#qaT'); el.value = b.dataset.chip === 'date' ? (r.date || today()) : (r.time || ''); try { el.showPicker(); } catch (x) { el.focus(); el.click(); } }; }); $('#qaPrev').innerHTML = r.title ? `${r.meeting ? 'Meeting' : 'Task'}: <b>${esc(r.title)}</b>` : ''; };
   const fit = () => { inp.style.height = 'auto'; inp.style.height = inp.scrollHeight + 'px'; };
   inp.addEventListener('input', () => { fit(); upd(); }); upd(); fit();
+  // Several tasks typed or pasted at once (one per line, or separated by commas): offer to add them separately
+  const multi = () => { const v = inp.value.trim(), box = $('#qaMulti'); const parts = /\n|;/.test(v) ? v.split(/\n|;/) : (v.match(/,/g) || []).length >= 1 ? v.split(/,\s*/) : []; const L = parts.map(x => x.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').trim()).filter(x => x.split(/\s+/).length >= 2);
+    if (L.length < 2 || L.join(' ').length < v.replace(/[\n;,]/g, ' ').trim().length * .6) { box.hidden = true; return; }
+    box.hidden = false; box.innerHTML = `<span>Looks like ${L.length} tasks</span><button type="button" id="qaSplit">Add as ${L.length} tasks</button>`;
+    $('#qaSplit').onpointerdown = e => e.preventDefault();
+    $('#qaSplit').onclick = () => { const ids = []; L.forEach(x => { const t = addFromText(x, ctx); if (t && !t.meeting) { applyOv(t); ids.push(t.id); } }); save(); closeSheet(true); render(); toast(`Added ${plural(ids.length, 'task')}`, () => { S.tasks = S.tasks.filter(t => !ids.includes(t.id)); ids.forEach(id => Object.keys(S.plan).forEach(d => S.plan[d] = S.plan[d].filter(x => x !== id))); save(); render(); }); }; };
+  inp.addEventListener('input', multi); multi();
   $('#qaD').onchange = e => { if (e.target.value) { ov.date = e.target.value; upd(); inp.focus(); } };
   $('#qaT').onchange = e => { if (e.target.value) { ov.time = e.target.value; upd(); inp.focus(); } };
   $$('#qaQuick button').forEach(b => { b.onpointerdown = e => e.preventDefault(); b.onclick = () => {
@@ -6007,7 +6015,7 @@ function vHome() {
   const tool = (href, ic, col, name, sub) => `<a href="#${href}"><i style="color:${col}">${ic}</i><b>${name}</b><span>${sub}</span></a>`;
   return `<div class="topbar" style="padding-left:20px"><span class="brand">${LOGO(32)}<b>Dayline</b></span><div class="acts"><button class="iconbtn" data-act="search" aria-label="Search">${I.search}</button><a class="iconbtn" href="#settings" aria-label="Settings">${I.gear}</a></div></div>
   <div class="mo-h">Lists</div><div class="nav">${li('inbox', I.inbox, '#3B9EFF', 'Inbox', inb)}${li('upcoming', I.cal, '#2BB5A6', 'Next 7 days', '')}${li('someday', I.box, '#C9A66B', 'Someday', sd)}${li('waiting', I.clock, '#F59E0B', 'Waiting on', open().filter(smIsWait).length || '')}${li('done', I.done, '#22C55E', 'Completed', '')}${li('trash', I.trash, 'var(--muted)', 'Trash', tr)}</div>
-  <div class="mo-h">Tools</div><div class="mo-tools">${tool('focus', I.timer, '#F97316', 'Focus timer', S.timer.running ? 'Running now' : `${S.settings.pomo} min sessions`)}${tool('dates', I.gift, '#FB7185', 'Birthdays', nextD === 0 ? 'One today' : nextD != null ? `Next in ${plural(nextD, 'day')}` : 'and dates')}${tool('templates', I.layers, '#8B5CF6', 'Templates', `${S.templates.length} saved`)}${tool('life', I.target, '#10B981', 'Life list', act ? `${act} active` : 'Big goals')}<button data-sm="ask"><i>✨</i><b>Ask Dayline</b><span>Ask or tell, in plain words</span></button><button data-sm="dump"><i>🧠</i><b>Brain dump</b><span>A messy note into tasks</span></button></div>
+  <div class="mo-h">Tools</div><div class="mo-tools">${tool('focus', I.timer, '#F97316', 'Focus timer', S.timer.running ? 'Running now' : `${S.settings.pomo} min sessions`)}${tool('dates', I.gift, '#FB7185', 'Birthdays', nextD === 0 ? 'One today' : nextD != null ? `Next in ${plural(nextD, 'day')}` : 'and dates')}${tool('templates', I.layers, '#8B5CF6', 'Templates', `${S.templates.length} saved`)}${tool('life', I.target, '#10B981', 'Life list', act ? `${act} active` : 'Big goals')}<button data-sm="ask"><i>✨</i><b>Ask Dayline</b><span>Ask or tell, in plain words</span></button></div>
   <div class="mo-h">Projects<button data-act="newproject" aria-label="New project">${I.plus}New</button></div><div class="nav">${projectsNav('', '')}${filtersNav('', '')}</div>
   <div class="mo-foot"><button data-sm="reorder">${I.edit}Reorder projects</button></div>`;
 }
@@ -6323,7 +6331,7 @@ setTimeout(() => afterSync(drainActs), 400);
   if (q.get('quick')) { window.QM = true; document.body.classList.add('qm'); document.title = 'Add to Dayline'; setTimeout(() => quickAdd({ quick: true }), 120); }
   else if (q.get('add') || shared) { const txt = (q.get('text') || '').trim(), url = (q.get('url') || '').trim(); const lines = txt.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
     const title = (q.get('prefill') || q.get('title') || lines.shift() || url || '').slice(0, 200); const rest = [...lines, url && !title.includes(url) ? url : ''].filter(Boolean).join('\n');
-    if (lines.length >= 2 && !q.get('prefill')) setTimeout(() => smDumpSheet(txt), 400); else setTimeout(() => quickAdd({ prefill: title, prenote: rest }), 400); }
+    setTimeout(() => quickAdd({ prefill: title, prenote: rest }), 400); }
   if (q.get('focus') && getTask(q.get('focus'))) setTimeout(() => { S.timer.taskId = q.get('focus'); resetTimer('work'); startTimer(); go('focus'); }, 400);
   if (q.toString()) history.replaceState({ sk: 'app' }, '', location.pathname + location.hash);
 })();
