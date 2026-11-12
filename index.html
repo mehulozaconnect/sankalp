@@ -1276,6 +1276,8 @@ button.warn{display:block;width:100%;text-align:left}
 .sm-wt{padding:10px 0;border-bottom:1px solid var(--line)}.sm-wt .tt{display:flex;gap:8px;align-items:flex-start;font-weight:600;font-size:14.5px}.sm-wt .tt .pdot{margin-top:7px}.sm-wt .tt span{display:flex;flex-direction:column}.sm-wt small{font-size:12px;color:var(--muted);font-weight:600}
 .sm-wd{display:flex;gap:6px;overflow-x:auto;margin-top:8px;scrollbar-width:none}.sm-wd::-webkit-scrollbar{display:none}.sm-wd button{flex:none;height:32px;padding:0 11px;border-radius:10px;background:var(--surface);font-weight:700;font-size:13px;color:var(--ink)}.sm-wd button:active{background:var(--ink);color:var(--bg)}
 .qa-multi{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 4px;padding:10px 12px;border-radius:14px;background:color-mix(in srgb,var(--accent) 12%,var(--bg))}.qa-multi span{font-size:14px;font-weight:700}.qa-multi button{height:34px;padding:0 14px;border-radius:10px;background:var(--accent);color:var(--on-accent);font-weight:800;font-size:13.5px}
+.qa-multi.qa-m2,#qaMulti{display:flex;flex-direction:column;align-items:stretch;gap:4px}#qaMulti b,.qa-m2 b{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-text)}#qaMulti span,.qa-m2 span{display:flex;gap:10px;font-size:14px;font-weight:600;color:var(--ink)}#qaMulti em,.qa-m2 em{font-style:normal;flex:none;min-width:70px;color:var(--muted);font-weight:700;font-size:13px}
+.sm-split{display:block;width:100%;margin-top:10px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--ink) 7%,transparent);font-weight:700;font-size:14px;color:var(--ink);text-align:left}
 </style>
 </head>
 <body>
@@ -3559,7 +3561,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.2.1';
+const APPV = '6.2.2';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -3879,11 +3881,11 @@ function quickAdd(ctxOverride) {
   `, ctx.quick ? () => window.close() : null, !!ctx.quick);
   const inp = $('#qaIn'), addB = $('#qaAdd');
   const ov = {};
-  const upd = () => { const v = inp.value.trim(); addB.disabled = !v; $('#qaExp').disabled = !v; if (!v) { $('#qaChips').innerHTML = ''; $('#qaPrev').innerHTML = ''; return; } const r = parseTask(v); if (ov.date) { r.date = ov.date; r.someday = false; } if (ov.time) { r.time = ov.time; if (!r.reminders.length) r.reminders = [0]; } r._edit = true; const nagOn = ov.nag ?? !!r.nag; $('#qaChips').innerHTML = chipsFor(r) + (r.reminders.length || r.time ? `<button type="button" class="chip nagt${nagOn ? ' on' : ''}" data-nagt aria-pressed="${nagOn}" title="Repeat the reminder every 10 minutes until you tick Done">${I.repeat}${nagOn ? 'Keep reminding: on' : 'Keep reminding'}</button>` : ''); { const nb = $('#qaChips [data-nagt]'); if (nb) { nb.onpointerdown = e => e.preventDefault(); nb.onclick = () => { ov.nag = !nagOn; upd(); }; } } $$('#qaChips [data-chip]').forEach(b => { b.onpointerdown = e => e.preventDefault(); b.onclick = () => { const el = $(b.dataset.chip === 'date' ? '#qaD' : '#qaT'); el.value = b.dataset.chip === 'date' ? (r.date || today()) : (r.time || ''); try { el.showPicker(); } catch (x) { el.focus(); el.click(); } }; }); $('#qaPrev').innerHTML = r.title ? `${r.meeting ? 'Meeting' : 'Task'}: <b>${esc(r.title)}</b>` : ''; };
+  const upd = () => { const v = inp.value.trim(); addB.disabled = !v; $('#qaExp').disabled = !v; if (!v || smMulti(v)) { $('#qaChips').innerHTML = ''; $('#qaPrev').innerHTML = ''; return; } const r = parseTask(v); if (ov.date) { r.date = ov.date; r.someday = false; } if (ov.time) { r.time = ov.time; if (!r.reminders.length) r.reminders = [0]; } r._edit = true; const nagOn = ov.nag ?? !!r.nag; $('#qaChips').innerHTML = chipsFor(r) + (r.reminders.length || r.time ? `<button type="button" class="chip nagt${nagOn ? ' on' : ''}" data-nagt aria-pressed="${nagOn}" title="Repeat the reminder every 10 minutes until you tick Done">${I.repeat}${nagOn ? 'Keep reminding: on' : 'Keep reminding'}</button>` : ''); { const nb = $('#qaChips [data-nagt]'); if (nb) { nb.onpointerdown = e => e.preventDefault(); nb.onclick = () => { ov.nag = !nagOn; upd(); }; } } $$('#qaChips [data-chip]').forEach(b => { b.onpointerdown = e => e.preventDefault(); b.onclick = () => { const el = $(b.dataset.chip === 'date' ? '#qaD' : '#qaT'); el.value = b.dataset.chip === 'date' ? (r.date || today()) : (r.time || ''); try { el.showPicker(); } catch (x) { el.focus(); el.click(); } }; }); $('#qaPrev').innerHTML = r.title ? `${r.meeting ? 'Meeting' : 'Task'}: <b>${esc(r.title)}</b>` : ''; };
   const fit = () => { inp.style.height = 'auto'; inp.style.height = inp.scrollHeight + 'px'; };
   inp.addEventListener('input', () => { fit(); upd(); }); upd(); fit();
   // Several tasks typed or pasted at once (one per line, or separated by commas): offer to add them separately
-  const multi = () => { const v = inp.value.trim(), box = $('#qaMulti'); const parts = /\n|;/.test(v) ? v.split(/\n|;/) : (v.match(/,/g) || []).length >= 1 ? v.split(/,\s*/) : []; const L = parts.map(x => x.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').trim()).filter(x => x.split(/\s+/).length >= 2);
+  const multi = () => { const v = inp.value.trim(), box = $('#qaMulti'), hint = smMultiHint(v, ctx); box.hidden = !hint; box.innerHTML = hint; return; const parts = /\n|;/.test(v) ? v.split(/\n|;/) : (v.match(/,/g) || []).length >= 1 ? v.split(/,\s*/) : []; const L = parts.map(x => x.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').trim()).filter(x => x.split(/\s+/).length >= 2);
     if (L.length < 2 || L.join(' ').length < v.replace(/[\n;,]/g, ' ').trim().length * .6) { box.hidden = true; return; }
     box.hidden = false; box.innerHTML = `<span>Looks like ${L.length} tasks</span><button type="button" id="qaSplit">Add as ${L.length} tasks</button>`;
     $('#qaSplit').onpointerdown = e => e.preventDefault();
@@ -3938,6 +3940,7 @@ function quickAdd(ctxOverride) {
   });
   const submit = e => {
     e && e.preventDefault(); const v = inp.value.trim(); if (!v) return;
+    if (!ctx.tpl && smMulti(v)) { const many = smMulti(v); const ids = smMultiAdd(v, ctx, t => { const keep = ov.time; if (many.iv) delete ov.time; applyOv(t); if (keep) ov.time = keep; }); if (ids && ids.length) { askNotify(); closeSheet(true); if (ctx.quick) { quickDone(); return; } render(); toast(`Added ${plural(ids.length, 'task')}`, smUndoAdd(ids)); return; } }
     const res = addFromText(v, ctx); if (!res) { toast('Add a few words for the task name'); return; }
     const nv = noteVal(); if (nv && !res.meeting) { res.notes = (res.notes || '') + nv; res.nh = true; save(); }
     applyOv(res);
@@ -4716,9 +4719,10 @@ function wire(view) {
     ab.addEventListener('focus', () => { tools.hidden = false; }); ab.addEventListener('blur', () => setTimeout(() => { if (document.activeElement !== ab) { tools.hidden = true; closePk(); } }, 150));
     ab.addEventListener('click', scanPk);
     { const go = $('#abGo'); if (go) go.onpointerdown = ev => { ev.preventDefault(); closePk(); ab.onkeydown({ key: 'Enter', preventDefault() { } }); }; }
-    ab.oninput = () => { scanPk(); if (ab.value.includes('\n')) { ab.value = ab.value.replace(/\n/g, ''); ab.onkeydown({ key: 'Enter', preventDefault() { } }); return; } const v = ab.value.trim(); if (!v) { pv.innerHTML = ''; return; } const r = parseTask(v); r._edit = true; pv.innerHTML = (r.date || r.time || r.priority || r.projectId || r.repeat || r.tags.length) ? chipsFor(r) : ''; };
+    ab.oninput = () => { scanPk(); if (ab.value.includes('\n')) { ab.value = ab.value.replace(/\n/g, ''); ab.onkeydown({ key: 'Enter', preventDefault() { } }); return; } const v = ab.value.trim(); if (!v) { pv.innerHTML = ''; return; } { const hh = smMultiHint(v, route()); if (hh) { pv.innerHTML = `<div class="qa-multi qa-m2">${hh}</div>`; return; } } const r = parseTask(v); r._edit = true; pv.innerHTML = (r.date || r.time || r.priority || r.projectId || r.repeat || r.tags.length) ? chipsFor(r) : ''; };
     ab.onkeydown = e => { if (!apk.hidden && pk.items.length && e.key) { if (e.key === 'ArrowDown') { e.preventDefault(); pk.i = (pk.i + 1) % pk.items.length; drawPk(); return; } if (e.key === 'ArrowUp') { e.preventDefault(); pk.i = (pk.i - 1 + pk.items.length) % pk.items.length; drawPk(); return; } if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault && e.preventDefault(); choosePk(pk.i); return; } if (e.key === 'Escape') { closePk(); return; } }
       if (e.key === 'Escape') { ab.value = ''; pv.innerHTML = ''; ab.blur(); return; } if (e.key !== 'Enter' || e.isComposing) return; e.preventDefault(); const v = ab.value.trim(); if (!v) return;
+      if (smMulti(v)) { const ids = smMultiAdd(v, route()); if (ids && ids.length) { ab.value = ''; pv.innerHTML = ''; askNotify(); render(); toast(`Added ${plural(ids.length, 'task')}`, smUndoAdd(ids)); return; } }
       const res = addFromText(v, route()); if (!res) { toast('Add a few words for the task name'); return; } if (res.meeting) { render(); toast(`Meeting added, ${fmtClock(res.meeting.s)}`); return; }
       ab.value = ''; pv.innerHTML = ''; if (res.reminders.length) askNotify(); render(); const n = $('#abIn'); if (n) { n.value = ''; n.focus(); } const np = $('#abPrev'); if (np) np.innerHTML = '';
       const where = res.someday ? 'Someday' : res.date === today() ? 'Today' : res.date ? fmtDate(res.date) : res.projectId ? proj(res.projectId).name : 'Inbox'; toast(`Added to ${where}`); }; } }
@@ -5878,7 +5882,7 @@ function smPrepHtml() {
 function smNextCard(N) {
   const t = N.t, p = proj(t.projectId); const sub = [t.time ? fmtTime(t.time) : `About ${fmtMins(smEst(t))}`, p ? p.name : '', t.date < today() ? 'Overdue' : ''].filter(Boolean).join(' · ');
   return `<section class="sm-next" aria-label="Next up"><div class="sm-k">Next up · ${esc(N.why)}</div><button class="sm-nt" data-act="open" data-id="${t.id}">${esc(t.title)}</button><div class="sm-ns">${esc(sub)}</div>
-  <div class="sm-btns"><button class="sm-b pri" data-act="done" data-id="${t.id}">${I.check}Done</button><button class="sm-b" data-sm="notnow" data-id="${t.id}">Not now</button><button class="sm-b" data-sm="focus" data-id="${t.id}">${I.play}Focus</button></div>${N.note ? `<p class="sm-why">${esc(N.note)}</p>` : ''}</section>`;
+  <div class="sm-btns"><button class="sm-b pri" data-act="done" data-id="${t.id}">${I.check}Done</button><button class="sm-b" data-sm="notnow" data-id="${t.id}">Not now</button><button class="sm-b" data-sm="focus" data-id="${t.id}">${I.play}Focus</button></div>${smMulti(t.title) ? `<button class="sm-split" data-sm="split" data-id="${t.id}">✂️ This looks like ${plural(smMulti(t.title).segs.length, 'task')}. Split it</button>` : ''}${N.note ? `<p class="sm-why">${esc(N.note)}</p>` : ''}</section>`;
 }
 function smPlanCard(P) {
   const n = P.pool.length, tight = P.over.length > 0, wd = new Date().getDay(), cap = smCap(wd);
@@ -6312,6 +6316,57 @@ function smWeekSheet(ws0) {
   $('#smWkOk').onclick = () => { closeSheet(true); render(); if (moved) toast('Week planned', () => { JSON.parse(snap).forEach(([id, d, sd, p, f]) => { const t = getTask(id); if (t) { t.date = d; t.someday = sd; t.pushed = p; t.firedKeys = f; } }); save(); render(); }); };
 }
 document.addEventListener('click', ev => { const b = ev.target.closest('[data-sm="weekplan"]'); if (!b) return; ev.preventDefault(); smWeekSheet(b.dataset.d); });
+
+
+/* ---------- Smart add: several tasks in one line, shared day, spaced times ---------- */
+const SM_VERB = 'call|ring|send|email|mail|pay|book|buy|order|meet|check|follow|ask|tell|text|whatsapp|message|review|prepare|share|update|remind|pick|drop|get|fix|finish|submit|draft|write|confirm|schedule|plan|visit|collect|renew|return';
+function smMulti(v) {
+  let s = String(v || '').trim(); if (!s) return null; let iv = 0, start = null, shared = '';
+  const ivA = s.match(/\s*\b(?:in|at|with|on)?\s*(?:a\s+)?(\d{1,3})\s*-?\s*(?:min|mins|minutes?|m)\s*(?:intervals?|gaps?|apart|each|breaks?)\b/i) || s.match(/\s*\bevery\s*(\d{1,3})\s*(?:min|mins|minutes?)\b/i);
+  if (ivA) { iv = Math.min(240, Math.max(5, +ivA[1])); s = s.replace(ivA[0], ' '); }
+  else { const bare = s.match(/\s*\b(?:(?:in|at|with)\s+)?(?:an?\s+)?(?:intervals?|gaps?|one after (?:the )?other|spaced out)\b/i); if (bare) { iv = 15; s = s.replace(bare[0], ' '); } }
+  const st = s.match(/\s*\b(?:from|starting(?:\s+at|\s+from)?|start(?:ing)?\s+at)\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\b/i); if (st) { start = st[1]; s = s.replace(st[0], ' '); }
+  const sd = s.match(/\s*\b(?:all|both|each|everything)\s+(?:of\s+them\s+)?(today|tonight|tomorrow|tmrw|tmr|day after tomorrow|mon(?:day)?|tue(?:s|sday)?|wed(?:nesday)?|thu(?:rs|rsday)?|fri(?:day)?|sat(?:urday)?|sun(?:day)?|next week|this week(?:end)?)\b/i); if (sd) { shared = sd[1]; s = s.replace(sd[0], ' '); }
+  const parts = s.split(new RegExp(`\\r?\\n|;|,\\s*(?:and\\s+)?|\\s+(?:and then|then|and also|also|and)\\s+(?=(?:${SM_VERB})\\b)`, 'i')).map(x => x.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').replace(/[\s.]+$/, '').trim()).filter(Boolean);
+  const segs = parts.filter(x => x.split(/\s+/).length >= 2);
+  if (segs.length < 2 && !(segs.length === 1 && iv)) return null;
+  if (segs.join(' ').length < s.replace(/[\n;,]/g, ' ').trim().length * .6) return null;
+  return { segs: segs.map(x => shared ? x + ' ' + shared : x), iv, start, shared };
+}
+// times one after another, skipping meetings; on today the first one is about 5 minutes from now
+function smTimes(d, n, iv, start) {
+  const td = today(), ms = meetingsOn(d).filter(m => !m.allDay).map(m => [minOf(m.s), minOf(m.e) || 1440]);
+  let c = start ? hm2m(parseTask('x ' + start).time || '09:00') : d === td ? Math.ceil((smNowM() + 5) / 5) * 5 : workWin()[0]; const out = [];
+  for (let i = 0; i < n && c < 1440; i++) { for (let k = 0; k < 20; k++) { const hit = ms.find(([a, b]) => c < b && c + iv > a); if (!hit) break; c = Math.ceil(hit[1] / 5) * 5; } if (c + iv > 1440) break; out.push(smHM(c)); c += iv; }
+  return out;
+}
+function smMultiPlan(v, ctx) {
+  const M = smMulti(v); if (!M) return null; const items = M.segs.map(x => ({ x, r: parseTask(x) }));
+  const d = items.find(i => i.r.date)?.r.date || (ctx && ctx.date) || (M.iv ? today() : null);
+  const times = M.iv ? smTimes(d, items.length, M.iv, M.start || (ctx && ctx.start && d === today() && hm2m(ctx.start) > smNowM() ? fmtTime(ctx.start) : null)) : [];
+  return { M, items, d, times };
+}
+function smMultiAdd(v, ctx, after) {
+  const P = smMultiPlan(v, ctx); if (!P) return null; const ids = [];
+  P.items.forEach((it, i) => { const t = addFromText(it.x, ctx || { view: 'inbox' }); if (!t || t.meeting) return; if (after) after(t);
+    if (P.M.iv) { if (t.date !== P.d) setDate(t, P.d); t.someday = false; if (P.times[i] && !it.r.time) t.time = P.times[i]; t.duration = P.M.iv; if (!t.reminders.length) t.reminders = [0]; t.firedKeys = []; }
+    else if (P.d && !t.date) { setDate(t, P.d); t.someday = false; }
+    ids.push(t.id); });
+  save(); return ids;
+}
+function smMultiHint(v, ctx) {
+  const P = smMultiPlan(v, ctx); if (!P) return '';
+  return `<b>Adds ${plural(P.items.length, 'task')}</b>${P.items.map((it, i) => `<span><em>${P.times[i] ? fmtTime(P.times[i]) : it.r.time ? fmtTime(it.r.time) : P.d ? fmtDate(P.d) : 'Inbox'}</em>${esc(it.r.title)}</span>`).join('')}`;
+}
+const smUndoAdd = ids => () => { S.tasks = S.tasks.filter(t => !ids.includes(t.id)); ids.forEach(id => Object.keys(S.plan).forEach(d => S.plan[d] = S.plan[d].filter(x => x !== id))); save(); render(); };
+// A task that is really several: split it in place, keeping its day
+function smSplitTask(id) {
+  const t = getTask(id); if (!t) return;
+  const ids = smMultiAdd(t.title, { view: 'inbox', date: t.date || undefined, start: t.time || undefined }, n => { n.projectId = n.projectId || t.projectId; n.priority = Math.min(n.priority, t.priority); }); if (!ids || !ids.length) return;
+  const snap = JSON.stringify(t); S.tasks = S.tasks.filter(x => x.id !== id); pushClose(id); save(); render();
+  toast(`Split into ${plural(ids.length, 'task')}`, () => { S.tasks = S.tasks.filter(x => !ids.includes(x.id)); S.tasks.push(JSON.parse(snap)); save(); render(); });
+}
+document.addEventListener('click', ev => { const b = ev.target.closest('[data-sm="split"]'); if (!b) return; ev.preventDefault(); smSplitTask(b.dataset.id); });
 
 /* ================= start ================= */
 document.addEventListener('focusin', e => { if (!isWide() && e.target.matches && e.target.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,[contenteditable=true]')) document.body.classList.add('typing'); });
