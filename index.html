@@ -1269,6 +1269,12 @@ button.warn{display:block;width:100%;text-align:left}
 .sm-sheet .wsec em button{color:var(--accent-text);font-weight:800;font-size:13px}
 .sm-mv button svg{width:14px;height:14px;vertical-align:-2px}
 .sm-fill{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:12px;border-radius:14px;background:var(--surface);margin-bottom:6px;color:var(--ink)}.sm-fill span{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.sm-fill b{font-size:15px}.sm-fill small{font-size:12px;color:var(--muted);font-weight:600}.sm-fill em{font-style:normal;flex:none;font-size:12.5px;font-weight:800;color:var(--accent-text)}
+.side-h{padding:14px 12px 4px;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ag-plan.wk{width:auto;margin:2px 16px 10px;background:linear-gradient(135deg,color-mix(in srgb,#3E63DD 18%,var(--bg)),color-mix(in srgb,#6E56CF 14%,var(--bg)))}
+.sm-wk{display:grid;grid-template-columns:repeat(auto-fit,minmax(36px,1fr));gap:6px;margin-top:14px}.sm-wk div{display:flex;flex-direction:column;align-items:center;gap:3px}.sm-wk span{font-size:11.5px;font-weight:700;color:var(--muted)}.sm-wk b{font-size:16px}
+.sm-wk i{width:22px;height:56px;border-radius:7px;background:var(--surface);display:flex;align-items:flex-end;overflow:hidden}.sm-wk u{display:block;width:100%;background:#2F7BEA;border-radius:7px}.sm-wk .over u{background:#E5484D}.sm-wk small{font-size:11px;color:var(--muted);font-weight:700}
+.sm-wt{padding:10px 0;border-bottom:1px solid var(--line)}.sm-wt .tt{display:flex;gap:8px;align-items:flex-start;font-weight:600;font-size:14.5px}.sm-wt .tt .pdot{margin-top:7px}.sm-wt .tt span{display:flex;flex-direction:column}.sm-wt small{font-size:12px;color:var(--muted);font-weight:600}
+.sm-wd{display:flex;gap:6px;overflow-x:auto;margin-top:8px;scrollbar-width:none}.sm-wd::-webkit-scrollbar{display:none}.sm-wd button{flex:none;height:32px;padding:0 11px;border-radius:10px;background:var(--surface);font-weight:700;font-size:13px;color:var(--ink)}.sm-wd button:active{background:var(--ink);color:var(--bg)}
 </style>
 </head>
 <body>
@@ -2172,8 +2178,8 @@ function row(t, o = {}) {
 const rows = (list, o) => `<div class="list">${list.map(t => row(t, o)).join('')}</div>`;
 function navItem(href, icon, color, name, count, on, extra = '') { return `<a class="navi${on ? ' on' : ''}" href="#${href}"><span style="color:${on ? 'var(--accent)' : color};display:flex">${icon}</span><span class="nm">${esc(name)}</span>${extra}${count !== '' && count != null ? `<span class="c">${count}</span>` : ''}</a>`; }
 Object.assign(I, { trophy: sv('<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M12 13v4M8 20h8M10 17h4"/>') });
-const NAV_DEF = ['inbox', 'today', 'calendar', 'reflect', 'you', 'someday', 'habits', 'life', 'dates', 'templates', 'focus', 'review', 'insights', 'progress'];
-const NAV_NAMES = { inbox: 'Inbox', today: 'Today', calendar: 'Calendar', reflect: 'Reflect', you: 'You', someday: 'Someday', habits: 'Habits', life: 'Life list', dates: 'Birthdays and dates', templates: 'Templates', focus: 'Focus timer', review: 'Day review', insights: 'Insights', progress: 'Progress' };
+const NAV_DEF = ['today', 'calendar', 'inbox', 'reflect', 'you', 'waiting', 'someday', 'focus', 'dates', 'templates', 'life'];
+const NAV_NAMES = { inbox: 'Inbox', today: 'Today', calendar: 'Plan', waiting: 'Waiting on', reflect: 'Reflect', you: 'You', someday: 'Someday', habits: 'Habits', life: 'Life list', dates: 'Birthdays and dates', templates: 'Templates', focus: 'Focus timer', review: 'Day review', insights: 'Insights', progress: 'Progress' };
 function navOrder() { const o = (S.settings.navOrder || []).filter(k => NAV_DEF.includes(k)); NAV_DEF.forEach((k, i) => { if (!o.includes(k)) o.splice(Math.min(i, o.length), 0, k); }); return o; }
 function listsNav(cur) {
   const td = today(); const D = todayData();
@@ -2184,9 +2190,10 @@ function listsNav(cur) {
   const M = {
     inbox: () => navItem('inbox', I.inbox, '#3B9EFF', 'Inbox', inboxTasks().length || '', cur === 'inbox'),
     today: () => navItem('today', I.star, '#F5B800', 'Today', D.openCount || '', cur === 'today', D.overdue.length ? `<span class="bad" aria-label="${D.overdue.length} overdue">${D.overdue.length}</span>` : ''),
-    calendar: () => navItem('calendar', I.grid, '#E5484D', 'Calendar', '', cur === 'calendar'),
+    calendar: () => navItem('calendar', I.cal, '#E5484D', 'Plan', '', cur === 'calendar' || cur === 'week'),
+    waiting: () => { const n = open().filter(smIsWait).length; return n || cur === 'waiting' ? navItem('waiting', I.clock, '#F59E0B', 'Waiting on', n || '', cur === 'waiting') : ''; },
     reflect: () => { const st = rfStreak().n; return navItem('reflect', RF_IC, '#8B5CF6', 'Reflect', rf().days[today()]?.mood ? (st ? '🔥' + st : '✓') : '', cur === 'reflect'); },
-    you: () => navItem('you', I.chart, '#22B8D9', 'You', '', cur === 'you'),
+    you: () => navItem('you', I.chart, '#22B8D9', 'You', '', ['you', 'habits', 'progress', 'insights'].includes(cur)),
     someday: () => { const sc = open().filter(t => t.someday).length; return sc || cur === 'someday' ? navItem('someday', I.box, '#C9A66B', 'Someday', sc || '', cur === 'someday') : ''; },
     habits: () => navItem('habits', I.drop, '#EC4899', 'Habits', hab ? hab + ' left' : '', cur === 'habits'),
     life: () => navItem('life', I.target, '#10B981', 'Life list', act ? act + ' active' : '', cur === 'life'),
@@ -2197,7 +2204,7 @@ function listsNav(cur) {
     insights: () => navItem('insights', I.chart, '#22B8D9', 'Insights', '', cur === 'insights'),
     progress: () => { const X = rwIndex(); return navItem('progress', I.trophy, '#F5A524', 'Progress', X.streak ? '🔥' + X.streak : '', cur === 'progress'); },
   };
-  return navOrder().filter(k => !hide.includes(k) || cur === k).map(k => M[k]()).join('');
+  let tl = 0; return navOrder().filter(k => !hide.includes(k) || cur === k).map(k => (['focus', 'dates', 'templates', 'life'].includes(k) && !tl++ ? '<div class="side-h">Tools</div>' : '') + M[k]()).join('');
 }
 function projSorted() { const o = S.settings.projOrder || []; const ix = id => { const i = o.indexOf(id); return i < 0 ? 1e6 + S.projects.findIndex(p => p.id === id) : i; }; return [...S.projects].sort((a, b) => ix(a.id) - ix(b.id)); }
 function areasSorted() { const a = []; projSorted().forEach(p => { if (!a.includes(p.area)) a.push(p.area); }); const o = S.settings.areaOrder || []; return a.sort((x, y) => { const i = o.indexOf(x), j = o.indexOf(y); return (i < 0 ? 1e6 + a.indexOf(x) : i) - (j < 0 ? 1e6 + a.indexOf(y) : j); }); }
@@ -3551,7 +3558,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.1.2';
+const APPV = '6.2';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4665,7 +4672,7 @@ setInterval(() => { pushSetup(); pushQueueSoon(); }, 5 * 6e4);
 /* ================= render ================= */
 function viewHtml() {
   const { view, arg } = route();
-  const V = { reflect: () => vReflect(arg), life: vLife, review: () => arg === 'week' ? vWeekReview() : vClose(), you: vYou, close: vClose, waiting: vWaiting, home: vHome, today: vToday, plan: () => vPlan(arg || 'today'), week: vCalendar, inbox: vInbox, upcoming: vUpcoming, someday: vSomeday, calendar: vCalendar, project: () => vProject(arg), done: vDone, habits: vHabits, dates: vDates, templates: vTemplates, focus: vFocus, insights: () => vInsights(arg), progress: vProgress, trash: vTrash, filter: () => vFilter(arg), settings: () => vSettings(arg) };
+  const V = { reflect: () => vReflect(arg), life: vLife, review: () => arg === 'week' ? vWeekReview() : vClose(), you: vYou, close: vClose, waiting: vWaiting, planday: () => { setTimeout(() => { history.replaceState(null, '', '#today'); render(); if (!(S.days[today()] || {}).started) smPlanSheet('morning'); }, 60); return vToday(); }, home: vHome, today: vToday, plan: () => vPlan(arg || 'today'), week: vCalendar, inbox: vInbox, upcoming: vUpcoming, someday: vSomeday, calendar: vCalendar, project: () => vProject(arg), done: vDone, habits: vHabits, dates: vDates, templates: vTemplates, focus: vFocus, insights: () => vInsights(arg), progress: vProgress, trash: vTrash, filter: () => vFilter(arg), settings: () => vSettings(arg) };
   return (view === 'home' && isWide()) ? vToday() : (V[view] || vToday)();
 }
 function renderMainOnly() {
@@ -5782,7 +5789,9 @@ function rfPings() {
   const J = rf(), c = J.cfg, td = today(), now = Date.now(), out = []; const at = (d, hm) => pYmd(d).getTime() + hm2m(hm) * 6e4; const st = rfStreak().n;
   for (const d of [td, addDays(td, 1)]) {
     if (c.nudge !== false && !(S.days[d] || {}).wrap) out.push({ k: 'rf|eve|' + d, at: at(d, c.eve || '21:30'), ping: 1, title: '🌙 Close the day', body: `${st ? `🔥 ${st}-day streak · ` : ''}Leftovers, how today felt and tomorrow's top 3. 2 minutes.`, tag: 'reflect', actions: [{ action: 'm4', title: '🙂 Good' }, { action: 'm3', title: '😐 Okay' }, { action: 'm2', title: '😕 Low' }], url: './#close' });
-    if (c.morn !== false && !J.days[d]?.int?.t) out.push({ k: 'rf|morn|' + d, at: at(d, rfAddMin(S.settings.morning || '08:30', 10)), ping: 1, title: '🌅 One intention for today', body: J.days[addDays(d, -1)]?.mood ? 'Set it in 20 seconds' : 'Set it in 20 seconds, and yesterday in 30?', tag: 'reflect', url: './#reflect' });
+    const dm = smPool(d).length, dmt = meetingsOn(d).length;
+    if (S.settings.amPlan !== false && (dm || dmt) && !(S.days[d] || {}).started && !(S.days[d] || {}).wrap) out.push({ k: 'rf|plan|' + d, at: at(d, S.settings.morning || '08:30'), ping: 1, title: '☀️ Plan your day', body: `${[dm ? plural(dm, 'task') : '', dmt ? plural(dmt, 'meeting') : ''].filter(Boolean).join(', ')}${smClashes(d).length ? ` · ⚠️ ${plural(smClashes(d).length, 'clash', 'clashes')}` : ''}. One minute.`, tag: 'plan', url: './#planday' });
+    else if (c.morn !== false && !J.days[d]?.int?.t) out.push({ k: 'rf|morn|' + d, at: at(d, rfAddMin(S.settings.morning || '08:30', 10)), ping: 1, title: '🌅 One intention for today', body: J.days[addDays(d, -1)]?.mood ? 'Set it in 20 seconds' : 'Set it in 20 seconds, and yesterday in 30?', tag: 'reflect', url: './#reflect' });
     if (c.story !== false && pYmd(d).getDay() === 0) out.push({ k: 'rf|week|' + d, at: at(d, '20:00'), ping: 1, title: '📖 Your week in a page', body: 'Highs, lows, feelings and one idea for next week', tag: 'reflect-story', url: './#reflect/week' });
   }
   J.letters.filter(l => !l.opened && l.open >= td && l.open <= addDays(td, 1)).forEach(l => out.push({ k: 'rf|letter|' + l.id, at: at(l.open, '09:00'), ping: 1, title: '✉️ A letter from your past self', body: `Written ${fmtShort(l.at)}. It opens today.`, tag: 'reflect-letter', url: './#reflect' }));
@@ -5975,6 +5984,7 @@ function vPlanWeek() {
   const lbl = a.getMonth() === b.getMonth() ? `${MONSL[a.getMonth()]} ${a.getFullYear()}` : `${MONS[a.getMonth()]} – ${MONS[b.getMonth()]} ${b.getFullYear()}`;
   let h = topbar() + `<div class="thead"><h1>Plan</h1><span>${lbl}</span></div>`;
   h += `<div class="pw-bar"><button class="iconbtn" data-sm="wk" data-v="-1" aria-label="Previous week">${I.back}</button><button class="pill ghost" data-act="caltoday">Today</button><button class="iconbtn" data-sm="wk" data-v="1" aria-label="Next week">${I.next}</button><span></span><button class="pill ghost" data-sm="calmode" data-v="month">${I.grid}Month</button></div>`;
+  { const nw = open().filter(t => !t.someday && !t.repeat && !smIsWait(t) && (!t.date || t.date < td)).length, wk = smWeekDays(ws).length ? ws : addDays(ws, 7); h += `<button class="ag-plan wk" data-sm="weekplan" data-d="${wk}"><i>🗓️</i><span><b>Plan ${wk > td ? 'next week' : 'this week'}</b><small>${nw ? `${plural(nw, 'task')} overdue or in Inbox need a day` : 'See how loaded each day is'}</small></span>${I.next}</button>`; }
   h += `<div class="pw-strip">${days.map(k => { const d = pYmd(k), D = calDay(k), nt = D.ts.filter(t => !t.done).length, nm = D.ms.length + D.ad.length; return `<button class="${k === td ? 'td' : ''}${k === calSel ? ' sel' : ''}${k < td ? ' past' : ''}" data-act="calday" data-d="${k}" aria-label="${DAYSL[d.getDay()]} ${d.getDate()} ${MONSL[d.getMonth()]}${nm ? ', ' + plural(nm, 'meeting') : ''}${nt ? ', ' + plural(nt, 'task') : ''}"><span>${DAYS[d.getDay()].slice(0, 1)}</span><b>${d.getDate()}</b><em>${nm ? '<i class="m"></i>' : ''}${nt ? '<i class="t"></i>' : ''}</em></button>`; }).join('')}</div>`;
   if (!S.pcal && !S.settings.gOn) h += `<a class="gnote" href="#settings/gcal" style="text-decoration:none">${I.gcal}Connect a calendar to see your meetings here</a>`; else if (!S.pcal && !gValid()) h += `<button class="gnote" data-act="gref">${I.gcal}Google Calendar needs a tap to refresh</button>`;
   return h + calAgenda(calSel);
@@ -6268,6 +6278,32 @@ function smFillSheet(d, s, e) {
   $('#smFlNew').onclick = () => { closeSheet(true); setTimeout(() => quickAdd({ view: 'calendar', date: d, time: hm }), 240); };
 }
 document.addEventListener('click', ev => { const b = ev.target.closest('[data-sm="dayplan"],[data-sm="fill"]'); if (!b) return; ev.preventDefault(); if (b.dataset.sm === 'dayplan') smDayPlan(b.dataset.d); else smFillSheet(b.dataset.d, +b.dataset.s, +b.dataset.e); });
+
+
+/* ---------- Plan the week: spread what is waiting across the days that have room ---------- */
+function smWeekDays(ws) { const td = today(); return Array.from({ length: 7 }, (_, i) => addDays(ws, i)).filter(d => d >= td); }
+function smLoad(d) { const P = smPlan(d, d === today()); const need = P.pool.reduce((a, t) => a + smEst(t), 0); const [w0, w1] = workWin(); const wd = pYmd(d).getDay(); const work = wd === 0 || wd === 6 ? 240 : w1 - w0; return { need, free: P.free, n: P.pool.length, m: P.meets.length, work, cap: smCap(wd) }; }
+function smWeekSheet(ws0) {
+  const td = today(); let ws = ws0 || weekStart(td); if (smWeekDays(ws).length === 0) ws = addDays(ws, 7);
+  const snap = JSON.stringify(S.tasks.filter(t => !t.done).map(t => [t.id, t.date, t.someday, t.pushed || 0, t.firedKeys])); let moved = 0;
+  const days = smWeekDays(ws); const lbl = d => { const x = pYmd(d); return d === td ? 'Today' : d === addDays(td, 1) ? 'Tmrw' : DAYS[x.getDay()]; };
+  openSheet(sheetHead(ws <= td ? 'Plan this week' : 'Plan next week', 'Done', 'smWkOk') + `<div class="sm-sheet" id="smWk"></div>`);
+  const draw = () => {
+    const L = Object.fromEntries(days.map(d => [d, smLoad(d)])); const cand = open().filter(t => !t.someday && !t.repeat && !smIsWait(t) && (!t.date || t.date < td)).sort((a, b) => a.priority - b.priority || ((a.date || '9') < (b.date || '9') ? -1 : 1)).slice(0, 25);
+    let h = `<div class="sm-lead"><b>${cand.length ? `${plural(cand.length, 'task')} need a day` : 'Everything has a day'}</b><span>${cand.length ? 'Tap a day under each task, or let Dayline spread them by priority into the days with room.' : 'Nothing overdue and the Inbox is clear.'}</span></div>`;
+    h += `<div class="sm-wk">${days.map(d => { const l = L[d], pct = l.work ? Math.min(100, Math.round(l.need / Math.max(30, l.work) * 100)) : l.n ? 100 : 0, over = l.need > l.free + 15 || (l.cap && l.n > l.cap); return `<div class="${over ? 'over' : ''}"><span>${lbl(d)}</span><b>${pYmd(d).getDate()}</b><i><u style="height:${pct}%"></u></i><small>${l.n}${l.m ? ` · ${l.m} mtg` : ''}</small></div>`; }).join('')}</div><p class="sm-fine" style="margin-top:4px">Bar = planned work against the working day. Red = more than fits${Object.keys(S.settings.caps || {}).length ? ' or over your cap' : ''}. Numbers: tasks · meetings.</p>`;
+    if (cand.length) { h += `<button type="button" class="btn acc sm-full" id="smWkAuto">✨ Spread them for me</button><div class="wsec">Waiting for a day</div>`;
+      cand.forEach(t => { h += `<div class="sm-wt"><div class="tt"><i class="pdot p${t.priority}"></i><span>${esc(t.title)}<small>${t.date ? `Overdue since ${fmtShort(t.date)}` : 'Inbox'} · ${fmtMins(smEst(t))}</small></span></div><div class="sm-wd">${days.map(d => `<button type="button" data-wt="${t.id}" data-d="${d}">${lbl(d)}</button>`).join('')}<button type="button" data-ws="${t.id}" title="Someday">Later</button></div></div>`; }); }
+    $('#smWk').innerHTML = h;
+    $$('#smWk [data-wt]').forEach(b => b.onclick = () => { const t = getTask(b.dataset.wt); setDate(t, b.dataset.d); moved++; save(); draw(); });
+    $$('#smWk [data-ws]').forEach(b => b.onclick = () => { const t = getTask(b.dataset.ws); t.someday = true; t.date = null; moved++; save(); draw(); });
+    const au = $('#smWkAuto'); if (au) au.onclick = () => { const room = Object.fromEntries(days.map(d => { const l = L[d]; const wd = pYmd(d).getDay(); return [d, { left: (wd === 0 || wd === 6) ? 0 : l.free - l.need, n: l.n, cap: l.cap }]; }));
+      let n = 0; cand.forEach(t => { const e = smEst(t); const ok = days.filter(x => room[x].left >= e && (!room[x].cap || room[x].n < room[x].cap)); if (!ok.length) return; const d = t.priority === 1 ? ok[0] : ok.reduce((m, x) => room[x].left > room[m].left + 30 ? x : m, ok[0]); setDate(t, d); room[d].left -= e; room[d].n++; n++; }); moved += n; save(); draw(); toast(n ? `Spread ${plural(n, 'task')} across the week` : 'No day has room left. Pick days yourself or move some to Later'); };
+  };
+  draw();
+  $('#smWkOk').onclick = () => { closeSheet(true); render(); if (moved) toast('Week planned', () => { JSON.parse(snap).forEach(([id, d, sd, p, f]) => { const t = getTask(id); if (t) { t.date = d; t.someday = sd; t.pushed = p; t.firedKeys = f; } }); save(); render(); }); };
+}
+document.addEventListener('click', ev => { const b = ev.target.closest('[data-sm="weekplan"]'); if (!b) return; ev.preventDefault(); smWeekSheet(b.dataset.d); });
 
 /* ================= start ================= */
 document.addEventListener('focusin', e => { if (!isWide() && e.target.matches && e.target.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,[contenteditable=true]')) document.body.classList.add('typing'); });
