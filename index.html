@@ -1263,6 +1263,12 @@ button.warn{display:block;width:100%;text-align:left}
 .sm-dots3{display:inline-flex;gap:4px}.sm-dots3 i{width:7px;height:7px;border-radius:4px;background:var(--muted);animation:smd 1s infinite}.sm-dots3 i:nth-child(2){animation-delay:.15s}.sm-dots3 i:nth-child(3){animation-delay:.3s}@keyframes smd{50%{opacity:.25}}
 #smAsk{height:48px!important;min-height:0!important}
 .sm-ti.cl{box-shadow:inset 0 0 0 2px #F59E0B}.sm-clash{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:-2px 0 4px;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,#F59E0B 14%,var(--bg));font-size:13px;font-weight:700;color:var(--ink)}.sm-clash button{margin-left:auto;height:32px;padding:0 12px;border-radius:10px;background:var(--ink);color:var(--bg);font-weight:800;font-size:13px}
+.agfree{width:100%;justify-content:flex-start;cursor:pointer}.agfree em{display:inline-flex;align-items:center;gap:2px;font-style:normal;font-size:12.5px;font-weight:800;color:var(--accent-text)}.agfree em svg{width:14px;height:14px}.agfree:active span{background:color-mix(in srgb,#1F8A3B 12%,transparent)}
+.ag-plan{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin:4px 0 12px;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg,color-mix(in srgb,#F59E3B 22%,var(--bg)),color-mix(in srgb,#E5484D 14%,var(--bg)));color:var(--ink)}.ag-plan i{font-style:normal;font-size:22px}.ag-plan span{flex:1;display:flex;flex-direction:column;gap:2px}.ag-plan b{font-size:16px}.ag-plan small{font-size:12.5px;color:var(--soft);font-weight:600}.ag-plan>svg{width:18px;height:18px;color:var(--muted)}
+.sm-set{flex:none;height:32px;padding:0 12px;border-radius:10px;background:var(--ink);color:var(--bg);font-weight:800;font-size:13px}
+.sm-sheet .wsec em button{color:var(--accent-text);font-weight:800;font-size:13px}
+.sm-mv button svg{width:14px;height:14px;vertical-align:-2px}
+.sm-fill{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:12px;border-radius:14px;background:var(--surface);margin-bottom:6px;color:var(--ink)}.sm-fill span{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.sm-fill b{font-size:15px}.sm-fill small{font-size:12px;color:var(--muted);font-weight:600}.sm-fill em{font-style:normal;flex:none;font-size:12.5px;font-weight:800;color:var(--accent-text)}
 </style>
 </head>
 <body>
@@ -2581,24 +2587,27 @@ function calAgenda(k) {
   const un = D.ts.filter(t => !t.time).sort(sortTasks);
   const nowM = k === td ? minOf(now) : -1; const [w0, w1] = workWin();
   let h = `<div class="ag"><div class="aghead"><div><h2>${k === td ? 'Today' : k === addDays(td, 1) ? 'Tomorrow' : DAYSL[sd.getDay()]}<span>${sd.getDate()} ${MONS[sd.getMonth()]}</span></h2><p>${[D.ms.length ? `${plural(D.ms.length, 'meeting')}, ${fmtMins(D.mm)}` : '', D.ts.length ? plural(D.ts.length, 'task') : '', `${fmtMins(D.free)} free`].filter(Boolean).join(' · ')}</p></div><button class="pill" data-act="addon" data-d="${k}">${I.plus}Add</button></div>`;
+  if (k >= td) { const wait = smBring(k).length, any = D.ts.filter(t => !t.time && !t.done).length; h += `<button class="ag-plan" data-sm="dayplan" data-d="${k}"><i>✨</i><span><b>Plan ${k === td ? 'today' : k === addDays(td, 1) ? 'tomorrow' : 'this day'}</b><small>${[any ? `Give ${plural(any, 'anytime task')} a time` : '', wait ? `${plural(wait, 'task')} waiting to be planned` : ''].filter(Boolean).join(' · ') || 'Tap a free slot below to fill it'}</small></span>${I.next}</button>`; }
   h += `<div class="agbar" aria-hidden="true">${(() => { const span = w1 - w0; return items.filter(x => x.e > w0 && x.s < w1).map(x => `<i class="${x.m ? 'm' : 't'}" style="left:${Math.max(0, (x.s - w0) / span * 100)}%;width:${Math.max(1.2, (Math.min(x.e, w1) - Math.max(x.s, w0)) / span * 100)}%"></i>`).join('') + (nowM >= w0 && nowM <= w1 ? `<b style="left:${(nowM - w0) / span * 100}%"></b>` : ''); })()}</div><div class="agax"><span>${fmtTime(S.settings.workStart || '09:30')}</span><span>${fmtTime(S.settings.shutdown || '19:00')}</span></div>`;
   const chips = [...D.bd.map(x => `<span class="ch-d">${x.kind === 'anniversary' ? '💍' : x.kind === 'birthday' ? '🎂' : '📌'} ${esc(x.name)}</span>`), ...D.ad.map(m => `<span>${esc(m.t)}</span>`)];
   if (chips.length) h += `<div class="agchips">${chips.join('')}</div>`;
   if (items.length) {
-    h += `<div class="agl">`; let prev = null, nowShown = nowM < 0;
+    h += `<div class="agl">`; let prev = k >= td ? Math.max(w0, nowM) : null, nowShown = nowM < 0;
+    const gap = (a, b) => b - a >= 30 && k >= td ? `<button class="agfree" data-sm="fill" data-d="${k}" data-s="${a}" data-e="${b}"><span>${fmtMins(b - a)} free · ${fmtTime(smHM(a))}</span><em>${I.plus}Fill it</em></button>` : '';
     items.forEach(x => {
-      if (prev != null && x.s - prev >= 45) h += `<div class="agfree"><span>${fmtMins(x.s - prev)} free</span></div>`;
+      if (prev != null && x.s > prev) h += gap(Math.ceil(prev / 5) * 5, x.s);
       if (!nowShown && x.s > nowM) { h += `<div class="agnow"><span>Now ${fmtClock(now)}</span></div>`; nowShown = true; }
       const tm = `<span class="agt"><b>${x.m ? fmtClock(x.m.s) : fmtTime(x.t.time)}</b>${x.e > x.s ? `<small>${fmtMins(x.e - x.s)}</small>` : ''}</span>`;
       if (x.m) { const m = x.m, live = m.s <= now && m.e > now, past = m.e <= now; h += `<div class="agi m${past ? ' past' : ''}${live ? ' live' : ''}">${tm}<div class="agb"><button class="agbb" data-act="meet" data-id="${esc(m.id)}"><span class="tt">${esc(m.t)}</span><span class="sb">${live ? 'Happening now' : 'Meeting'}</span></button>${m.join && !past ? `<a class="pill meet" href="${esc(m.join)}" target="_blank" rel="noopener">Join</a>` : ''}</div></div>`; }
       else { const t = x.t, p = proj(t.projectId); h += `<div class="agi t${t.done ? ' past' : ''}">${tm}<div class="agb"><button class="chk p${t.priority}" data-act="done" data-id="${t.id}" aria-label="${t.done ? 'Mark not done' : 'Complete'}: ${esc(t.title)}">${t.done ? I.check : ''}</button><button class="agbb" data-act="open" data-id="${t.id}"><span class="tt">${esc(t.title)}</span><span class="sb">${t.repeat ? 'Repeats' : p ? esc(p.name) : 'Task'}</span></button></div></div>`; }
-      prev = Math.max(prev || 0, x.e);
+      prev = Math.max(prev || 0, x.t ? Math.max(x.e, x.s + smEst(x.t)) : x.e);
     });
+    if (prev != null && w1 > prev) h += gap(Math.ceil(prev / 5) * 5, w1);
     if (!nowShown) h += `<div class="agnow"><span>Now ${fmtClock(now)}</span></div>`;
     h += `</div>`;
   }
   if (un.length) h += `<div class="grouph">Anytime</div>` + rows(un);
-  if (!items.length && !un.length && !chips.length) h += `<div class="agempty"><b>Free day</b><span>Nothing planned. Tap Add to plan it.</span></div>`;
+  if (!items.length && !un.length && !chips.length) h += k >= td ? `<div class="agl">${`<button class="agfree" data-sm="fill" data-d="${k}" data-s="${Math.max(w0, Math.ceil(nowM / 5) * 5)}" data-e="${w1}"><span>Free day</span><em>${I.plus}Fill it</em></button>`}</div>` : `<div class="agempty"><b>Free day</b><span>Nothing was planned.</span></div>`;
   return h + `</div>`;
 }
 function vCalendar() {
@@ -3542,7 +3551,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.1.1';
+const APPV = '6.1.2';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -6213,6 +6222,52 @@ document.addEventListener('click', ev => {
 });
 document.addEventListener('keydown', ev => { if (ev.target.id !== 'smFuIn' || ev.key !== 'Enter') return; ev.preventDefault(); const v = ev.target.value.trim(), sec = ev.target.closest('.sm-fu'); if (!v || !sec) return; const t = smFuAdd(sec.dataset.mid, v); if (t) { render(); toast(`Added for ${fmtDate(t.date)}`); } });
 document.addEventListener('input', ev => { if (ev.target.id === 'smFuIn' && ev.target.value.includes('\n')) { ev.target.value = ev.target.value.replace(/\n/g, ''); ev.target.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); } });
+
+
+/* ---------- Plan tab: plan a day, fill a free slot ---------- */
+// Tasks that still need a day: overdue, and Inbox tasks with no date
+function smBring(d) { const td = today(); return open().filter(t => !t.someday && !smIsWait(t) && (t.date ? t.date < td && t.date !== d : true)).sort((a, b) => a.priority - b.priority || ((a.date || '9') < (b.date || '9') ? -1 : 1)).slice(0, 15); }
+function smDayPlan(d) {
+  const td = today(), dd = pYmd(d), name = d === td ? 'today' : d === addDays(td, 1) ? 'tomorrow' : `${DAYSL[dd.getDay()]} ${dd.getDate()} ${MONS[dd.getMonth()]}`;
+  const snap = JSON.stringify(S.tasks.filter(t => !t.done).map(t => [t.id, t.date, t.time, t.duration, t.reminders, t.pushed || 0]));
+  openSheet(sheetHead('Plan ' + name, 'Done', 'smDpOk') + `<div class="sm-sheet" id="smDp"></div>`);
+  const draw = () => {
+    const P = smPlan(d, d === td), bring = smBring(d), planned = P.pool.reduce((a, t) => a + smEst(t), 0);
+    let h = `<div class="sm-lead"><b>${fmtMins(P.free) || '0m'} free${P.meets.length ? ` around ${plural(P.meets.length, 'meeting')}` : ''}</b><span>${P.pool.length ? `${plural(P.pool.length, 'task')} planned, about ${fmtMins(planned)}.` : 'Nothing planned yet.'}${P.over.length ? ` ${P.over.length} will not fit.` : ''}</span></div>`;
+    if (P.slots.length || P.over.length) { h += `<div class="wsec">Give them a time<em>${P.slots.length > 1 ? '<button type="button" id="smDpAll">Set all</button>' : ''}</em></div>`;
+      P.slots.forEach(x => h += `<div class="sm-ti"><span class="tm">~${fmtTime(smHM(x.s))}</span><span class="tt"><i class="pdot p${x.t.priority}"></i>${esc(x.t.title)}</span><small>${fmtMins(smEst(x.t))}</small><button type="button" class="sm-set" data-set="${x.t.id}" data-v="${smHM(x.s)}">Set</button></div>`);
+      P.over.forEach(t => h += `<div class="sm-ti"><span class="tm">No room</span><span class="tt"><i class="pdot p${t.priority}"></i>${esc(t.title)}</span><button type="button" class="sm-set" data-mvn="${t.id}">Next day</button></div>`); }
+    const fixed = [...P.meets.map(m => ({ s: minOf(m.s), l: m.t, m: 1, n: (m.e - m.s) / 6e4 })), ...P.fixed.map(t => ({ s: hm2m(t.time), l: t.title, n: smEst(t) }))].sort((a, b) => a.s - b.s);
+    if (fixed.length) h += `<div class="wsec">Already set</div>` + fixed.map(x => `<div class="sm-ti${x.m ? ' m' : ' fx'}"><span class="tm">${fmtTime(smHM(x.s))}</span><span class="tt">${esc(x.l)}</span><small>${fmtMins(x.n)}</small></div>`).join('');
+    h += `<div class="wsec">Bring in<em>${bring.length ? 'overdue and Inbox' : ''}</em></div>` + (bring.length ? bring.map(t => `<div class="sm-mv"><span class="tt"><i class="pdot p${t.priority}"></i>${esc(t.title)}<small>${t.date ? `Overdue since ${fmtShort(t.date)}` : 'Inbox'} · ${fmtMins(smEst(t))}</small></span><button type="button" data-in="${t.id}">${I.plus}Add</button></div>`).join('') : `<span class="rf-mut">Nothing waiting. Inbox is clear.</span>`);
+    h += `<button type="button" class="btn sec sm-full" id="smDpNew">${I.plus}New task for ${name}</button>`;
+    $('#smDp').innerHTML = h;
+    $$('#smDp [data-set]').forEach(b => b.onclick = () => { smSetTime(getTask(b.dataset.set), d, b.dataset.v); draw(); });
+    const all = $('#smDpAll'); if (all) all.onclick = () => { smPlan(d, d === td).slots.forEach(x => smSetTime(x.t, d, smHM(x.s))); draw(); };
+    $$('#smDp [data-mvn]').forEach(b => b.onclick = () => { const t = getTask(b.dataset.mvn); setDate(t, addDays(d, 1)); save(); draw(); });
+    $$('#smDp [data-in]').forEach(b => b.onclick = () => { const t = getTask(b.dataset.in); setDate(t, d); t.someday = false; save(); draw(); });
+    $('#smDpNew').onclick = () => { closeSheet(true); setTimeout(() => quickAdd({ view: 'calendar', date: d }), 240); };
+  };
+  draw();
+  $('#smDpOk').onclick = () => { closeSheet(true); render(); toast(`Planned ${name}`, () => { JSON.parse(snap).forEach(([id, date, time, dur, rem, p]) => { const t = getTask(id); if (t) { t.date = date; t.time = time; t.duration = dur; t.reminders = rem; t.pushed = p; t.firedKeys = []; } }); save(); render(); }); };
+}
+function smSetTime(t, d, hm) { if (!t) return; if (t.date !== d) setDate(t, d); t.someday = false; t.time = hm; t.duration = +t.duration || smEst(t); if (!t.reminders.length) t.reminders = [0]; t.firedKeys = []; save(); }
+function smFillSheet(d, s, e) {
+  const td = today(), len = e - s, hm = smHM(s);
+  const fit = t => smEst(t) <= len; const seen = new Set(); const pick = l => l.filter(t => fit(t) && !seen.has(t.id) && seen.add(t.id));
+  const same = pick(open().filter(t => t.date === d && !t.time && !t.someday).sort(sortTasks)), bring = pick(smBring(d)), later = pick(open().filter(t => t.date && t.date > d && t.date <= addDays(d, 7) && !t.time && !t.repeat).sort((a, b) => a.date < b.date ? -1 : 1).slice(0, 8));
+  const row = (t, sub) => `<button type="button" class="sm-fill" data-fl="${t.id}"><i class="pdot p${t.priority}"></i><span><b>${esc(t.title)}</b><small>${sub} · ${fmtMins(smEst(t))}</small></span><em>${fmtTime(hm)}</em></button>`;
+  let h = `<div class="sm-lead"><b>${fmtTime(hm)} to ${fmtTime(smHM(e))}</b><span>${fmtMins(len)} free. Pick a task that fits and it gets this time with a reminder.</span></div>`;
+  if (same.length) h += `<div class="wsec">Anytime ${d === td ? 'today' : 'that day'}</div>` + same.map(t => row(t, 'No time yet')).join('');
+  if (bring.length) h += `<div class="wsec">Waiting to be planned</div>` + bring.map(t => row(t, t.date ? `Overdue since ${fmtShort(t.date)}` : 'Inbox')).join('');
+  if (later.length) h += `<div class="wsec">Pull forward</div>` + later.map(t => row(t, `Planned ${fmtDate(t.date)}`)).join('');
+  if (!same.length && !bring.length && !later.length) h += `<span class="rf-mut">No open task fits ${fmtMins(len)}. Add a new one, or keep the time free.</span>`;
+  h += `<button type="button" class="btn sec sm-full" id="smFlNew">${I.plus}New task at ${fmtTime(hm)}</button>`;
+  openSheet(sheetHead('Fill this time', '', '') + `<div class="sm-sheet">${h}</div>`);
+  $$('#sheet [data-fl]').forEach(b => b.onclick = () => { const t = getTask(b.dataset.fl), old = [t.date, t.time, t.duration, t.reminders, t.pushed || 0]; smSetTime(t, d, hm); closeSheet(true); render(); toast(`${t.title.length > 28 ? t.title.slice(0, 27) + '…' : t.title} at ${fmtTime(hm)}`, () => { [t.date, t.time, t.duration, t.reminders, t.pushed] = old; t.firedKeys = []; save(); render(); }); });
+  $('#smFlNew').onclick = () => { closeSheet(true); setTimeout(() => quickAdd({ view: 'calendar', date: d, time: hm }), 240); };
+}
+document.addEventListener('click', ev => { const b = ev.target.closest('[data-sm="dayplan"],[data-sm="fill"]'); if (!b) return; ev.preventDefault(); if (b.dataset.sm === 'dayplan') smDayPlan(b.dataset.d); else smFillSheet(b.dataset.d, +b.dataset.s, +b.dataset.e); });
 
 /* ================= start ================= */
 document.addEventListener('focusin', e => { if (!isWide() && e.target.matches && e.target.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,[contenteditable=true]')) document.body.classList.add('typing'); });
