@@ -1262,6 +1262,7 @@ button.warn{display:block;width:100%;text-align:left}
 .sm-ask .rf-send{margin:0;position:sticky;bottom:0;background:var(--card);padding:8px 0 4px}
 .sm-dots3{display:inline-flex;gap:4px}.sm-dots3 i{width:7px;height:7px;border-radius:4px;background:var(--muted);animation:smd 1s infinite}.sm-dots3 i:nth-child(2){animation-delay:.15s}.sm-dots3 i:nth-child(3){animation-delay:.3s}@keyframes smd{50%{opacity:.25}}
 #smAsk{height:48px!important;min-height:0!important}
+.sm-ti.cl{box-shadow:inset 0 0 0 2px #F59E0B}.sm-clash{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:-2px 0 4px;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,#F59E0B 14%,var(--bg));font-size:13px;font-weight:700;color:var(--ink)}.sm-clash button{margin-left:auto;height:32px;padding:0 12px;border-radius:10px;background:var(--ink);color:var(--bg);font-weight:800;font-size:13px}
 </style>
 </head>
 <body>
@@ -3541,7 +3542,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.1';
+const APPV = '6.1.1';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5812,6 +5813,15 @@ function smPlan(d, fromNow, skipIds) {
   const need = flex.reduce((a, t) => a + smEst(t), 0);
   return { d, pool, fixed, eve, flex, slots, over, need, free, low, meets: meetingsOn(d) };
 }
+
+// A task with a set time that falls inside a meeting, and the first free time after it
+function smClashes(d) {
+  const ms = meetingsOn(d).filter(m => !m.allDay), now = Date.now(), nm = d === today() ? smNowM() : 0, [, w1] = workWin();
+  return smPool(d).filter(t => t.time).map(t => { const s0 = hm2m(t.time), e0 = s0 + smEst(t); const m = ms.find(x => s0 < (minOf(x.e) || 1440) && e0 > minOf(x.s)); if (!m || (d === today() && m.e < now)) return null;
+    const n = smEst(t); const busy = [...ms.map(x => [minOf(x.s), minOf(x.e) || 1440]), ...smPool(d).filter(o => o.time && o.id !== t.id).map(o => [hm2m(o.time), hm2m(o.time) + smEst(o)])];
+    let c = Math.ceil(Math.max(minOf(m.e), nm) / 5) * 5, free = null; for (let k = 0; k < 120 && c + n <= Math.max(w1, minOf(m.e) + 120); k++) { const hit = busy.find(([a, b]) => c < b && c + n > a); if (!hit) { free = c; break; } c = Math.ceil(hit[1] / 5) * 5; }
+    return { t, m, free }; }).filter(Boolean);
+}
 // The one task to do now, with the reason
 function smNext() {
   const td = today(), now = Date.now(), nm = smNowM(), rec = S.days[td] || {}, skip = rec.skip || {}, top = rec.top || [];
@@ -5846,7 +5856,7 @@ function smNextCard(N) {
 }
 function smPlanCard(P) {
   const n = P.pool.length, tight = P.over.length > 0, wd = new Date().getDay(), cap = smCap(wd);
-  return `<section class="sm-plan"><div class="sm-k">Plan my day · 1 min</div><b>${plural(n, 'task')}${P.meets.length ? ', ' + plural(P.meets.length, 'meeting') : ''}</b><span>${P.flex.length ? `They need about ${fmtMins(P.need)}. You have ${fmtMins(P.free) || '0m'} free${tight ? `, so ${P.over.length} will not fit.` : '.'}` : 'All have a set time.'}${cap && n > cap ? ` That is over your cap of ${cap} for ${DAYSL[wd]}s.` : ''}</span><div class="sm-btns"><button class="sm-b pri" data-sm="plan">See the plan</button><button class="sm-b" data-sm="skipplan">Skip today</button></div></section>`;
+  return `<section class="sm-plan"><div class="sm-k">Plan my day · 1 min</div><b>${plural(n, 'task')}${P.meets.length ? ', ' + plural(P.meets.length, 'meeting') : ''}</b><span>${P.flex.length ? `They need about ${fmtMins(P.need)}. You have ${fmtMins(P.free) || '0m'} free${tight ? `, so ${P.over.length} will not fit.` : '.'}` : 'All have a set time.'}${smClashes(today()).length ? ` ⚠️ ${plural(smClashes(today()).length, 'task')} clash${smClashes(today()).length === 1 ? 'es' : ''} with a meeting.` : ''}${cap && n > cap ? ` That is over your cap of ${cap} for ${DAYSL[wd]}s.` : ''}</span><div class="sm-btns"><button class="sm-b pri" data-sm="plan">See the plan</button><button class="sm-b" data-sm="skipplan">Skip today</button></div></section>`;
 }
 function smReplanCard(P) {
   return `<section class="sm-replan"><div class="sm-k">The day has changed</div><b>${plural(P.over.length, 'task')} no longer ${P.over.length === 1 ? 'fits' : 'fit'} today</b><span>${fmtMins(P.need)} of work left, ${fmtMins(P.free) || '0m'} free until ${fmtTime(S.settings.shutdown || '19:00')}.${P.low ? ' Energy was low yesterday, so the plan stays lighter.' : ''}</span><div class="sm-btns"><button class="sm-b pri" data-sm="replan">Replan</button><button class="sm-b" data-sm="keepplan">Keep as is</button></div></section>`;
@@ -5869,17 +5879,19 @@ function smPlanSheet(mode) {
     const P = smPlan(td, true); const moving = P.over.filter(t => !stay.has(t.id) && t.priority > 1 || (t.priority === 1 && stay.has('m' + t.id)));
     const now = Date.now(); const items = [...P.meets.filter(m => m.e > now).map(m => ({ s: minOf(m.s), m })), ...P.fixed.map(t => ({ s: hm2m(t.time), t, fixed: 1 })), ...P.slots.map(x => ({ s: x.s, t: x.t }))].sort((a, b) => a.s - b.s);
     const keepIt = P.over.filter(t => !moving.includes(t));
-    let h = `<div class="sm-lead"><b>${P.over.length ? (morning ? 'Today looks tight' : 'New plan for the rest of today') : 'Today fits'}</b><span>${P.flex.length ? `${plural(P.flex.length, 'task')} without a time need about ${fmtMins(P.need)}. You have ${fmtMins(P.free) || '0m'} free${P.meets.length ? ' around ' + plural(P.meets.length, 'meeting') : ''}.` : 'Every task today already has a time.'}${P.low ? ' Energy was low yesterday, so I kept it lighter.' : ''}</span></div>`;
+    const CL = smClashes(td);
+    let h = `<div class="sm-lead"><b>${CL.length ? `${plural(CL.length, 'clash', 'clashes')} with a meeting` : P.over.length ? (morning ? 'Today looks tight' : 'New plan for the rest of today') : 'Today fits'}</b><span>${P.flex.length ? `${plural(P.flex.length, 'task')} without a time need about ${fmtMins(P.need)}. You have ${fmtMins(P.free) || '0m'} free${P.meets.length ? ' around ' + plural(P.meets.length, 'meeting') : ''}.` : 'Every task today already has a time.'}${P.low ? ' Energy was low yesterday, so I kept it lighter.' : ''}</span></div>`;
     if (items.length) { h += `<div class="wsec">${morning ? 'Proposed plan' : 'Keep today'}${morning ? '<em>tap ★ for your top 3</em>' : ''}</div><div class="sm-tl">`;
       items.forEach(x => { if (x.m) h += `<div class="sm-ti m"><span class="tm">${fmtTime(smHM(x.s))}</span><span class="tt">${esc(x.m.t)}</span><small>${fmtMins((x.m.e - x.m.s) / 6e4)}</small></div>`;
-        else { const i = top.indexOf(x.t.id); h += `<div class="sm-ti${x.fixed ? ' fx' : ''}"><span class="tm">${x.fixed ? '' : '~'}${fmtTime(smHM(x.s))}</span><span class="tt"><i class="pdot p${x.t.priority}"></i>${esc(x.t.title)}</span><small>${fmtMins(smEst(x.t))}</small>${morning ? `<button type="button" class="sm-star${i >= 0 ? ' on' : ''}" data-top="${x.t.id}" aria-pressed="${i >= 0}" aria-label="Top 3: ${esc(x.t.title)}">${i >= 0 ? i + 1 : '★'}</button>` : ''}</div>`; } });
-      h += `</div><p class="sm-fine">Times marked ~ are suggestions. No alarms are set for them.</p>`; }
+        else { const i = top.indexOf(x.t.id), cl = CL.find(c => c.t.id === x.t.id); h += `<div class="sm-ti${x.fixed ? ' fx' : ''}${cl ? ' cl' : ''}"><span class="tm">${x.fixed ? '' : '~'}${fmtTime(smHM(x.s))}</span><span class="tt"><i class="pdot p${x.t.priority}"></i>${esc(x.t.title)}</span><small>${fmtMins(smEst(x.t))}</small>${morning ? `<button type="button" class="sm-star${i >= 0 ? ' on' : ''}" data-top="${x.t.id}" aria-pressed="${i >= 0}" aria-label="Top 3: ${esc(x.t.title)}">${i >= 0 ? i + 1 : '★'}</button>` : ''}</div>${cl ? `<div class="sm-clash">⚠️ Same time as ${esc(cl.m.t.length > 38 ? cl.m.t.slice(0, 37) + '…' : cl.m.t)}${cl.free != null ? `<button type="button" data-cl="${x.t.id}" data-v="${smHM(cl.free)}">Move to ${fmtTime(smHM(cl.free))}</button>` : ''}</div>` : ''}`; } });
+      h += `</div>${P.slots.length ? '<p class="sm-fine">Times marked ~ are suggestions. No alarms are set for them.</p>' : ''}`; }
     if (P.over.length) { h += `<div class="wsec">Does not fit today</div>`; P.over.forEach(t => { const mv = moving.includes(t); h += `<div class="sm-mv"><span class="tt"><i class="pdot p${t.priority}"></i>${esc(t.title)}<small>${fmtMins(smEst(t))}${t.priority === 1 ? ' · P1, needs a longer gap' : ''}${(t.pushed || 0) >= 2 ? ` · moved ${t.pushed} times` : ''}</small></span><button type="button" class="${mv ? 'on' : ''}" data-mv="${t.id}" aria-pressed="${mv}">${mv ? 'Tomorrow ✓' : 'Keep today'}</button></div>`; }); }
     if (P.eve.length) h += `<div class="wsec">This evening</div>` + P.eve.map(t => `<div class="sm-ti"><span class="tm">Evening</span><span class="tt"><i class="pdot p${t.priority}"></i>${esc(t.title)}</span></div>`).join('');
     if (canInt) h += `<div class="wsec">Intention <em>optional</em></div><textarea class="inp rf-ta" id="smInt" rows="1" aria-label="One intention for today">${esc($('#smInt')?.value || '')}</textarea>`;
     h += `<button class="btn acc sm-full" id="smGo">${morning ? 'Looks good · start my day' : moving.length ? `Move ${moving.length} to tomorrow` : 'Keep this plan'}</button>`;
     $('#smBody').innerHTML = h;
     $$('#smBody [data-top]').forEach(b => b.onclick = () => { const id = b.dataset.top; if (top.includes(id)) top = top.filter(x => x !== id); else if (top.length < 3) top.push(id); else { toast('Top 3 is full. Tap one to remove it first'); return; } draw(); });
+    $$('#smBody [data-cl]').forEach(b => b.onclick = () => { const t = getTask(b.dataset.cl); if (!t) return; t.time = b.dataset.v; t.firedKeys = []; save(); draw(); toast(`Moved to ${fmtTime(b.dataset.v)}`); });
     $$('#smBody [data-mv]').forEach(b => b.onclick = () => { const id = b.dataset.mv, t = getTask(id); if (t.priority === 1) { stay.has('m' + id) ? stay.delete('m' + id) : stay.add('m' + id); } else { stay.has(id) ? stay.delete(id) : stay.add(id); } draw(); });
     $('#smGo').onclick = () => {
       const snap = JSON.stringify({ tasks: moving.map(t => [t.id, t.date, t.pushed || 0, t.evening]), rec: S.days[td] || {}, plan: S.plan[tom] || [] }); const int = ($('#smInt')?.value || '').trim();
