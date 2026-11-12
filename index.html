@@ -3561,7 +3561,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.2.2';
+const APPV = '6.2.3';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4539,7 +4539,7 @@ function setEntity(key, val) {
   else if (key === 'meta:cur') S.cur = val.c || null;
   else if (kind === 'meet') S.meetLog[id] = val;
   else if (kind === 'img') { IMGS[id] = val.data; idb.put(id, val.data).catch(() => { }); }
-  else if (key === 'meta:coach' || key === 'meta:rv') { } else if (key === 'meta:ack') S.remAck = val; else if (key === 'meta:days') S.days = val; else if (key === 'meta:water') S.water = val; else if (key === 'meta:rw') S.rw = val; else if (key === 'meta:plan') S.plan = val; else if (key === 'meta:learn') S.learn = val; else if (key === 'meta:hsec') S.habitSections = val; else if (key === 'meta:prefs') { Object.assign(S.settings, val); applyTheme(); }
+  else if (key === 'meta:coach' || key === 'meta:rv') { } else if (key === 'meta:ack') { const was = S.remAck && S.remAck.v; S.remAck = val; if (!val || val.v !== was) setTimeout(pushQueueSoon, 0); } else if (key === 'meta:days') S.days = val; else if (key === 'meta:water') S.water = val; else if (key === 'meta:rw') S.rw = val; else if (key === 'meta:plan') S.plan = val; else if (key === 'meta:learn') S.learn = val; else if (key === 'meta:hsec') S.habitSections = val; else if (key === 'meta:prefs') { Object.assign(S.settings, val); applyTheme(); }
 }
 function removeEntity(key) { sweepSoon();
   const [kind, ...rest] = key.split(':'); const id = rest.join(':'); if (kind === 'jday') { delete rf().days[id]; return; } const rm = n => { S[n] = S[n].filter(x => x.id !== id); };
