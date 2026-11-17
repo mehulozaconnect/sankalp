@@ -1278,6 +1278,9 @@ button.warn{display:block;width:100%;text-align:left}
 .qa-multi{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 4px;padding:10px 12px;border-radius:14px;background:color-mix(in srgb,var(--accent) 12%,var(--bg))}.qa-multi span{font-size:14px;font-weight:700}.qa-multi button{height:34px;padding:0 14px;border-radius:10px;background:var(--accent);color:var(--on-accent);font-weight:800;font-size:13.5px}
 .qa-multi.qa-m2,#qaMulti{display:flex;flex-direction:column;align-items:stretch;gap:4px}#qaMulti b,.qa-m2 b{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-text)}#qaMulti span,.qa-m2 span{display:flex;gap:10px;font-size:14px;font-weight:600;color:var(--ink)}#qaMulti em,.qa-m2 em{font-style:normal;flex:none;min-width:70px;color:var(--muted);font-weight:700;font-size:13px}
 .sm-split{display:block;width:100%;margin-top:10px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--ink) 7%,transparent);font-weight:700;font-size:14px;color:var(--ink);text-align:left}
+.notes table,.qa-rich table,.rv-notes table{border-collapse:collapse;display:block;overflow-x:auto;max-width:100%;margin:8px 0;font-size:14px}.notes td,.notes th,.qa-rich td,.qa-rich th,.rv-notes td,.rv-notes th{border:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:6px 9px;min-width:70px;vertical-align:top;text-align:left}.notes th,.qa-rich th,.rv-notes th{background:var(--surface);font-weight:700}.notes tr:first-child td{font-weight:700;background:var(--surface)}
+.notes img,.qa-rich img,.rv-notes img{max-width:100%;height:auto;border-radius:10px;margin:6px 0;display:block}
+.notes td>p,.notes td>div,.notes th>p,.notes th>div,.qa-rich td>p,.qa-rich td>div{margin:0;padding:0;min-height:0}
 </style>
 </head>
 <body>
@@ -1503,7 +1506,8 @@ function applyLogoAssets() {
   const ic = k === 'sky' ? 'icon-192.png' : `icons/${k}-192.png`; $$('link[rel=icon],link[rel=apple-touch-icon]').forEach(l => l.setAttribute('href', ic));
 }
 /* ================= rich notes ================= */
-const RT_OK = ['B', 'I', 'U', 'MARK', 'BR', 'DIV', 'P', 'UL', 'OL', 'LI', 'A', 'H3', 'SPAN', 'HR'];
+const RT_OK = ['B', 'I', 'U', 'MARK', 'BR', 'DIV', 'P', 'UL', 'OL', 'LI', 'A', 'H3', 'SPAN', 'HR', 'TABLE', 'THEAD', 'TBODY', 'TR', 'TD', 'TH', 'IMG'];
+const RT_SKIP = /^(STYLE|SCRIPT|META|TITLE|HEAD|LINK|XML|O:P|COLGROUP|COL|svg)$/i;
 const RT_CLS = /^(fs-(s|l|xl)|ff-(serif|mono|hand)|ls-(arrow|check|dash|star))$/;
 function rtClasses(c) {
   const out = []; const st = (c.getAttribute('style') || '').toLowerCase(); const sz = c.getAttribute('size'), face = (c.getAttribute('face') || '').toLowerCase();
@@ -1519,6 +1523,7 @@ function cleanNode(node, out) {
   node.childNodes.forEach(c => {
     if (c.nodeType === 3) { out.appendChild(document.createTextNode(c.nodeValue)); return; }
     if (c.nodeType !== 1) return;
+    if (RT_SKIP.test(c.tagName)) return;
     let tag = c.tagName; const st = c.getAttribute('style') || '';
     if (tag === 'STRONG') tag = 'B'; if (tag === 'EM') tag = 'I'; if (/^H[1-6]$/.test(tag)) tag = 'H3';
     let cls = [];
@@ -1526,12 +1531,15 @@ function cleanNode(node, out) {
     if (tag === 'UL') cls = (c.getAttribute('class') || '').split(/\s+/).filter(k => /^ls-/.test(k) && RT_CLS.test(k));
     if (tag && RT_OK.includes(tag)) {
       const el = document.createElement(tag); if (cls.length && (tag === 'SPAN' || tag === 'UL')) el.className = cls.join(' ');
+      if (tag === 'TD' || tag === 'TH') ['colspan', 'rowspan'].forEach(k => { const v = +c.getAttribute(k); if (v > 1 && v < 30) el.setAttribute(k, v); });
+      if (tag === 'IMG') { const src = c.getAttribute('src') || ''; if (/^data:image\/(png|jpe?g|webp|gif);base64,/i.test(src) && src.length < 900000) { el.setAttribute('src', src); out.appendChild(el); } return; }
+      if (tag === 'TABLE' && !c.querySelector('td,th')) return;
       if (tag === 'A') { const h = c.getAttribute('href') || ''; if (/^https?:/i.test(h)) { el.setAttribute('href', h); el.setAttribute('target', '_blank'); el.setAttribute('rel', 'noopener'); } }
       cleanNode(c, el); out.appendChild(el);
     } else cleanNode(c, out);
   });
 }
-function cleanHtml(h) { if (!h) return ''; const doc = new DOMParser().parseFromString('<div>' + h + '</div>', 'text/html'); const out = document.createElement('div'); cleanNode(doc.body.firstChild || doc.body, out); const r = out.innerHTML; return textOfHtml(r) || /<br|<hr/.test(r) ? r : ''; }
+function cleanHtml(h) { if (!h) return ''; const doc = new DOMParser().parseFromString('<div>' + h + '</div>', 'text/html'); const out = document.createElement('div'); cleanNode(doc.body.firstChild || doc.body, out); const r = out.innerHTML; return textOfHtml(r) || /<br|<hr|<img/.test(r) ? r : ''; }
 function textOfHtml(h) { return (h || '').replace(/<br\s*\/?>/gi, ' ').replace(/<\/(div|p|li|h3)>/gi, ' ').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim(); }
 const textOf = textOfHtml;
 // Typing "wednesday", "tomorrow 5pm", "p1", "#Sales" or "every monday" in a task's title sets them, like the add box does
@@ -1553,8 +1561,9 @@ function titleSmart(t, v) {
   toast('Set: ' + got.filter(Boolean).join(', '), () => { Object.keys(t).forEach(k => delete t[k]); Object.assign(t, before); save(); render(); renderPage(); });
   return true;
 }
-function textToHtml(s) { if (!s) return ''; if (/^\s*<(div|p|b|ul|ol|mark|br|h3|i|u)\b/i.test(s)) return cleanHtml(s); return s.split('\n').map(l => `<div>${l ? esc(l) : '<br>'}</div>`).join(''); }
-function toolbarHtml() { return `<div class="ntool" role="toolbar" aria-label="Formatting">${[['bold', '<b>B</b>', 'Bold'], ['italic', '<i style="font-family:serif">I</i>', 'Italic'], ['underline', '<u>U</u>', 'Underline'], ['mark', '<mark style="background:#FFE58A;color:#1a1400;padding:0 5px;border-radius:3px">H</mark>', 'Highlight'], ['h3', '<b style="font-size:17px">T</b>', 'Heading'], ['pop:fs', '<span style="font-size:13px">A</span><span style="font-size:17px">A</span>&nbsp;▾', 'Text size'], ['pop:ff', 'Font&nbsp;▾', 'Font'], ['pop:ls', '•&nbsp;List&nbsp;▾', 'List style'],  ['link', 'Link', 'Add link'], ['removeFormat', 'Clear', 'Clear formatting']].map(([c, l, a]) => `<button type="button" data-cmd="${c}" aria-label="${a}" style="${l.length > 30 ? '' : 'padding:0 8px'}">${l}</button>`).join('')}<div class="npop" data-pop="fs" hidden>${[['fs:s', 'Small'], ['fs:n', 'Normal'], ['fs:l', 'Large'], ['fs:xl', 'Huge']].map(([c, l]) => `<button type="button" data-cmd="${c}" class="${c.slice(3) === 'n' ? '' : 'fs-' + c.slice(3)}">${l}</button>`).join('')}</div><div class="npop" data-pop="ff" hidden>${[['ff:default', 'Default'], ['ff:serif', 'Serif'], ['ff:mono', 'Mono'], ['ff:hand', 'Handwritten']].map(([c, l]) => `<button type="button" data-cmd="${c}" class="${c === 'ff:default' ? '' : 'ff-' + c.slice(3)}">${l}</button>`).join('')}</div><div class="npop" data-pop="ls" hidden>${[['ul:dot', '•  Bullets'], ['ul:arrow', '➤  Arrows'], ['ul:check', '☐  Checkboxes'], ['ul:dash', '–  Dashes'], ['ul:star', '★  Stars'], ['ol', '1.  Numbers']].map(([c, l]) => `<button type="button" data-cmd="${c}">${l}</button>`).join('')}</div></div>`; }
+function tsvToHtml(s) { const rows = s.replace(/\r/g, '').replace(/\n+$/, '').split('\n'); if (rows.length < 1 || !rows.every(r => r.includes('\t')) || rows.length > 300) return ''; return '<table><tbody>' + rows.map(r => '<tr>' + r.split('\t').map(c => `<td>${esc(c.trim()) || '<br>'}</td>`).join('') + '</tr>').join('') + '</tbody></table><div><br></div>'; }
+function textToHtml(s) { if (!s) return ''; if (/^\s*<(div|p|b|ul|ol|mark|br|h3|i|u|table)\b/i.test(s)) return cleanHtml(s); { const t = tsvToHtml(s); if (t) return t; } return s.split('\n').map(l => `<div>${l ? esc(l) : '<br>'}</div>`).join(''); }
+function toolbarHtml() { return `<div class="ntool" role="toolbar" aria-label="Formatting">${[['bold', '<b>B</b>', 'Bold'], ['italic', '<i style="font-family:serif">I</i>', 'Italic'], ['underline', '<u>U</u>', 'Underline'], ['mark', '<mark style="background:#FFE58A;color:#1a1400;padding:0 5px;border-radius:3px">H</mark>', 'Highlight'], ['h3', '<b style="font-size:17px">T</b>', 'Heading'], ['pop:fs', '<span style="font-size:13px">A</span><span style="font-size:17px">A</span>&nbsp;▾', 'Text size'], ['pop:ff', 'Font&nbsp;▾', 'Font'], ['pop:ls', '•&nbsp;List&nbsp;▾', 'List style'],  ['table', '▦&nbsp;Table', 'Insert a table'], ['row', '+&nbsp;Row', 'Add a row to the table'], ['link', 'Link', 'Add link'], ['removeFormat', 'Clear', 'Clear formatting']].map(([c, l, a]) => `<button type="button" data-cmd="${c}" aria-label="${a}" style="${l.length > 30 ? '' : 'padding:0 8px'}">${l}</button>`).join('')}<div class="npop" data-pop="fs" hidden>${[['fs:s', 'Small'], ['fs:n', 'Normal'], ['fs:l', 'Large'], ['fs:xl', 'Huge']].map(([c, l]) => `<button type="button" data-cmd="${c}" class="${c.slice(3) === 'n' ? '' : 'fs-' + c.slice(3)}">${l}</button>`).join('')}</div><div class="npop" data-pop="ff" hidden>${[['ff:default', 'Default'], ['ff:serif', 'Serif'], ['ff:mono', 'Mono'], ['ff:hand', 'Handwritten']].map(([c, l]) => `<button type="button" data-cmd="${c}" class="${c === 'ff:default' ? '' : 'ff-' + c.slice(3)}">${l}</button>`).join('')}</div><div class="npop" data-pop="ls" hidden>${[['ul:dot', '•  Bullets'], ['ul:arrow', '➤  Arrows'], ['ul:check', '☐  Checkboxes'], ['ul:dash', '–  Dashes'], ['ul:star', '★  Stars'], ['ol', '1.  Numbers']].map(([c, l]) => `<button type="button" data-cmd="${c}">${l}</button>`).join('')}</div></div>`; }
 function wireEditor(ed, bar, onSave) {
   let tm, range = null;
   const isTouch = matchMedia('(pointer:coarse)').matches;
@@ -1571,7 +1580,12 @@ function wireEditor(ed, bar, onSave) {
   ed._flush = flush;
   ed.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(flush, 500); });
   ed.addEventListener('blur', flush);
-  ed.addEventListener('paste', e => { const html = e.clipboardData.getData('text/html'), txt = e.clipboardData.getData('text/plain'); e.preventDefault(); document.execCommand('insertHTML', false, html ? cleanHtml(html) : textToHtml(txt)); });
+  ed.addEventListener('paste', async e => { const cd = e.clipboardData; const html = cd.getData('text/html'), txt = cd.getData('text/plain'); const img = [...(cd.files || [])].find(f => /^image\//.test(f.type)) || [...(cd.items || [])].map(i => i.kind === 'file' ? i.getAsFile() : null).find(f => f && /^image\//.test(f.type)); e.preventDefault();
+    let out = html ? cleanHtml(html) : ''; if (!textOfHtml(out) && !/<img|<table/i.test(out)) out = '';
+    if (!out && txt) out = textToHtml(txt);
+    if (!/<img/i.test(out) && img && (!out || !textOfHtml(out))) { try { const data = await compressImage(img); out = `<img src="${data}" alt="">` + '<div><br></div>'; } catch (err) { toast('Could not paste that picture'); return; } }
+    if (!out) { toast('Nothing to paste. Copy the text or table again'); return; }
+    ed.focus(); document.execCommand('insertHTML', false, out); ed.dispatchEvent(new Event('input')); });
   ed.addEventListener('click', e => { const a = e.target.closest('a'); if (a && a.href && (e.metaKey || e.ctrlKey || !ed.isContentEditable)) window.open(a.href, '_blank', 'noopener'); });
   const listCmd = c => {
     if (c === 'ol') { document.execCommand('insertOrderedList'); return; }
@@ -1587,7 +1601,11 @@ function wireEditor(ed, bar, onSave) {
   };
   // Typing shortcuts: "- " dash list, "* " dot list, "> " arrow list, "1. " numbered, "[] " checklist, "---" a line across. Tab: bullet / indent.
   ed.addEventListener('keydown', e => {
-    if (e.key !== 'Tab' || e.isComposing) return; e.preventDefault(); let n = getSelection().anchorNode, inList = false; while (n && n !== ed) { if (n.nodeName === 'LI') { inList = true; break; } n = n.parentNode; }
+    if (e.key !== 'Tab' || e.isComposing) return; e.preventDefault();
+    { let c = getSelection().anchorNode; while (c && c !== ed && !/^(TD|TH)$/.test(c.nodeName)) c = c.parentNode; if (c && c !== ed) { const tb = c.closest('table'), cells = [...tb.querySelectorAll('td,th')]; let i = cells.indexOf(c) + (e.shiftKey ? -1 : 1);
+      if (i >= cells.length) { const tr = c.parentNode.cloneNode(true); tr.querySelectorAll('td,th').forEach(x => { const td = document.createElement('td'); td.innerHTML = '<br>'; x.replaceWith(td); }); c.parentNode.after(tr); i = cells.length; }
+      const nx = [...tb.querySelectorAll('td,th')][Math.max(0, i)]; const r = document.createRange(); r.selectNodeContents(nx); r.collapse(false); const sl = getSelection(); sl.removeAllRanges(); sl.addRange(r); ed.dispatchEvent(new Event('input')); return; } }
+    let n = getSelection().anchorNode, inList = false; while (n && n !== ed) { if (n.nodeName === 'LI') { inList = true; break; } n = n.parentNode; }
     if (inList) document.execCommand(e.shiftKey ? 'outdent' : 'indent'); else if (!e.shiftKey) makeList('ul:dot'); ed.dispatchEvent(new Event('input'));
   });
   ed.addEventListener('input', e => {
@@ -1622,6 +1640,8 @@ function wireEditor(ed, bar, onSave) {
       else if (c.startsWith('ul:') || c === 'ol') { const sl = getSelection(), an = sl.anchorNode, atEnd = sl.isCollapsed && an && ((an.nodeType === 3 && sl.anchorOffset === an.length) || (an.nodeType === 1 && sl.anchorOffset === an.childNodes.length)); listCmd(c); if (atEnd) { let n = getSelection().anchorNode; while (n && n !== ed && n.nodeName !== 'LI') n = n.parentNode; if (n && n.nodeName === 'LI') { const rg = document.createRange(); rg.selectNodeContents(n); rg.collapse(false); const s2 = getSelection(); s2.removeAllRanges(); s2.addRange(rg); } } }
       else if (false && c.startsWith('ul:')) { const inUl = () => { let n = getSelection().anchorNode; while (n && n !== ed) { if (n.nodeName === 'UL') return n; if (n.nodeName === 'OL') return null; n = n.parentNode; } return null; }; let ul = inUl(); if (!ul) { document.execCommand('insertUnorderedList'); ul = inUl(); } if (ul) ul.className = c === 'ul:dot' ? '' : 'ls-' + c.slice(3); }
       else if (c === 'h3') document.execCommand('formatBlock', false, 'H3');
+      else if (c === 'table') document.execCommand('insertHTML', false, '<table><tbody><tr><th>Item</th><th>Details</th></tr><tr><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td></tr></tbody></table><div><br></div>');
+      else if (c === 'row') { let n = getSelection().anchorNode; while (n && n !== ed && n.nodeName !== 'TR') n = n.parentNode; if (n && n.nodeName === 'TR') { const tr = n.cloneNode(true); tr.querySelectorAll('td,th').forEach(x => { const td = document.createElement('td'); td.innerHTML = '<br>'; x.replaceWith(td); }); n.after(tr); } else toast('Tap inside a table first'); }
       else if (c === 'link') { const u = prompt('Link address'); if (u) document.execCommand('createLink', false, /^https?:/i.test(u) ? u : 'https://' + u); }
       else document.execCommand(c);
       $$('.npop', bar).forEach(x => x.hidden = true);
@@ -3561,7 +3581,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.2.3';
+const APPV = '6.2.4';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
