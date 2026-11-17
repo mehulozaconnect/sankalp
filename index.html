@@ -1281,6 +1281,8 @@ button.warn{display:block;width:100%;text-align:left}
 .notes table,.qa-rich table,.rv-notes table{border-collapse:collapse;display:block;overflow-x:auto;max-width:100%;margin:8px 0;font-size:14px}.notes td,.notes th,.qa-rich td,.qa-rich th,.rv-notes td,.rv-notes th{border:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:6px 9px;min-width:70px;vertical-align:top;text-align:left}.notes th,.qa-rich th,.rv-notes th{background:var(--surface);font-weight:700}.notes tr:first-child td{font-weight:700;background:var(--surface)}
 .notes img,.qa-rich img,.rv-notes img{max-width:100%;height:auto;border-radius:10px;margin:6px 0;display:block}
 .notes td>p,.notes td>div,.notes th>p,.notes th>div,.qa-rich td>p,.qa-rich td>div{margin:0;padding:0;min-height:0}
+.notes img.doc,.qa-rich img.doc,.rv-notes img.doc{border-radius:0;mix-blend-mode:multiply}
+html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes img.doc{filter:invert(1) hue-rotate(180deg);mix-blend-mode:lighten}
 </style>
 </head>
 <body>
@@ -1486,7 +1488,7 @@ function applyTheme() {
   set('--card', dark ? t.card : '#FFFFFF'); set('--shadow', dark ? 'rgba(0,0,0,.45)' : 'rgba(18,24,38,.18)');
   set('--side', dark ? t.side : mix(t.surface, '#FFFFFF', .45)); set('--sel', dark ? t.sel : mix(t.surface, '#000000', .05));
   const L = LOGOS[st.logo] || LOGOS.sky; set('--logo-bg', L.bg); set('--logo-fg', L.fg);
-  r.colorScheme = dark ? 'dark' : 'light';
+  r.colorScheme = dark ? 'dark' : 'light'; document.documentElement.classList.toggle('isdark', !!dark);
   $('meta[name=theme-color]').setAttribute('content', t.bg);
   const f = FONTS[st.font] || FONTS.Modern;
   set('--fd', `${f.d},system-ui,sans-serif`); set('--fb', `${f.b},system-ui,sans-serif`);
@@ -1532,7 +1534,7 @@ function cleanNode(node, out) {
     if (tag && RT_OK.includes(tag)) {
       const el = document.createElement(tag); if (cls.length && (tag === 'SPAN' || tag === 'UL')) el.className = cls.join(' ');
       if (tag === 'TD' || tag === 'TH') ['colspan', 'rowspan'].forEach(k => { const v = +c.getAttribute(k); if (v > 1 && v < 30) el.setAttribute(k, v); });
-      if (tag === 'IMG') { const src = c.getAttribute('src') || ''; if (/^data:image\/(png|jpe?g|webp|gif);base64,/i.test(src) && src.length < 900000) { el.setAttribute('src', src); out.appendChild(el); } return; }
+      if (tag === 'IMG') { const src = c.getAttribute('src') || ''; if (/^data:image\/(png|jpe?g|webp|gif);base64,/i.test(src) && src.length < 900000) { el.setAttribute('src', src); if (c.classList && c.classList.contains('doc')) el.className = 'doc'; out.appendChild(el); } return; }
       if (tag === 'TABLE' && !c.querySelector('td,th')) return;
       if (tag === 'A') { const h = c.getAttribute('href') || ''; if (/^https?:/i.test(h)) { el.setAttribute('href', h); el.setAttribute('target', '_blank'); el.setAttribute('rel', 'noopener'); } }
       cleanNode(c, el); out.appendChild(el);
@@ -1561,6 +1563,8 @@ function titleSmart(t, v) {
   toast('Set: ' + got.filter(Boolean).join(', '), () => { Object.keys(t).forEach(k => delete t[k]); Object.assign(t, before); save(); render(); renderPage(); });
   return true;
 }
+// A picture that is mostly white (a copied table, a document, a screenshot of text) blends into the theme instead of sitting in a white box
+function isDocImg(src) { return new Promise(res => { const i = new Image(); i.onload = () => { try { const c = document.createElement('canvas'); c.width = 48; c.height = 48; const x = c.getContext('2d'); x.drawImage(i, 0, 0, 48, 48); const d = x.getImageData(0, 0, 48, 48).data; let w = 0; for (let k = 0; k < d.length; k += 4) if (d[k] > 232 && d[k + 1] > 232 && d[k + 2] > 232) w++; res(w / (d.length / 4) > .55); } catch (e) { res(false); } }; i.onerror = () => res(false); i.src = src; }); }
 function tsvToHtml(s) { const rows = s.replace(/\r/g, '').replace(/\n+$/, '').split('\n'); if (rows.length < 1 || !rows.every(r => r.includes('\t')) || rows.length > 300) return ''; return '<table><tbody>' + rows.map(r => '<tr>' + r.split('\t').map(c => `<td>${esc(c.trim()) || '<br>'}</td>`).join('') + '</tr>').join('') + '</tbody></table><div><br></div>'; }
 function textToHtml(s) { if (!s) return ''; if (/^\s*<(div|p|b|ul|ol|mark|br|h3|i|u|table)\b/i.test(s)) return cleanHtml(s); { const t = tsvToHtml(s); if (t) return t; } return s.split('\n').map(l => `<div>${l ? esc(l) : '<br>'}</div>`).join(''); }
 function toolbarHtml() { return `<div class="ntool" role="toolbar" aria-label="Formatting">${[['bold', '<b>B</b>', 'Bold'], ['italic', '<i style="font-family:serif">I</i>', 'Italic'], ['underline', '<u>U</u>', 'Underline'], ['mark', '<mark style="background:#FFE58A;color:#1a1400;padding:0 5px;border-radius:3px">H</mark>', 'Highlight'], ['h3', '<b style="font-size:17px">T</b>', 'Heading'], ['pop:fs', '<span style="font-size:13px">A</span><span style="font-size:17px">A</span>&nbsp;▾', 'Text size'], ['pop:ff', 'Font&nbsp;▾', 'Font'], ['pop:ls', '•&nbsp;List&nbsp;▾', 'List style'],  ['table', '▦&nbsp;Table', 'Insert a table'], ['row', '+&nbsp;Row', 'Add a row to the table'], ['link', 'Link', 'Add link'], ['removeFormat', 'Clear', 'Clear formatting']].map(([c, l, a]) => `<button type="button" data-cmd="${c}" aria-label="${a}" style="${l.length > 30 ? '' : 'padding:0 8px'}">${l}</button>`).join('')}<div class="npop" data-pop="fs" hidden>${[['fs:s', 'Small'], ['fs:n', 'Normal'], ['fs:l', 'Large'], ['fs:xl', 'Huge']].map(([c, l]) => `<button type="button" data-cmd="${c}" class="${c.slice(3) === 'n' ? '' : 'fs-' + c.slice(3)}">${l}</button>`).join('')}</div><div class="npop" data-pop="ff" hidden>${[['ff:default', 'Default'], ['ff:serif', 'Serif'], ['ff:mono', 'Mono'], ['ff:hand', 'Handwritten']].map(([c, l]) => `<button type="button" data-cmd="${c}" class="${c === 'ff:default' ? '' : 'ff-' + c.slice(3)}">${l}</button>`).join('')}</div><div class="npop" data-pop="ls" hidden>${[['ul:dot', '•  Bullets'], ['ul:arrow', '➤  Arrows'], ['ul:check', '☐  Checkboxes'], ['ul:dash', '–  Dashes'], ['ul:star', '★  Stars'], ['ol', '1.  Numbers']].map(([c, l]) => `<button type="button" data-cmd="${c}">${l}</button>`).join('')}</div></div>`; }
@@ -1578,12 +1582,13 @@ function wireEditor(ed, bar, onSave) {
   document.addEventListener('selectionchange', () => { keep(); if (document.activeElement === ed) markState(); });
   const flush = () => { clearTimeout(tm); onSave(cleanHtml(ed.innerHTML)); };
   ed._flush = flush;
+  setTimeout(async () => { let ch = 0; for (const im of ed.querySelectorAll('img:not(.doc)')) { if (im.dataset.ck) continue; im.dataset.ck = 1; if (await isDocImg(im.src)) { im.classList.add('doc'); ch++; } } if (ch) flush(); }, 50);
   ed.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(flush, 500); });
   ed.addEventListener('blur', flush);
   ed.addEventListener('paste', async e => { const cd = e.clipboardData; const html = cd.getData('text/html'), txt = cd.getData('text/plain'); const img = [...(cd.files || [])].find(f => /^image\//.test(f.type)) || [...(cd.items || [])].map(i => i.kind === 'file' ? i.getAsFile() : null).find(f => f && /^image\//.test(f.type)); e.preventDefault();
     let out = html ? cleanHtml(html) : ''; if (!textOfHtml(out) && !/<img|<table/i.test(out)) out = '';
     if (!out && txt) out = textToHtml(txt);
-    if (!/<img/i.test(out) && img && (!out || !textOfHtml(out))) { try { const data = await compressImage(img); out = `<img src="${data}" alt="">` + '<div><br></div>'; } catch (err) { toast('Could not paste that picture'); return; } }
+    if (!/<img/i.test(out) && img && (!out || !textOfHtml(out))) { try { const data = await compressImage(img); out = `<img src="${data}" alt=""${await isDocImg(data) ? ' class="doc"' : ''}>` + '<div><br></div>'; } catch (err) { toast('Could not paste that picture'); return; } }
     if (!out) { toast('Nothing to paste. Copy the text or table again'); return; }
     ed.focus(); document.execCommand('insertHTML', false, out); ed.dispatchEvent(new Event('input')); });
   ed.addEventListener('click', e => { const a = e.target.closest('a'); if (a && a.href && (e.metaKey || e.ctrlKey || !ed.isContentEditable)) window.open(a.href, '_blank', 'noopener'); });
@@ -3581,7 +3586,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.2.4';
+const APPV = '6.2.5';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
