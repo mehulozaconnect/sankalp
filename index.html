@@ -1284,10 +1284,12 @@ button.warn{display:block;width:100%;text-align:left}
 .notes img.doc,.qa-rich img.doc,.rv-notes img.doc{border-radius:0;mix-blend-mode:multiply}
 html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes img.doc{filter:invert(1) hue-rotate(180deg);mix-blend-mode:lighten}
 .notes img,.qa-rich img,.rv-notes img{cursor:zoom-in}
-.viewer{overflow:auto;-webkit-overflow-scrolling:touch}.viewer img{cursor:zoom-in;touch-action:pinch-zoom}
-.viewer.zoom{display:block}.viewer.zoom img{max-width:none;max-height:none;width:auto;min-width:220%;height:auto;cursor:zoom-out;margin:56px 0 0}
-.viewer .vbar{position:fixed;z-index:2}.viewer::after{content:'Tap to zoom';position:fixed;bottom:calc(env(safe-area-inset-bottom) + 18px);left:50%;transform:translateX(-50%);color:rgba(255,255,255,.7);font-size:13px;font-weight:600;background:rgba(255,255,255,.1);padding:6px 12px;border-radius:14px;pointer-events:none}.viewer.zoom::after{content:'Drag to read · tap to fit'}
-@media (min-width:900px){.viewer.zoom img{min-width:160%}}
+.viewer{overflow:hidden;touch-action:none;user-select:none}.viewer img{cursor:zoom-in;touch-action:none;transform-origin:0 0;will-change:transform;-webkit-user-drag:none}.viewer.zoom img{cursor:grab}.viewer.anim img{transition:transform .22s ease}
+.viewer .vbar{position:fixed;z-index:2}.viewer::after{content:'Double-tap or pinch to zoom';position:fixed;bottom:calc(env(safe-area-inset-bottom) + 18px);left:50%;transform:translateX(-50%);color:rgba(255,255,255,.75);font-size:13px;font-weight:600;background:rgba(0,0,0,.55);padding:6px 12px;border-radius:14px;pointer-events:none;white-space:nowrap}.viewer.zoom::after{content:'Drag to move · double-tap to fit'}
+
+
+
+.viewer .vbar button{background:rgba(0,0,0,.62);backdrop-filter:blur(6px)}
 </style>
 </head>
 <body>
@@ -1695,11 +1697,35 @@ async function addImages(t, files) {
 }
 function removeImage(t, id) { t.imgs = (t.imgs || []).filter(x => x !== id); if (!S.tasks.some(x => (x.imgs || []).includes(id))) { delete IMGS[id]; idb.del(id).catch(() => { }); } save(); }
 let viewerCtx = null;
-function openViewer(t, id) { viewerCtx = { t, id }; $('#vDel').hidden = false; $('#vImg').src = IMGS[id]; $('#viewer').classList.remove('zoom'); $('#viewer').classList.add('on'); }
-function openNoteImg(src) { viewerCtx = null; $('#vDel').hidden = true; $('#vImg').src = src; $('#viewer').classList.remove('zoom'); $('#viewer').classList.add('on'); }
-$('#vImg').addEventListener('click', e => { const v = $('#viewer'), im = e.currentTarget; const r = im.getBoundingClientRect(), fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height; v.classList.toggle('zoom'); if (v.classList.contains('zoom')) requestAnimationFrame(() => { v.scrollLeft = fx * im.offsetWidth - v.clientWidth / 2; v.scrollTop = fy * im.offsetHeight - v.clientHeight / 2; }); });
+function openViewer(t, id) { viewerCtx = { t, id }; $('#vDel').hidden = false; $('#vImg').src = IMGS[id]; vzReset(); $('#viewer').classList.add('on'); }
+function openNoteImg(src) { viewerCtx = null; $('#vDel').hidden = true; $('#vImg').src = src; vzReset(); $('#viewer').classList.add('on'); }
+// Picture viewer: pinch or double-tap to zoom, drag to move in any direction, swipe down to close when fitted
+const VZ = { s: 1, x: 0, y: 0, pts: new Map(), start: null, lastTap: 0, moved: false };
+function vzApply(anim) { const v = $('#viewer'), im = $('#vImg'); v.classList.toggle('anim', !!anim); im.style.transform = `translate(${VZ.x}px,${VZ.y}px) scale(${VZ.s})`; v.classList.toggle('zoom', VZ.s > 1.02); }
+function vzClamp() { const v = $('#viewer'), im = $('#vImg'); const W = v.clientWidth, H = v.clientHeight, w = im.offsetWidth * VZ.s, h = im.offsetHeight * VZ.s, bx = im.offsetLeft, by = im.offsetTop;
+  // the picture's box is (bx + x, by + y, w, h); keep it covering the screen, or centred when smaller
+  const minX = w > W ? W - w - bx : (W - w) / 2 - bx, maxX = w > W ? -bx : minX; const minY = h > H ? H - h - by : (H - h) / 2 - by, maxY = h > H ? -by : minY;
+  VZ.x = Math.min(maxX, Math.max(minX, VZ.x)); VZ.y = Math.min(maxY, Math.max(minY, VZ.y)); }
+function vzReset() { VZ.s = 1; VZ.x = 0; VZ.y = 0; VZ.pts.clear(); vzApply(false); }
+function vzZoomAt(cx, cy, ns) { const im = $('#vImg'); const ox = im.offsetLeft, oy = im.offsetTop; ns = Math.min(6, Math.max(1, ns)); const px = (cx - ox - VZ.x) / VZ.s, py = (cy - oy - VZ.y) / VZ.s; VZ.s = ns; VZ.x = cx - ox - px * ns; VZ.y = cy - oy - py * ns; if (ns === 1) { VZ.x = 0; VZ.y = 0; } vzClamp(); }
+(() => { const v = $('#viewer');
+  v.addEventListener('pointerdown', e => { if (e.target.closest('.vbar')) return; try { v.setPointerCapture(e.pointerId); } catch (x) { } VZ.pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); VZ.moved = false;
+    if (VZ.pts.size === 2) { const [a, b] = [...VZ.pts.values()]; VZ.start = { d: Math.hypot(a.x - b.x, a.y - b.y), s: VZ.s, cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2, x: VZ.x, y: VZ.y }; }
+    else VZ.start = { px: e.clientX, py: e.clientY, x: VZ.x, y: VZ.y }; });
+  v.addEventListener('pointermove', e => { if (!VZ.pts.has(e.pointerId)) return; VZ.pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); const st = VZ.start; if (!st) return;
+    if (VZ.pts.size >= 2 && st.d) { const [a, b] = [...VZ.pts.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y), cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2; VZ.s = st.s; VZ.x = st.x + (cx - st.cx); VZ.y = st.y + (cy - st.cy); vzZoomAt(cx, cy, st.s * d / st.d); VZ.moved = true; vzApply(false); return; }
+    if (VZ.pts.size === 1 && st.px != null) { const dx = e.clientX - st.px, dy = e.clientY - st.py; if (Math.abs(dx) + Math.abs(dy) > 6) VZ.moved = true; if (VZ.s > 1.02) { VZ.x = st.x + dx; VZ.y = st.y + dy; vzClamp(); } else { VZ.y = st.y + Math.max(0, dy); } vzApply(false); } });
+  const up = e => { if (!VZ.pts.has(e.pointerId)) return; const st = VZ.start; VZ.pts.delete(e.pointerId);
+    if (VZ.pts.size === 1) { const [p] = [...VZ.pts.values()]; VZ.start = { px: p.x, py: p.y, x: VZ.x, y: VZ.y }; return; }
+    VZ.start = null; if (VZ.s < 1.05 && VZ.s !== 1) { VZ.s = 1; VZ.x = 0; VZ.y = 0; vzApply(true); return; }
+    if (VZ.s <= 1.02 && VZ.y > 120) { $('#vClose').click(); return; } if (VZ.s <= 1.02 && VZ.y) { VZ.y = 0; vzApply(true); }
+    if (!VZ.moved && e.type === 'pointerup' && !e.target.closest('.vbar')) { const now = Date.now(); if (now - VZ.lastTap < 300) { VZ.lastTap = 0; if (VZ.s > 1.02) { VZ.s = 1; VZ.x = 0; VZ.y = 0; } else vzZoomAt(e.clientX, e.clientY, 2.6); vzApply(true); } else VZ.lastTap = now; } };
+  v.addEventListener('pointerup', up); v.addEventListener('pointercancel', up);
+  v.addEventListener('wheel', e => { if (!v.classList.contains('on')) return; e.preventDefault(); if (e.ctrlKey || Math.abs(e.deltaY) > Math.abs(e.deltaX) && !VZ.s) { } if (e.ctrlKey || VZ.s <= 1.02) vzZoomAt(e.clientX, e.clientY, VZ.s * (e.deltaY < 0 ? 1.15 : 1 / 1.15)); else { VZ.x -= e.deltaX; VZ.y -= e.deltaY; vzClamp(); } vzApply(false); }, { passive: false });
+  v.addEventListener('dblclick', e => { if (e.pointerType) return; });
+})();
 document.addEventListener('click', e => { const im = e.target.closest && e.target.closest('.notes img, .qa-rich img, .rv-notes img'); if (!im || !im.src) return; e.preventDefault(); openNoteImg(im.src); });
-$('#vClose').onclick = () => { $('#viewer').classList.remove('on', 'zoom'); viewerCtx = null; };
+$('#vClose').onclick = () => { $('#viewer').classList.remove('on', 'zoom'); viewerCtx = null; vzReset(); };
 $('#vDel').onclick = () => { if (!viewerCtx) return; if (viewerCtx.rf) { if (!confirm('Remove this photo?')) return; viewerCtx.t.imgs = (viewerCtx.t.imgs || []).filter(x => x !== viewerCtx.id); viewerCtx.t.u = Date.now(); save(); $('#viewer').classList.remove('on'); viewerCtx = null; render(); return; } if (!confirm('Remove this image from the task?')) return; removeImage(viewerCtx.t, viewerCtx.id); $('#viewer').classList.remove('on'); viewerCtx = null; renderPage(); };
 
 /* ================= state ================= */
@@ -3601,7 +3627,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.2.7';
+const APPV = '6.2.8';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5824,7 +5850,7 @@ document.addEventListener('click', ev => {
     priv: () => { rfSaveEntryFields(v); const e = rfDay(v, true); e.priv = !e.priv; rfTouch(e); renderMainOnly(); },
     ask: () => { rfSaveEntryFields(v); rfAskQ(v); },
     photo: () => { rfSaveEntryFields(v); rfPick(async f => { const data = await compressImage(f); const id = 'i' + uid(); IMGS[id] = data; idb.put(id, data).catch(() => { }); const e = rfDay(v, true); e.imgs.push(id); rfTouch(e); render(); toast('Photo added'); }); },
-    img: () => { const e = rfDay(b.dataset.d); if (!e) return; viewerCtx = { t: e, id: v, rf: true }; $('#vImg').src = IMGS[v]; $('#viewer').classList.add('on'); },
+    img: () => { const e = rfDay(b.dataset.d); if (!e) return; viewerCtx = { t: e, id: v, rf: true }; $('#vImg').src = IMGS[v]; vzReset(); $('#viewer').classList.add('on'); },
     note: () => rfNote(v, b.dataset.f, b.dataset.t),
     send: () => { const el = $('#rfAsk'); const t = el.value; el.value = ''; rfSend(t); },
     mstart: () => { J.mode = v === 'decide' ? 'decide' : null; save(); if (v === 'decide') { const el = $('#rfAsk'); el.placeholder = 'Describe the decision…'; el.focus(); toast('Tell me the decision, and what is pulling you each way'); } else rfSend(RF_STARTS[v]); },
