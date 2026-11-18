@@ -491,7 +491,7 @@ textarea.inp{height:auto;min-height:96px;padding:10px 12px;line-height:1.5;resiz
 .imgs img{width:100%;height:100%;object-fit:cover;display:block}
 .imgs .addimg{aspect-ratio:1;border-radius:12px;border:1.5px dashed var(--ring);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--muted);font-size:12.5px;font-weight:600}
 .pfoot{padding:22px 20px 8px;font-size:12.5px;color:var(--muted);line-height:1.5}
-.viewer{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:70;display:none;align-items:center;justify-content:center}
+.viewer{position:fixed;inset:0;background:#0B0D10;z-index:70;display:none;align-items:center;justify-content:center}
 .viewer.on{display:flex}
 .viewer img{max-width:100%;max-height:100%;object-fit:contain}
 .viewer .vbar{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 8px) 10px 8px}
@@ -1283,6 +1283,11 @@ button.warn{display:block;width:100%;text-align:left}
 .notes td>p,.notes td>div,.notes th>p,.notes th>div,.qa-rich td>p,.qa-rich td>div{margin:0;padding:0;min-height:0}
 .notes img.doc,.qa-rich img.doc,.rv-notes img.doc{border-radius:0;mix-blend-mode:multiply}
 html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes img.doc{filter:invert(1) hue-rotate(180deg);mix-blend-mode:lighten}
+.notes img,.qa-rich img,.rv-notes img{cursor:zoom-in}
+.viewer{overflow:auto;-webkit-overflow-scrolling:touch}.viewer img{cursor:zoom-in;touch-action:pinch-zoom}
+.viewer.zoom{display:block}.viewer.zoom img{max-width:none;max-height:none;width:auto;min-width:220%;height:auto;cursor:zoom-out;margin:56px 0 0}
+.viewer .vbar{position:fixed;z-index:2}.viewer::after{content:'Tap to zoom';position:fixed;bottom:calc(env(safe-area-inset-bottom) + 18px);left:50%;transform:translateX(-50%);color:rgba(255,255,255,.7);font-size:13px;font-weight:600;background:rgba(255,255,255,.1);padding:6px 12px;border-radius:14px;pointer-events:none}.viewer.zoom::after{content:'Drag to read · tap to fit'}
+@media (min-width:900px){.viewer.zoom img{min-width:160%}}
 </style>
 </head>
 <body>
@@ -1534,7 +1539,7 @@ function cleanNode(node, out) {
     if (tag && RT_OK.includes(tag)) {
       const el = document.createElement(tag); if (cls.length && (tag === 'SPAN' || tag === 'UL')) el.className = cls.join(' ');
       if (tag === 'TD' || tag === 'TH') ['colspan', 'rowspan'].forEach(k => { const v = +c.getAttribute(k); if (v > 1 && v < 30) el.setAttribute(k, v); });
-      if (tag === 'IMG') { const src = c.getAttribute('src') || ''; if (/^data:image\/(png|jpe?g|webp|gif);base64,/i.test(src) && src.length < 900000) { el.setAttribute('src', src); if (c.classList && c.classList.contains('doc')) el.className = 'doc'; out.appendChild(el); } return; }
+      if (tag === 'IMG') { const src = c.getAttribute('src') || ''; if (/^data:image\/(png|jpe?g|webp|gif);base64,/i.test(src) && src.length < 1000000) { el.setAttribute('src', src); if (c.classList && c.classList.contains('doc')) el.className = 'doc'; out.appendChild(el); } return; }
       if (tag === 'TABLE' && !c.querySelector('td,th')) return;
       if (tag === 'A') { const h = c.getAttribute('href') || ''; if (/^https?:/i.test(h)) { el.setAttribute('href', h); el.setAttribute('target', '_blank'); el.setAttribute('rel', 'noopener'); } }
       cleanNode(c, el); out.appendChild(el);
@@ -1564,7 +1569,7 @@ function titleSmart(t, v) {
   return true;
 }
 // A picture that is mostly white (a copied table, a document, a screenshot of text) blends into the theme instead of sitting in a white box
-function isDocImg(src) { return new Promise(res => { const i = new Image(); i.onload = () => { try { const c = document.createElement('canvas'); c.width = 48; c.height = 48; const x = c.getContext('2d'); x.drawImage(i, 0, 0, 48, 48); const d = x.getImageData(0, 0, 48, 48).data; let w = 0; for (let k = 0; k < d.length; k += 4) if (d[k] > 232 && d[k + 1] > 232 && d[k + 2] > 232) w++; res(w / (d.length / 4) > .55); } catch (e) { res(false); } }; i.onerror = () => res(false); i.src = src; }); }
+function isDocImg(src) { return new Promise(res => { const i = new Image(); i.onload = () => { try { const c = document.createElement('canvas'); c.width = 48; c.height = 48; const x = c.getContext('2d'); x.drawImage(i, 0, 0, 48, 48); const d = x.getImageData(0, 0, 48, 48).data; res(docShare(d) > .45); } catch (e) { res(false); } }; i.onerror = () => res(false); i.src = src; }); }
 function tsvToHtml(s) { const rows = s.replace(/\r/g, '').replace(/\n+$/, '').split('\n'); if (rows.length < 1 || !rows.every(r => r.includes('\t')) || rows.length > 300) return ''; return '<table><tbody>' + rows.map(r => '<tr>' + r.split('\t').map(c => `<td>${esc(c.trim()) || '<br>'}</td>`).join('') + '</tr>').join('') + '</tbody></table><div><br></div>'; }
 function textToHtml(s) { if (!s) return ''; if (/^\s*<(div|p|b|ul|ol|mark|br|h3|i|u|table)\b/i.test(s)) return cleanHtml(s); { const t = tsvToHtml(s); if (t) return t; } return s.split('\n').map(l => `<div>${l ? esc(l) : '<br>'}</div>`).join(''); }
 function toolbarHtml() { return `<div class="ntool" role="toolbar" aria-label="Formatting">${[['bold', '<b>B</b>', 'Bold'], ['italic', '<i style="font-family:serif">I</i>', 'Italic'], ['underline', '<u>U</u>', 'Underline'], ['mark', '<mark style="background:#FFE58A;color:#1a1400;padding:0 5px;border-radius:3px">H</mark>', 'Highlight'], ['h3', '<b style="font-size:17px">T</b>', 'Heading'], ['pop:fs', '<span style="font-size:13px">A</span><span style="font-size:17px">A</span>&nbsp;▾', 'Text size'], ['pop:ff', 'Font&nbsp;▾', 'Font'], ['pop:ls', '•&nbsp;List&nbsp;▾', 'List style'],  ['table', '▦&nbsp;Table', 'Insert a table'], ['row', '+&nbsp;Row', 'Add a row to the table'], ['link', 'Link', 'Add link'], ['removeFormat', 'Clear', 'Clear formatting']].map(([c, l, a]) => `<button type="button" data-cmd="${c}" aria-label="${a}" style="${l.length > 30 ? '' : 'padding:0 8px'}">${l}</button>`).join('')}<div class="npop" data-pop="fs" hidden>${[['fs:s', 'Small'], ['fs:n', 'Normal'], ['fs:l', 'Large'], ['fs:xl', 'Huge']].map(([c, l]) => `<button type="button" data-cmd="${c}" class="${c.slice(3) === 'n' ? '' : 'fs-' + c.slice(3)}">${l}</button>`).join('')}</div><div class="npop" data-pop="ff" hidden>${[['ff:default', 'Default'], ['ff:serif', 'Serif'], ['ff:mono', 'Mono'], ['ff:hand', 'Handwritten']].map(([c, l]) => `<button type="button" data-cmd="${c}" class="${c === 'ff:default' ? '' : 'ff-' + c.slice(3)}">${l}</button>`).join('')}</div><div class="npop" data-pop="ls" hidden>${[['ul:dot', '•  Bullets'], ['ul:arrow', '➤  Arrows'], ['ul:check', '☐  Checkboxes'], ['ul:dash', '–  Dashes'], ['ul:star', '★  Stars'], ['ol', '1.  Numbers']].map(([c, l]) => `<button type="button" data-cmd="${c}">${l}</button>`).join('')}</div></div>`; }
@@ -1666,12 +1671,19 @@ const idb = (() => {
     all: async () => { const db = await openDb(); return new Promise(res => { const out = {}; const c = db.transaction('imgs').objectStore('imgs').openCursor(); c.onsuccess = () => { const cur = c.result; if (cur) { out[cur.key] = cur.value; cur.continue(); } else res(out); }; c.onerror = () => res(out); }); }
   };
 })();
+// share of pixels that are near-white paper (bright and colourless)
+function docShare(d) { let w = 0; for (let k = 0; k < d.length; k += 4) { const a = d[k], b = d[k + 1], c = d[k + 2]; if (Math.min(a, b, c) > 205 && Math.max(a, b, c) - Math.min(a, b, c) < 22) w++; } return w / (d.length / 4); }
 async function compressImage(file) {
   const url = URL.createObjectURL(file);
   try {
     const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
-    let max = 1600, q = .8, out = '';
-    for (let k = 0; k < 6; k++) { const sc = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight)); const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * sc); c.height = Math.round(img.naturalHeight * sc); const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height); out = c.toDataURL('image/jpeg', q); if (out.length < 650000) break; max = Math.round(max * .8); q = Math.max(.5, q - .08); }
+    const draw = max => { const sc = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight)); const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * sc); c.height = Math.round(img.naturalHeight * sc); const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height); return c; };
+    // Is it a document (a table, text, a screenshot)? Those stay sharp: no JPEG smudge on letters
+    let doc = false; try { const t = draw(64), d = t.getContext('2d').getImageData(0, 0, t.width, t.height).data; doc = docShare(d) > .45; } catch (e) { }
+    const LIM = 880000;
+    if (doc) { for (const max of [2400, 2000, 1600, 1300]) { const c = draw(max); let out = c.toDataURL('image/png'); if (out.length < LIM) return out; out = c.toDataURL('image/webp', .93); if (out.startsWith('data:image/webp') && out.length < LIM) return out; out = c.toDataURL('image/jpeg', .92); if (out.length < LIM) return out; } }
+    let max = 1600, q = .82, out = '';
+    for (let k = 0; k < 6; k++) { out = draw(max).toDataURL('image/jpeg', q); if (out.length < 650000) break; max = Math.round(max * .8); q = Math.max(.5, q - .08); }
     return out;
   } finally { URL.revokeObjectURL(url); }
 }
@@ -1683,8 +1695,11 @@ async function addImages(t, files) {
 }
 function removeImage(t, id) { t.imgs = (t.imgs || []).filter(x => x !== id); if (!S.tasks.some(x => (x.imgs || []).includes(id))) { delete IMGS[id]; idb.del(id).catch(() => { }); } save(); }
 let viewerCtx = null;
-function openViewer(t, id) { viewerCtx = { t, id }; $('#vImg').src = IMGS[id]; $('#viewer').classList.add('on'); }
-$('#vClose').onclick = () => { $('#viewer').classList.remove('on'); viewerCtx = null; };
+function openViewer(t, id) { viewerCtx = { t, id }; $('#vDel').hidden = false; $('#vImg').src = IMGS[id]; $('#viewer').classList.remove('zoom'); $('#viewer').classList.add('on'); }
+function openNoteImg(src) { viewerCtx = null; $('#vDel').hidden = true; $('#vImg').src = src; $('#viewer').classList.remove('zoom'); $('#viewer').classList.add('on'); }
+$('#vImg').addEventListener('click', e => { const v = $('#viewer'), im = e.currentTarget; const r = im.getBoundingClientRect(), fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height; v.classList.toggle('zoom'); if (v.classList.contains('zoom')) requestAnimationFrame(() => { v.scrollLeft = fx * im.offsetWidth - v.clientWidth / 2; v.scrollTop = fy * im.offsetHeight - v.clientHeight / 2; }); });
+document.addEventListener('click', e => { const im = e.target.closest && e.target.closest('.notes img, .qa-rich img, .rv-notes img'); if (!im || !im.src) return; e.preventDefault(); openNoteImg(im.src); });
+$('#vClose').onclick = () => { $('#viewer').classList.remove('on', 'zoom'); viewerCtx = null; };
 $('#vDel').onclick = () => { if (!viewerCtx) return; if (viewerCtx.rf) { if (!confirm('Remove this photo?')) return; viewerCtx.t.imgs = (viewerCtx.t.imgs || []).filter(x => x !== viewerCtx.id); viewerCtx.t.u = Date.now(); save(); $('#viewer').classList.remove('on'); viewerCtx = null; render(); return; } if (!confirm('Remove this image from the task?')) return; removeImage(viewerCtx.t, viewerCtx.id); $('#viewer').classList.remove('on'); viewerCtx = null; renderPage(); };
 
 /* ================= state ================= */
@@ -3586,7 +3601,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.2.6';
+const APPV = '6.2.7';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
