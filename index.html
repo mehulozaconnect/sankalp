@@ -1290,6 +1290,16 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 
 
 .viewer .vbar button{background:rgba(0,0,0,.62);backdrop-filter:blur(6px)}
+.ld-bar{margin:14px 0 4px;padding:14px;border-radius:18px;background:var(--surface)}
+.ld-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}.ld-h span{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}.ld-h em{font-style:normal;font-size:12px;color:var(--muted)}
+.ld-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:8px}.ld-s{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;border-radius:14px;background:var(--bg)}.ld-s b{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}.ld-s span{font-size:12px;color:var(--muted);font-weight:600}.ld-s.z b{opacity:.45}
+.ld-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.ld-meta span{display:flex;flex-direction:column;font-size:12px;color:var(--muted);font-weight:600;line-height:1.3}.ld-meta b{font-size:15px;color:var(--ink)}.ld-meta small{font-size:11.5px}.ld-meta small.nr{color:var(--danger)}
+.ld-warn{margin-top:12px;padding:12px;border-radius:14px;background:color-mix(in srgb,var(--danger) 13%,var(--bg));font-size:14px;line-height:1.45}.ld-warn.soft{background:color-mix(in srgb,#F59E0B 14%,var(--bg))}.ld-warn.hold{background:var(--bg);display:flex;align-items:center;gap:10px}.ld-warn.hold button{margin-left:auto;font-weight:800;color:var(--accent-text)}
+.ld-btns{display:flex;gap:8px;margin-top:10px}.ld-btns button{flex:1;height:38px;border-radius:12px;background:var(--bg);font-weight:800;font-size:14px;color:var(--ink)}.ld-btns button+button{background:var(--danger);color:#fff}
+.ld-tot{margin:0 16px 10px}.ld-tot .ld-s{background:var(--surface)}
+.ld-list{display:flex;flex-direction:column;gap:8px;margin:0 16px 40px}.ld-item{padding:12px 14px;border-radius:16px;background:var(--surface)}.ld-item.old{box-shadow:inset 3px 0 0 var(--danger)}.ld-item.held{opacity:.7}
+.ld-main{display:flex;flex-direction:column;gap:3px;width:100%;text-align:left;color:var(--ink)}.ld-main b{font-size:15.5px}.ld-main small{font-size:12.5px;color:var(--muted);font-weight:600}.ld-mini{font-size:13px;color:var(--soft);font-weight:600}.ld-mini em{font-style:normal;color:var(--ink);font-weight:800}.ld-item.old .ld-mini em{color:var(--danger)}
+.ld-tag{display:inline-block;margin-top:6px;font-size:12px;font-weight:800;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -2247,8 +2257,8 @@ function row(t, o = {}) {
 const rows = (list, o) => `<div class="list">${list.map(t => row(t, o)).join('')}</div>`;
 function navItem(href, icon, color, name, count, on, extra = '') { return `<a class="navi${on ? ' on' : ''}" href="#${href}"><span style="color:${on ? 'var(--accent)' : color};display:flex">${icon}</span><span class="nm">${esc(name)}</span>${extra}${count !== '' && count != null ? `<span class="c">${count}</span>` : ''}</a>`; }
 Object.assign(I, { trophy: sv('<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M12 13v4M8 20h8M10 17h4"/>') });
-const NAV_DEF = ['today', 'calendar', 'inbox', 'reflect', 'you', 'waiting', 'someday', 'focus', 'dates', 'templates', 'life'];
-const NAV_NAMES = { inbox: 'Inbox', today: 'Today', calendar: 'Plan', waiting: 'Waiting on', reflect: 'Reflect', you: 'You', someday: 'Someday', habits: 'Habits', life: 'Life list', dates: 'Birthdays and dates', templates: 'Templates', focus: 'Focus timer', review: 'Day review', insights: 'Insights', progress: 'Progress' };
+const NAV_DEF = ['today', 'calendar', 'inbox', 'reflect', 'you', 'leads', 'waiting', 'someday', 'focus', 'dates', 'templates', 'life'];
+const NAV_NAMES = { inbox: 'Inbox', today: 'Today', calendar: 'Plan', leads: 'Leads', waiting: 'Waiting on', reflect: 'Reflect', you: 'You', someday: 'Someday', habits: 'Habits', life: 'Life list', dates: 'Birthdays and dates', templates: 'Templates', focus: 'Focus timer', review: 'Day review', insights: 'Insights', progress: 'Progress' };
 function navOrder() { const o = (S.settings.navOrder || []).filter(k => NAV_DEF.includes(k)); NAV_DEF.forEach((k, i) => { if (!o.includes(k)) o.splice(Math.min(i, o.length), 0, k); }); return o; }
 function listsNav(cur) {
   const td = today(); const D = todayData();
@@ -2260,6 +2270,7 @@ function listsNav(cur) {
     inbox: () => navItem('inbox', I.inbox, '#3B9EFF', 'Inbox', inboxTasks().length || '', cur === 'inbox'),
     today: () => navItem('today', I.star, '#F5B800', 'Today', D.openCount || '', cur === 'today', D.overdue.length ? `<span class="bad" aria-label="${D.overdue.length} overdue">${D.overdue.length}</span>` : ''),
     calendar: () => navItem('calendar', I.cal, '#E5484D', 'Plan', '', cur === 'calendar' || cur === 'week'),
+    leads: () => { const L = S.tasks.filter(t => !t.done && ldIsLead(t)); if (!L.length && cur !== 'leads') return ''; const n = L.filter(t => ldStats(t).old).length; return navItem('leads', I.target, '#E5484D', 'Leads', n || '', cur === 'leads'); },
     waiting: () => { const n = open().filter(smIsWait).length; return n || cur === 'waiting' ? navItem('waiting', I.clock, '#F59E0B', 'Waiting on', n || '', cur === 'waiting') : ''; },
     reflect: () => { const st = rfStreak().n; return navItem('reflect', RF_IC, '#8B5CF6', 'Reflect', rf().days[today()]?.mood ? (st ? '🔥' + st : '✓') : '', cur === 'reflect'); },
     you: () => navItem('you', I.chart, '#22B8D9', 'You', '', ['you', 'habits', 'progress', 'insights'].includes(cur)),
@@ -3627,7 +3638,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.2.8';
+const APPV = '6.3';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4095,7 +4106,7 @@ function renderPage(fresh) {
   ${t.done ? '' : `<div class="pacts"><button id="paDone">${I.check}Done</button><button id="paSnz">${I.clock}Snooze</button><button id="paMove">${I.cal}Move</button><button id="paFocus">${I.play}Focus</button></div>`}
   ${t.pushed >= 2 && !t.done ? `<div class="psec" style="padding-top:8px"><button class="warn" data-sm="stuck" data-id="${t.id}">Moved ${t.pushed} times. Tap for help: split it, schedule it, hand it over or drop it.</button></div>` : ''}
   <div class="psec"><h3><span>Subtasks${t.subs.length ? ` ${sd}/${t.subs.length}` : ''}</span></h3><div id="pCl">${t.subs.map(c => clRow(c, true)).join('')}</div><div class="cl"><button type="button" id="pClAdd" class="iconbtn" style="width:24px;color:var(--muted)" aria-label="Add subtask">${I.plus}</button><textarea class="clt" id="pClNew" rows="1" placeholder="Add a subtask" aria-label="Add a subtask" enterkeyhint="enter" autocomplete="off"></textarea></div></div>
-  <div class="psec"><h3><span>Notes</span></h3>${toolbarHtml()}<div class="notes" id="pNotes" contenteditable="true" data-ph="Notes" role="textbox" aria-multiline="true" aria-label="Notes">${cleanHtml(t.notes)}</div></div>
+  <div class="psec"><h3><span>Notes</span></h3>${toolbarHtml()}<div class="notes" id="pNotes" contenteditable="true" data-ph="Notes" role="textbox" aria-multiline="true" aria-label="Notes">${cleanHtml(t.notes)}</div><div id="ldWrap">${ldBarHtml(t)}</div></div>
   <div class="psec"><h3><span>Images${t.imgs.length ? ' ' + t.imgs.length : ''}</span></h3><div class="imgs">${t.imgs.map(id => IMGS[id] ? `<button class="im" data-img="${id}" aria-label="Open image"><img src="${IMGS[id]}" alt="Attached image"></button>` : '').join('')}<button class="addimg" id="pAddImg">${I.img}<span>Add image</span></button></div></div>
   <div class="pfoot">Created ${fmtDate(ymd(new Date(t.createdAt)))}${t.done && t.doneAt ? `. Done ${fmtDate(ymd(new Date(t.doneAt)))}` : ''}${t.pushed ? `. Moved ${plural(t.pushed, 'time')}` : ''}.</div>`;
   pg.classList.add('on'); document.body.style.overflow = 'hidden'; pg.scrollTop = y;
@@ -4115,6 +4126,7 @@ function renderPage(fresh) {
   $('#pMore').onclick = () => pageMenu(t);
   $$('[data-pp]', pg).forEach(b => b.onclick = () => ({ when: pickWhen, repeat: pickRepeat, remind: pickRemind, priority: pickPriority, project: pickProject, tags: pickTags, dur: pickDur, more: pickMore })[b.dataset.pp](t));
   wireEditor($('#pNotes'), $('.ntool', pg), html => { if (html !== t.notes) { t.notes = html; save(); } });
+  { let ldT; $('#pNotes').addEventListener('input', () => { clearTimeout(ldT); ldT = setTimeout(() => { const w = $('#ldWrap'); if (!w) return; const tmp = { ...t, notes: cleanHtml($('#pNotes').innerHTML) }; w.innerHTML = ldBarHtml(tmp); }, 400); }); }
   const clWire = () => $$('#pCl .cl').forEach(el => {
     const c = t.subs.find(x => x.id === el.dataset.c); if (!c) return;
     el.querySelector('input[type=checkbox]').onchange = e => { c.d = e.target.checked; if (c.d) { c.nagAt = 0; c.snoozeUntil = 0; } el.classList.toggle('done', c.d); save(); if (t.subs.every(x => x.d) && !t.done) toast('All subtasks done. Finish the task?', () => { toggleDone(t.id); renderPage(); }); };
@@ -4749,7 +4761,7 @@ setInterval(() => { pushSetup(); pushQueueSoon(); }, 5 * 6e4);
 /* ================= render ================= */
 function viewHtml() {
   const { view, arg } = route();
-  const V = { reflect: () => vReflect(arg), life: vLife, review: () => arg === 'week' ? vWeekReview() : vClose(), you: vYou, close: vClose, waiting: vWaiting, planday: () => { setTimeout(() => { history.replaceState(null, '', '#today'); render(); if (!(S.days[today()] || {}).started) smPlanSheet('morning'); }, 60); return vToday(); }, home: vHome, today: vToday, plan: () => vPlan(arg || 'today'), week: vCalendar, inbox: vInbox, upcoming: vUpcoming, someday: vSomeday, calendar: vCalendar, project: () => vProject(arg), done: vDone, habits: vHabits, dates: vDates, templates: vTemplates, focus: vFocus, insights: () => vInsights(arg), progress: vProgress, trash: vTrash, filter: () => vFilter(arg), settings: () => vSettings(arg) };
+  const V = { reflect: () => vReflect(arg), life: vLife, review: () => arg === 'week' ? vWeekReview() : vClose(), you: vYou, close: vClose, waiting: vWaiting, leads: vLeads, planday: () => { setTimeout(() => { history.replaceState(null, '', '#today'); render(); if (!(S.days[today()] || {}).started) smPlanSheet('morning'); }, 60); return vToday(); }, home: vHome, today: vToday, plan: () => vPlan(arg || 'today'), week: vCalendar, inbox: vInbox, upcoming: vUpcoming, someday: vSomeday, calendar: vCalendar, project: () => vProject(arg), done: vDone, habits: vHabits, dates: vDates, templates: vTemplates, focus: vFocus, insights: () => vInsights(arg), progress: vProgress, trash: vTrash, filter: () => vFilter(arg), settings: () => vSettings(arg) };
   return (view === 'home' && isWide()) ? vToday() : (V[view] || vToday)();
 }
 function renderMainOnly() {
@@ -6084,7 +6096,7 @@ function vHome() {
   const li = (href, ic, col, name, c) => `<a class="navi" href="#${href}"><span style="color:${col};display:flex">${ic}</span><span class="nm">${name}</span>${c ? `<span class="c">${c}</span>` : ''}</a>`;
   const tool = (href, ic, col, name, sub) => `<a href="#${href}"><i style="color:${col}">${ic}</i><b>${name}</b><span>${sub}</span></a>`;
   return `<div class="topbar" style="padding-left:20px"><span class="brand">${LOGO(32)}<b>Dayline</b></span><div class="acts"><button class="iconbtn" data-act="search" aria-label="Search">${I.search}</button><a class="iconbtn" href="#settings" aria-label="Settings">${I.gear}</a></div></div>
-  <div class="mo-h">Lists</div><div class="nav">${li('inbox', I.inbox, '#3B9EFF', 'Inbox', inb)}${li('upcoming', I.cal, '#2BB5A6', 'Next 7 days', '')}${li('someday', I.box, '#C9A66B', 'Someday', sd)}${li('waiting', I.clock, '#F59E0B', 'Waiting on', open().filter(smIsWait).length || '')}${li('done', I.done, '#22C55E', 'Completed', '')}${li('trash', I.trash, 'var(--muted)', 'Trash', tr)}</div>
+  <div class="mo-h">Lists</div><div class="nav">${li('inbox', I.inbox, '#3B9EFF', 'Inbox', inb)}${li('upcoming', I.cal, '#2BB5A6', 'Next 7 days', '')}${li('someday', I.box, '#C9A66B', 'Someday', sd)}${S.tasks.some(t => !t.done && ldIsLead(t)) ? li('leads', I.target, '#E5484D', 'Leads', S.tasks.filter(t => !t.done && ldIsLead(t) && ldStats(t).old).length || '') : ''}${li('waiting', I.clock, '#F59E0B', 'Waiting on', open().filter(smIsWait).length || '')}${li('done', I.done, '#22C55E', 'Completed', '')}${li('trash', I.trash, 'var(--muted)', 'Trash', tr)}</div>
   <div class="mo-h">Tools</div><div class="mo-tools">${tool('focus', I.timer, '#F97316', 'Focus timer', S.timer.running ? 'Running now' : `${S.settings.pomo} min sessions`)}${tool('dates', I.gift, '#FB7185', 'Birthdays', nextD === 0 ? 'One today' : nextD != null ? `Next in ${plural(nextD, 'day')}` : 'and dates')}${tool('templates', I.layers, '#8B5CF6', 'Templates', `${S.templates.length} saved`)}${tool('life', I.target, '#10B981', 'Life list', act ? `${act} active` : 'Big goals')}<button data-sm="ask"><i>✨</i><b>Ask Dayline</b><span>Ask or tell, in plain words</span></button></div>
   <div class="mo-h">Projects<button data-act="newproject" aria-label="New project">${I.plus}New</button></div><div class="nav">${projectsNav('', '')}${filtersNav('', '')}</div>
   <div class="mo-foot"><button data-sm="reorder">${I.edit}Reorder projects</button></div>`;
@@ -6435,6 +6447,61 @@ function smSplitTask(id) {
   toast(`Split into ${plural(ids.length, 'task')}`, () => { S.tasks = S.tasks.filter(x => !ids.includes(x.id)); S.tasks.push(JSON.parse(snap)); save(); render(); });
 }
 document.addEventListener('click', ev => { const b = ev.target.closest('[data-sm="split"]'); if (!b) return; ev.preventDefault(); smSplitTask(b.dataset.id); });
+
+
+/* ---------- Lead tracker: counts calls, WhatsApps and emails from the Follow-ups lines in a task's notes ---------- */
+const LD_MON = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, sept: 8, oct: 9, nov: 10, dec: 11 };
+function ldLines(html) { return String(html || '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/(div|p|li|h3|tr)>/gi, '\n').replace(/<\/t[dh]>/gi, ' ').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").split('\n').map(x => x.trim()).filter(Boolean); }
+// 17-Nov-2026, 17 Nov 2026, 17/11/2026, 17-11-26, 17 Nov (this year)
+function ldDate(s) {
+  let m = s.match(/\b(\d{1,2})(?:st|nd|rd|th)?[\s\-\/.]+([A-Za-z]{3,9})[\s\-\/.,]*(\d{2,4})?\b/);
+  if (m && LD_MON[m[2].slice(0, 4).toLowerCase()] == null && LD_MON[m[2].slice(0, 3).toLowerCase()] == null) m = null;
+  if (m) { const mo = LD_MON[m[2].slice(0, 4).toLowerCase()] ?? LD_MON[m[2].slice(0, 3).toLowerCase()]; let y = m[3] ? +m[3] : new Date().getFullYear(); if (y < 100) y += 2000; const d = new Date(y, mo, +m[1]); return isNaN(d) ? null : ymd(d); }
+  m = s.match(/\b(\d{1,2})[\-\/.](\d{1,2})[\-\/.](\d{2,4})\b/); if (m) { let y = +m[3]; if (y < 100) y += 2000; const d = new Date(y, +m[2] - 1, +m[1]); return isNaN(d) || +m[2] > 12 ? null : ymd(d); }
+  return null;
+}
+const LD_CALL = /\b(call(?:ed|ing|s)?|rang|ring|spoke|phoned?|dial(?:l?ed)?)\b/i, LD_WA = /\b(whats\s?app(?:ed|s)?|watsapp(?:ed)?|wa|wapp)\b/i, LD_MAIL = /\b(e-?mail(?:ed|s)?|mail(?:ed)?|sent (?:a )?mail)\b/i, LD_MEET = /\b(meeting|met|demo|visit(?:ed)?|presentation)\b/i, LD_NORESP = /\b(no (?:response|reply|answer)|not (?:responding|picking|picked|reachable|answering)|didn'?t (?:pick|respond|reply|answer)|unanswered|switched off|busy)\b/i;
+function ldIsLead(t) { const n = t && t.notes || ''; return /follow[\s\-–]*ups?/i.test(n) && /(lead\s*(rating|source|scoring)|contact\s*name|designation)/i.test(n); }
+function ldStats(t) {
+  const L = ldLines(t.notes); const fi = L.findIndex(x => /^follow[\s\-–]*ups?\b/i.test(x)); const fu = fi >= 0 ? L.slice(fi + 1) : [];
+  const r = { call: 0, wa: 0, mail: 0, meet: 0, noresp: 0, touches: 0, last: null, start: null, lastNoResp: 0 };
+  fu.forEach(x => { const d = ldDate(x); const c = LD_CALL.test(x), w = LD_WA.test(x), e = LD_MAIL.test(x), m = LD_MEET.test(x); if (!d && !c && !w && !e && !m) return;
+    r.call += c ? 1 : 0; r.wa += w ? 1 : 0; r.mail += e ? 1 : 0; r.meet += m ? 1 : 0; r.touches++; const nr = LD_NORESP.test(x); r.noresp += nr ? 1 : 0; if (d && (!r.last || d >= r.last)) { r.last = d; r.lastNoResp = nr; } });
+  // vintage: from the demo / first meeting date, else the earliest date in the sheet, else when the task was made
+  const dl = L.find(x => /^(demo|first (?:meeting|call)|meeting)\s*date\b/i.test(x)); const dd = dl && ldDate(dl);
+  const all = L.map(ldDate).filter(Boolean).sort(); r.start = dd || all[0] || ymd(new Date(t.createdAt)); if (r.start > today()) r.start = ymd(new Date(t.createdAt));
+  r.days = Math.max(0, dayDiff(r.start, today())); r.since = r.last ? dayDiff(r.last, today()) : null;
+  r.old = r.days > 90 && !(t.tags || []).includes('hold');
+  return r;
+}
+function ldAge(n) { return n == null ? '–' : n === 0 ? 'today' : n < 0 ? `in ${plural(-n, 'day')}` : `${plural(n, 'day')} ago`; }
+function ldBarHtml(t) {
+  if (!ldIsLead(t)) return ''; const r = ldStats(t), hold = (t.tags || []).includes('hold');
+  const box = (ic, n, l) => `<div class="ld-s${n ? '' : ' z'}"><b>${ic} ${n}</b><span>${l}</span></div>`;
+  let h = `<div class="ld-bar" id="ldBar"><div class="ld-h"><span>Lead tracker</span><em>from your Follow-ups</em></div><div class="ld-row">${box('📞', r.call, r.call === 1 ? 'call' : 'calls')}${box('💬', r.wa, 'WhatsApp')}${box('✉️', r.mail, r.mail === 1 ? 'email' : 'emails')}${r.meet ? box('🤝', r.meet, r.meet === 1 ? 'meeting' : 'meetings') : ''}</div>
+    <div class="ld-meta"><span><b>${r.days}</b> days old<small>since ${fmtShort(r.start)}</small></span><span><b>${r.last ? ldAge(r.since) : 'None'}</b> last follow-up${r.lastNoResp ? '<small class="nr">no response</small>' : ''}</span><span><b>${r.touches}</b> follow-ups<small>${r.noresp ? `${r.noresp} without reply` : 'all logged'}</small></span></div>`;
+  if (hold) h += `<div class="ld-warn hold">💤 On hold. <button type="button" data-ld="unhold" data-id="${t.id}">Make active</button></div>`;
+  else if (r.old) h += `<div class="ld-warn"><b>⚠️ ${r.days} days and still open.</b> Over 90 days: hold it or drop it.<div class="ld-btns"><button type="button" data-ld="hold" data-id="${t.id}">Hold</button><button type="button" data-ld="drop" data-id="${t.id}">✕ Drop lead</button></div></div>`;
+  else if (r.days > 75) h += `<div class="ld-warn soft">${90 - r.days} days left before this lead hits 90 days.</div>`;
+  return h + `</div>`;
+}
+function vLeads() {
+  const L = S.tasks.filter(t => !t.done && ldIsLead(t)).map(t => ({ t, r: ldStats(t) })).sort((a, b) => (b.r.old - a.r.old) || b.r.days - a.r.days);
+  const old = L.filter(x => x.r.old).length, hold = L.filter(x => (x.t.tags || []).includes('hold')).length;
+  const tot = L.reduce((a, x) => ({ c: a.c + x.r.call, w: a.w + x.r.wa, m: a.m + x.r.mail }), { c: 0, w: 0, m: 0 });
+  let h = topbar('', 'Leads') + `<div class="thead"><h1>Leads</h1><span>${plural(L.length, 'open lead')}${old ? `<br><b style="color:var(--danger)">${old} over 90 days</b>` : ''}</span></div>`;
+  if (!L.length) return h + `<div class="empty">No lead sheets yet. A task counts as a lead when its notes have a "Follow-ups" section and lines like Contact Name or Lead Rating.</div>`;
+  h += `<div class="ld-row ld-tot">${[['📞', tot.c, 'calls'], ['💬', tot.w, 'WhatsApp'], ['✉️', tot.m, 'emails'], ['💤', hold, 'on hold']].map(([i, n, l]) => `<div class="ld-s"><b>${i} ${n}</b><span>${l}</span></div>`).join('')}</div>`;
+  h += `<div class="ld-list">` + L.map(({ t, r }) => { const hd = (t.tags || []).includes('hold'); const contact = (ldLines(t.notes).find(x => /^contact\s*name/i.test(x)) || '').replace(/^contact\s*name\s*[-:–]\s*/i, ''); const rating = (ldLines(t.notes).find(x => /^lead\s*rating/i.test(x)) || '').replace(/^lead\s*rating\s*[-:–]\s*/i, '');
+    return `<div class="ld-item${r.old ? ' old' : ''}${hd ? ' held' : ''}"><button class="ld-main" data-act="open" data-id="${t.id}"><b>${esc(t.title)}</b><small>${[contact, rating].filter(Boolean).map(esc).join(' · ')}</small><span class="ld-mini">📞 ${r.call} · 💬 ${r.wa} · ✉️ ${r.mail} · <em>${r.days}d old</em> · last ${r.last ? ldAge(r.since) : 'never'}</span></button>${r.old ? `<div class="ld-btns"><button data-ld="hold" data-id="${t.id}">Hold</button><button data-ld="drop" data-id="${t.id}">✕ Drop</button></div>` : hd ? `<span class="ld-tag">On hold</span>` : ''}</div>`; }).join('') + `</div>`;
+  return h;
+}
+document.addEventListener('click', ev => { const b = ev.target.closest('[data-ld]'); if (!b) return; ev.preventDefault(); ev.stopPropagation(); const t = getTask(b.dataset.id); if (!t) return; const a = b.dataset.ld; const snap = JSON.stringify(t);
+  const undo = () => { const o = JSON.parse(snap), i = S.tasks.findIndex(x => x.id === o.id); if (i >= 0) S.tasks[i] = o; else S.tasks.push(o); save(); render(); };
+  if (a === 'hold') { if (!t.tags.includes('hold')) t.tags.push('hold'); t.someday = true; t.date = null; t.time = null; t.firedKeys = []; save(); render(); toast('Lead on hold. Find it in Leads or Someday', undo); }
+  else if (a === 'unhold') { t.tags = t.tags.filter(x => x !== 'hold'); t.someday = false; save(); render(); toast('Lead is active again', undo); }
+  else if (a === 'drop') { if (!t.tags.includes('dropped')) t.tags.push('dropped'); t.done = true; t.doneAt = Date.now(); pushClose(t.id); save(); render(); toast('Lead dropped. Notes are kept in Completed', undo); }
+}, true);
 
 /* ================= start ================= */
 document.addEventListener('focusin', e => { if (!isWide() && e.target.matches && e.target.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,[contenteditable=true]')) document.body.classList.add('typing'); });
