@@ -3586,7 +3586,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.2.5';
+const APPV = '6.2.6';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -6234,7 +6234,9 @@ function smApply(acts) {
   return { out, undo: out.length ? undo : null, focusId };
 }
 function smAskSheet(q) {
-  if (!aiKey()) { openSheet(sheetHead('Ask Dayline', '', '') + `<div class="sm-sheet"><div class="sm-lead"><b>Ask in plain words</b><span>“I have 40 minutes, what should I do?” · “Move all Sales tasks except P1 to Friday” · “What did I promise Mahaveer?”</span></div><p class="sm-fine" style="font-size:14px">Ask Dayline uses your own Claude key, the same one as your Mentor in Reflect. Each question costs about 1–3 US cents.</p><a class="btn acc sm-full" href="#reflect/mentor" data-close>Add your key in Reflect, Mentor</a></div>`); return; }
+  if (!aiKey()) { openSheet(sheetHead('Ask Dayline', '', '') + `<div class="sm-sheet"><div class="sm-lead"><b>Ask in plain words</b><span>“I have 40 minutes, what should I do?” · “Move all Sales tasks except P1 to Friday” · “What did I promise Mahaveer?”</span></div><p class="sm-fine" style="font-size:14px">Ask Dayline uses your own Claude key, the same one as your Mentor in Reflect. Each question costs about 1–3 US cents.</p><label class="sm-lab" for="smAk">Paste your Claude key (starts with sk-ant-)</label><input class="inp" id="smAk" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…" style="width:100%"><button type="button" class="btn acc sm-full" id="smAkGo">Save key and ask</button><p class="sm-fine">Get a key at console.anthropic.com → API Keys. It stays on this device only, so the laptop and phone each need it once.</p></div>`);
+    $('#smAkGo').onclick = () => { const k = $('#smAk').value.trim(); if (!/^sk-ant-/.test(k)) { toast('That does not look like a Claude key. It starts with sk-ant-'); $('#smAk').focus(); return; } try { localStorage.setItem('sankalp.ak', k); } catch (x) { toast('Could not save the key on this device'); return; } closeSheet(true); toast('Key saved. Mentor uses it too'); setTimeout(() => smAskSheet(q), 260); };
+    setTimeout(() => $('#smAk')?.focus(), 250); return; }
   const mic = (window.SpeechRecognition || window.webkitSpeechRecognition) ? `<button type="button" class="rf-mic" id="smAskMic" aria-label="Speak your question">🎙️</button>` : '';
   openSheet(sheetHead('Ask Dayline', '', '') + `<div class="sm-sheet sm-ask"><div id="smChat" class="sm-chat"></div><div class="sm-sugg" id="smSugg"></div><div class="rf-send"><textarea class="inp rf-ta" id="smAsk" rows="1" aria-label="Ask or tell Dayline" placeholder="Ask or tell Dayline…" enterkeyhint="send"></textarea>${mic}<button class="btn acc" id="smAskGo">Send</button></div></div>`);
   const draw = () => { $('#smChat').innerHTML = smChat.map((m, i) => m.r === 'u' ? `<div class="sm-cu">${esc(m.t)}</div>` : `<div class="sm-ca${m.err ? ' err' : ''}">${m.wait ? '<span class="sm-dots3"><i></i><i></i><i></i></span>' : esc(m.t)}${m.out && m.out.length ? `<div class="sm-cx">${m.out.map(x => `<span>${I.check}${esc(x)}</span>`).join('')}${m.undo ? `<button data-undo="${i}">${m.undone ? 'Undone' : 'Undo'}</button>` : ''}</div>` : ''}${m.focus ? `<button class="btn sec" data-fc="${m.focus}" style="margin-top:8px">${I.play}Start focus</button>` : ''}</div>`).join('');
