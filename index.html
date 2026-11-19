@@ -3665,7 +3665,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.4';
+const APPV = '6.4.1';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -6611,7 +6611,7 @@ function fuInsertLine(html, line) {
   if (h) { let at = h; let n = h.nextElementSibling; while (n && !(n.textContent || '').trim() && !n.querySelector('img,table')) { at = n; n = n.nextElementSibling; } if (at === h) h.insertAdjacentHTML('afterend', line); else at.insertAdjacentHTML('afterend', line); return box.innerHTML; }
   return (box.innerHTML ? box.innerHTML + '<div><br></div>' : '') + '<div><mark><b>Follow-ups</b></mark></div>' + line;
 }
-function fuRefresh(t, notes) { if (!t) return; const w = $('#fuWrap'); if (w) w.innerHTML = fuCardHtml(t); if (notes && $('#pNotes')) $('#pNotes').innerHTML = cleanHtml(t.notes); const lw = $('#ldWrap'); if (lw) lw.innerHTML = ldBarHtml(t); render(); }
+function fuRefresh(t, notes) { if (!t) return; if (pageId === t.id && $('#page').classList.contains('on')) { renderPage(); render(); return; } const w = $('#fuWrap'); if (w) w.innerHTML = fuCardHtml(t); if (notes && $('#pNotes')) $('#pNotes').innerHTML = cleanHtml(t.notes); const lw = $('#ldWrap'); if (lw) lw.innerHTML = ldBarHtml(t); render(); }
 document.addEventListener('click', ev => { const b = ev.target.closest('[data-fu]'); if (!b) return; ev.preventDefault(); const t = getTask(b.dataset.id); if (!t) return; const a = b.dataset.fu;
   if (a === 'edit' || a === 'plan') fuSheet(t); else if (a === 'log') fuLogSheet(t); else if (a === 'skip') { const w = $('#fuWrap'); if (w) w.innerHTML = ''; } });
 
