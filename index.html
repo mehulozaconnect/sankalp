@@ -1317,6 +1317,26 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .sm-fu1{margin-top:6px;font-size:13.5px;font-weight:700;color:var(--soft)}
 #fuWrap{padding:0 20px}#fuWrap:empty{display:none}
 #pSubs[hidden]{display:none}
+.sl-strip{display:block;margin:0 16px 10px;padding:12px 14px;border-radius:18px;background:var(--surface);text-decoration:none;color:var(--ink)}.sl-k{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sl-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}.sl-3 span{display:flex;flex-direction:column;font-size:12px;color:var(--muted);font-weight:600}.sl-3 b{font-size:17px;color:var(--ink);font-weight:800;font-variant-numeric:tabular-nums}.sl-3 .lt b{color:var(--danger)}
+.sl-due{margin-top:8px;font-size:13px;font-weight:700;color:var(--danger)}
+.sl-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 16px 6px}.sl-c{display:flex;flex-direction:column;gap:2px;padding:14px;border-radius:18px;background:var(--surface);text-decoration:none;color:var(--ink)}.sl-c span{font-size:12.5px;color:var(--muted);font-weight:700}.sl-c b{font-family:var(--fd);font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}.sl-c small{font-size:12px;color:var(--soft);font-weight:600}.sl-c.warn{background:color-mix(in srgb,var(--danger) 13%,var(--bg))}.sl-c.warn b{color:var(--danger)}.sl-c.ok b{color:#1C8A5A;font-size:20px}
+.sl-big{font-family:var(--fd);font-size:22px;font-weight:800;margin-top:4px}.sl-big small{font-size:14px;color:var(--muted);font-weight:600}
+.sl-bar{position:relative;height:12px;border-radius:6px;background:color-mix(in srgb,var(--ink) 9%,transparent);margin:10px 0 6px;overflow:visible}.sl-bar i{display:block;height:100%;border-radius:6px;background:var(--accent)}.sl-bar em{position:absolute;top:-4px;width:2px;height:20px;background:var(--ink);opacity:.6}
+.sl-row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);font-weight:700}.sl-say{margin:10px 0 0;font-size:14px;line-height:1.5;color:var(--soft)}.sl-say b{color:var(--ink)}
+.sl-leg{font-size:12px;letter-spacing:0;text-transform:none;font-weight:600;display:inline-flex;align-items:center;gap:6px}.sl-leg i{width:10px;height:10px;border-radius:3px;display:inline-block}.sl-leg .n,.sl-ch .n{background:var(--accent)}.sl-leg .o,.sl-ch .o{background:color-mix(in srgb,var(--accent) 35%,var(--bg))}
+.sl-ch{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;align-items:end;height:150px;margin-top:10px}.sl-ch>div{display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end;gap:3px}.sl-ch .st{width:100%;max-width:22px;height:100px;display:flex;flex-direction:column-reverse;border-radius:5px;overflow:hidden;background:color-mix(in srgb,var(--ink) 5%,transparent)}.sl-ch .st i{display:block;width:100%}.sl-ch small{font-size:10.5px;color:var(--muted);font-weight:700}.sl-ch .v{font-size:9.5px;color:var(--soft);font-weight:700;white-space:nowrap}.sl-ch .fu{opacity:.4}
+.sl-li{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.sl-li:last-child{border:0}.sl-li span{flex:1;min-width:0;display:flex;flex-direction:column}.sl-li b{font-size:14.5px}.sl-li small{font-size:12px;color:var(--muted);font-weight:600}.sl-li em{font-style:normal;font-weight:800;font-variant-numeric:tabular-nums}
+.sl-list{margin:0 16px 40px;padding:0 14px;border-radius:18px;background:var(--surface)}
+.sl-warnc{background:color-mix(in srgb,#F59E0B 14%,var(--bg))}.sl-warnc p{margin:6px 0 0;font-size:13.5px;color:var(--soft)}
+.sl-foot{margin:14px 16px 40px;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:10px}
+.sl-up{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 18px;border-radius:14px;background:var(--ink);color:var(--bg);font-weight:800;font-size:15px;cursor:pointer;position:relative;overflow:hidden}.sl-up svg{width:18px;height:18px}.sl-up input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.sl-empty{margin:10px 16px;padding:20px;border-radius:20px;background:var(--surface);display:flex;flex-direction:column;gap:8px}.sl-empty b{font-size:18px}.sl-empty p{margin:0 0 6px;color:var(--soft);font-size:14px;line-height:1.5}
+.sl-tabs{display:flex;gap:6px;margin:0 16px 8px;overflow-x:auto}.sl-tabs a{flex:none;padding:9px 14px;border-radius:999px;background:var(--surface);font-weight:700;font-size:13.5px;color:var(--ink);text-decoration:none}.sl-tabs a.on{background:var(--ink);color:var(--bg)}
+.sl-hint{margin:4px 18px 10px;font-size:13px;color:var(--muted);line-height:1.45}
+.sl-cl{margin:0 16px 10px;padding:14px;border-radius:18px;background:var(--surface)}.sl-ch1{display:flex;align-items:center;gap:10px}.sl-ch1 span{flex:1;min-width:0;display:flex;flex-direction:column}.sl-ch1 b{font-size:15.5px}.sl-ch1 small{font-size:12.5px;color:var(--muted);font-weight:600}.sl-ch1 em{font-style:normal;font-weight:800;font-size:16px}
+.sl-inv{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);margin-top:8px}.sl-inv span{flex:1;display:flex;flex-direction:column}.sl-inv b{font-size:13.5px}.sl-inv small{font-size:12px;color:var(--muted);font-weight:600}.sl-inv.late small{color:var(--danger)}.sl-inv em{font-style:normal;font-weight:700;font-size:14px}.sl-inv button{height:32px;padding:0 10px;border-radius:10px;background:var(--bg);font-weight:800;font-size:12.5px;color:#1C8A5A}
+.sl-embed{margin-bottom:6px}
 </style>
 </head>
 <body>
@@ -2600,7 +2620,7 @@ function vToday() {
     N = smNext(); if (N) { h += smNextCard(N); const r0 = dayRec(td); if (!r0.nx || r0.nx.id !== N.t.id) { r0.nx = { id: N.t.id, at: now }; saveLocal(); } }
     h += smPrepHtml();
   }
-  h += smWaitHtml();
+  h += smWaitHtml() + slTodayHtml();
   h += dayBand();
   if (isWide()) h += addBar('Add a task for today');
   h += smHabitsHtml();
@@ -2641,6 +2661,7 @@ function vProject(id) {
   const nod = ts.filter(t => !t.date && !t.someday && !t.pinned).sort(sortTasks), sd = ts.filter(t => t.someday && !t.pinned);
   let h = topbar(eyeBtn() + `<button class="iconbtn" data-act="editproject" data-id="${id}" aria-label="Edit project">${I.edit}</button>`);
   h += `<div class="pad" style="display:flex;align-items:center;gap:14px"><div style="width:52px;height:52px;border-radius:16px;background:var(--surface);display:grid;place-items:center;font-size:26px;flex:none">${p.emoji || `<i class="dot" style="width:16px;height:16px;border-radius:8px;background:${p.color}"></i>`}</div><div><h1 class="title" style="font-size:32px">${esc(p.name)}</h1><div class="sub">${esc(p.area)}, ${ts.length} open, ${Math.round(pct * 100)}% done</div></div></div>`;
+  if (/sales\s*dash/i.test(p.name)) h += `<div class="sl-embed">${vSales('', true)}</div>`;
   h += addBar('Add a task to ' + p.name);
   if (pin.length) h += `<div class="grouph">${I.pin} Pinned</div>` + rows(pin, { hideProject: true, inPinned: true });
   if (dated.length) h += `<div class="sechead"><h2 class="sec">Scheduled</h2></div>` + rows(dated, { showDate: true, hideProject: true });
@@ -3665,7 +3686,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.4.2';
+const APPV = '6.5';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4634,7 +4655,7 @@ const dkey = k => decodeURIComponent(k);
 function entities() {
   const o = {}; S.tasks.forEach(t => o['task:' + t.id] = t); S.projects.forEach(p => o['project:' + p.id] = p); S.habits.forEach(h => o['habit:' + h.id] = h);
   S.focus.forEach(f => o['focus:' + f.id] = f); S.dates.forEach(d => o['date:' + d.id] = d); (S.goals || []).forEach(g => o['goal:' + g.id] = g); S.templates.forEach(t => o['tpl:' + t.id] = t); Object.values(S.meetLog).forEach(m => { if (m.src !== 'pcal') o['meet:' + m.id] = m; }); if (S.pcal) o['pcal:' + (S.pcal.id || 'all')] = S.pcal; o['meta:coach'] = coachBrief(); Object.keys(IMGS).forEach(id => o['img:' + id] = { id, data: IMGS[id] }); (S.logs || []).forEach(l => o['log:' + l.id] = l); Object.values(S.phone || {}).forEach(p => o['phone:' + p.id] = p); o['meta:cur'] = { c: S.cur || null }; o['meta:rv'] = { v: remSig() }; if (S.remAck) o['meta:ack'] = S.remAck;
-  const st = S.settings; o['meta:days'] = S.days; if (S.water) o['meta:water'] = S.water; (S.trash || []).forEach(x => o['trash:' + x.id] = x); (S.filters || []).forEach(f => o['filter:' + f.id] = f); if (S.rw) o['meta:rw'] = S.rw; o['meta:plan'] = S.plan; if (S.learn) o['meta:learn'] = S.learn; o['meta:hsec'] = S.habitSections; { const J = rf(); Object.values(J.days).forEach(e => o['jday:' + e.d] = e); const { days, ...jm } = J; o['meta:jr'] = jm; }
+  const st = S.settings; o['meta:days'] = S.days; if (S.water) o['meta:water'] = S.water; (S.trash || []).forEach(x => o['trash:' + x.id] = x); (S.filters || []).forEach(f => o['filter:' + f.id] = f); if (S.rw) o['meta:rw'] = S.rw; o['meta:plan'] = S.plan; if (S.learn) o['meta:learn'] = S.learn; if (S.sales) o['meta:sales'] = S.sales; o['meta:hsec'] = S.habitSections; { const J = rf(); Object.values(J.days).forEach(e => o['jday:' + e.d] = e); const { days, ...jm } = J; o['meta:jr'] = jm; }
   o['meta:prefs'] = { phoneOff: !!st.phoneOff, coach: coachSet(), appmap: st.appmap, nagDef: st.nagDef, workStart: st.workStart, checkin: st.checkin, catv: st.catv, aiModel: st.aiModel, aiPrivate: st.aiPrivate, logo: st.logo, darkStyle: st.darkStyle, gcid: st.gcid, theme: st.theme, mode: st.mode, accent: st.accent, font: st.font, pomo: st.pomo, brk: st.brk, morning: st.morning, shutdown: st.shutdown, meetBefore: st.meetBefore, quietOn: st.quietOn, quietStart: st.quietStart, quietEnd: st.quietEnd, shield: st.shield, showDone: st.showDone, todayGroup: st.todayGroup, fx: st.fx, popRem: st.popRem, inCard: st.inCard, srvPush: st.srvPush };
   return o;
 }
@@ -4646,7 +4667,7 @@ function setEntity(key, val) {
   else if (key === 'meta:cur') S.cur = val.c || null;
   else if (kind === 'meet') S.meetLog[id] = val;
   else if (kind === 'img') { IMGS[id] = val.data; idb.put(id, val.data).catch(() => { }); }
-  else if (key === 'meta:coach' || key === 'meta:rv') { } else if (key === 'meta:ack') { const was = S.remAck && S.remAck.v; S.remAck = val; if (!val || val.v !== was) setTimeout(pushQueueSoon, 0); } else if (key === 'meta:days') S.days = val; else if (key === 'meta:water') S.water = val; else if (key === 'meta:rw') S.rw = val; else if (key === 'meta:plan') S.plan = val; else if (key === 'meta:learn') S.learn = val; else if (key === 'meta:hsec') S.habitSections = val; else if (key === 'meta:prefs') { Object.assign(S.settings, val); applyTheme(); }
+  else if (key === 'meta:coach' || key === 'meta:rv') { } else if (key === 'meta:ack') { const was = S.remAck && S.remAck.v; S.remAck = val; if (!val || val.v !== was) setTimeout(pushQueueSoon, 0); } else if (key === 'meta:days') S.days = val; else if (key === 'meta:water') S.water = val; else if (key === 'meta:rw') S.rw = val; else if (key === 'meta:plan') S.plan = val; else if (key === 'meta:learn') S.learn = val; else if (key === 'meta:sales') S.sales = val; else if (key === 'meta:hsec') S.habitSections = val; else if (key === 'meta:prefs') { Object.assign(S.settings, val); applyTheme(); }
 }
 function removeEntity(key) { sweepSoon();
   const [kind, ...rest] = key.split(':'); const id = rest.join(':'); if (kind === 'jday') { delete rf().days[id]; return; } const rm = n => { S[n] = S[n].filter(x => x.id !== id); };
@@ -4790,7 +4811,7 @@ setInterval(() => { pushSetup(); pushQueueSoon(); }, 5 * 6e4);
 /* ================= render ================= */
 function viewHtml() {
   const { view, arg } = route();
-  const V = { reflect: () => vReflect(arg), life: vLife, review: () => arg === 'week' ? vWeekReview() : vClose(), you: vYou, close: vClose, waiting: vWaiting, leads: vLeads, planday: () => { setTimeout(() => { history.replaceState(null, '', '#today'); render(); if (!(S.days[today()] || {}).started) smPlanSheet('morning'); }, 60); return vToday(); }, home: vHome, today: vToday, plan: () => vPlan(arg || 'today'), week: vCalendar, inbox: vInbox, upcoming: vUpcoming, someday: vSomeday, calendar: vCalendar, project: () => vProject(arg), done: vDone, habits: vHabits, dates: vDates, templates: vTemplates, focus: vFocus, insights: () => vInsights(arg), progress: vProgress, trash: vTrash, filter: () => vFilter(arg), settings: () => vSettings(arg) };
+  const V = { reflect: () => vReflect(arg), life: vLife, review: () => arg === 'week' ? vWeekReview() : vClose(), you: vYou, close: vClose, waiting: vWaiting, leads: vLeads, sales: () => vSales(arg), planday: () => { setTimeout(() => { history.replaceState(null, '', '#today'); render(); if (!(S.days[today()] || {}).started) smPlanSheet('morning'); }, 60); return vToday(); }, home: vHome, today: vToday, plan: () => vPlan(arg || 'today'), week: vCalendar, inbox: vInbox, upcoming: vUpcoming, someday: vSomeday, calendar: vCalendar, project: () => vProject(arg), done: vDone, habits: vHabits, dates: vDates, templates: vTemplates, focus: vFocus, insights: () => vInsights(arg), progress: vProgress, trash: vTrash, filter: () => vFilter(arg), settings: () => vSettings(arg) };
   return (view === 'home' && isWide()) ? vToday() : (V[view] || vToday)();
 }
 function renderMainOnly() {
@@ -4803,7 +4824,7 @@ function renderMainOnly() {
 function renderMainCore() { rwMemo = null; const v = route().view; $('#main').innerHTML = viewHtml(); $('#main').classList.toggle('calw', v === 'calendar' || v === 'week'); $('#main').classList.toggle('setw', v === 'settings'); document.body.classList.toggle('oncal', v === 'calendar' || v === 'week' || v === 'settings'); renderSide(); renderTabs(); renderRail(); wire(v); rewardCheck(); badge(); if (selMode) selPaint(); }
 function render() {
   const { view } = route(); renderMainOnly();
-  $('#fab').style.display = ['settings', 'focus', 'insights', 'habits', 'dates', 'templates', 'home', 'review', 'life', 'progress', 'trash', 'reflect', 'you', 'close', 'calendar', 'week'].includes(view) ? 'none' : '';
+  $('#fab').style.display = ['settings', 'focus', 'insights', 'habits', 'dates', 'templates', 'home', 'review', 'life', 'progress', 'trash', 'reflect', 'you', 'close', 'calendar', 'week', 'sales'].includes(view) ? 'none' : '';
 }
 function wire(view) {
   { const ab = $('#abIn'); if (ab) { const pv = $('#abPrev'); const apk = $('#abPick'), tools = $('#abTools');
@@ -6614,6 +6635,115 @@ function fuInsertLine(html, line) {
 function fuRefresh(t, notes) { if (!t) return; if (pageId === t.id && $('#page').classList.contains('on')) { renderPage(); render(); return; } const w = $('#fuWrap'); if (w) w.innerHTML = fuCardHtml(t); if (notes && $('#pNotes')) $('#pNotes').innerHTML = cleanHtml(t.notes); const lw = $('#ldWrap'); if (lw) lw.innerHTML = ldBarHtml(t); render(); }
 document.addEventListener('click', ev => { const b = ev.target.closest('[data-fu]'); if (!b) return; ev.preventDefault(); const t = getTask(b.dataset.id); if (!t) return; const a = b.dataset.fu;
   if (a === 'edit' || a === 'plan') fuSheet(t); else if (a === 'log') fuLogSheet(t); else if (a === 'skip') { const w = $('#fuWrap'); if (w) w.innerHTML = ''; } });
+
+
+/* ================= Sales dashboard: read the billing Excel, show where the year stands, chase collections ================= */
+const SL_DUE = 30; // days after the invoice date before a collection follow-up is due
+function slInr(n, short) { n = Math.round(+n || 0); const a = Math.abs(n), s = n < 0 ? '−' : '';
+  if (short !== false && a >= 1e7) return `${s}₹${(a / 1e7).toFixed(a >= 1e8 ? 1 : 2).replace(/\.?0+$/, '')} Cr`;
+  if (short !== false && a >= 1e5) return `${s}₹${(a / 1e5).toFixed(a >= 1e6 ? 1 : 2).replace(/\.?0+$/, '')} L`;
+  return s + '₹' + a.toLocaleString('en-IN'); }
+const slName = n => { n = String(n || '').trim(); if (n === n.toUpperCase()) n = n.split(/(\s+)/).map(w => /^[A-Z]{2,3}$/.test(w) && !/^(AND|OF|THE|PVT|LTD|LLP|CO)$/.test(w) ? w : w.toLowerCase().replace(/\b([a-z])/g, c => c.toUpperCase())).join('').replace(/\b(Ltd|Pvt|Llp|And|Of|Co)\b\.?/g, m => ({ And: 'and', Of: 'of' })[m] || m); return n; };
+const slShort = n => slName(n).replace(/[\s,]+(private|pvt\.?)?\s*(limited|ltd\.?)\.?$/i, '').replace(/[\s,]+(pvt\.?|private)$/i, '').trim();
+const slFyOf = d => { const x = pYmd(d); const y = x.getMonth() >= 3 ? x.getFullYear() : x.getFullYear() - 1; return `${y}-${String(y + 1).slice(2)}`; };
+const slFyStart = fy => `${fy.slice(0, 4)}-04-01`;
+let slLib = null;
+function slLoadLib() { if (window.XLSX) return Promise.resolve(window.XLSX); if (slLib) return slLib; slLib = new Promise((res, rej) => { const s = document.createElement('script'); s.src = './lib/xlsx.full.min.js'; s.onload = () => res(window.XLSX); s.onerror = () => { slLib = null; rej(new Error('Could not load the Excel reader. Check your internet and try again.')); }; document.head.appendChild(s); }); return slLib; }
+const slNorm = s => String(s == null ? '' : s).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+function slDate(v) { if (v instanceof Date && !isNaN(v)) return ymd(new Date(v.getTime() + 12 * 36e5)); if (typeof v === 'number' && v > 20000 && v < 80000) { const d = new Date(Date.UTC(1899, 11, 30) + v * 864e5); return ymd(new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())); } if (typeof v === 'string') { const d = ldDate(v); if (d) return d; const m = v.match(/(\d{4})-(\d\d)-(\d\d)/); if (m) return `${m[1]}-${m[2]}-${m[3]}`; } return null; }
+const slNum = v => typeof v === 'number' ? v : (parseFloat(String(v || '').replace(/[₹,\s]/g, '')) || 0);
+// Read every sheet; find the invoice list by its headings, and the target and pipeline if they are there
+function slParse(wb, X) {
+  const out = { inv: [], pipe: [], target: 0, close: 0, sheetBilled: 0, notes: [] };
+  wb.SheetNames.forEach(name => {
+    const rows = X.utils.sheet_to_json(wb.Sheets[name], { header: 1, raw: true, defval: null });
+    // invoices: a row with Invoice No + Total Amount + Status
+    const hi = rows.findIndex(r => r && r.some(c => /invoice\s*no/i.test(c || '')) && r.some(c => /total\s*amount|amount/i.test(c || '')));
+    if (hi >= 0 && !out.inv.length) { const H = rows[hi].map(slNorm); const col = (...re) => H.findIndex(h => re.some(x => x.test(h)));
+      const c = { type: col(/^c ?type$/, /customer type/, /^type$/), src: col(/^source$/), fy: col(/^year$/, /financial year/, /^fy$/), no: col(/invoice no/), date: col(/^date$/, /invoice date/), bill: col(/billing type/), desc: col(/description/), client: col(/client/, /customer name/, /company/), qty: col(/no of tests/, /qty|quantity/), rate: col(/amt per test/, /rate/), amt: col(/total amount/), status: col(/^status$/, /payment status/), rcv: col(/received on|payment date|paid on/) };
+      rows.slice(hi + 1).forEach(r => { if (!r || c.no < 0 || c.amt < 0) return; const no = String(r[c.no] || '').trim(); const amt = slNum(r[c.amt]); const client = String(r[c.client] || '').trim(); if (!no || !client || !amt) return;
+        const d = slDate(r[c.date]); out.inv.push({ no, date: d, fy: d ? slFyOf(d) : String(r[c.fy] || ''), client, amt, type: /^new/i.test(r[c.type] || '') ? 'New' : 'Old', src: String(r[c.src] || '').trim(), bill: String(r[c.bill] || '').trim().replace(/^prepad$/i, 'Prepaid'), desc: String(r[c.desc] || '').trim(), qty: r[c.qty], rate: r[c.rate], paid: /receiv|paid|clear|done/i.test(r[c.status] || ''), paidOn: c.rcv >= 0 ? slDate(r[c.rcv]) : null }); });
+      if (out.inv.length) out.notes.push(`${plural(out.inv.length, 'invoice')} from "${name}"`); }
+    // target, close rate and the sheet's own billed total (Dashboard)
+    rows.forEach(r => { if (!r) return; const lab = slNorm(r[0]); const v = r.slice(1).find(x => typeof x === 'number');
+      if (v == null) return; if (/^target/.test(lab) && !out.target) out.target = v; if (/close rate/.test(lab) && v <= 1 && !out.close) out.close = v; if (/total billed/.test(lab) && !out.sheetBilled) out.sheetBilled = v; });
+    // pipeline: Account | Value | Stage
+    const pi = rows.findIndex(r => r && slNorm(r[0]) === 'account' && r.some(c => /stage/i.test(c || '')));
+    if (pi >= 0 && !out.pipe.length) { const H = rows[pi].map(slNorm); const ci = re => H.findIndex(h => re.test(h)); const cv = ci(/value/), cs = ci(/stage/), cn = ci(/note|close/), cy = ci(/this year/);
+      rows.slice(pi + 1).forEach(r => { if (!r || !r[0] || !r[cs] || /total/i.test(r[0])) return; out.pipe.push({ acc: String(r[0]).trim(), val: slNum(r[cv]), stage: String(r[cs]).trim(), note: cn >= 0 ? String(r[cn] || '') : '', yr: cy >= 0 ? slNum(r[cy]) : 0 }); }); }
+  });
+  return out;
+}
+async function slUpload(file) {
+  try { toast('Reading ' + file.name + '…'); const X = await slLoadLib(); const buf = await file.arrayBuffer(); const wb = X.read(buf, { type: 'array', cellDates: true }); const P = slParse(wb, X);
+    if (!P.inv.length) { toast('No invoice list found. The sheet needs headings like Invoice No, Date, Client Name, Total Amount, Status'); return; }
+    const old = S.sales || {}; S.sales = { ...P, paid: old.paid || {}, chase: old.chase || {}, file: file.name, at: Date.now() };
+    // an invoice you marked paid in Dayline stays paid; once the sheet also says Received, the mark is no longer needed
+    Object.keys(S.sales.paid).forEach(no => { const i = P.inv.find(x => x.no === no); if (!i || i.paid) delete S.sales.paid[no]; });
+    save(); render(); const s = slStats(); toast(`Updated: ${plural(P.inv.length, 'invoice')}, ${slInr(s.due.reduce((a, x) => a + x.amt, 0))} due for follow-up`);
+  } catch (e) { toast(e.message || 'Could not read that file'); }
+}
+function slStats() {
+  const D = S.sales; if (!D) return null; const td = today(), fy = slFyOf(td), fs = slFyStart(fy);
+  const inv = D.inv.map(i => ({ ...i, paid: i.paid || !!(D.paid || {})[i.no], age: i.date ? dayDiff(i.date, td) : 0 }));
+  const cur = inv.filter(i => i.date && i.date >= fs && i.date <= addDays(fs, 365));
+  const sum = a => a.reduce((x, i) => x + i.amt, 0);
+  const billed = sum(cur), newB = sum(cur.filter(i => i.type === 'New')), oldB = billed - newB, coll = sum(cur.filter(i => i.paid));
+  const pend = inv.filter(i => !i.paid), due = pend.filter(i => i.age >= SL_DUE).sort((a, b) => b.age - a.age), notDue = pend.filter(i => i.age < SL_DUE);
+  const mi = (pYmd(td).getMonth() + 9) % 12 + 1, frac = mi / 12;
+  const months = Array.from({ length: 12 }, (_, k) => { const d = pYmd(fs); d.setMonth(d.getMonth() + k); const key = ymd(d).slice(0, 7); const m = cur.filter(i => i.date.slice(0, 7) === key); return { key, l: MONS[d.getMonth()], n: sum(m.filter(i => i.type === 'New')), o: sum(m.filter(i => i.type !== 'New')), future: k >= mi }; });
+  const open = (D.pipe || []).filter(p => !/won|lost|drop/i.test(p.stage)); const openV = open.reduce((a, p) => a + p.val, 0); const close = D.close || .6;
+  const byClient = {}; pend.forEach(i => { (byClient[i.client] ||= { client: i.client, inv: [], amt: 0, old: 0 }); const c = byClient[i.client]; c.inv.push(i); c.amt += i.amt; c.old = Math.max(c.old, i.age); });
+  return { fy, inv, cur, billed, newB, oldB, coll, pend, due, notDue, pendAmt: sum(pend), dueAmt: sum(due), months, mi, frac, target: D.target || 0, pace: (D.target || 0) * frac, open, openV, close, real: newB + openV * close, clients: Object.values(byClient).sort((a, b) => b.old - a.old || b.amt - a.amt), noInvGap: D.sheetBilled && Math.abs(D.sheetBilled - billed) > 1000 ? D.sheetBilled - billed : 0 };
+}
+// The live strip on Today
+function slTodayHtml() {
+  const s = slStats(); if (!s) return '';
+  return `<a class="sl-strip" href="#sales/due"><div class="sl-k">Sales · FY ${s.fy}</div><div class="sl-3"><span><b>${slInr(s.billed)}</b>billed</span><span><b>${slInr(s.coll)}</b>collected</span><span class="${s.due.length ? 'lt' : ''}"><b>${s.due.length ? slInr(s.dueAmt) : '✓'}</b>${s.due.length ? `${s.due.length} to chase` : 'nothing overdue'}</span></div>${s.due.length ? `<div class="sl-due">⚠️ ${plural(new Set(s.due.map(i => i.client)).size, 'client')} past ${SL_DUE} days. Oldest: ${esc(slShort(s.due[0].client))}, ${s.due[0].age} days</div>` : ''}</a>`;
+}
+function slUploadBtn(label) { return `<label class="sl-up">${I.box || ''}<span>${label}</span><input type="file" accept=".xlsx,.xls,.xlsm,.csv" data-sl-file></label>`; }
+function vSales(arg, embed) {
+  const s = slStats(), D = S.sales;
+  let h = embed ? '' : topbar('', 'Sales') + `<div class="thead"><h1>${arg === 'due' ? 'Collections' : arg === 'billed' ? 'Billing' : 'Sales'}</h1><span>${s ? `FY ${s.fy}<br>${D.file ? esc(D.file.slice(0, 26)) : ''}` : ''}</span></div>`;
+  if (!s) return h + `<div class="sl-empty"><b>Upload your billing Excel</b><p>Dayline reads the invoice list (Invoice No, Date, Client Name, Total Amount, Status), plus your target and pipeline if they are in the file. Everything stays on your devices.</p>${slUploadBtn('Choose Excel file')}</div>`;
+  if (arg === 'due' || arg === 'pending') return h + slDueHtml(s, arg);
+  if (arg === 'billed') return h + slBilledHtml(s);
+  const pct = s.target ? Math.min(100, s.newB / s.target * 100) : 0, pacePct = s.frac * 100;
+  h += `<div class="sl-grid"><a href="#sales/billed" class="sl-c"><span>Billed this year</span><b>${slInr(s.billed)}</b><small>New ${slInr(s.newB)} · Repeat ${slInr(s.oldB)}</small></a><div class="sl-c"><span>Collected</span><b>${slInr(s.coll)}</b><small>${s.billed ? Math.round(s.coll / s.billed * 100) : 0}% of this year's billing</small></div>
+  <a href="#sales/pending" class="sl-c"><span>Pending</span><b>${slInr(s.pendAmt)}</b><small>${plural(s.pend.length, 'invoice')} · tap to see</small></a><a href="#sales/due" class="sl-c ${s.due.length ? 'warn' : 'ok'}"><span>Follow up now</span><b>${s.due.length ? slInr(s.dueAmt) : '✓ None'}</b><small>${s.due.length ? `${plural(s.due.length, 'invoice')} past ${SL_DUE} days` : `nothing past ${SL_DUE} days`}</small></a></div>`;
+  if (s.target) h += `<section class="rf-card sm-cc"><div class="rf-k">New business vs target</div><div class="sl-big">${slInr(s.newB)} <small>of ${slInr(s.target)}</small></div><div class="sl-bar"><i style="width:${pct}%"></i><em style="left:${pacePct}%" title="Where even pace would be"></em></div><div class="sl-row"><span>${pct.toFixed(1)}% done</span><span>Even pace: ${slInr(s.pace)} by now</span></div><p class="sl-say">${s.newB >= s.pace ? `Ahead of pace by ${slInr(s.newB - s.pace)}.` : `Behind pace by <b>${slInr(s.pace - s.newB)}</b>.`} Open pipeline ${slInr(s.openV)}; at ${Math.round(s.close * 100)}% close the year ends near <b>${slInr(s.real)}</b> (${Math.round(s.real / s.target * 100)}% of target).</p></section>`;
+  const mx = Math.max(1, ...s.months.map(m => m.n + m.o));
+  h += `<section class="rf-card sm-cc"><div class="rf-k sm-lh">Billing by month<span class="sl-leg"><i class="n"></i>New <i class="o"></i>Repeat</span></div><div class="sl-ch">${s.months.map(m => `<div class="${m.future ? 'fu' : ''}"><span class="v">${m.n + m.o ? slInr(m.n + m.o).replace('₹', '') : ''}</span><div class="st"><i class="o" style="height:${m.o / mx * 100}%"></i><i class="n" style="height:${m.n / mx * 100}%"></i></div><small>${m.l}</small></div>`).join('')}</div></section>`;
+  if (s.open.length) h += `<section class="rf-card sm-cc"><div class="rf-k">Open pipeline · ${slInr(s.openV)}</div>${s.open.sort((a, b) => b.val - a.val).map(p => `<div class="sl-li"><span><b>${esc(p.acc)}</b><small>${esc(p.stage)}${p.note ? ' · ' + esc(p.note.slice(0, 40)) : ''}</small></span><em>${p.val ? slInr(p.val) : '–'}</em></div>`).join('')}</section>`;
+  if (s.noInvGap) h += `<section class="rf-card sm-cc sl-warnc"><b>⚠️ ${slInr(Math.abs(s.noInvGap))} difference</b><p>Your sheet's billing total is ${slInr(D.sheetBilled)}, but the invoices add up to ${slInr(s.billed)}. ${s.noInvGap > 0 ? 'Something is billed without an invoice row.' : ''}</p></section>`;
+  h += `<div class="sl-foot">Updated ${fmtDate(ymd(new Date(D.at)))} from ${esc(D.file || 'your file')}.${slUploadBtn('Upload new Excel')}</div>`;
+  return h;
+}
+function slDueHtml(s, arg) {
+  const list = arg === 'due' ? s.due : s.pend; const by = {}; list.forEach(i => (by[i.client] ||= []).push(i));
+  const cl = Object.entries(by).map(([c, a]) => ({ c, a: a.sort((x, y) => y.age - x.age), amt: a.reduce((x, i) => x + i.amt, 0), old: Math.max(...a.map(i => i.age)) })).sort((a, b) => b.old - a.old || b.amt - a.amt);
+  let h = `<div class="sl-tabs"><a href="#sales/due" class="${arg === 'due' ? 'on' : ''}">Past ${SL_DUE} days · ${slInr(s.dueAmt)}</a><a href="#sales/pending" class="${arg === 'pending' ? 'on' : ''}">All pending · ${slInr(s.pendAmt)}</a></div>`;
+  if (!cl.length) return h + `<div class="empty">${arg === 'due' ? `Nothing is past ${SL_DUE} days. 🎉` : 'Everything is collected.'}</div>`;
+  h += `<p class="sl-hint">Follow up with these clients. Tap ✓ Paid when money comes in; your next Excel upload keeps it.</p>`;
+  h += cl.map(x => { const t = S.tasks.find(t => !t.done && t.slClient === x.c); return `<section class="sl-cl"><div class="sl-ch1"><span><b>${esc(slName(x.c))}</b><small>${plural(x.a.length, 'invoice')} · oldest ${x.old} days</small></span><em>${slInr(x.amt, false)}</em></div>
+    ${x.a.map(i => `<div class="sl-inv${i.age >= SL_DUE ? ' late' : ''}"><span><b>${esc(i.no)}</b><small>${fmtShort(i.date)} · ${i.age} days</small></span><em>${slInr(i.amt, false)}</em><button data-sl="paid" data-no="${esc(i.no)}" aria-label="Mark ${esc(i.no)} paid">✓ Paid</button></div>`).join('')}
+    <div class="fu-btns">${t ? `<button data-act="open" data-id="${t.id}">${I.clock}Follow-up set · ${fmtDate(t.date)}</button>` : `<button class="pri" data-sl="chase" data-c="${esc(x.c)}">${I.plus}Remind me to follow up</button>`}</div></section>`; }).join('');
+  return h;
+}
+function slBilledHtml(s) {
+  const by = {}; s.cur.forEach(i => { (by[i.client] ||= { c: i.client, amt: 0, n: 0, type: i.type }); by[i.client].amt += i.amt; by[i.client].n++; });
+  const L = Object.values(by).sort((a, b) => b.amt - a.amt);
+  return `<p class="sl-hint">${plural(L.length, 'client')} billed this year · ${slInr(s.billed)} (new ${slInr(s.newB)}, repeat ${slInr(s.oldB)})</p>` + `<div class="sl-list">${L.map(x => `<div class="sl-li"><span><b>${esc(slName(x.c))}</b><small>${x.type === 'New' ? 'New' : 'Repeat'} · ${plural(x.n, 'invoice')}</small></span><em>${slInr(x.amt, false)}</em></div>`).join('')}</div>`;
+}
+document.addEventListener('change', ev => { const f = ev.target.closest && ev.target.closest('[data-sl-file]'); if (!f || !f.files[0]) return; slUpload(f.files[0]); f.value = ''; });
+document.addEventListener('click', ev => { const b = ev.target.closest('[data-sl]'); if (!b) return; ev.preventDefault(); const a = b.dataset.sl;
+  if (a === 'paid') { const no = b.dataset.no; (S.sales.paid ||= {})[no] = today(); save(); render(); toast(`${no} marked paid`, () => { delete S.sales.paid[no]; save(); render(); }); }
+  if (a === 'chase') { const c = b.dataset.c, s = slStats(); const inv = s.pend.filter(i => i.client === c); const amt = inv.reduce((x, i) => x + i.amt, 0);
+    const p = S.projects.find(x => /sales/i.test(x.name) && !/dashboard/i.test(x.name)) || S.projects.find(x => /sales/i.test(x.name));
+    const t = newTask({ title: `Collection: ${slShort(c)} · ${slInr(amt)}`, date: today(), time: null, priority: 2, projectId: p ? p.id : null, tags: ['collection'],
+      notes: `<div><b>Pending invoices</b></div>${inv.map(i => `<div>${esc(i.no)} · ${fuDmy(i.date)} · ${slInr(i.amt, false)} · ${i.age} days</div>`).join('')}<div><br></div><div><mark><b>Follow-ups</b></mark></div>` });
+    t.slClient = c; S.tasks.push(t); addPlan(t); save(); render(); toast('Added to Today. Plan the follow-up time from the task', () => { S.tasks = S.tasks.filter(x => x.id !== t.id); save(); render(); }); }
+});
 
 /* ================= start ================= */
 document.addEventListener('focusin', e => { if (!isWide() && e.target.matches && e.target.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,[contenteditable=true]')) document.body.classList.add('typing'); });
