@@ -1368,6 +1368,11 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .fn-new{display:flex;gap:8px;margin-top:6px}.fn-new input{flex:1;font:inherit;font-size:15px;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);min-width:0}.fn-new button{flex:none;justify-content:center;background:var(--ink)!important;color:var(--bg)!important}
 .ld-h .fn-chip{margin-left:auto}
 @media (max-width:520px){.fn-kpi{grid-template-columns:repeat(2,1fr)}.fn-bar{grid-template-columns:112px 1fr 22px 52px;gap:8px;font-size:12.5px}}
+.td-pc{display:flex;align-items:center;gap:8px;margin:4px 16px 10px;padding:10px 10px 10px 14px;border-radius:16px;color:#fff;background:linear-gradient(135deg,#0F766E,#155E75 60%,#1E3A8A)}.td-pm{flex:1;min-width:0;display:flex;flex-direction:column}.td-pm b{font-size:15px;font-weight:800}.td-pm small{font-size:12.5px;font-weight:600;opacity:.88;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.td-pa{flex:none;font:inherit;font-size:12.5px;font-weight:800;padding:8px 11px;border-radius:11px;border:0;background:#fff;color:#0F3D4A;text-decoration:none;cursor:pointer;white-space:nowrap}.td-pa.q{background:rgba(255,255,255,.16);color:#fff}
+@media (min-width:900px){.td-pc{max-width:720px}}
+.td-back{display:flex!important;justify-content:space-between;align-items:center;gap:10px;text-align:left}.td-back b{white-space:nowrap}
+@media (min-width:900px){.td-pc{max-width:720px}}
 </style>
 </head>
 <body>
@@ -2637,8 +2642,25 @@ function groupBy(list, mode) {
   return null;
 }
 const addBar = (lbl) => `<div class="qa-wrap"><div class="addbar"><span class="ab-i">${I.plus}</span><textarea id="abIn" rows="1" aria-label="${lbl}" placeholder="${lbl}" autocomplete="off" autocorrect="on" enterkeyhint="done" data-form-type="other"></textarea><button type="button" class="ab-k" id="abGo" aria-label="Add task">${isWide() ? 'Enter' : 'Add'}</button><button type="button" class="ab-tpl" data-act="abtpl" aria-label="Add from a template" title="Add from a template">${I.layers}<span>Templates</span></button></div><div class="qa-pick ab-pick" id="abPick" role="listbox" hidden></div></div><div class="ab-tools" id="abTools" hidden><button type="button" data-ins="#"><b>#</b> Project</button><button type="button" data-ins="@"><b>@</b> Tag</button><button type="button" data-ins="p"><b>!</b> Priority</button></div><div class="ab-prev" id="abPrev"></div>`;
+/* Work mode (weekdays 10–7) shows everything; outside it Today turns personal: no sales, meetings or work tasks */
+function tdIsWork(t) { const p = t.projectId && S.projects.find(x => x.id === t.projectId); return !!(p && /^work$/i.test(p.area || '')) || /^\s*(lead|collection)\s*[:\-–]/i.test(t.title || '') || (typeof ldIsLead === 'function' && ldIsLead(t)); }
+function tdMode() {
+  const st = S.settings, n = new Date(), m = n.getHours() * 60 + n.getMinutes(), wd = n.getDay(), a = hm2m(st.modeFrom || '10:00'), b = hm2m(st.modeTo || '19:00');
+  const auto = wd > 0 && wd < 6 && m >= a && m < b ? 'work' : 'personal'; let ov = null; try { ov = JSON.parse(localStorage.getItem('sankalp.tdmode') || 'null'); } catch (e) { }
+  const forced = ov && ov.until > Date.now() && ov.m !== auto ? ov.m : null; return { mode: forced || auto, auto, forced: !!forced, m, wd, a, b };
+}
+function tdSetMode(m) { try { localStorage.setItem('sankalp.tdmode', JSON.stringify({ m, until: Date.now() + 3 * 3600e3 })); } catch (e) { } render(); }
+function tdPersonalCard(M, D, workN, closeOk) {
+  const td = today(), title = M.m < 12 * 60 ? '☀️ Good morning' : M.m < 17 * 60 ? '🌤 Your time' : '🌙 Your evening', n = D.openCount;
+  const up = S.dates.map(x => ({ x, d: occOf(x) })).filter(o => o.d >= td && dayDiff(td, o.d) <= 7).sort((a, b) => a.d < b.d ? -1 : 1).slice(0, 2);
+  const bits = [n ? plural(n, 'personal task') : 'Nothing personal planned', ...up.map(o => `${/anniv/i.test(o.x.kind || o.x.name) ? '💍' : '🎂'} ${esc(o.x.name)} ${o.d === td ? 'today' : dayDiff(td, o.d) === 1 ? 'tomorrow' : DAYS[pYmd(o.d).getDay()]}`)];
+  return `<section class="td-pc"><div class="td-pm"><b>${title}</b><small>${bits.join(' · ')}</small></div>${closeOk ? `<a href="#close" class="td-pa" title="Close the work day">Close day</a>` : ''}<button class="td-pa q" data-act="tdwork" title="Show work tasks">💼${workN ? ' ' + workN : ''}</button></section>`;
+}
 function vToday() {
-  const d = new Date(), D = todayData(), st = S.settings, td = today(), rec = S.days[td] || {}, now = Date.now(), nm = smNowM();
+  const d = new Date(), M = tdMode(), PERS = M.mode === 'personal', D0 = todayData(), keep = l => PERS ? l.filter(t => !tdIsWork(t)) : l;
+  const D = PERS ? { ...D0, pinned: keep(D0.pinned), overdue: keep(D0.overdue), day: keep(D0.day), evening: keep(D0.evening), doneToday: keep(D0.doneToday) } : D0;
+  if (PERS) D.openCount = D.pinned.length + D.overdue.length + D.day.length + D.evening.length;
+  const workN = PERS ? D0.openCount - D.openCount : 0, st = S.settings, td = today(), rec = S.days[td] || {}, now = Date.now(), nm = smNowM();
   const doneN = D.doneToday.length, tot = doneN + D.openCount, bday = S.dates.filter(x => occOf(x) === td);
   const P = smPlan(td, true), [w0, w1] = workWin(), late = !!rec.started && P.over.length > 0;
   const gl = { time: 'Time', priority: 'Priority', project: 'Project' }[st.todayGroup] || 'Time';
@@ -2648,7 +2670,10 @@ function vToday() {
   if (st.gOn && !gValid() && !S.pcal) h += `<button class="gnote" data-act="gref">${I.gcal}Google Calendar paused. Tap to refresh.</button>`;
   // one smart card: plan in the morning, next up in the day, close in the evening
   let N = null;
-  if (rec.wrap) h += `<a class="gnote" href="#close" style="text-decoration:none;margin-bottom:8px">${I.moon}Day closed ✓ Tap to see tomorrow's top 3</a>`;
+  if (PERS) h += tdPersonalCard(M, D, workN, !rec.wrap && M.m >= w1 && D0.openCount > 0 && M.wd > 0 && M.wd < 6);
+  else if (M.forced) h += `<button class="gnote td-back" data-act="tdpers"><span>💼 Work view, after hours</span><b>Back to personal ›</b></button>`;
+  if (PERS) { }
+  else if (rec.wrap) h += `<a class="gnote" href="#close" style="text-decoration:none;margin-bottom:8px">${I.moon}Day closed ✓ Tap to see tomorrow's top 3</a>`;
   else if (nm >= w1 && tot) h += smCloseCard(D);
   else if (!rec.started && nm < 14 * 60 && P.pool.length >= 2) h += smPlanCard(P);
   else {
@@ -2656,11 +2681,10 @@ function vToday() {
     N = smNext(); if (N) { h += smNextCard(N); const r0 = dayRec(td); if (!r0.nx || r0.nx.id !== N.t.id) { r0.nx = { id: N.t.id, at: now }; saveLocal(); } }
     h += smPrepHtml();
   }
-  h += smWaitHtml() + slTodayHtml();
-  h += dayBand();
+  if (!PERS) { h += smWaitHtml() + slTodayHtml(); h += dayBand(); }
   h += smHabitsHtml();
   const nx = N ? N.t.id : null, ex = l => l.filter(t => t.id !== nx);
-  { const top = ((S.days[td] || {}).top || []).map(getTask).filter(t => t && !t.done && t.id !== nx); if (top.length) h += `<div class="grouph" style="color:var(--accent-text)">${I.star} Top 3 for today</div>` + rows(top); }
+  { const top = keep(((S.days[td] || {}).top || []).map(getTask).filter(t => t && !t.done && t.id !== nx)); if (top.length) h += `<div class="grouph" style="color:var(--accent-text)">${I.star} Top 3 for today</div>` + rows(top); }
   if (ex(D.pinned).length) h += `<div class="grouph">${I.pin} Pinned</div>` + rows(ex(D.pinned), { inPinned: true });
   if (st.todayGroup === 'time') {
     if (ex(D.overdue).length) h += `<div class="grouph" style="color:var(--danger)">Overdue <span class="cnt">${ex(D.overdue).length}</span><button data-act="moveoverdue" style="margin-left:auto;color:var(--accent-text);font-weight:700;font-size:13px">Move all to today</button></div>` + rows(ex(D.overdue));
@@ -3723,7 +3747,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.6';
+const APPV = '6.7';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5093,7 +5117,7 @@ document.addEventListener('click', e => {
     install: async () => { if (!installEvt) { toast('Use the browser menu, Add to Home screen'); return; } installEvt.prompt(); try { await installEvt.userChoice; } catch (x) { } installEvt = null; render(); },
     hidedenied: () => { S.settings.deniedSeen = true; save(); render(); },
     carrytm: () => { const tm = addDays(td, 1); const l = open().filter(t => t.date && t.date <= td && t.priority <= 3 && !t.someday); l.forEach(t => setDate(t, tm)); save(); render(); toast(`${plural(l.length, 'task')} moved to tomorrow`); },
-    railday: () => { railDay = b.dataset.d; renderRail(); }, abtpl: () => { quickAdd(); setTimeout(() => { const b = $('#qaTplBtn'); if (b && b.getAttribute('aria-expanded') !== 'true') b.click(); }, 60); }, railhide: () => railSet(true), railshow: () => railSet(false), railwk: () => { railDay = addDays(railDay || today(), 7 * +b.dataset.dir); renderRail(); },
+    railday: () => { railDay = b.dataset.d; renderRail(); }, abtpl: () => { quickAdd(); setTimeout(() => { const b = $('#qaTplBtn'); if (b && b.getAttribute('aria-expanded') !== 'true') b.click(); }, 60); }, tdwork: () => tdSetMode('work'), tdpers: () => { try { localStorage.removeItem('sankalp.tdmode'); } catch (e) { } render(); }, railhide: () => railSet(true), railshow: () => railSet(false), railwk: () => { railDay = addDays(railDay || today(), 7 * +b.dataset.dir); renderRail(); },
     fest: () => { S.settings.fest = b.dataset.k; save(); applyTheme(); render(); toast(b.dataset.k === 'off' ? 'Festive icon off' : b.dataset.k === 'auto' ? 'Festive icon: Auto' : 'Icon changed'); },
     logo: () => { S.settings.logo = b.dataset.k; save(); applyTheme(); render(); toast(FEST[effIcon()] ? 'Logo saved. The festive icon is showing now; set Festive icon to Off to use this logo.' : 'Logo changed. The Home Screen icon updates by itself within a day.'); },
     dark: () => { S.settings.darkStyle = b.dataset.k; if (S.settings.mode === 'light') S.settings.mode = 'dark'; save(); applyTheme(); render(); },
