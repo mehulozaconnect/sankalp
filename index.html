@@ -1344,6 +1344,7 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .sm-pl1x{width:36px;height:36px;border-radius:12px;border:0;background:none;color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer}.sm-pl1x svg{width:16px;height:16px}.sm-pl1x:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
 @media (min-width:900px){.sm-pl1{max-width:720px}}
 .isdark .sm-pl1m em{color:#FB923C}
+.td-add{margin-top:6px}.td-add .addbar{background:transparent!important;box-shadow:none!important;border:1.5px dashed var(--line)}.td-add .addbar:focus-within{background:var(--side)!important;border-style:solid}
 </style>
 </head>
 <body>
@@ -2634,7 +2635,6 @@ function vToday() {
   }
   h += smWaitHtml() + slTodayHtml();
   h += dayBand();
-  if (isWide()) h += addBar('Add a task for today');
   h += smHabitsHtml();
   const nx = N ? N.t.id : null, ex = l => l.filter(t => t.id !== nx);
   { const top = ((S.days[td] || {}).top || []).map(getTask).filter(t => t && !t.done && t.id !== nx); if (top.length) h += `<div class="grouph" style="color:var(--accent-text)">${I.star} Top 3 for today</div>` + rows(top); }
@@ -2645,6 +2645,7 @@ function vToday() {
     if (ex(D.evening).length) h += `<div class="grouph">${I.moon} Evening</div>` + rows(ex(D.evening));
   } else groupBy(ex([...D.overdue, ...D.day, ...D.evening]), st.todayGroup).forEach(g => { h += `<div class="grouph"><i class="dot" style="background:${g.color}"></i>${esc(g.k)} <span class="cnt">${g.items.length}</span></div>` + rows(g.items, { hideProject: st.todayGroup === 'project' && g.hide }); });
   if (!D.openCount) h += `<div class="empty">${doneN ? 'All done for today ✓' : 'Nothing for today. Tap + to add a task.'}</div>`;
+  if (isWide()) h += `<div class="td-add">${addBar('Add a task for today')}</div>`;
   if (doneN && st.showDone) h += `<div class="doneh">Done today <span>${doneN}</span></div>` + rows(D.doneToday);
   h += `<div class="sm-view"><button data-act="groupcycle">${I.layers}Group: ${gl}</button>${doneN ? `<button data-act="toggledone">${st.showDone ? I.eyeoff : I.eye}${st.showDone ? 'Hide' : 'Show'} ${doneN} done</button>` : ''}</div>`;
   return h;
@@ -3698,7 +3699,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.5.4';
+const APPV = '6.5.5';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
