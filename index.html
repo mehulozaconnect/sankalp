@@ -1488,8 +1488,18 @@ const FONTS = {
   Elegant: { d: "'Fraunces'", b: "'DM Sans'", q: 'family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=DM+Sans:wght@400;500;600;700', note: 'Soft serif headings' },
   Friendly: { d: "'Nunito'", b: "'Nunito'", q: 'family=Nunito:wght@400;500;600;700;800', note: 'Round and warm' },
   Classic: { d: "'Lora'", b: "'Source Sans 3'", q: 'family=Lora:wght@600;700&family=Source+Sans+3:wght@400;500;600;700', note: 'Bookish and calm' },
-  System: { d: 'system-ui', b: 'system-ui', q: '', note: 'Your phone\'s own font' }
+  System: { d: 'system-ui', b: 'system-ui', q: '', note: 'Your phone\'s own font' },
+  Aptos: { d: "'Aptos','Figtree'", b: "'Aptos','Figtree'", q: 'family=Figtree:wght@400;500;600;700;800', note: 'Office font · close match on phone' },
+  Calibri: { d: "'Calibri','Carlito'", b: "'Calibri','Carlito'", q: 'family=Carlito:wght@400;700', note: 'Office font · twin font on phone' },
+  'Segoe UI': { d: "'Segoe UI','Noto Sans'", b: "'Segoe UI','Noto Sans'", q: 'family=Noto+Sans:wght@400;500;600;700;800', note: 'Windows font · close match on phone' },
+  Arial: { d: "Arial,'Arimo'", b: "Arial,'Arimo'", q: 'family=Arimo:wght@400;500;600;700', note: 'Plain and familiar' },
+  Inter: { d: "'Inter'", b: "'Inter'", q: 'family=Inter:wght@400;500;600;700;800', note: 'Clean, made for screens' },
+  Poppins: { d: "'Poppins'", b: "'Poppins'", q: 'family=Poppins:wght@400;500;600;700;800', note: 'Geometric and bold' },
+  Roboto: { d: "'Roboto'", b: "'Roboto'", q: 'family=Roboto:wght@400;500;700;900', note: 'Android\'s classic' },
+  Georgia: { d: "Georgia,'Gelasio'", b: "Georgia,'Gelasio'", q: 'family=Gelasio:wght@400;500;600;700', note: 'Serif for reading' }
 };
+// load every font once while the Appearance page is open, so each option shows in its own font
+function fontPreview() { if (!document.getElementById('fontprev')) { const l = document.createElement('link'); l.id = 'fontprev'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?' + Object.values(FONTS).filter(f => f.q).map(f => f.q.replace(/:wght@[^&]*|:opsz,wght@[^&]*/g, '')).join('&') + '&display=swap&text=' + encodeURIComponent(Object.keys(FONTS).join('') + 'abcdefghijklmnopqrstuvwxyz'); document.head.appendChild(l); } return ''; }
 const mq = matchMedia('(prefers-color-scheme: dark)');
 function applyTheme() {
   const st = S.settings; const base = THEMES[st.theme] || THEMES.Akash;
@@ -3609,7 +3619,7 @@ function settingsAll(arg) {
   <div class="flabel" style="margin-top:14px">Colour theme</div><div class="themes" style="margin-top:8px">`;
   Object.entries(THEMES).forEach(([n, t]) => { h += `<button class="th${st.theme === n ? ' on' : ''}" data-act="theme" data-t="${n}" aria-pressed="${st.theme === n}"><span class="pv" style="background:${t.bg};border:1px solid ${t.line}"><span style="display:flex;justify-content:space-between;align-items:center"><b style="font-family:var(--fd);font-size:22px;color:${t.ink}">${new Date().getDate()}</b><i style="width:22px;height:22px;border-radius:11px;background:${t.accent}"></i></span><i style="display:block;height:10px;border-radius:4px;background:${t.surface};position:relative"><i style="position:absolute;left:20%;width:18%;top:2px;bottom:2px;border-radius:2px;background:${t.meet}"></i><i style="position:absolute;left:48%;width:14%;top:2px;bottom:2px;border-radius:2px;background:${t.accent}"></i></i><i style="display:flex;gap:6px;align-items:center"><i style="width:10px;height:10px;border-radius:5px;background:${t.accent}"></i><i style="flex:1;height:6px;border-radius:3px;background:${t.line}"></i></i></span><span class="nm"><span>${n}</span>${st.theme === n ? I.check : ''}</span></button>`; });
   h += `</div><div class="field"><span class="flabel">Accent colour</span><div class="swatches">${ACCENTS.map(c => `<button data-act="accent" data-c="${c}" class="${st.accent === c ? 'on' : ''}" style="background:${c || 'conic-gradient(#F2A33A,#0F9D8A,#5B5BD6,#DB2777,#F2A33A)'}" aria-label="${c ? 'Accent ' + c : 'Theme default'}"></button>`).join('')}</div><span class="hint">The first one keeps the theme's own colour.</span></div>
-  <div class="field"><span class="flabel">Font style</span><div class="fonts">${Object.entries(FONTS).map(([n, f]) => `<button class="fontopt${st.font === n ? ' on' : ''}" data-act="font" data-f="${n}"><b style="font-family:${f.d},system-ui">${n}</b><span>${f.note}</span></button>`).join('')}</div></div></div>`;
+  <div class="field"><span class="flabel">Font style</span>${fontPreview()}<div class="fonts">${Object.entries(FONTS).map(([n, f]) => `<button class="fontopt${st.font === n ? ' on' : ''}" data-act="font" data-f="${n}"><b style="font-family:${f.d},system-ui">${n}</b><span>${f.note}</span></button>`).join('')}</div></div></div>`;
   h += `<div class="sechead" id="swipes"><h2 class="sec">Swipe a task</h2></div><div class="setsec">
   <div class="setrow"><span class="l"><b>Swipe right →</b></span><select class="inp" data-set="swR" style="width:auto;min-width:170px">${SWIPE_ACTS.map(([k, l]) => `<option value="${k}"${(st.swR || 'done') === k ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
   <div class="setrow"><span class="l"><b>← Swipe left</b></span><select class="inp" data-set="swL" style="width:auto;min-width:170px">${SWIPE_ACTS.map(([k, l]) => `<option value="${k}"${(st.swL || 'move') === k ? ' selected' : ''}>${l}</option>`).join('')}</select></div></div>`;
@@ -3639,7 +3649,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.3.1';
+const APPV = '6.3.2';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
