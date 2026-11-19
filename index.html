@@ -1335,7 +1335,7 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .sl-tabs{display:flex;gap:6px;margin:0 16px 8px;overflow-x:auto}.sl-tabs a{flex:none;padding:9px 14px;border-radius:999px;background:var(--surface);font-weight:700;font-size:13.5px;color:var(--ink);text-decoration:none}.sl-tabs a.on{background:var(--ink);color:var(--bg)}
 .sl-hint{margin:4px 18px 10px;font-size:13px;color:var(--muted);line-height:1.45}
 .sl-cl{margin:0 16px 10px;padding:14px;border-radius:18px;background:var(--surface)}.sl-ch1{display:flex;align-items:center;gap:10px}.sl-ch1 span{flex:1;min-width:0;display:flex;flex-direction:column}.sl-ch1 b{font-size:15.5px}.sl-ch1 small{font-size:12.5px;color:var(--muted);font-weight:600}.sl-ch1 em{font-style:normal;font-weight:800;font-size:16px}
-.sl-inv{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);margin-top:8px}.sl-inv span{flex:1;display:flex;flex-direction:column}.sl-inv b{font-size:13.5px}.sl-inv small{font-size:12px;color:var(--muted);font-weight:600}.sl-inv.late small{color:var(--danger)}.sl-inv em{font-style:normal;font-weight:700;font-size:14px}.sl-inv button{height:32px;padding:0 10px;border-radius:10px;background:var(--bg);font-weight:800;font-size:12.5px;color:#1C8A5A}
+.sl-inv{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);margin-top:8px}.sl-inv span{flex:1;display:flex;flex-direction:column}.sl-inv b{font-size:13.5px}.sl-inv small{font-size:12px;color:var(--muted);font-weight:600}.sl-inv.late small{color:var(--danger)}.sl-inv em{font-style:normal;font-weight:700;font-size:14px}.sl-inv button{height:32px;padding:0 10px;border-radius:10px;background:transparent;border:1.5px solid var(--line);font-weight:700;font-size:12.5px;color:var(--muted);white-space:nowrap}.sl-inv button:hover{color:#1C8A5A;border-color:#1C8A5A}
 .sl-embed{margin-bottom:6px}
 .railshow{display:none}
 @media (min-width:1280px){body.railoff .rail{display:none}body.railoff:not(.oncal) .railshow{display:flex;position:fixed;top:14px;right:14px;z-index:30;width:40px;height:40px;border-radius:12px;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--side);color:var(--ink);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08)}.railshow svg{width:20px;height:20px}.railshow:hover{background:color-mix(in srgb,var(--accent) 12%,var(--side))}}
@@ -3693,7 +3693,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.5.2';
+const APPV = '6.5.3';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -6735,7 +6735,7 @@ function slDueHtml(s, arg) {
   if (!cl.length) return h + `<div class="empty">${arg === 'due' ? `Nothing is past ${SL_DUE} days. 🎉` : 'Everything is collected.'}</div>`;
   h += `<p class="sl-hint">Follow up with these clients. Tap ✓ Paid when money comes in; your next Excel upload keeps it.</p>`;
   h += cl.map(x => { const t = S.tasks.find(t => !t.done && t.slClient === x.c); return `<section class="sl-cl"><div class="sl-ch1"><span><b>${esc(slName(x.c))}</b><small>${plural(x.a.length, 'invoice')} · oldest ${x.old} days</small></span><em>${slInr(x.amt, false)}</em></div>
-    ${x.a.map(i => `<div class="sl-inv${i.age >= SL_DUE ? ' late' : ''}"><span><b>${esc(i.no)}</b><small>${fmtShort(i.date)} · ${i.age} days</small></span><em>${slInr(i.amt, false)}</em><button data-sl="paid" data-no="${esc(i.no)}" aria-label="Mark ${esc(i.no)} paid">✓ Paid</button></div>`).join('')}
+    ${x.a.map(i => `<div class="sl-inv${i.age >= SL_DUE ? ' late' : ''}"><span><b>${esc(i.no)}</b><small>${fmtShort(i.date)} · ${i.age} days</small></span><em>${slInr(i.amt, false)}</em><button data-sl="paid" data-no="${esc(i.no)}" aria-label="Mark ${esc(i.no)} as paid">Mark paid</button></div>`).join('')}
     <div class="fu-btns">${t ? `<button data-act="open" data-id="${t.id}">${I.clock}Follow-up set · ${fmtDate(t.date)}</button>` : `<button class="pri" data-sl="chase" data-c="${esc(x.c)}">${I.plus}Remind me to follow up</button>`}</div></section>`; }).join('');
   return h;
 }
