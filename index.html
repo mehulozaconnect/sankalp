@@ -3686,7 +3686,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.5';
+const APPV = '6.5.1';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -6701,7 +6701,9 @@ function slTodayHtml() {
   const s = slStats(); if (!s) return '';
   return `<a class="sl-strip" href="#sales/due"><div class="sl-k">Sales · FY ${s.fy}</div><div class="sl-3"><span><b>${slInr(s.billed)}</b>billed</span><span><b>${slInr(s.coll)}</b>collected</span><span class="${s.due.length ? 'lt' : ''}"><b>${s.due.length ? slInr(s.dueAmt) : '✓'}</b>${s.due.length ? `${s.due.length} to chase` : 'nothing overdue'}</span></div>${s.due.length ? `<div class="sl-due">⚠️ ${plural(new Set(s.due.map(i => i.client)).size, 'client')} past ${SL_DUE} days. Oldest: ${esc(slShort(s.due[0].client))}, ${s.due[0].age} days</div>` : ''}</a>`;
 }
-function slUploadBtn(label) { return `<label class="sl-up">${I.box || ''}<span>${label}</span><input type="file" accept=".xlsx,.xls,.xlsm,.csv" data-sl-file></label>`; }
+function slUploadBtn(label) { return `<label class="sl-up">${I.box || ''}<span>${label}</span><input type="file" accept=".xlsx,.xls,.xlsm,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" onchange="slPick(this)"></label>`; }
+// the handler sits on the input itself: the screen redraws when the phone's file picker closes, which detaches the input before a document-level listener could see the file
+function slPick(el) { const f = el.files && el.files[0]; if (!f) return; slUpload(f); try { el.value = ''; } catch (e) { } }
 function vSales(arg, embed) {
   const s = slStats(), D = S.sales;
   let h = embed ? '' : topbar('', 'Sales') + `<div class="thead"><h1>${arg === 'due' ? 'Collections' : arg === 'billed' ? 'Billing' : 'Sales'}</h1><span>${s ? `FY ${s.fy}<br>${D.file ? esc(D.file.slice(0, 26)) : ''}` : ''}</span></div>`;
@@ -6735,7 +6737,6 @@ function slBilledHtml(s) {
   const L = Object.values(by).sort((a, b) => b.amt - a.amt);
   return `<p class="sl-hint">${plural(L.length, 'client')} billed this year · ${slInr(s.billed)} (new ${slInr(s.newB)}, repeat ${slInr(s.oldB)})</p>` + `<div class="sl-list">${L.map(x => `<div class="sl-li"><span><b>${esc(slName(x.c))}</b><small>${x.type === 'New' ? 'New' : 'Repeat'} · ${plural(x.n, 'invoice')}</small></span><em>${slInr(x.amt, false)}</em></div>`).join('')}</div>`;
 }
-document.addEventListener('change', ev => { const f = ev.target.closest && ev.target.closest('[data-sl-file]'); if (!f || !f.files[0]) return; slUpload(f.files[0]); f.value = ''; });
 document.addEventListener('click', ev => { const b = ev.target.closest('[data-sl]'); if (!b) return; ev.preventDefault(); const a = b.dataset.sl;
   if (a === 'paid') { const no = b.dataset.no; (S.sales.paid ||= {})[no] = today(); save(); render(); toast(`${no} marked paid`, () => { delete S.sales.paid[no]; save(); render(); }); }
   if (a === 'chase') { const c = b.dataset.c, s = slStats(); const inv = s.pend.filter(i => i.client === c); const amt = inv.reduce((x, i) => x + i.amt, 0);
