@@ -3700,7 +3700,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.5.7';
+const APPV = '6.5.8';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4838,7 +4838,7 @@ function renderMainOnly() {
 function renderMainCore() { rwMemo = null; const v = route().view; $('#main').innerHTML = viewHtml(); $('#main').classList.toggle('calw', v === 'calendar' || v === 'week'); $('#main').classList.toggle('setw', v === 'settings'); document.body.classList.toggle('oncal', v === 'calendar' || v === 'week' || v === 'settings'); renderSide(); renderTabs(); renderRail(); wire(v); rewardCheck(); badge(); if (selMode) selPaint(); }
 function render() {
   const { view } = route(); renderMainOnly();
-  $('#fab').style.display = ['settings', 'focus', 'insights', 'habits', 'dates', 'templates', 'home', 'review', 'life', 'progress', 'trash', 'reflect', 'you', 'close', 'calendar', 'week', 'sales'].includes(view) ? 'none' : '';
+  $('#fab').style.display = ['settings', 'focus', 'insights', 'habits', 'dates', 'templates', 'home', 'review', 'life', 'progress', 'trash', 'reflect', 'you', 'close', 'calendar', 'week', 'sales'].includes(view) || (isWide() && $('#main .addbar')) ? 'none' : '';
 }
 function wire(view) {
   { const ab = $('#abIn'); if (ab) { const pv = $('#abPrev'); const apk = $('#abPick'), tools = $('#abTools');
