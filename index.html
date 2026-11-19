@@ -1300,6 +1300,7 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .ld-list{display:flex;flex-direction:column;gap:8px;margin:0 16px 40px}.ld-item{padding:12px 14px;border-radius:16px;background:var(--surface)}.ld-item.old{box-shadow:inset 3px 0 0 var(--danger)}.ld-item.held{opacity:.7}
 .ld-main{display:flex;flex-direction:column;gap:3px;width:100%;text-align:left;color:var(--ink)}.ld-main b{font-size:15.5px}.ld-main small{font-size:12.5px;color:var(--muted);font-weight:600}.ld-mini{font-size:13px;color:var(--soft);font-weight:600}.ld-mini em{font-style:normal;color:var(--ink);font-weight:800}.ld-item.old .ld-mini em{color:var(--danger)}
 .ld-tag{display:inline-block;margin-top:6px;font-size:12px;font-weight:800;color:var(--muted)}
+.ld-row{grid-template-columns:repeat(4,1fr);gap:6px}.ld-tot{grid-template-columns:repeat(5,1fr)}.ld-tot .ld-s span{font-size:11px}
 </style>
 </head>
 <body>
@@ -3638,7 +3639,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.3';
+const APPV = '6.3.1';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -6460,7 +6461,7 @@ function ldDate(s) {
   m = s.match(/\b(\d{1,2})[\-\/.](\d{1,2})[\-\/.](\d{2,4})\b/); if (m) { let y = +m[3]; if (y < 100) y += 2000; const d = new Date(y, +m[2] - 1, +m[1]); return isNaN(d) || +m[2] > 12 ? null : ymd(d); }
   return null;
 }
-const LD_CALL = /\b(call(?:ed|ing|s)?|rang|ring|spoke|phoned?|dial(?:l?ed)?)\b/i, LD_WA = /\b(whats\s?app(?:ed|s)?|watsapp(?:ed)?|wa|wapp)\b/i, LD_MAIL = /\b(e-?mail(?:ed|s)?|mail(?:ed)?|sent (?:a )?mail)\b/i, LD_MEET = /\b(meeting|met|demo|visit(?:ed)?|presentation)\b/i, LD_NORESP = /\b(no (?:response|reply|answer)|not (?:responding|picking|picked|reachable|answering)|didn'?t (?:pick|respond|reply|answer)|unanswered|switched off|busy)\b/i;
+const LD_CALL = /\b(call(?:ed|ing|s)?|rang|ring|spoke|phoned?|dial(?:l?ed)?)\b/i, LD_WA = /\b(whats\s?app(?:ed|s)?|watsapp(?:ed)?|wa|wapp)\b/i, LD_MAIL = /\b(e-?mail(?:ed|s)?|mail(?:ed)?|sent (?:a )?mail)\b/i, LD_MEET = /\b(discuss(?:ed|ion|ions|ing)?|round|meeting|met|demo|visit(?:ed)?|presentation|negotiat(?:ed|ion|ing))\b/i, LD_NORESP = /\b(no (?:response|reply|answer)|not (?:responding|picking|picked|reachable|answering)|didn'?t (?:pick|respond|reply|answer)|unanswered|switched off|busy)\b/i;
 function ldIsLead(t) { const n = t && t.notes || ''; return /follow[\s\-–]*ups?/i.test(n) && /(lead\s*(rating|source|scoring)|contact\s*name|designation)/i.test(n); }
 function ldStats(t) {
   const L = ldLines(t.notes); const fi = L.findIndex(x => /^follow[\s\-–]*ups?\b/i.test(x)); const fu = fi >= 0 ? L.slice(fi + 1) : [];
@@ -6478,7 +6479,7 @@ function ldAge(n) { return n == null ? '–' : n === 0 ? 'today' : n < 0 ? `in $
 function ldBarHtml(t) {
   if (!ldIsLead(t)) return ''; const r = ldStats(t), hold = (t.tags || []).includes('hold');
   const box = (ic, n, l) => `<div class="ld-s${n ? '' : ' z'}"><b>${ic} ${n}</b><span>${l}</span></div>`;
-  let h = `<div class="ld-bar" id="ldBar"><div class="ld-h"><span>Lead tracker</span><em>from your Follow-ups</em></div><div class="ld-row">${box('📞', r.call, r.call === 1 ? 'call' : 'calls')}${box('💬', r.wa, 'WhatsApp')}${box('✉️', r.mail, r.mail === 1 ? 'email' : 'emails')}${r.meet ? box('🤝', r.meet, r.meet === 1 ? 'meeting' : 'meetings') : ''}</div>
+  let h = `<div class="ld-bar" id="ldBar"><div class="ld-h"><span>Lead tracker</span><em>from your Follow-ups</em></div><div class="ld-row">${box('📞', r.call, r.call === 1 ? 'call' : 'calls')}${box('💬', r.wa, 'WhatsApp')}${box('✉️', r.mail, r.mail === 1 ? 'email' : 'emails')}${box('🤝', r.meet, r.meet === 1 ? 'discussion' : 'discussions')}</div>
     <div class="ld-meta"><span><b>${r.days}</b> days old<small>since ${fmtShort(r.start)}</small></span><span><b>${r.last ? ldAge(r.since) : 'None'}</b> last follow-up${r.lastNoResp ? '<small class="nr">no response</small>' : ''}</span><span><b>${r.touches}</b> follow-ups<small>${r.noresp ? `${r.noresp} without reply` : 'all logged'}</small></span></div>`;
   if (hold) h += `<div class="ld-warn hold">💤 On hold. <button type="button" data-ld="unhold" data-id="${t.id}">Make active</button></div>`;
   else if (r.old) h += `<div class="ld-warn"><b>⚠️ ${r.days} days and still open.</b> Over 90 days: hold it or drop it.<div class="ld-btns"><button type="button" data-ld="hold" data-id="${t.id}">Hold</button><button type="button" data-ld="drop" data-id="${t.id}">✕ Drop lead</button></div></div>`;
@@ -6488,12 +6489,12 @@ function ldBarHtml(t) {
 function vLeads() {
   const L = S.tasks.filter(t => !t.done && ldIsLead(t)).map(t => ({ t, r: ldStats(t) })).sort((a, b) => (b.r.old - a.r.old) || b.r.days - a.r.days);
   const old = L.filter(x => x.r.old).length, hold = L.filter(x => (x.t.tags || []).includes('hold')).length;
-  const tot = L.reduce((a, x) => ({ c: a.c + x.r.call, w: a.w + x.r.wa, m: a.m + x.r.mail }), { c: 0, w: 0, m: 0 });
+  const tot = L.reduce((a, x) => ({ c: a.c + x.r.call, w: a.w + x.r.wa, m: a.m + x.r.mail, d: a.d + x.r.meet }), { c: 0, w: 0, m: 0, d: 0 });
   let h = topbar('', 'Leads') + `<div class="thead"><h1>Leads</h1><span>${plural(L.length, 'open lead')}${old ? `<br><b style="color:var(--danger)">${old} over 90 days</b>` : ''}</span></div>`;
   if (!L.length) return h + `<div class="empty">No lead sheets yet. A task counts as a lead when its notes have a "Follow-ups" section and lines like Contact Name or Lead Rating.</div>`;
-  h += `<div class="ld-row ld-tot">${[['📞', tot.c, 'calls'], ['💬', tot.w, 'WhatsApp'], ['✉️', tot.m, 'emails'], ['💤', hold, 'on hold']].map(([i, n, l]) => `<div class="ld-s"><b>${i} ${n}</b><span>${l}</span></div>`).join('')}</div>`;
+  h += `<div class="ld-row ld-tot">${[['📞', tot.c, 'calls'], ['💬', tot.w, 'WhatsApp'], ['✉️', tot.m, 'emails'], ['🤝', tot.d, 'discussions'], ['💤', hold, 'on hold']].map(([i, n, l]) => `<div class="ld-s"><b>${i} ${n}</b><span>${l}</span></div>`).join('')}</div>`;
   h += `<div class="ld-list">` + L.map(({ t, r }) => { const hd = (t.tags || []).includes('hold'); const contact = (ldLines(t.notes).find(x => /^contact\s*name/i.test(x)) || '').replace(/^contact\s*name\s*[-:–]\s*/i, ''); const rating = (ldLines(t.notes).find(x => /^lead\s*rating/i.test(x)) || '').replace(/^lead\s*rating\s*[-:–]\s*/i, '');
-    return `<div class="ld-item${r.old ? ' old' : ''}${hd ? ' held' : ''}"><button class="ld-main" data-act="open" data-id="${t.id}"><b>${esc(t.title)}</b><small>${[contact, rating].filter(Boolean).map(esc).join(' · ')}</small><span class="ld-mini">📞 ${r.call} · 💬 ${r.wa} · ✉️ ${r.mail} · <em>${r.days}d old</em> · last ${r.last ? ldAge(r.since) : 'never'}</span></button>${r.old ? `<div class="ld-btns"><button data-ld="hold" data-id="${t.id}">Hold</button><button data-ld="drop" data-id="${t.id}">✕ Drop</button></div>` : hd ? `<span class="ld-tag">On hold</span>` : ''}</div>`; }).join('') + `</div>`;
+    return `<div class="ld-item${r.old ? ' old' : ''}${hd ? ' held' : ''}"><button class="ld-main" data-act="open" data-id="${t.id}"><b>${esc(t.title)}</b><small>${[contact, rating].filter(Boolean).map(esc).join(' · ')}</small><span class="ld-mini">📞 ${r.call} · 💬 ${r.wa} · ✉️ ${r.mail} · 🤝 ${r.meet} · <em>${r.days}d old</em> · last ${r.last ? ldAge(r.since) : 'never'}</span></button>${r.old ? `<div class="ld-btns"><button data-ld="hold" data-id="${t.id}">Hold</button><button data-ld="drop" data-id="${t.id}">✕ Drop</button></div>` : hd ? `<span class="ld-tag">On hold</span>` : ''}</div>`; }).join('') + `</div>`;
   return h;
 }
 document.addEventListener('click', ev => { const b = ev.target.closest('[data-ld]'); if (!b) return; ev.preventDefault(); ev.stopPropagation(); const t = getTask(b.dataset.id); if (!t) return; const a = b.dataset.ld; const snap = JSON.stringify(t);
