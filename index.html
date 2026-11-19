@@ -1346,6 +1346,7 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .isdark .sm-pl1m em{color:#FB923C}
 .td-add{margin-top:6px}.td-add .addbar{background:transparent!important;box-shadow:none!important;border:1.5px dashed var(--line)}.td-add .addbar:focus-within{background:var(--side)!important;border-style:solid}
 .sl-cd{display:block}.sl-cd summary{display:flex;align-items:center;justify-content:space-between;gap:10px;list-style:none;cursor:pointer}.sl-cd summary::-webkit-details-marker{display:none}.sl-cd small i{font-style:normal;color:#C2410C;font-weight:700}.sl-cdr{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);padding:6px 0 0;font-weight:600}.sl-cd[open] summary{padding-bottom:4px}.sl-cdr span{flex:none;display:inline;min-width:0}.sl-hint a{color:var(--accent-text);font-weight:700;text-decoration:none}
+.addbar .ab-tpl{display:flex;align-items:center;gap:6px;flex:none;font:inherit;font-size:13px;font-weight:700;color:var(--muted);background:none;border:0;border-radius:10px;padding:6px 10px;cursor:pointer}.addbar .ab-tpl svg{width:16px;height:16px}.addbar .ab-tpl:hover{background:color-mix(in srgb,var(--ink) 6%,transparent);color:var(--ink)}
 </style>
 </head>
 <body>
@@ -2614,7 +2615,7 @@ function groupBy(list, mode) {
   }
   return null;
 }
-const addBar = (lbl) => `<div class="qa-wrap"><div class="addbar"><span class="ab-i">${I.plus}</span><textarea id="abIn" rows="1" aria-label="${lbl}" placeholder="${lbl}" autocomplete="off" autocorrect="on" enterkeyhint="done" data-form-type="other"></textarea><button type="button" class="ab-k" id="abGo" aria-label="Add task">${isWide() ? 'Enter' : 'Add'}</button></div><div class="qa-pick ab-pick" id="abPick" role="listbox" hidden></div></div><div class="ab-tools" id="abTools" hidden><button type="button" data-ins="#"><b>#</b> Project</button><button type="button" data-ins="@"><b>@</b> Tag</button><button type="button" data-ins="p"><b>!</b> Priority</button></div><div class="ab-prev" id="abPrev"></div>`;
+const addBar = (lbl) => `<div class="qa-wrap"><div class="addbar"><span class="ab-i">${I.plus}</span><textarea id="abIn" rows="1" aria-label="${lbl}" placeholder="${lbl}" autocomplete="off" autocorrect="on" enterkeyhint="done" data-form-type="other"></textarea><button type="button" class="ab-k" id="abGo" aria-label="Add task">${isWide() ? 'Enter' : 'Add'}</button><button type="button" class="ab-tpl" data-act="abtpl" aria-label="Add from a template" title="Add from a template">${I.layers}<span>Templates</span></button></div><div class="qa-pick ab-pick" id="abPick" role="listbox" hidden></div></div><div class="ab-tools" id="abTools" hidden><button type="button" data-ins="#"><b>#</b> Project</button><button type="button" data-ins="@"><b>@</b> Tag</button><button type="button" data-ins="p"><b>!</b> Priority</button></div><div class="ab-prev" id="abPrev"></div>`;
 function vToday() {
   const d = new Date(), D = todayData(), st = S.settings, td = today(), rec = S.days[td] || {}, now = Date.now(), nm = smNowM();
   const doneN = D.doneToday.length, tot = doneN + D.openCount, bday = S.dates.filter(x => occOf(x) === td);
@@ -3700,7 +3701,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.5.8';
+const APPV = '6.5.9';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4190,6 +4191,8 @@ function renderPage(fresh) {
   $$('[data-pp]', pg).forEach(b => b.onclick = () => ({ when: pickWhen, repeat: pickRepeat, remind: pickRemind, priority: pickPriority, project: pickProject, tags: pickTags, dur: pickDur, more: pickMore })[b.dataset.pp](t));
   { const so = $('#pSubOpen'); if (so) so.onclick = e => { e.preventDefault(); $('#pSubs').hidden = false; so.remove(); setTimeout(() => $('#pClNew')?.focus(), 30); }; }
   wireEditor($('#pNotes'), $('.ntool', pg), html => { if (html !== t.notes) { t.notes = html; save(); } });
+  { const ne = $('#pNotes'); const lcRun = () => { if (lcBold(ne)) ne.dispatchEvent(new Event('input', { bubbles: true })); };
+    lcRun(); ne.addEventListener('keyup', e => { if (e.key === 'Enter') lcRun(); }); ne.addEventListener('blur', lcRun); }
   { let ldT; $('#pNotes').addEventListener('input', () => { clearTimeout(ldT); ldT = setTimeout(() => { const w = $('#ldWrap'); if (!w) return; const tmp = { ...t, notes: cleanHtml($('#pNotes').innerHTML) }; w.innerHTML = ldBarHtml(tmp); }, 400); }); }
   const clWire = () => $$('#pCl .cl').forEach(el => {
     const c = t.subs.find(x => x.id === el.dataset.c); if (!c) return;
@@ -5068,7 +5071,7 @@ document.addEventListener('click', e => {
     install: async () => { if (!installEvt) { toast('Use the browser menu, Add to Home screen'); return; } installEvt.prompt(); try { await installEvt.userChoice; } catch (x) { } installEvt = null; render(); },
     hidedenied: () => { S.settings.deniedSeen = true; save(); render(); },
     carrytm: () => { const tm = addDays(td, 1); const l = open().filter(t => t.date && t.date <= td && t.priority <= 3 && !t.someday); l.forEach(t => setDate(t, tm)); save(); render(); toast(`${plural(l.length, 'task')} moved to tomorrow`); },
-    railday: () => { railDay = b.dataset.d; renderRail(); }, railhide: () => railSet(true), railshow: () => railSet(false), railwk: () => { railDay = addDays(railDay || today(), 7 * +b.dataset.dir); renderRail(); },
+    railday: () => { railDay = b.dataset.d; renderRail(); }, abtpl: () => { quickAdd(); setTimeout(() => { const b = $('#qaTplBtn'); if (b && b.getAttribute('aria-expanded') !== 'true') b.click(); }, 60); }, railhide: () => railSet(true), railshow: () => railSet(false), railwk: () => { railDay = addDays(railDay || today(), 7 * +b.dataset.dir); renderRail(); },
     fest: () => { S.settings.fest = b.dataset.k; save(); applyTheme(); render(); toast(b.dataset.k === 'off' ? 'Festive icon off' : b.dataset.k === 'auto' ? 'Festive icon: Auto' : 'Icon changed'); },
     logo: () => { S.settings.logo = b.dataset.k; save(); applyTheme(); render(); toast(FEST[effIcon()] ? 'Logo saved. The festive icon is showing now; set Festive icon to Off to use this logo.' : 'Logo changed. The Home Screen icon updates by itself within a day.'); },
     dark: () => { S.settings.darkStyle = b.dataset.k; if (S.settings.mode === 'light') S.settings.mode = 'dark'; save(); applyTheme(); render(); },
@@ -6646,6 +6649,20 @@ function fuInsertLine(html, line) {
   const h = blocks.find(el => /^\s*follow[\s\-–]*ups?\b/i.test(el.textContent || ''));
   if (h) { let at = h; let n = h.nextElementSibling; while (n && !(n.textContent || '').trim() && !n.querySelector('img,table')) { at = n; n = n.nextElementSibling; } if (at === h) h.insertAdjacentHTML('afterend', line); else at.insertAdjacentHTML('afterend', line); return box.innerHTML; }
   return (box.innerHTML ? box.innerHTML + '<div><br></div>' : '') + '<div><mark><b>Follow-ups</b></mark></div>' + line;
+}
+// "Last contacted - 19-11-2026" turns bold by itself so each contact stands out in the notes
+const LC_RE = /^(\s*last\s+contact(?:ed)?\s*[-–—:]\s*\d{1,2}[-/. ](?:\d{1,2}|[a-z]{3,9})[-/. ]\d{2,4})/i;
+function lcBold(ed) {
+  if (!ed) return false; let changed = false;
+  const lines = [...ed.childNodes].filter(n => n.nodeType === 3 || /^(DIV|P|LI)$/.test(n.nodeName)).flatMap(n => n.nodeName === 'DIV' && n.querySelector('div,li') ? [...n.querySelectorAll('div,li')] : [n]);
+  lines.forEach(ln => {
+    let tn = ln.nodeType === 3 ? ln : null;
+    if (!tn) { const w = document.createTreeWalker(ln, NodeFilter.SHOW_TEXT); let x; while ((x = w.nextNode())) { if (x.textContent.trim()) { tn = x; break; } } }
+    if (!tn || tn.parentElement.closest('b,strong')) return;
+    const m = tn.textContent.match(LC_RE); if (!m) return;
+    const rest = tn.splitText(m[1].length), b = document.createElement('b'); b.textContent = tn.textContent; tn.replaceWith(b); changed = true; if (!rest.textContent) rest.remove();
+  });
+  return changed;
 }
 function fuRefresh(t, notes) { if (!t) return; if (pageId === t.id && $('#page').classList.contains('on')) { renderPage(); render(); return; } const w = $('#fuWrap'); if (w) w.innerHTML = fuCardHtml(t); if (notes && $('#pNotes')) $('#pNotes').innerHTML = cleanHtml(t.notes); const lw = $('#ldWrap'); if (lw) lw.innerHTML = ldBarHtml(t); render(); }
 document.addEventListener('click', ev => { const b = ev.target.closest('[data-fu]'); if (!b) return; ev.preventDefault(); const t = getTask(b.dataset.id); if (!t) return; const a = b.dataset.fu;
