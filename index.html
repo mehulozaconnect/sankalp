@@ -1345,6 +1345,7 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 @media (min-width:900px){.sm-pl1{max-width:720px}}
 .isdark .sm-pl1m em{color:#FB923C}
 .td-add{margin-top:6px}.td-add .addbar{background:transparent!important;box-shadow:none!important;border:1.5px dashed var(--line)}.td-add .addbar:focus-within{background:var(--side)!important;border-style:solid}
+.sl-cd{display:block}.sl-cd summary{display:flex;align-items:center;justify-content:space-between;gap:10px;list-style:none;cursor:pointer}.sl-cd summary::-webkit-details-marker{display:none}.sl-cd small i{font-style:normal;color:#C2410C;font-weight:700}.sl-cdr{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);padding:6px 0 0;font-weight:600}.sl-cd[open] summary{padding-bottom:4px}.sl-cdr span{flex:none;display:inline;min-width:0}.sl-hint a{color:var(--accent-text);font-weight:700;text-decoration:none}
 </style>
 </head>
 <body>
@@ -3699,7 +3700,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.5.5';
+const APPV = '6.5.6';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -6720,12 +6721,13 @@ function slUploadBtn(label) { return `<label class="sl-up">${I.box || ''}<span>$
 function slPick(el) { const f = el.files && el.files[0]; if (!f) return; slUpload(f); try { el.value = ''; } catch (e) { } }
 function vSales(arg, embed) {
   const s = slStats(), D = S.sales;
-  let h = embed ? '' : topbar('', 'Sales') + `<div class="thead"><h1>${arg === 'due' ? 'Collections' : arg === 'billed' ? 'Billing' : 'Sales'}</h1><span>${s ? `FY ${s.fy}<br>${D.file ? esc(D.file.slice(0, 26)) : ''}` : ''}</span></div>`;
+  let h = embed ? '' : topbar('', 'Sales') + `<div class="thead"><h1>${arg === 'due' ? 'Collections' : arg === 'billed' ? 'Billing' : arg === 'collected' ? 'Collected' : 'Sales'}</h1><span>${s ? `FY ${s.fy}<br>${D.file ? esc(D.file.slice(0, 26)) : ''}` : ''}</span></div>`;
   if (!s) return h + `<div class="sl-empty"><b>Upload your billing Excel</b><p>Dayline reads the invoice list (Invoice No, Date, Client Name, Total Amount, Status), plus your target and pipeline if they are in the file. Everything stays on your devices.</p>${slUploadBtn('Choose Excel file')}</div>`;
   if (arg === 'due' || arg === 'pending') return h + slDueHtml(s, arg);
   if (arg === 'billed') return h + slBilledHtml(s);
+  if (arg === 'collected') return h + slCollHtml(s);
   const pct = s.target ? Math.min(100, s.newB / s.target * 100) : 0, pacePct = s.frac * 100;
-  h += `<div class="sl-grid"><a href="#sales/billed" class="sl-c"><span>Billed this year</span><b>${slInr(s.billed)}</b><small>New ${slInr(s.newB)} · Repeat ${slInr(s.oldB)}</small></a><div class="sl-c"><span>Collected</span><b>${slInr(s.coll)}</b><small>${s.billed ? Math.round(s.coll / s.billed * 100) : 0}% of this year's billing</small></div>
+  h += `<div class="sl-grid"><a href="#sales/billed" class="sl-c"><span>Billed this year</span><b>${slInr(s.billed)}</b><small>New ${slInr(s.newB)} · Repeat ${slInr(s.oldB)}</small></a><a href="#sales/collected" class="sl-c"><span>Collected</span><b>${slInr(s.coll)}</b><small>${s.billed ? Math.round(s.coll / s.billed * 100) : 0}% of this year's billing · tap to see</small></a>
   <a href="#sales/pending" class="sl-c"><span>Pending</span><b>${slInr(s.pendAmt)}</b><small>${plural(s.pend.length, 'invoice')} · tap to see</small></a><a href="#sales/due" class="sl-c ${s.due.length ? 'warn' : 'ok'}"><span>Follow up now</span><b>${s.due.length ? slInr(s.dueAmt) : '✓ None'}</b><small>${s.due.length ? `${plural(s.due.length, 'invoice')} past ${SL_DUE} days` : `nothing past ${SL_DUE} days`}</small></a></div>`;
   if (s.target) h += `<section class="rf-card sm-cc"><div class="rf-k">New business vs target</div><div class="sl-big">${slInr(s.newB)} <small>of ${slInr(s.target)}</small></div><div class="sl-bar"><i style="width:${pct}%"></i><em style="left:${pacePct}%" title="Where even pace would be"></em></div><div class="sl-row"><span>${pct.toFixed(1)}% done</span><span>Even pace: ${slInr(s.pace)} by now</span></div><p class="sl-say">${s.newB >= s.pace ? `Ahead of pace by ${slInr(s.newB - s.pace)}.` : `Behind pace by <b>${slInr(s.pace - s.newB)}</b>.`} Open pipeline ${slInr(s.openV)}; at ${Math.round(s.close * 100)}% close the year ends near <b>${slInr(s.real)}</b> (${Math.round(s.real / s.target * 100)}% of target).</p></section>`;
   const mx = Math.max(1, ...s.months.map(m => m.n + m.o));
@@ -6745,6 +6747,12 @@ function slDueHtml(s, arg) {
     ${x.a.map(i => `<div class="sl-inv${i.age >= SL_DUE ? ' late' : ''}"><span><b>${esc(i.no)}</b><small>${fmtShort(i.date)} · ${i.age} days</small></span><em>${slInr(i.amt, false)}</em><button data-sl="paid" data-no="${esc(i.no)}" aria-label="Mark ${esc(i.no)} as paid">Mark paid</button></div>`).join('')}
     <div class="fu-btns">${t ? `<button data-act="open" data-id="${t.id}">${I.clock}Follow-up set · ${fmtDate(t.date)}</button>` : `<button class="pri" data-sl="chase" data-c="${esc(x.c)}">${I.plus}Remind me to follow up</button>`}</div></section>`; }).join('');
   return h;
+}
+// Collected this year, client by client, with what each still owes from this year's billing
+function slCollHtml(s) {
+  const by = {}; s.cur.forEach(i => { const c = (by[i.client] ||= { c: i.client, got: 0, n: 0, left: 0, inv: [] }); if (i.paid) { c.got += i.amt; c.n++; c.inv.push(i); } else c.left += i.amt; });
+  const L = Object.values(by).filter(x => x.got).sort((a, b) => b.got - a.got), left = s.billed - s.coll;
+  return `<p class="sl-hint">${slInr(s.coll)} received from ${plural(L.length, 'client')} this year, ${s.billed ? Math.round(s.coll / s.billed * 100) : 0}% of ${slInr(s.billed)} billed.${left > 0 ? ` <a href="#sales/pending">${slInr(left)} of this year's billing is still pending →</a>` : ''}</p>` + `<div class="sl-list">${L.map(x => `<details class="sl-li sl-cd"><summary><span><b>${esc(slName(x.c))}</b><small>${plural(x.n, 'invoice')} paid${x.left ? ` · <i class="lt">${slInr(x.left)} still pending</i>` : ' · all clear ✓'}</small></span><em>${slInr(x.got, false)}</em></summary>${x.inv.sort((a, b) => b.date.localeCompare(a.date)).map(i => `<div class="sl-cdr"><span>${esc(i.no)} · ${fuDmy(i.date)}</span><span>${slInr(i.amt, false)}</span></div>`).join('')}</details>`).join('')}</div>`;
 }
 function slBilledHtml(s) {
   const by = {}; s.cur.forEach(i => { (by[i.client] ||= { c: i.client, amt: 0, n: 0, type: i.type }); by[i.client].amt += i.amt; by[i.client].n++; });
