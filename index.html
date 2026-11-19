@@ -3700,7 +3700,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.5.6';
+const APPV = '6.5.7';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5172,7 +5172,7 @@ let swReg = null;
 if ('serviceWorker' in navigator && location.protocol !== 'file:') { navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(r => { swReg = r; r.update().catch(() => { }); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') r.update().catch(() => { }); }); }).catch(() => { });
   /* A new version was installed: switch to it when you're not in the middle of typing */
   let swHad = !!navigator.serviceWorker.controller, swReload = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!swHad) { swHad = true; return; } if (swReload || window.QM) return; const go = () => { if (swReload) return; if ($('#sheet').classList.contains('on') || $('#page').classList.contains('on') || /INPUT|TEXTAREA/.test(document.activeElement?.tagName || '') || document.activeElement?.isContentEditable) { setTimeout(go, 4000); return; } swReload = true; saveLocal(); location.reload(); }; go(); }); navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'drain') afterSync(drainActs); else if (e.data && e.data.type === 'go') { const h = (e.data.url || '').split('#')[1]; if (h) go(h); } else if (e.data && e.data.type === 'card') { if (!$('#sheet').classList.contains('on')) handleAction({ type: 'later', id: e.data.id, sub: e.data.sub }); } else handleAction(e.data); }); }
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!swHad) { swHad = true; return; } if (swReload || window.QM) return; const go = () => { if (swReload) return; if ($('#sheet').classList.contains('on') || $('#page').classList.contains('on') || (/INPUT|TEXTAREA/.test(document.activeElement?.tagName || '') && (document.activeElement.value || '').trim()) || document.activeElement?.isContentEditable) { setTimeout(go, 4000); return; } swReload = true; saveLocal(); location.reload(); }; go(); }); navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'drain') afterSync(drainActs); else if (e.data && e.data.type === 'go') { const h = (e.data.url || '').split('#')[1]; if (h) go(h); } else if (e.data && e.data.type === 'card') { if (!$('#sheet').classList.contains('on')) handleAction({ type: 'later', id: e.data.id, sub: e.data.sub }); } else handleAction(e.data); }); }
 let draining = false;
 // Taps from notifications and the phone app are applied only after sync has caught up, so the fresh copy from your other devices can't undo them
 function afterSync(fn) { const t0 = Date.now(); const go = () => { if (!S.settings.fb || syncState === 'on' || (authKnown && !fbUser) || Date.now() - t0 > 12000) fn(); else setTimeout(go, 250); }; go(); }
