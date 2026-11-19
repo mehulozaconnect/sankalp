@@ -2600,7 +2600,7 @@ function vToday() {
     N = smNext(); if (N) { h += smNextCard(N); const r0 = dayRec(td); if (!r0.nx || r0.nx.id !== N.t.id) { r0.nx = { id: N.t.id, at: now }; saveLocal(); } }
     h += smPrepHtml();
   }
-  h += smFollowHtml() + smWaitHtml();
+  h += smWaitHtml();
   h += dayBand();
   if (isWide()) h += addBar('Add a task for today');
   h += smHabitsHtml();
@@ -3665,7 +3665,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.4.1';
+const APPV = '6.4.2';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
