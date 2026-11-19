@@ -1301,6 +1301,22 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .ld-main{display:flex;flex-direction:column;gap:3px;width:100%;text-align:left;color:var(--ink)}.ld-main b{font-size:15.5px}.ld-main small{font-size:12.5px;color:var(--muted);font-weight:600}.ld-mini{font-size:13px;color:var(--soft);font-weight:600}.ld-mini em{font-style:normal;color:var(--ink);font-weight:800}.ld-item.old .ld-mini em{color:var(--danger)}
 .ld-tag{display:inline-block;margin-top:6px;font-size:12px;font-weight:800;color:var(--muted)}
 .ld-row{grid-template-columns:repeat(4,1fr);gap:6px}.ld-tot{grid-template-columns:repeat(5,1fr)}.ld-tot .ld-s span{font-size:11px}
+.pacts{grid-template-columns:repeat(5,1fr)!important}.pacts button{font-size:12.5px!important}
+.fu-card{margin:12px 0 4px;padding:14px;border-radius:18px;background:color-mix(in srgb,var(--meet) 12%,var(--bg));border:1px solid color-mix(in srgb,var(--meet) 25%,transparent)}.fu-card.due{background:color-mix(in srgb,#F59E0B 15%,var(--bg));border-color:color-mix(in srgb,#F59E0B 40%,transparent)}.fu-card.ask{background:var(--surface);border-color:transparent}
+.fu-k{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}.fu-k span{font-size:15px;letter-spacing:0;text-transform:none;color:var(--ink)}
+.fu-via{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.fu-via span{padding:5px 10px;border-radius:999px;background:var(--bg);font-weight:700;font-size:13px}
+.fu-tp{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}.fu-tp b{font-size:13px;margin-right:2px}.fu-tp span{padding:5px 10px;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:700;font-size:13px}
+.fu-note{margin:8px 0 0;font-size:14px;line-height:1.45;color:var(--soft)}
+.fu-btns{display:flex;gap:8px;margin-top:12px}.fu-btns button{flex:1;height:40px;border-radius:12px;background:var(--bg);font-weight:800;font-size:14px;color:var(--ink);display:inline-flex;align-items:center;justify-content:center;gap:6px}.fu-btns button svg{width:16px;height:16px}.fu-btns button.pri{flex:1.6;background:var(--ink);color:var(--bg)}
+.fu-for{font-weight:700;color:var(--soft);font-size:14px;margin:2px 2px 4px}
+.fu-chips{display:flex;flex-wrap:wrap;gap:8px}.fu-chips.tm{margin-top:8px}.fu-chips button,.fu-pick{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-height:40px;padding:6px 12px;border-radius:12px;background:var(--surface);font-weight:700;font-size:14px;color:var(--ink);position:relative}.fu-chips button small{font-size:11px;color:var(--muted);font-weight:600}.fu-chips button.on,.fu-pick.on{background:var(--ink);color:var(--bg)}.fu-chips button.on small{color:color-mix(in srgb,var(--bg) 75%,transparent)}
+.fu-pick{flex-direction:row;gap:6px;cursor:pointer;overflow:hidden}.fu-pick svg{width:16px;height:16px}.fu-pick input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.fu-add input{height:40px;border-radius:12px;border:1.5px dashed var(--line);background:none;padding:0 12px;font:inherit;font-size:14px;color:var(--ink);width:150px}
+.fu-sheet .inp{width:100%}.fu-prev{margin:12px 2px 0;font-size:13.5px;color:var(--soft);line-height:1.45}.fu-prev i{font-style:normal;color:var(--ink);font-weight:600}
+.ld-next{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:12px;height:42px;border-radius:12px;background:var(--ink);color:var(--bg);font-weight:800;font-size:14px}.ld-next svg{width:16px;height:16px}
+.sm-fu1{margin-top:6px;font-size:13.5px;font-weight:700;color:var(--soft)}
+#fuWrap{padding:0 20px}#fuWrap:empty{display:none}
+#pSubs[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -3649,7 +3665,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.3.2';
+const APPV = '6.4';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4109,14 +4125,15 @@ function renderPage(fresh) {
   props.push(`<button class="prop" data-pp="project">${p ? (p.emoji ? `<span>${p.emoji}</span>` : `<i class="dot" style="background:${p.color}"></i>`) + esc(p.name) : I.inbox + 'Inbox'}</button>`);
   if (t.tags.length) props.push(`<button class="prop" data-pp="tags">${I.tag}${t.tags.map(x => '@' + esc(x)).join(' ')}</button>`);
   if (t.duration) props.push(`<button class="prop" data-pp="dur">${I.hour}${fmtMins(t.duration)}</button>`);
+  if (!t.subs.length) props.push(`<button class="prop more" id="pSubOpen">${I.plus}Subtask</button>`);
   props.push(`<button class="prop more" data-pp="more">${I.plus}More</button>`);
   const sd = t.subs.filter(c => c.d).length;
   pg.innerHTML = `<div class="pbar"><button class="back" id="pBack" aria-label="Back">${I.back}<span>Back</span></button><div class="acts"><button class="iconbtn${t.pinned ? ' on' : ''}" id="pPin" aria-pressed="${t.pinned}" aria-label="${t.pinned ? 'Unpin' : 'Pin to top'}">${I.pin}</button><button class="iconbtn" id="pImgB" aria-label="Attach image">${I.img}</button><button class="iconbtn" id="pMore" aria-label="More actions">${I.more}</button><button class="iconbtn" id="pClose" aria-label="Close" title="Close (Esc)">${I.x}</button></div></div>
   <div class="ptitle${t.done ? ' done' : ''}"><button class="chk p${t.priority}${t.done ? ' isdone' : ''}" id="pChk" aria-label="${t.done ? 'Mark not done' : 'Complete task'}" style="${t.done ? '--x:1' : ''}">${t.done ? I.check : ''}</button><label for="pTitle" class="sr">Title</label><textarea id="pTitle" rows="1">${esc(t.title)}</textarea></div><div class="ptprev" id="pTitlePrev" aria-live="polite"></div>
   <div class="props">${props.join('')}</div>
-  ${t.done ? '' : `<div class="pacts"><button id="paDone">${I.check}Done</button><button id="paSnz">${I.clock}Snooze</button><button id="paMove">${I.cal}Move</button><button id="paFocus">${I.play}Focus</button></div>`}
+  ${t.done ? '' : `<div class="pacts"><button id="paDone">${I.check}Done</button><button id="paSnz">${I.clock}Snooze</button><button id="paMove">${I.cal}Move</button><button data-fu="plan" data-id="${t.id}">${I.repeat || I.clock}Follow-up</button><button id="paFocus">${I.play}Focus</button></div><div id="fuWrap">${fuCardHtml(t)}</div>`}
   ${t.pushed >= 2 && !t.done ? `<div class="psec" style="padding-top:8px"><button class="warn" data-sm="stuck" data-id="${t.id}">Moved ${t.pushed} times. Tap for help: split it, schedule it, hand it over or drop it.</button></div>` : ''}
-  <div class="psec"><h3><span>Subtasks${t.subs.length ? ` ${sd}/${t.subs.length}` : ''}</span></h3><div id="pCl">${t.subs.map(c => clRow(c, true)).join('')}</div><div class="cl"><button type="button" id="pClAdd" class="iconbtn" style="width:24px;color:var(--muted)" aria-label="Add subtask">${I.plus}</button><textarea class="clt" id="pClNew" rows="1" placeholder="Add a subtask" aria-label="Add a subtask" enterkeyhint="enter" autocomplete="off"></textarea></div></div>
+  <div class="psec" id="pSubs"${t.subs.length ? '' : ' hidden'}><h3><span>Subtasks${t.subs.length ? ` ${sd}/${t.subs.length}` : ''}</span></h3><div id="pCl">${t.subs.map(c => clRow(c, true)).join('')}</div><div class="cl"><button type="button" id="pClAdd" class="iconbtn" style="width:24px;color:var(--muted)" aria-label="Add subtask">${I.plus}</button><textarea class="clt" id="pClNew" rows="1" placeholder="Add a subtask" aria-label="Add a subtask" enterkeyhint="enter" autocomplete="off"></textarea></div></div>
   <div class="psec"><h3><span>Notes</span></h3>${toolbarHtml()}<div class="notes" id="pNotes" contenteditable="true" data-ph="Notes" role="textbox" aria-multiline="true" aria-label="Notes">${cleanHtml(t.notes)}</div><div id="ldWrap">${ldBarHtml(t)}</div></div>
   <div class="psec"><h3><span>Images${t.imgs.length ? ' ' + t.imgs.length : ''}</span></h3><div class="imgs">${t.imgs.map(id => IMGS[id] ? `<button class="im" data-img="${id}" aria-label="Open image"><img src="${IMGS[id]}" alt="Attached image"></button>` : '').join('')}<button class="addimg" id="pAddImg">${I.img}<span>Add image</span></button></div></div>
   <div class="pfoot">Created ${fmtDate(ymd(new Date(t.createdAt)))}${t.done && t.doneAt ? `. Done ${fmtDate(ymd(new Date(t.doneAt)))}` : ''}${t.pushed ? `. Moved ${plural(t.pushed, 'time')}` : ''}.</div>`;
@@ -4136,6 +4153,7 @@ function renderPage(fresh) {
   $$('[data-img]', pg).forEach(b => b.onclick = () => openViewer(t, b.dataset.img));
   $('#pMore').onclick = () => pageMenu(t);
   $$('[data-pp]', pg).forEach(b => b.onclick = () => ({ when: pickWhen, repeat: pickRepeat, remind: pickRemind, priority: pickPriority, project: pickProject, tags: pickTags, dur: pickDur, more: pickMore })[b.dataset.pp](t));
+  { const so = $('#pSubOpen'); if (so) so.onclick = e => { e.preventDefault(); $('#pSubs').hidden = false; so.remove(); setTimeout(() => $('#pClNew')?.focus(), 30); }; }
   wireEditor($('#pNotes'), $('.ntool', pg), html => { if (html !== t.notes) { t.notes = html; save(); } });
   { let ldT; $('#pNotes').addEventListener('input', () => { clearTimeout(ldT); ldT = setTimeout(() => { const w = $('#ldWrap'); if (!w) return; const tmp = { ...t, notes: cleanHtml($('#pNotes').innerHTML) }; w.innerHTML = ldBarHtml(tmp); }, 400); }); }
   const clWire = () => $$('#pCl .cl').forEach(el => {
@@ -4737,7 +4755,7 @@ function pushItems() {
     if (t.date && (t.reminders || []).length) { const base = t.time || '09:00'; const [h, m] = base.split(':').map(Number);
       t.reminders.forEach(mins => { const d = pYmd(t.date); d.setHours(h, m - mins, 0, 0); const key = t.date + base + mins;
         const when = mins >= 1440 ? (mins === 1440 ? 'Tomorrow' : `In ${mins / 1440} days`) + (t.time ? ' at ' + fmtTime(t.time) : '') : mins ? `In ${fmtMins(mins)}, at ${fmtTime(base)}` : t.time ? 'Now, ' + fmtTime(t.time) : 'Today';
-        A.push({ at: d.getTime(), k: 't' + t.id + key, body: when + (p ? `. ${p.name}` : ''), nags: mins <= 60, tag: 't' + t.id + mins }); }); }
+        A.push({ at: d.getTime(), k: 't' + t.id + key, body: when + (t.fu && t.fu.at === t.date ? ` · ${fuAgenda(t)}` : p ? `. ${p.name}` : ''), nags: mins <= 60, tag: 't' + t.id + mins }); }); }
     if (t.snoozeUntil) A.push({ at: t.snoozeUntil, k: 't' + t.id + '|z' + t.snoozeUntil, body: 'Snoozed reminder', nags: true, tag: 't' + t.id });
     const zt = t.snoozeUntil > now ? t.snoozeUntil : 0; const A2 = zt ? A.filter(a => a.at >= zt || a.at < now - 6e4) : A;
     run({ id: t.id, title: t.title, tag: 't' + t.id, p: t.priority, nagBody: 'Still not done' }, A2);
@@ -5970,7 +5988,7 @@ function smPrepHtml() {
 }
 function smNextCard(N) {
   const t = N.t, p = proj(t.projectId); const sub = [t.time ? fmtTime(t.time) : `About ${fmtMins(smEst(t))}`, p ? p.name : '', t.date < today() ? 'Overdue' : ''].filter(Boolean).join(' · ');
-  return `<section class="sm-next" aria-label="Next up"><div class="sm-k">Next up · ${esc(N.why)}</div><button class="sm-nt" data-act="open" data-id="${t.id}">${esc(t.title)}</button><div class="sm-ns">${esc(sub)}</div>
+  return `<section class="sm-next" aria-label="Next up"><div class="sm-k">Next up · ${esc(N.why)}</div><button class="sm-nt" data-act="open" data-id="${t.id}">${esc(t.title)}</button><div class="sm-ns">${esc(sub)}</div>${t.fu && t.fu.at <= today() ? `<div class="sm-fu1">↻ ${esc(fuAgenda(t))}</div>` : ''}
   <div class="sm-btns"><button class="sm-b pri" data-act="done" data-id="${t.id}">${I.check}Done</button><button class="sm-b" data-sm="notnow" data-id="${t.id}">Not now</button><button class="sm-b" data-sm="focus" data-id="${t.id}">${I.play}Focus</button></div>${smMulti(t.title) ? `<button class="sm-split" data-sm="split" data-id="${t.id}">✂️ This looks like ${plural(smMulti(t.title).segs.length, 'task')}. Split it</button>` : ''}${N.note ? `<p class="sm-why">${esc(N.note)}</p>` : ''}</section>`;
 }
 function smPlanCard(P) {
@@ -6491,7 +6509,9 @@ function ldBarHtml(t) {
   const box = (ic, n, l) => `<div class="ld-s${n ? '' : ' z'}"><b>${ic} ${n}</b><span>${l}</span></div>`;
   let h = `<div class="ld-bar" id="ldBar"><div class="ld-h"><span>Lead tracker</span><em>from your Follow-ups</em></div><div class="ld-row">${box('📞', r.call, r.call === 1 ? 'call' : 'calls')}${box('💬', r.wa, 'WhatsApp')}${box('✉️', r.mail, r.mail === 1 ? 'email' : 'emails')}${box('🤝', r.meet, r.meet === 1 ? 'discussion' : 'discussions')}</div>
     <div class="ld-meta"><span><b>${r.days}</b> days old<small>since ${fmtShort(r.start)}</small></span><span><b>${r.last ? ldAge(r.since) : 'None'}</b> last follow-up${r.lastNoResp ? '<small class="nr">no response</small>' : ''}</span><span><b>${r.touches}</b> follow-ups<small>${r.noresp ? `${r.noresp} without reply` : 'all logged'}</small></span></div>`;
+  if (!t.fu && !t.done) h += `<button class="ld-next" data-fu="plan" data-id="${t.id}">${I.plus}Plan next follow-up</button>`;
   if (hold) h += `<div class="ld-warn hold">💤 On hold. <button type="button" data-ld="unhold" data-id="${t.id}">Make active</button></div>`;
+  else if (r.old && t.fu) h += `<div class="ld-warn soft">${r.days} days old, but a follow-up is planned for ${fmtDate(t.fu.at)}. The hold or drop question comes back if that one goes nowhere.</div>`;
   else if (r.old) h += `<div class="ld-warn"><b>⚠️ ${r.days} days and still open.</b> Over 90 days: hold it or drop it.<div class="ld-btns"><button type="button" data-ld="hold" data-id="${t.id}">Hold</button><button type="button" data-ld="drop" data-id="${t.id}">✕ Drop lead</button></div></div>`;
   else if (r.days > 75) h += `<div class="ld-warn soft">${90 - r.days} days left before this lead hits 90 days.</div>`;
   return h + `</div>`;
@@ -6513,6 +6533,87 @@ document.addEventListener('click', ev => { const b = ev.target.closest('[data-ld
   else if (a === 'unhold') { t.tags = t.tags.filter(x => x !== 'hold'); t.someday = false; save(); render(); toast('Lead is active again', undo); }
   else if (a === 'drop') { if (!t.tags.includes('dropped')) t.tags.push('dropped'); t.done = true; t.doneAt = Date.now(); pushClose(t.id); save(); render(); toast('Lead dropped. Notes are kept in Completed', undo); }
 }, true);
+
+
+/* ---------- Follow-ups: plan the next one with what to discuss, get reminded, log what happened ---------- */
+const FU_VIA = [['call', '📞', 'Call'], ['wa', '💬', 'WhatsApp'], ['mail', '✉️', 'Email'], ['meet', '🤝', 'Meeting']];
+const FU_WORK = ['Competencies', 'Assessment', 'Automation', 'Proposal', 'Pricing', 'Demo', 'Next steps'];
+function fuIsWork(t) { const p = proj(t.projectId); return ldIsLead(t) || /work|sales|office|client|assesshub/i.test(((p && (p.area || '')) + ' ' + (p && p.name || '')) || ''); }
+function fuTopicsFor(t) { const mine = (S.settings.fuTopics || []).filter(Boolean); return fuIsWork(t) ? [...FU_WORK, ...mine.filter(x => !FU_WORK.includes(x))] : mine; }
+function fuAgenda(t) { const f = t.fu; if (!f) return ''; const v = (f.via || []).map(k => (FU_VIA.find(x => x[0] === k) || [])[2]).filter(Boolean).join(' / '); const tp = (f.topics || []).join(', ').toLowerCase(); return [v, tp ? 'discuss ' + tp : '', f.note].filter(Boolean).join(' · '); }
+const fuDmy = d => { const x = pYmd(d); return `${pad(x.getDate())}-${MONS[x.getMonth()]}-${x.getFullYear()}`; };
+function fuCardHtml(t) {
+  const f = t.fu; if (!f || t.done) return '';
+  const when = `${fmtDate(f.at)}${f.time ? ', ' + fmtTime(f.time) : ''}`, due = f.at < today() || (f.at === today() && (!f.time || f.time <= nowHM()));
+  return `<div class="fu-card${due ? ' due' : ''}"><div class="fu-k">${due ? 'Follow-up due' : 'Next follow-up'}<span>${when}</span></div>
+  <div class="fu-via">${(f.via || []).map(k => { const v = FU_VIA.find(x => x[0] === k); return v ? `<span>${v[1]} ${v[2]}</span>` : ''; }).join('')}</div>
+  ${(f.topics || []).length ? `<div class="fu-tp"><b>Discuss</b>${f.topics.map(x => `<span>${esc(x)}</span>`).join('')}</div>` : ''}${f.note ? `<p class="fu-note">${esc(f.note)}</p>` : ''}
+  <div class="fu-btns"><button class="pri" data-fu="log" data-id="${t.id}">${I.check}Log what happened</button><button data-fu="edit" data-id="${t.id}">Change</button></div></div>`;
+}
+function fuSheet(t, mode) {
+  const td = today(), f0 = t.fu || {}; const st = { at: f0.at || null, time: f0.time || t.time || '11:30', via: [...(f0.via || [])], topics: [...(f0.topics || [])], note: f0.note || '' };
+  const nextMon = (() => { const d = pYmd(td); const k = (8 - d.getDay()) % 7 || 7; return addDays(td, k); })();
+  const days = [['Tomorrow', addDays(td, 1)], ['In 3 days', addDays(td, 3)], [`Next ${DAYS[pYmd(nextMon).getDay()]}`, nextMon], ['In a week', addDays(td, 7)], ['In 2 weeks', addDays(td, 14)]];
+  const times = ['10:00', '11:30', '15:00', '17:30'];
+  openSheet(sheetHead(mode === 'log' ? 'Log follow-up' : 'Plan a follow-up', '', '') + `<div class="sm-sheet fu-sheet" id="fuS"></div>`);
+  const draw = () => {
+    const tops = [...new Set([...fuTopicsFor(t), ...st.topics])];
+    $('#fuS').innerHTML = `<div class="fu-for">${esc(t.title)}</div>
+    <div class="wsec">When</div><div class="fu-chips">${days.map(([l, d]) => `<button type="button" class="${st.at === d ? 'on' : ''}" data-d="${d}">${l}<small>${fmtShort(d)}</small></button>`).join('')}<label class="fu-pick${st.at && !days.some(x => x[1] === st.at) ? ' on' : ''}">${I.cal}<span>${st.at && !days.some(x => x[1] === st.at) ? fmtShort(st.at) : 'Pick'}</span><input type="date" id="fuDate" value="${st.at || ''}" min="${td}"></label></div>
+    <div class="fu-chips tm">${times.map(x => `<button type="button" class="${st.time === x ? 'on' : ''}" data-tm="${x}">${fmtTime(x)}</button>`).join('')}<label class="fu-pick${times.includes(st.time) ? '' : ' on'}">${I.clock}<span>${times.includes(st.time) ? 'Other' : fmtTime(st.time)}</span><input type="time" id="fuTime" value="${st.time}"></label></div>
+    <div class="wsec">How</div><div class="fu-chips">${FU_VIA.map(([k, i, l]) => `<button type="button" class="${st.via.includes(k) ? 'on' : ''}" data-via="${k}">${i} ${l}</button>`).join('')}</div>
+    <div class="wsec">What to discuss<em>tap all that apply</em></div><div class="fu-chips">${tops.map(x => `<button type="button" class="${st.topics.includes(x) ? 'on' : ''}" data-tp="${esc(x)}">${esc(x)}</button>`).join('')}<span class="fu-add"><input id="fuTpIn" placeholder="+ Add your own" enterkeyhint="done" autocomplete="off"></span></div>
+    <label class="sm-lab" for="fuNote">Note for yourself <span style="font-weight:600;color:var(--muted)">(optional)</span></label><textarea class="inp" id="fuNote" rows="2">${esc(st.note)}</textarea>
+    <p class="fu-prev">${st.at ? `🔔 Reminder on <b>${fmtDate(st.at)} at ${fmtTime(st.time)}</b>${st.via.length || st.topics.length ? ` · it will say: <i>${esc(fuAgenda({ fu: st }))}</i>` : ''}` : 'Pick a day for the reminder.'}</p>
+    <button class="btn acc sm-full" id="fuSave"${st.at ? '' : ' disabled'}>Set follow-up</button>${t.fu ? '<button class="btn sec sm-full" id="fuDel" style="margin-top:8px">Remove follow-up</button>' : ''}`;
+    $$('#fuS [data-d]').forEach(b => b.onclick = () => { st.note = $('#fuNote').value; st.at = b.dataset.d; draw(); });
+    $$('#fuS [data-tm]').forEach(b => b.onclick = () => { st.note = $('#fuNote').value; st.time = b.dataset.tm; draw(); });
+    $$('#fuS [data-via]').forEach(b => b.onclick = () => { st.note = $('#fuNote').value; const k = b.dataset.via; st.via = st.via.includes(k) ? st.via.filter(x => x !== k) : [...st.via, k]; draw(); });
+    $$('#fuS [data-tp]').forEach(b => b.onclick = () => { st.note = $('#fuNote').value; const k = b.dataset.tp; st.topics = st.topics.includes(k) ? st.topics.filter(x => x !== k) : [...st.topics, k]; draw(); });
+    $('#fuDate').onchange = e => { st.note = $('#fuNote').value; if (e.target.value) { st.at = e.target.value; draw(); } };
+    $('#fuTime').onchange = e => { st.note = $('#fuNote').value; if (e.target.value) { st.time = e.target.value; draw(); } };
+    const ti = $('#fuTpIn'); ti.onkeydown = e => { if (e.key !== 'Enter') return; e.preventDefault(); const v = ti.value.trim().replace(/^./, c => c.toUpperCase()); if (!v) return; st.note = $('#fuNote').value; if (!st.topics.includes(v)) st.topics.push(v); S.settings.fuTopics = [...new Set([...(S.settings.fuTopics || []), v])].slice(-20); save(); draw(); setTimeout(() => $('#fuTpIn')?.focus(), 30); };
+    $('#fuNote').oninput = e => { st.note = e.target.value; };
+    $('#fuSave').onclick = () => { const snap = JSON.stringify(t); st.note = $('#fuNote').value.trim();
+      t.fu = { at: st.at, time: st.time, via: st.via, topics: st.topics, note: st.note, set: Date.now() }; setDate(t, st.at); t.time = st.time; t.someday = false; if (!t.reminders.length) t.reminders = [0]; t.firedKeys = []; t.tags = (t.tags || []).filter(x => x !== 'hold');
+      save(); closeSheet(true); fuRefresh(t); toast(`Follow-up set for ${fmtDate(st.at)}, ${fmtTime(st.time)}`, () => { const o = JSON.parse(snap), i = S.tasks.findIndex(x => x.id === o.id); if (i >= 0) S.tasks[i] = o; save(); fuRefresh(S.tasks[i]); }); };
+    const dl = $('#fuDel'); if (dl) dl.onclick = () => { delete t.fu; save(); closeSheet(true); fuRefresh(t); toast('Follow-up removed'); };
+  };
+  draw();
+}
+// After the call: write a dated line under Follow-ups (newest on top), then offer the next one
+function fuLogSheet(t) {
+  const f = t.fu || {}; const st = { via: [...(f.via || [])], topics: [...(f.topics || [])] }; let resp = 'yes';
+  openSheet(sheetHead('Log follow-up', '', '') + `<div class="sm-sheet fu-sheet" id="fuL"></div>`);
+  const draw = () => { const out = $('#fuOut') ? $('#fuOut').value : '';
+    $('#fuL').innerHTML = `<div class="fu-for">${esc(t.title)} · ${fmtDate(today())}</div>
+    <div class="wsec">How did you reach them</div><div class="fu-chips">${FU_VIA.map(([k, i, l]) => `<button type="button" class="${st.via.includes(k) ? 'on' : ''}" data-via="${k}">${i} ${l}</button>`).join('')}</div>
+    <div class="wsec">Did they respond?</div><div class="fu-chips">${[['yes', 'Yes, we spoke'], ['no', 'No response']].map(([k, l]) => `<button type="button" class="${resp === k ? 'on' : ''}" data-rs="${k}">${l}</button>`).join('')}</div>
+    ${(st.topics.length || fuTopicsFor(t).length) ? `<div class="wsec">Discussed</div><div class="fu-chips">${[...new Set([...fuTopicsFor(t), ...st.topics])].map(x => `<button type="button" class="${st.topics.includes(x) ? 'on' : ''}" data-tp="${esc(x)}">${esc(x)}</button>`).join('')}</div>` : ''}
+    <label class="sm-lab" for="fuOut">What happened</label><textarea class="inp" id="fuOut" rows="3" placeholder="e.g. She will connect us to the project owner, back by mid next week">${esc(out)}</textarea>
+    <button class="btn acc sm-full" id="fuLogGo">Save to Follow-ups</button>`;
+    $$('#fuL [data-via]').forEach(b => b.onclick = () => { const k = b.dataset.via; st.via = st.via.includes(k) ? st.via.filter(x => x !== k) : [...st.via, k]; draw(); });
+    $$('#fuL [data-rs]').forEach(b => b.onclick = () => { resp = b.dataset.rs; draw(); });
+    $$('#fuL [data-tp]').forEach(b => b.onclick = () => { const k = b.dataset.tp; st.topics = st.topics.includes(k) ? st.topics.filter(x => x !== k) : [...st.topics, k]; draw(); });
+    $('#fuLogGo').onclick = () => { const out = $('#fuOut').value.trim(); const verbs = { call: 'Called', wa: 'WhatsApped', mail: 'Emailed', meet: 'Meeting' };
+      const parts = [st.via.map(k => verbs[k]).join(' and ') || 'Followed up', resp === 'no' ? 'No response' : '', resp === 'yes' && st.topics.length ? 'Discussed ' + st.topics.join(', ').toLowerCase() : '', out].filter(Boolean);
+      const line = `<div><b>${fuDmy(today())} -</b> ${esc(parts.join('. ').replace(/\.\./g, '.'))}</div>`; const snap = JSON.stringify(t);
+      t.notes = fuInsertLine(t.notes || '', line); delete t.fu; save(); closeSheet(true); fuRefresh(t, true);
+      toast('Saved to Follow-ups', () => { const o = JSON.parse(snap), i = S.tasks.findIndex(x => x.id === o.id); if (i >= 0) S.tasks[i] = o; save(); fuRefresh(S.tasks[i], true); });
+      setTimeout(() => { if (getTask(t.id) && !t.fu) fuAskNext(t); }, 500); };
+  };
+  draw();
+}
+function fuAskNext(t) { const el = $('#fuWrap'); if (!el) return; el.innerHTML = `<div class="fu-card ask"><div class="fu-k">Logged ✓</div><p class="fu-note" style="margin-top:4px">Plan the next follow-up now, while it's fresh?</p><div class="fu-btns"><button class="pri" data-fu="edit" data-id="${t.id}">Plan next</button><button data-fu="skip" data-id="${t.id}">Not now</button></div></div>`; }
+function fuInsertLine(html, line) {
+  const box = document.createElement('div'); box.innerHTML = cleanHtml(html); const blocks = [...box.children];
+  const h = blocks.find(el => /^\s*follow[\s\-–]*ups?\b/i.test(el.textContent || ''));
+  if (h) { let at = h; let n = h.nextElementSibling; while (n && !(n.textContent || '').trim() && !n.querySelector('img,table')) { at = n; n = n.nextElementSibling; } if (at === h) h.insertAdjacentHTML('afterend', line); else at.insertAdjacentHTML('afterend', line); return box.innerHTML; }
+  return (box.innerHTML ? box.innerHTML + '<div><br></div>' : '') + '<div><mark><b>Follow-ups</b></mark></div>' + line;
+}
+function fuRefresh(t, notes) { if (!t) return; const w = $('#fuWrap'); if (w) w.innerHTML = fuCardHtml(t); if (notes && $('#pNotes')) $('#pNotes').innerHTML = cleanHtml(t.notes); const lw = $('#ldWrap'); if (lw) lw.innerHTML = ldBarHtml(t); render(); }
+document.addEventListener('click', ev => { const b = ev.target.closest('[data-fu]'); if (!b) return; ev.preventDefault(); const t = getTask(b.dataset.id); if (!t) return; const a = b.dataset.fu;
+  if (a === 'edit' || a === 'plan') fuSheet(t); else if (a === 'log') fuLogSheet(t); else if (a === 'skip') { const w = $('#fuWrap'); if (w) w.innerHTML = ''; } });
 
 /* ================= start ================= */
 document.addEventListener('focusin', e => { if (!isWide() && e.target.matches && e.target.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,[contenteditable=true]')) document.body.classList.add('typing'); });
