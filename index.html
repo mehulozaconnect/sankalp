@@ -1339,6 +1339,11 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .sl-embed{margin-bottom:6px}
 .railshow{display:none}
 @media (min-width:1280px){body.railoff .rail{display:none}body.railoff:not(.oncal) .railshow{display:flex;position:fixed;top:14px;right:14px;z-index:30;width:40px;height:40px;border-radius:12px;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--side);color:var(--ink);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08)}.railshow svg{width:20px;height:20px}.railshow:hover{background:color-mix(in srgb,var(--accent) 12%,var(--side))}}
+.sm-pl1{display:flex;align-items:center;gap:4px;margin:4px 16px 10px;padding:4px;border-radius:16px;background:color-mix(in srgb,#F59E42 12%,var(--card,var(--bg)));border:1px solid color-mix(in srgb,#F59E42 30%,transparent)}
+.sm-pl1m{flex:1;display:flex;align-items:center;gap:10px;padding:8px 8px;background:none;border:0;color:var(--ink);text-align:left;cursor:pointer;min-width:0}.sm-pl1m>i{font-style:normal;font-size:18px}.sm-pl1m>span{flex:1;display:flex;flex-direction:column;min-width:0}.sm-pl1m b{font-size:14.5px;font-weight:800}.sm-pl1m small{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sm-pl1m em{font-style:normal;color:#C2410C}.sm-pl1m>svg{width:18px;height:18px;color:var(--muted)}
+.sm-pl1x{width:36px;height:36px;border-radius:12px;border:0;background:none;color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer}.sm-pl1x svg{width:16px;height:16px}.sm-pl1x:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+@media (min-width:900px){.sm-pl1{max-width:720px}}
+.isdark .sm-pl1m em{color:#FB923C}
 </style>
 </head>
 <body>
@@ -3693,7 +3698,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.5.3';
+const APPV = '6.5.4';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -6020,11 +6025,12 @@ function smNextCard(N) {
   <div class="sm-btns"><button class="sm-b pri" data-act="done" data-id="${t.id}">${I.check}Done</button><button class="sm-b" data-sm="notnow" data-id="${t.id}">Not now</button><button class="sm-b" data-sm="focus" data-id="${t.id}">${I.play}Focus</button></div>${smMulti(t.title) ? `<button class="sm-split" data-sm="split" data-id="${t.id}">✂️ This looks like ${plural(smMulti(t.title).segs.length, 'task')}. Split it</button>` : ''}${N.note ? `<p class="sm-why">${esc(N.note)}</p>` : ''}</section>`;
 }
 function smPlanCard(P) {
-  const n = P.pool.length, tight = P.over.length > 0, wd = new Date().getDay(), cap = smCap(wd);
-  return `<section class="sm-plan"><div class="sm-k">Plan my day · 1 min</div><b>${plural(n, 'task')}${P.meets.length ? ', ' + plural(P.meets.length, 'meeting') : ''}</b><span>${P.flex.length ? `They need about ${fmtMins(P.need)}. You have ${fmtMins(P.free) || '0m'} free${tight ? `, so ${P.over.length} will not fit.` : '.'}` : 'All have a set time.'}${smClashes(today()).length ? ` ⚠️ ${plural(smClashes(today()).length, 'task')} clash${smClashes(today()).length === 1 ? 'es' : ''} with a meeting.` : ''}${cap && n > cap ? ` That is over your cap of ${cap} for ${DAYSL[wd]}s.` : ''}</span><div class="sm-btns"><button class="sm-b pri" data-sm="plan">See the plan</button><button class="sm-b" data-sm="skipplan">Skip today</button></div></section>`;
+  const n = P.pool.length, wd = new Date().getDay(), cap = smCap(wd), cl = smClashes(today()).length;
+  const warn = P.over.length ? `${P.over.length} won't fit` : cl ? `${plural(cl, 'clash', 'clashes')} with meetings` : cap && n > cap ? `over your cap of ${cap}` : '';
+  return `<section class="sm-pl1${warn ? ' tight' : ''}"><button class="sm-pl1m" data-sm="plan"><i>☀️</i><span><b>Plan my day</b><small>${plural(n, 'task')}${P.meets.length ? ' · ' + plural(P.meets.length, 'meeting') : ''}${warn ? ` · <em>${warn}</em>` : ` · ${fmtMins(P.free) || '0m'} free`}</small></span>${I.next}</button><button class="sm-pl1x" data-sm="skipplan" aria-label="Skip planning today" title="Skip today">${I.x}</button></section>`;
 }
 function smReplanCard(P) {
-  return `<section class="sm-replan"><div class="sm-k">The day has changed</div><b>${plural(P.over.length, 'task')} no longer ${P.over.length === 1 ? 'fits' : 'fit'} today</b><span>${fmtMins(P.need)} of work left, ${fmtMins(P.free) || '0m'} free until ${fmtTime(S.settings.shutdown || '19:00')}.${P.low ? ' Energy was low yesterday, so the plan stays lighter.' : ''}</span><div class="sm-btns"><button class="sm-b pri" data-sm="replan">Replan</button><button class="sm-b" data-sm="keepplan">Keep as is</button></div></section>`;
+  return `<section class="sm-pl1 tight"><button class="sm-pl1m" data-sm="replan"><i>🔄</i><span><b>Replan</b><small>The day changed · <em>${P.over.length} no longer ${P.over.length === 1 ? 'fits' : 'fit'}</em></small></span>${I.next}</button><button class="sm-pl1x" data-sm="keepplan" aria-label="Keep the plan as is" title="Keep as is">${I.x}</button></section>`;
 }
 function smCloseCard(D) {
   return `<a class="sm-close" href="#close"><div class="sm-k">Close the day · 2 min</div><b>${D.doneToday.length} done${D.openCount ? `, ${D.openCount} left` : ''}</b><span>Decide the leftovers, note how today felt, pick tomorrow's top 3.</span><span class="sm-go">Start${I.next}</span></a>`;
