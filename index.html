@@ -1337,6 +1337,8 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .sl-cl{margin:0 16px 10px;padding:14px;border-radius:18px;background:var(--surface)}.sl-ch1{display:flex;align-items:center;gap:10px}.sl-ch1 span{flex:1;min-width:0;display:flex;flex-direction:column}.sl-ch1 b{font-size:15.5px}.sl-ch1 small{font-size:12.5px;color:var(--muted);font-weight:600}.sl-ch1 em{font-style:normal;font-weight:800;font-size:16px}
 .sl-inv{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);margin-top:8px}.sl-inv span{flex:1;display:flex;flex-direction:column}.sl-inv b{font-size:13.5px}.sl-inv small{font-size:12px;color:var(--muted);font-weight:600}.sl-inv.late small{color:var(--danger)}.sl-inv em{font-style:normal;font-weight:700;font-size:14px}.sl-inv button{height:32px;padding:0 10px;border-radius:10px;background:var(--bg);font-weight:800;font-size:12.5px;color:#1C8A5A}
 .sl-embed{margin-bottom:6px}
+.railshow{display:none}
+@media (min-width:1280px){body.railoff .rail{display:none}body.railoff:not(.oncal) .railshow{display:flex;position:fixed;top:14px;right:14px;z-index:30;width:40px;height:40px;border-radius:12px;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--side);color:var(--ink);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08)}.railshow svg{width:20px;height:20px}.railshow:hover{background:color-mix(in srgb,var(--accent) 12%,var(--side))}}
 </style>
 </head>
 <body>
@@ -1345,6 +1347,7 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
   <main id="main" tabindex="-1"></main>
   <aside class="rail" id="rail" aria-label="Day calendar"></aside>
 </div>
+<button class="railshow" id="railShow" data-act="railshow" aria-label="Show calendar" title="Show calendar"></button>
 <nav class="tabbar" id="tabbar" aria-label="Main"></nav>
 <div class="lock" id="lock" role="dialog" aria-modal="true" aria-label="Dayline is locked"><span id="lockLogo"></span><b>Dayline is locked</b><p>Use your fingerprint or phone screen lock to open.</p><button class="btn acc" id="lockBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 11c0 3.5-1 6-2.5 8M8 6.5A6 6 0 0 1 18 11c0 2.2-.3 4.2-.9 6M6 9.5A7.9 7.9 0 0 0 5.5 12c0 2.5-.6 4.4-1.5 5.5M15 12c0 2.7-.5 5.2-1.5 7.5M9 11a3 3 0 0 1 6 0"/></svg>Unlock</button></div>
 <button class="fab" id="fab" aria-label="Add task"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Add</span></button>
@@ -2488,7 +2491,11 @@ function wcard(t) {
 let railDay = null;
 function railHasTask(k) { return S.tasks.some(t => !t.done && !t.someday && (t.date === k || (t.repeat && t.date !== k && occursOn(t, k)))); }
 let railScroll = { d: null, y: 0 };
+// The day calendar on the right (laptop) can be hidden; the choice is kept on this device
+function railOff() { try { return localStorage.getItem('sankalp.railoff') === '1'; } catch (e) { return false; } }
+function railSet(off) { try { localStorage.setItem('sankalp.railoff', off ? '1' : ''); } catch (e) { } document.body.classList.toggle('railoff', off); renderRail(); toast(off ? 'Calendar hidden. Tap the calendar button on the right to bring it back.' : 'Calendar shown'); }
 function renderRail() {
+  document.body.classList.toggle('railoff', railOff()); const rs = $('#railShow'); if (rs && !rs.innerHTML) rs.innerHTML = I.cal;
   const el = $('#rail'); if (!el || !matchMedia('(min-width:1280px)').matches) { if (el) el.innerHTML = ''; return; }
   const td = today(); railDay ||= td;
   const ws = weekStart(railDay); const wkD = Array.from({ length: 7 }, (_, i) => addDays(ws, i)); const wsD = pYmd(ws), weD = pYmd(wkD[6]);
@@ -2517,7 +2524,7 @@ function renderRail() {
   });
   if (nowM >= 0) g += `<div class="rnow" style="top:${px(nowM)}px"><i></i></div>`;
   const keep = railScroll.d === railDay ? railScroll.y : null;
-  el.innerHTML = `<div class="rhead"><b>${wkLbl}</b><div>${railDay !== td ? `<button class="pill ghost rtoday" data-act="railday" data-d="${td}">Today</button>` : ''}<button class="iconbtn" data-act="railwk" data-dir="-1" aria-label="Previous week">${I.back}</button><button class="iconbtn" data-act="railwk" data-dir="1" aria-label="Next week">${I.next}</button></div></div><div class="rweek">${wk}</div>
+  el.innerHTML = `<div class="rhead"><b>${wkLbl}</b><div>${railDay !== td ? `<button class="pill ghost rtoday" data-act="railday" data-d="${td}">Today</button>` : ''}<button class="iconbtn" data-act="railwk" data-dir="-1" aria-label="Previous week">${I.back}</button><button class="iconbtn" data-act="railwk" data-dir="1" aria-label="Next week">${I.next}</button><button class="iconbtn rhide" data-act="railhide" aria-label="Hide calendar" title="Hide calendar">${I.x}</button></div></div><div class="rweek">${wk}</div>
   <div class="rday"><b>${railDay === td ? 'Today' : DAYSL[dd.getDay()]}, ${dd.getDate()} ${MONS[dd.getMonth()]}</b><span>${[ms.length ? plural(ms.length, 'meeting') : '', ts.length + ut.length ? plural(ts.length + ut.length, 'task') : ''].filter(Boolean).join(' · ') || 'Free'}</span></div>
   ${ms.length || ts.length ? `<div class="rsum"><span><b>${fmtMins(busy) || '0m'}</b> busy</span><span><b>${fmtMins(free) || '0m'}</b> free in work hours</span></div>` : ''}
   ${ut.length ? `<div class="rany"><div class="rah">Anytime</div><div class="rtasks">${ut.map(t => `<button class="rtk${t.done ? ' d' : ''}" data-act="open" data-id="${t.id}" draggable="true" data-tid="${t.id}" title="Drag onto the timeline to give it a time"><span class="pdot p${t.priority}"></span><span class="tt">${esc(t.title)}</span>${t.repeat ? `<span class="rr">${I.repeat}</span>` : ''}</button>`).join('')}</div></div>` : ''}
@@ -3686,7 +3693,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.5.1';
+const APPV = '6.5.2';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5054,7 +5061,7 @@ document.addEventListener('click', e => {
     install: async () => { if (!installEvt) { toast('Use the browser menu, Add to Home screen'); return; } installEvt.prompt(); try { await installEvt.userChoice; } catch (x) { } installEvt = null; render(); },
     hidedenied: () => { S.settings.deniedSeen = true; save(); render(); },
     carrytm: () => { const tm = addDays(td, 1); const l = open().filter(t => t.date && t.date <= td && t.priority <= 3 && !t.someday); l.forEach(t => setDate(t, tm)); save(); render(); toast(`${plural(l.length, 'task')} moved to tomorrow`); },
-    railday: () => { railDay = b.dataset.d; renderRail(); }, railwk: () => { railDay = addDays(railDay || today(), 7 * +b.dataset.dir); renderRail(); },
+    railday: () => { railDay = b.dataset.d; renderRail(); }, railhide: () => railSet(true), railshow: () => railSet(false), railwk: () => { railDay = addDays(railDay || today(), 7 * +b.dataset.dir); renderRail(); },
     fest: () => { S.settings.fest = b.dataset.k; save(); applyTheme(); render(); toast(b.dataset.k === 'off' ? 'Festive icon off' : b.dataset.k === 'auto' ? 'Festive icon: Auto' : 'Icon changed'); },
     logo: () => { S.settings.logo = b.dataset.k; save(); applyTheme(); render(); toast(FEST[effIcon()] ? 'Logo saved. The festive icon is showing now; set Festive icon to Off to use this logo.' : 'Logo changed. The Home Screen icon updates by itself within a day.'); },
     dark: () => { S.settings.darkStyle = b.dataset.k; if (S.settings.mode === 'light') S.settings.mode = 'dark'; save(); applyTheme(); render(); },
