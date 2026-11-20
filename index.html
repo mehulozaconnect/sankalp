@@ -4016,7 +4016,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.11.1';
+const APPV = '6.11.2';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4819,9 +4819,10 @@ function commitImport(items) {
   save(); render(); return { added, skipped };
 }
 let importBuf = [];
-function importSheet(src) {
+function impLinkWire() { const b = $('#impLinkGo'); if (!b) return; b.onclick = () => { const m = ($('#impLink').value || '').match(/adddates=([A-Za-z0-9_\-]+)/); if (!m) { toast('That isn\'t a Dayline dates link'); return; } closeSheet(true); addDatesApply(m[1]); go('dates'); }; }
+function importSheet(src) { setTimeout(impLinkWire, 50);
   const srcs = { todoist: ['Todoist', 'Settings, Backups, download the latest backup (.zip). Or open a project, the three dots, Export as CSV.', '.zip,.csv'], ticktick: ['TickTick', 'Web: Settings, Account, Generate backup. You get one .csv file.', '.csv'], notion: ['Notion', 'Open your tasks database, the three dots, Export, Markdown & CSV. Pick the .csv (or the .zip).', '.csv,.zip'], things: ['Things 3', 'In Things, select the to-dos (Cmd+A), copy (Cmd+C), and paste below. Project names on their own line become projects.', ''], csv: ['Other (CSV)', 'Any spreadsheet with a title column. Date, project, notes, priority and done columns are picked up if present.', '.csv'] };
-  let h = sheetHead('Import tasks', '', '') + `<div class="imp" style="margin-top:8px">${Object.entries(srcs).map(([k, [n]]) => `<button class="${src === k ? 'on' : ''}" data-src="${k}"><b>${n}</b><span>${k === 'things' ? 'Copy and paste' : 'Export file'}</span></button>`).join('')}</div>`;
+  let h = sheetHead('Import tasks', '', '') + `<div class="field" style="margin-top:6px"><label for="impLink">Got a Dayline link (dates, tasks)? Paste it here</label><div class="tg-new"><div><input class="inp" id="impLink" placeholder="https://…#adddates=…" autocomplete="off"><button type="button" id="impLinkGo">Add</button></div></div></div><div class="imp" style="margin-top:8px">${Object.entries(srcs).map(([k, [n]]) => `<button class="${src === k ? 'on' : ''}" data-src="${k}"><b>${n}</b><span>${k === 'things' ? 'Copy and paste' : 'Export file'}</span></button>`).join('')}</div>`;
   if (src) {
     const [n, how, acc] = srcs[src];
     h += `<div class="notice"><b>${n}:</b> ${how}</div>`;
