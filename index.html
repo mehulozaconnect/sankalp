@@ -1391,6 +1391,9 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .st-tot{display:flex;align-items:baseline;gap:8px;margin:6px 0 10px}.st-tot b{font-size:26px;font-weight:800}.st-tot span{color:var(--muted);font-weight:600;font-size:13px}.st-bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:color-mix(in srgb,var(--ink) 7%,transparent);gap:2px}.st-bar i{display:block;height:100%}
 .st-leg{margin:10px 0 4px}.st-leg div{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:13.5px;font-weight:600}.st-leg i{width:10px;height:10px;border-radius:3px;flex:none}.st-leg span{flex:1}.st-leg b{font-weight:800}
 .tabbar a{min-width:0}
+.rp-md{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:4px 0 14px}.rp-md button{height:38px;border-radius:10px;border:0;background:var(--surface);color:var(--ink);font:inherit;font-weight:700;font-size:14px;cursor:pointer}.rp-md button.on{background:var(--ink);color:var(--bg)}.rp-md button.last{grid-column:span 3}
+.rp-seg{display:flex;width:100%}.rp-seg button{flex:1}.rp-ck{display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:10px;font-weight:700;font-size:14.5px;margin:2px 0 14px;cursor:pointer}.rp-ck span{grid-column:2}.rp-ck input{width:20px;height:20px;accent-color:var(--accent)}.rp-ck span{font-weight:500;color:var(--muted);font-size:13px}
+.rp-prev{margin:14px 0 4px;padding:10px 12px;border-radius:12px;background:var(--surface);font-size:13.5px;font-weight:600}.rp-prev:empty{display:none}
 </style>
 </head>
 <body>
@@ -1912,41 +1915,52 @@ function repeatLabel(r) {
   let s = '';
   if (r.type === 'daily') s = r.n > 1 ? `Every ${r.n} days` : 'Daily';
   else if (r.type === 'weekly') s = r.n > 1 ? `Every ${r.n} weeks` : 'Weekly';
-  else if (r.type === 'monthly') s = (r.n > 1 ? `Every ${r.n} months` : 'Monthly') + (r.dom ? ' on the ' + ordinal(r.dom) : '');
+  else if (r.type === 'monthly') s = (r.n > 1 ? `Every ${r.n} months` : 'Monthly') + (r.dom && r.from !== 'done' ? (r.dom >= 32 || r.dom === 'L' ? ' on the last day' : ' on the ' + ordinal(r.dom)) : '');
+  else if (r.type === 'mdays') s = 'Monthly on the ' + (r.mdays || []).map(x => x >= 32 ? 'last day' : ordinal(x)).join(', ').replace(/, ([^,]*)$/, ' and $1');
   else if (r.type === 'yearly') s = 'Yearly';
   else if (r.type === 'weekdays') s = 'Weekdays';
   else if (r.type === 'days') s = 'Every ' + r.days.map(d => DAYS[d]).join(', ');
+  if (r.from === 'done') s += ', from when done'; if (r.skipWe) s += ', skip weekends';
   if (r.until) s += ` until ${fmtShort(r.until)}${r.until.slice(0, 4) !== String(new Date().getFullYear()) ? ' ' + r.until.slice(0, 4) : ''}`;
   return s;
 }
-function stepDate(r, from) {
+const lastDom = (y, m) => new Date(y, m + 1, 0).getDate();
+const toWorkday = k => { const d = pYmd(k); while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1); return ymd(d); };
+function stepRaw(r, from, byDone) {
   const d = pYmd(from);
   if (r.type === 'daily') d.setDate(d.getDate() + (r.n || 1));
   else if (r.type === 'weekly') d.setDate(d.getDate() + 7 * (r.n || 1));
-  else if (r.type === 'monthly') d.setMonth(d.getMonth() + (r.n || 1));
-  else if (r.type === 'yearly') d.setFullYear(d.getFullYear() + 1);
+  else if (r.type === 'monthly') { const dom = !byDone && r.dom ? r.dom : d.getDate(), y = d.getFullYear(), m = d.getMonth() + (r.n || 1); return ymd(new Date(y, m, dom === 'L' || dom >= 32 ? lastDom(y, m) : Math.min(dom, lastDom(y, m)))); }
+  else if (r.type === 'mdays') { const L = r.mdays || [d.getDate()]; for (let g = 0; g < 70; g++) { d.setDate(d.getDate() + 1); const ld = lastDom(d.getFullYear(), d.getMonth()), dd = d.getDate(); if (L.some(x => x >= 32 ? dd === ld : x === dd || (x > ld && dd === ld))) break; } }
+  else if (r.type === 'yearly') { const y = d.getFullYear() + 1, m = d.getMonth(); return ymd(new Date(y, m, Math.min(d.getDate(), lastDom(y, m)))); }
   else if (r.type === 'weekdays') { do d.setDate(d.getDate() + 1); while (d.getDay() === 0 || d.getDay() === 6); }
   else if (r.type === 'days') { let i = 0; do { d.setDate(d.getDate() + 1); i++; } while (!r.days.includes(d.getDay()) && i < 8); }
   return ymd(d);
 }
-function nextDate(t) { let n = stepDate(t.repeat, t.date), g = 0; while (n <= today() && g++ < 800) n = stepDate(t.repeat, n); if (t.repeat.until && n > t.repeat.until) return null; return n; }
+function stepDate(r, from, byDone) { const n = stepRaw(r, from, byDone); return r.skipWe ? toWorkday(n) : n; }
+// The next date after you tick it. "By due date" keeps the fixed schedule; "by completion date" counts from today.
+function nextDate(t) {
+  const r = t.repeat, td = today(); let n;
+  if (r.from === 'done') n = stepDate(r, td, true);
+  else { n = stepDate(r, t.date); let g2 = 0; while (n <= td && g2++ < 800) n = stepDate(r, n); }
+  if (r.until && n > r.until) return null; return n;
+}
 function firstDate(r, from) {
   const d = pYmd(from || today());
   if (r.type === 'weekdays') { while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1); }
   if (r.type === 'days') { let i = 0; while (!r.days.includes(d.getDay()) && i < 8) { d.setDate(d.getDate() + 1); i++; } }
-  return ymd(d);
+  if (r.type === 'mdays') { const L = r.mdays || []; for (let g = 0; g < 70; g++) { const ld = lastDom(d.getFullYear(), d.getMonth()), dd = d.getDate(); if (L.some(x => x >= 32 ? dd === ld : x === dd || (x > ld && dd === ld))) break; d.setDate(d.getDate() + 1); } }
+  if (r.type === 'monthly' && r.dom) { const y = d.getFullYear(), m = d.getMonth(), want = r.dom >= 32 || r.dom === 'L' ? lastDom(y, m) : Math.min(r.dom, lastDom(y, m)); if (d.getDate() > want) { const y2 = m === 11 ? y + 1 : y, m2 = (m + 1) % 12; return r.skipWe ? toWorkday(ymd(new Date(y2, m2, r.dom >= 32 ? lastDom(y2, m2) : Math.min(r.dom, lastDom(y2, m2))))) : ymd(new Date(y2, m2, r.dom >= 32 ? lastDom(y2, m2) : Math.min(r.dom, lastDom(y2, m2)))); } d.setDate(want); }
+  return r.skipWe ? toWorkday(ymd(d)) : ymd(d);
 }
+function nextFew(r, from, n) { const out = []; let d = firstDate(r, from); for (let i = 0; i < n && d; i++) { if (r.until && d > r.until) break; out.push(d); d = stepDate(r, d); } return out; }
 function occursOn(t, d) { // is a repeating task scheduled on date d (for calendar preview)
   if (!t.repeat || !t.date || d < t.date || (t.repeat.until && d > t.repeat.until)) return false;
-  if (d === t.date) return true;
-  const r = t.repeat, dd = pYmd(d), diff = dayDiff(t.date, d);
-  if (r.type === 'daily') return diff % (r.n || 1) === 0;
-  if (r.type === 'weekdays') return dd.getDay() > 0 && dd.getDay() < 6;
-  if (r.type === 'days') return r.days.includes(dd.getDay());
-  if (r.type === 'weekly') return diff % (7 * (r.n || 1)) === 0;
-  if (r.type === 'monthly') return pYmd(t.date).getDate() === dd.getDate();
-  if (r.type === 'yearly') return t.date.slice(5) === d.slice(5);
-  return false;
+  if (d === t.date) return true; const r = t.repeat;
+  if (r.from === 'done') return false; // the next one is set only when you finish this one
+  if (!r.skipWe) { const dd = pYmd(d), diff = dayDiff(t.date, d);
+    if (r.type === 'daily') return diff % (r.n || 1) === 0; if (r.type === 'weekdays') return dd.getDay() > 0 && dd.getDay() < 6; if (r.type === 'days') return r.days.includes(dd.getDay()); if (r.type === 'weekly') return diff % (7 * (r.n || 1)) === 0; }
+  let n = t.date, g = 0; while (n < d && g++ < 1200) n = stepDate(r, n); return n === d;
 }
 
 /* ================= natural language ================= */
@@ -2023,11 +2037,14 @@ function parseTask(input) {
   take('(?:every\\s+day|har\\s+din)', () => { r.repeat = { type: 'daily', n: 1 }; }) ||
     take('(?:every\\s+weekday|on\\s+weekdays)', () => { r.repeat = { type: 'weekdays' }; }) ||
     take('every\\s+(\\d+)\\s*(days?|weeks?|months?)', m => { const u = m[3][0].toLowerCase(); r.repeat = { type: u === 'd' ? 'daily' : u === 'w' ? 'weekly' : 'monthly', n: +m[2] }; }) ||
-    take('every\\s+(' + WDRE + '(?:\\s*(?:,|and|&)\\s*' + WDRE + ')*)', m => { const days = [...m[2].matchAll(new RegExp(WDRE, 'gi'))].map(x => wdIndex(x[0])); r.repeat = { type: 'days', days: [...new Set(days)].sort() }; }) ||
+    take('every\\s+(' + WDRE + '(?:(?:\\s*(?:,|and|&)\\s*|\\s+)' + WDRE + ')*)', m => { const days = [...m[2].matchAll(new RegExp(WDRE, 'gi'))].map(x => wdIndex(x[0])); r.repeat = { type: 'days', days: [...new Set(days)].sort() }; }) ||
     take('every\\s+week', () => { r.repeat = { type: 'weekly', n: 1 }; }) ||
+    take('(?:every|each)\\s+(\\d{1,2})(?:st|nd|rd|th)?((?:\\s*(?:,|and|&)\\s*\\d{1,2}(?:st|nd|rd|th)?)+)(?:\\s+of\\s+(?:every|each|the)\\s+month)?', m => { const L = [+m[2], ...[...m[3].matchAll(/\d{1,2}/g)].map(x => +x[0])].filter(n => n >= 1 && n <= 31); if (L.length < 2) return false; r.repeat = { type: 'mdays', mdays: [...new Set(L)].sort((a, b) => a - b) }; }) ||
     take('(?:every|each|har)\\s+month(?:\\s+on)?(?:\\s+the)?\\s+(\\d{1,2})(?:st|nd|rd|th)?(?!\\s*(?:am|pm|:|\\.\\d))', m => { const n = +m[2]; if (n < 1 || n > 31) return false; r.repeat = { type: 'monthly', n: 1 }; r.dom = n; }) ||
     take('(?:on\\s+)?(?:the\\s+)?(\\d{1,2})(?:st|nd|rd|th)\\s+(?:of\\s+)?(?:every|each)\\s+month', m => { const n = +m[2]; if (n < 1 || n > 31) return false; r.repeat = { type: 'monthly', n: 1 }; r.dom = n; }) ||
     take('(?:every|each)\\s+(\\d{1,2})(?:st|nd|rd|th)(?:\\s+of\\s+(?:the\\s+)?month)?', m => { const n = +m[2]; if (n < 1 || n > 31) return false; r.repeat = { type: 'monthly', n: 1 }; r.dom = n; }) ||
+    take('(?:on\\s+)?(?:the\\s+)?last\\s+day\\s+of\\s+(?:every|each|the)\\s+month|(?:every|each)\\s+month\\s+(?:on\\s+)?(?:the\\s+)?last\\s+day|monthly\\s+on\\s+(?:the\\s+)?last\\s+day', () => { r.repeat = { type: 'monthly', n: 1 }; r.dom = 32; }) ||
+    take('(?:monthly|every\\s+month)\\s+on\\s+(?:the\\s+)?(\\d{1,2})(?:st|nd|rd|th)?(?!\\s*(?:am|pm|:|\\.\\d))', m => { const n = +m[2]; if (n < 1 || n > 31) return false; r.repeat = { type: 'monthly', n: 1 }; r.dom = n; }) ||
     take('every\\s+month', () => { r.repeat = { type: 'monthly', n: 1 }; }) ||
     take('(?:every\\s+year|annually)', () => { r.repeat = { type: 'yearly', n: 1 }; }) ||
     take('(?:everyday|daily|roz)', m => lead(m, { type: 'daily', n: 1 })) ||
@@ -2072,7 +2089,7 @@ function parseTask(input) {
     }
   }
   let title = s.split(M).join(' ').replace(/\s+/g, ' ').replace(/\s*,\s*/g, ', ').replace(/(,\s*)+/g, ', ').replace(/^[\s,]+|[\s,]+$/g, '');
-  for (let i = 0; i < 3; i++) title = title.replace(/\s+(on|by|at|for|in|from|with)$/i, '').replace(/^[\s,]+|[\s,]+$/g, '');
+  for (let i = 0; i < 3; i++) title = title.replace(/\s+(on|by|at|for|in|from|with)$/i, '').replace(r.repeat ? /\s+(?:and\s+|&\s+)?(?:repeat(?:s|ing|ed)?|recurring|it)$/i : /$^/, '').replace(/\s+(?:and|&)$/i, '').replace(/^[\s,]+|[\s,]+$/g, '');
   r.title = title ? title.charAt(0).toUpperCase() + title.slice(1) : '';
   if (r.time && r.endTime) { const [a1, a2] = r.time.split(':').map(Number), [b1, b2] = r.endTime.split(':').map(Number); r.duration ||= (b1 * 60 + b2) - (a1 * 60 + a2); }
   // "every month 15th starting nov 26": nov 26 means November 2026 here; start on the first 15th on or after it
@@ -2084,7 +2101,7 @@ function parseTask(input) {
   // "start today 6pm till friday 6pm": every day from the start to the end date
   if (!r.repeat && r.start && r.until && r.until > r.start) { r.repeat = { type: 'daily', n: 1 }; r.date ||= r.start || today(); r._range = true; }
   if (r._uTime && !r.time) r.time = r._uTime; delete r._uTime;
-  if (r.repeat) { r.date = r._range ? r.date : firstDate(r.repeat, r.date || today()); if (r.until) r.repeat.until = r.until; }
+  if (r.repeat) { r.date = r._range ? r.date : firstDate(r.repeat, r.date || today()); if (r.until) r.repeat.until = r.until; if (r.repeat.type === 'monthly' && !r.repeat.dom) r.repeat.dom = pYmd(r.date).getDate(); }
   else if (r.until && !r.date) r.date = r.until;
   delete r._range;
   if (r.time && !r.date && !r.someday) r.date = r.time < nowHM() ? addDays(today(), 1) : today();
@@ -2125,7 +2142,7 @@ function toggleDone(id) {
     if (t.repeat && t.date) {
       const nd = nextDate(t);
       const copy = { ...t, id: uid(), orig: t.id, done: true, doneAt: Date.now(), repeat: null, pinned: false, subs: t.subs.map(c => ({ ...c })) }; xpPop(rwIndex().xpTask(t, today()));
-      S.tasks.push(copy);
+      S.tasks.push(copy); Object.values(S.days || {}).forEach(dd => { if (dd && dd.top) dd.top = dd.top.map(x => x === t.id ? copy.id : x); });
       if (!nd) { t.done = true; t.doneAt = Date.now(); S.tasks = S.tasks.filter(x => x !== copy); save(); render(); toast('Done. That was the last one in this series'); return; }
       t.nagAt = 0; t.snoozeUntil = 0; t.date = nd; t.firedKeys = []; t.subs.forEach(c => { c.d = false; c.nagAt = 0; }); t.pushed = 0; addPlan(t);
       save(); render(); toast(`Done. Next one ${nd === addDays(today(), 1) ? 'tomorrow' : 'on ' + fmtDate(nd)}`);
@@ -2315,8 +2332,8 @@ const repLabel = x => x.rep === 'once' ? 'Once' : x.rep === 'monthly' ? 'Every m
 
 /* ================= toast ================= */
 let toastT;
-function toast(msg, undo) {
-  const el = $('#toast'); $('#toastMsg').textContent = msg; const b = $('#toastBtn');
+function toast(msg, undo, label) {
+  const el = $('#toast'); $('#toastMsg').textContent = msg; const b = $('#toastBtn'); b.textContent = label || 'Undo';
   b.hidden = !undo; b.onclick = () => { undo && undo(); el.classList.remove('on'); };
   el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), undo ? 5000 : 2600);
 }
@@ -2715,7 +2732,7 @@ function vToday() {
   if (!PERS) { h += smWaitHtml() + slTodayHtml(); h += dayBand(); }
   h += smHabitsHtml();
   const nx = N ? N.t.id : null, ex = l => l.filter(t => t.id !== nx);
-  { const top = keep(((S.days[td] || {}).top || []).map(getTask).filter(t => t && !t.done && t.id !== nx)); if (top.length) h += `<div class="grouph" style="color:var(--accent-text)">${I.star} Top 3 for today</div>` + rows(top); }
+  { const top = keep(((S.days[td] || {}).top || []).map(getTask).filter(t => t && !t.done && t.id !== nx && !(t.date && t.date > td))); if (top.length) h += `<div class="grouph" style="color:var(--accent-text)">${I.star} Top 3 for today</div>` + rows(top); }
   if (ex(D.pinned).length) h += `<div class="grouph">${I.pin} Pinned</div>` + rows(ex(D.pinned), { inPinned: true });
   if (st.todayGroup === 'time') {
     if (ex(D.overdue).length) h += `<div class="grouph" style="color:var(--danger)">Overdue <span class="cnt">${ex(D.overdue).length}</span><button data-act="moveoverdue" style="margin-left:auto;color:var(--accent-text);font-weight:700;font-size:13px">Move all to today</button></div>` + rows(ex(D.overdue));
@@ -3869,7 +3886,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.9';
+const APPV = '6.9.1';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4258,7 +4275,7 @@ function quickAdd(ctxOverride) {
     if (ctx.tpl) { closeSheet(true); setTimeout(() => taskSheet(res.id), 220); return; }
     const where = res.someday ? 'Someday' : res.date === today() ? 'Today' : res.date ? fmtDate(res.date) : res.projectId ? proj(res.projectId).name : 'Inbox';
     if (ctx.quick) { closeSheet(true); quickDone(); return; }
-    toast(`Added to ${where}`); closeSheet(true);
+    closeSheet(true); if (res.repeat) setTimeout(() => toast(`Added · ${repeatLabel(res.repeat)}`, () => pickRepeat(res), 'Options'), 250); else toast(`Added to ${where}`);
   };
   addB.onclick = submit;
   $('#qaExp').onclick = () => {
@@ -4396,21 +4413,34 @@ function pickWhen(t) {
 }
 function pickRepeat(t) {
   const td = today(); const r = t.repeat || {}; const rtype = !t.repeat ? '' : (r.type === 'daily' && (r.n || 1) > 1) ? 'ndays' : r.type;
-  openSheet(sheetHead('Repeat', 'Done', 'rOk') + `<div class="field"><label for="rType">Repeats</label><select class="inp" id="rType"><option value="">Never</option>${[['daily', 'Every day'], ['weekdays', 'Weekdays (Mon to Fri)'], ['days', 'On chosen days'], ['weekly', 'Every week'], ['ndays', 'Every few days'], ['monthly', 'Every month'], ['yearly', 'Every year']].map(([k, l]) => `<option value="${k}"${rtype === k ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
+  const md = new Set(r.mdays || (r.type === 'monthly' && r.dom ? [r.dom] : [pYmd(t.date || td).getDate()]));
+  openSheet(sheetHead('Repeat', 'Done', 'rOk') + `<div class="field"><label for="rType">Repeats</label><select class="inp" id="rType"><option value="">Never</option>${[['daily', 'Every day'], ['weekdays', 'Weekdays (Mon to Fri)'], ['days', 'On chosen days of the week'], ['weekly', 'Every week'], ['ndays', 'Every few days'], ['monthly', 'Every month'], ['mdays', 'On chosen dates of the month'], ['yearly', 'Every year']].map(([k, l]) => `<option value="${k}"${rtype === k ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
   <div class="daychips" id="rDays" style="${rtype === 'days' ? '' : 'display:none'}">${[1, 2, 3, 4, 5, 6, 0].map(d => `<button type="button" data-d="${d}" class="${(r.days || []).includes(d) ? 'on' : ''}">${DAYS[d].slice(0, 2)}</button>`).join('')}</div>
   <div class="field" id="rN" style="${rtype === 'ndays' ? '' : 'display:none'}"><label for="rNv">Every how many days</label><input class="inp" type="number" min="2" max="60" id="rNv" value="${r.n > 1 ? r.n : 2}"></div>
-  <div class="grid2"><div class="field" style="margin:0"><label for="rStart">Starts</label><input class="inp" type="date" id="rStart" value="${t.date || td}"></div><div class="field" style="margin:0"><label for="rUntil">Ends (optional)</label><input class="inp" type="date" id="rUntil" value="${r.until || ''}"></div></div>`);
-  $('#rType').onchange = e => { const v = e.target.value; $('#rDays').style.display = v === 'days' ? '' : 'none'; $('#rN').style.display = v === 'ndays' ? '' : 'none'; };
-  $$('#rDays button').forEach(b => b.onclick = () => b.classList.toggle('on'));
-  $('#rOk').onclick = () => {
-    const v = $('#rType').value, until = $('#rUntil').value || null, st = $('#rStart').value || td;
-    if (!v) t.repeat = null;
-    else if (v === 'days') { let days = $$('#rDays button.on').map(b => +b.dataset.d); if (!days.length) days = [pYmd(st).getDay()]; t.repeat = { type: 'days', days: days.sort(), until }; }
-    else if (v === 'ndays') t.repeat = { type: 'daily', n: Math.max(2, +$('#rNv').value || 2), until };
-    else t.repeat = { type: v, n: 1, until };
-    if (t.repeat) setDate(t, firstDate(t.repeat, st));
-    applyAndRefresh(t);
-  };
+  <div class="rp-md" id="rMd" style="${rtype === 'mdays' ? '' : 'display:none'}">${Array.from({ length: 31 }, (_, i) => i + 1).map(n => `<button type="button" data-m="${n}" class="${md.has(n) ? 'on' : ''}">${n}</button>`).join('')}<button type="button" data-m="32" class="last${md.has(32) || md.has('L') ? ' on' : ''}">Last day</button></div>
+  <div class="field" id="rFromW" style="${rtype ? '' : 'display:none'}"><span class="flabel">Next one is set from</span><div class="seg rp-seg" id="rFrom"><button type="button" data-f="due" class="${r.from !== 'done' ? 'on' : ''}">Due date</button><button type="button" data-f="done" class="${r.from === 'done' ? 'on' : ''}">When I finish</button></div><p class="hint" id="rFromH"></p></div>
+  <label class="rp-ck" id="rSkW" style="${rtype && rtype !== 'weekdays' && rtype !== 'days' ? '' : 'display:none'}"><input type="checkbox" id="rSk"${r.skipWe ? ' checked' : ''}> Skip weekends <span>(a Saturday or Sunday moves to Monday)</span></label>
+  <div class="grid2"><div class="field" style="margin:0"><label for="rStart">Starts</label><input class="inp" type="date" id="rStart" value="${t.date || td}"></div><div class="field" style="margin:0"><label for="rUntil">Ends (optional)</label><input class="inp" type="date" id="rUntil" value="${r.until || ''}"></div></div>
+  <p class="rp-prev" id="rPrev"></p>`);
+  let from = r.from === 'done' ? 'done' : 'due';
+  const build = () => { const v = $('#rType').value, until = $('#rUntil').value || null, st = $('#rStart').value || td; if (!v) return null; let o;
+    if (v === 'days') { let days = $$('#rDays button.on').map(b => +b.dataset.d); if (!days.length) days = [pYmd(st).getDay()]; o = { type: 'days', days: days.sort(), until }; }
+    else if (v === 'ndays') o = { type: 'daily', n: Math.max(2, +$('#rNv').value || 2), until };
+    else if (v === 'mdays') { let L = $$('#rMd button.on').map(b => +b.dataset.m); if (!L.length) L = [pYmd(st).getDate()]; o = L.length === 1 ? { type: 'monthly', n: 1, dom: L[0], until } : { type: 'mdays', mdays: L.sort((a, b) => a - b), until }; }
+    else o = { type: v, n: 1, until, ...(v === 'monthly' ? { dom: pYmd(st).getDate() } : {}) };
+    if (from === 'done' && !['days', 'weekdays', 'mdays'].includes(o.type)) o.from = 'done'; if ($('#rSk').checked && !['days', 'weekdays'].includes(o.type)) o.skipWe = true; return { o, st }; };
+  const paint = () => { const v = $('#rType').value; $('#rDays').style.display = v === 'days' ? '' : 'none'; $('#rN').style.display = v === 'ndays' ? '' : 'none'; $('#rMd').style.display = v === 'mdays' ? '' : 'none';
+    const fixed = ['days', 'weekdays', 'mdays'].includes(v); $('#rFromW').style.display = v && !fixed ? '' : 'none'; $('#rSkW').style.display = v && v !== 'weekdays' && v !== 'days' ? '' : 'none';
+    $$('#rFrom button').forEach(b => b.classList.toggle('on', b.dataset.f === from));
+    $('#rFromH').textContent = from === 'done' ? 'Counts from the day you tick it. Good for a haircut, car service or a refill.' : 'Keeps a fixed schedule even if you finish early or late. Good for bills, rent and passes.';
+    const b = build(); if (!b) { $('#rPrev').textContent = ''; return; } const L = nextFew(b.o, b.st, 4);
+    $('#rPrev').innerHTML = b.o.from === 'done' ? `First on <b>${fmtDate(L[0])}</b>, then ${esc(repeatLabel({ ...b.o, from: null, until: null, dom: null, skipWe: false }).toLowerCase())} from the day you finish${b.o.skipWe ? ', moving weekends to Monday' : ''}.` : `Next: <b>${L.map(d => fmtShort(d)).join(' · ')}</b>${L.length === 4 ? ' …' : ''}`; };
+  $('#rType').onchange = paint; ['#rNv', '#rStart', '#rUntil', '#rSk'].forEach(q => $(q).addEventListener('input', paint)); $('#rSk').onchange = paint;
+  $$('#rDays button').forEach(b => b.onclick = () => { b.classList.toggle('on'); paint(); });
+  $$('#rMd button').forEach(b => b.onclick = () => { b.classList.toggle('on'); paint(); });
+  $$('#rFrom button').forEach(b => b.onclick = () => { from = b.dataset.f; paint(); });
+  paint();
+  $('#rOk').onclick = () => { const b = build(); t.repeat = b ? b.o : null; if (t.repeat) setDate(t, firstDate(t.repeat, b.st)); applyAndRefresh(t); };
 }
 function pickRemind(t) {
   const opts = [[0, 'On time'], [5, '5 min before'], [15, '15 min before'], [30, '30 min before'], [60, '1 hr before'], [120, '2 hrs before'], [1440, '1 day before'], [2880, '2 days before'], [10080, '1 week before']];
@@ -5038,7 +5068,7 @@ function wire(view) {
       if (smMulti(v)) { const ids = smMultiAdd(v, route()); if (ids && ids.length) { ab.value = ''; pv.innerHTML = ''; askNotify(); render(); toast(`Added ${plural(ids.length, 'task')}`, smUndoAdd(ids)); return; } }
       const res = addFromText(v, route()); if (!res) { toast('Add a few words for the task name'); return; } if (res.meeting) { render(); toast(`Meeting added, ${fmtClock(res.meeting.s)}`); return; }
       ab.value = ''; pv.innerHTML = ''; if (res.reminders.length) askNotify(); render(); const n = $('#abIn'); if (n) { n.value = ''; n.focus(); } const np = $('#abPrev'); if (np) np.innerHTML = '';
-      const where = res.someday ? 'Someday' : res.date === today() ? 'Today' : res.date ? fmtDate(res.date) : res.projectId ? proj(res.projectId).name : 'Inbox'; toast(`Added to ${where}`); }; } }
+      const where = res.someday ? 'Someday' : res.date === today() ? 'Today' : res.date ? fmtDate(res.date) : res.projectId ? proj(res.projectId).name : 'Inbox'; if (res.repeat) toast(`Added · ${repeatLabel(res.repeat)}`, () => pickRepeat(res), 'Options'); else toast(`Added to ${where}`); }; } }
   if (view === 'focus') { const s = $('#tTask'); if (s) s.onchange = () => { S.timer.taskId = s.value; save(); }; }
   if (view === 'review') $$('[data-appmap]').forEach(el => el.onchange = () => { S.settings.appmap = { ...(S.settings.appmap || {}), [el.dataset.appmap]: el.value }; if (!el.value) delete S.settings.appmap[el.dataset.appmap]; save(); render(); });
   if (view === 'life') { const li = $('#lifeIn'), la = $('#lifeAdd'); if (li) { const add = () => { const v = li.value.trim(); if (!v) { goalSheet(); return; } const g = addGoalFromText(v); li.value = ''; render(); if (g) setTimeout(() => goalSheet(g.id), 60); }; la.onclick = add; li.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); add(); } }, true); } }
