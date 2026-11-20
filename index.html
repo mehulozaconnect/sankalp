@@ -3915,7 +3915,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.9.4';
+const APPV = '6.9.5';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5118,10 +5118,16 @@ function wire(view) {
 }
 
 /* ---------- right-click menu on a task (laptop) ---------- */
+// open Dayline's date picker straight away and move the task to the day you tap
+function pickDateOnly(t) {
+  const i = document.createElement('input'); i.type = 'date'; i.value = t.someday ? '' : (t.date || ''); i.style.cssText = 'position:fixed;left:-9999px;opacity:0'; document.body.appendChild(i);
+  i.addEventListener('change', () => { const d = i.value; if (d) { setDate(t, d); t.someday = false; save(); render(); if (pageId === t.id) renderPage(); toast('Moved to ' + fmtDate(d)); } else { t.date = null; t.time = null; t.firedKeys = []; save(); render(); toast('Date removed'); } });
+  setTimeout(() => i.remove(), 600000); dpOpen(i);
+}
 function closeCtx() { const m = $('#ctx'); if (m) m.remove(); }
 function ctxMenu(x, y, id) {
   closeCtx(); const t = getTask(id); if (!t) return; const td = today();
-  const dates = [['today', I.sun, 'Today', td], ['tom', I.arrow || I.next, 'Tomorrow', addDays(td, 1)], ['nw', I.cal, 'Next week', nextWeekday(1, false)], ['pick', I.clock, 'Pick date and time', null], ['none', I.x, 'No date', null]];
+  const dates = [['today', I.sun, 'Today', td], ['tom', I.arrow || I.next, 'Tomorrow', addDays(td, 1)], ['cal', I.cal, 'Pick a date', null], ['pick', I.clock, 'Pick date and time', null], ['none', I.x, 'No date', null]];
   const pc = { 1: '#E5484D', 2: '#F2A33A', 3: '#2F7BEA', 4: 'var(--muted)' };
   const projs = projSorted();
   const m = document.createElement('div'); m.id = 'ctx'; m.className = 'ctx'; m.setAttribute('role', 'menu');
@@ -5144,7 +5150,7 @@ function ctxMenu(x, y, id) {
   const W = m.offsetWidth, H = m.offsetHeight; m.style.left = Math.max(8, Math.min(x, innerWidth - W - 8)) + 'px'; m.style.top = Math.max(8, Math.min(y, innerHeight - H - 8)) + 'px';
   const sub = m.querySelector('.cxsub'); sub.onmouseenter = () => { const r = sub.getBoundingClientRect(), P = sub.querySelector('.cxp'); P.classList.toggle('left', r.right + 220 > innerWidth); };
   const done = msg => { closeCtx(); save(); render(); if (pageId === t.id) renderPage(); if (msg) toast(msg); };
-  m.querySelectorAll('[data-cd]').forEach(b => b.onclick = () => { const k = b.dataset.cd; if (k === 'pick') { closeCtx(); pickWhen(t); return; } if (k === 'none') { t.date = null; t.someday = false; t.time = null; t.firedKeys = []; t.nagAt = 0; t.snoozeUntil = 0; return done('Date removed'); } const d = dates.find(z => z[0] === k)[3]; setDate(t, d); t.someday = false; done('Moved to ' + fmtDate(d)); });
+  m.querySelectorAll('[data-cd]').forEach(b => b.onclick = () => { const k = b.dataset.cd; if (k === 'pick') { closeCtx(); pickWhen(t); return; } if (k === 'cal') { closeCtx(); pickDateOnly(t); return; } if (k === 'none') { t.date = null; t.someday = false; t.time = null; t.firedKeys = []; t.nagAt = 0; t.snoozeUntil = 0; return done('Date removed'); } const d = dates.find(z => z[0] === k)[3]; setDate(t, d); t.someday = false; done('Moved to ' + fmtDate(d)); });
   m.querySelectorAll('[data-cp]').forEach(b => b.onclick = () => { t.priority = +b.dataset.cp; done(t.priority < 4 ? 'Priority ' + t.priority : 'Priority removed'); });
   m.querySelectorAll('[data-mp]').forEach(b => b.onclick = () => { t.projectId = b.dataset.mp || null; const p = proj(t.projectId); done('Moved to ' + (p ? p.name : 'Inbox')); });
   m.querySelectorAll('[data-cm]').forEach(b => b.onclick = () => {
