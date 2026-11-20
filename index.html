@@ -3363,7 +3363,7 @@ async function stClean(quiet) {
 function stAuto() { if (S.settings.autoClean === false) return; let at = 0; try { at = +localStorage.getItem('sankalp.cleanAt') || 0; } catch (e) { } if (Date.now() - at > 20 * 3600e3) setTimeout(() => stClean(true), 4000); }
 async function stPaint() {
   const el = $('#stBars'); if (!el) return; const m = await stMeasure(); if (!$('#stBars')) return;
-  const parts = [['Your tasks and notes', m.data, '#14B8A6'], [`Pictures (${m.picN})`, m.pics, '#8B5CF6'], ['App files', m.app, '#3B82F6'], ['Old versions and leftovers', m.old + m.orphan + m.other, '#F59E0B']], T = Math.max(1, parts.reduce((a, p) => a + p[1], 0));
+  const parts = [['Your tasks and notes', m.data, '#14B8A6'], [`Pictures (${m.picN})`, m.pics, '#8B5CF6'], ['App files and icons', m.app + m.other, '#3B82F6'], ['Old versions and leftovers', m.old + m.orphan, '#F59E0B']], T = Math.max(1, parts.reduce((a, p) => a + p[1], 0));
   $('#stBars').innerHTML = `<div class="st-tot"><b>${fmtBytes(m.total)}</b><span>used by Dayline on this ${isWide() ? 'computer' : 'phone'}</span></div><div class="st-bar">${parts.map(p => p[1] ? `<i style="width:${p[1] / T * 100}%;background:${p[2]}"></i>` : '').join('')}</div><div class="st-leg">${parts.map(p => `<div><i style="background:${p[2]}"></i><span>${p[0]}</span><b>${fmtBytes(p[1])}</b></div>`).join('')}</div>`;
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') stAuto(); });
@@ -4031,7 +4031,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.11.3';
+const APPV = '6.11.4';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
