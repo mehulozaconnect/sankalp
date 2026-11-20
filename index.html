@@ -446,11 +446,11 @@ textarea.inp{height:auto;min-height:96px;padding:10px 12px;line-height:1.5;resiz
 .hd i{width:30px;height:30px;border-radius:15px;border:1.5px solid var(--ring);display:grid;place-items:center;font-style:normal}
 .hd i svg{width:15px;height:15px}
 .hd.ok i{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
-.hd.no i{background:color-mix(in srgb,var(--danger) 13%,var(--bg));border-color:color-mix(in srgb,var(--danger) 50%,var(--bg));color:var(--danger)}
+.hd.no i{background:#DC2626;border-color:#DC2626;color:#fff}.hd.no i svg{stroke-width:3}
 .hd.rest i{border-style:dashed;border-color:var(--line)}
 .hd.td small{color:var(--ink)}
 .hd.td i{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--ink)}
-.mcal button.miss{background:color-mix(in srgb,var(--danger) 13%,var(--bg));border-color:color-mix(in srgb,var(--danger) 50%,var(--bg));color:var(--danger)}
+.mcal button.miss{background:#DC2626;border-color:#DC2626;color:#fff;position:relative}.mcal button.miss span,.mcal button.skip span{position:absolute;top:3px;left:0;right:0;font-size:10px;font-weight:700;opacity:.85}.mcal button.miss em,.mcal button.skip em{font-style:normal;font-size:20px;font-weight:900;margin-top:6px}.mcal button.skip{position:relative}
 .legend2{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;font-weight:600;color:var(--muted);margin-top:10px}
 .legend2 i{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:8px;border:1.5px solid var(--ring);margin-right:5px;vertical-align:-3px;font-style:normal}
 .legend2 i svg{width:10px;height:10px}
@@ -3213,7 +3213,7 @@ function vProgress() {
 
 function vHabits() {
   const td = today(), wd = new Date().getDay();
-  let h = topbar(`<button class="iconbtn" data-act="newhabit" aria-label="New habit">${I.plus}</button>`) + `<div class="pad"><h1 class="title">Habits</h1><p class="sub" style="margin:6px 0 0;line-height:1.45">Tap the emoji when done today. Tap any day: once done, twice missed, three times skipped, again to clear. Long-press a habit for more.</p><div class="legend2"><span><i style="background:var(--accent);border-color:var(--accent);color:var(--on-accent)">${I.check}</i>Done</span><span><i style="background:color-mix(in srgb,var(--danger) 13%,var(--bg));border-color:color-mix(in srgb,var(--danger) 50%,var(--bg));color:var(--danger)">${I.x}</i>Missed</span><span><i style="border-style:dashed;color:var(--muted);font-weight:800;font-style:normal">–</i>Skipped</span><span><i style="border-style:dashed"></i>Rest day</span></div></div>`;
+  let h = topbar(`<button class="iconbtn" data-act="newhabit" aria-label="New habit">${I.plus}</button>`) + `<div class="pad"><h1 class="title">Habits</h1><p class="sub" style="margin:6px 0 0;line-height:1.45">Tap the emoji when done today. Tap any day: once done, twice missed, three times skipped, again to clear. Long-press a habit for more.</p><div class="legend2"><span><i style="background:var(--accent);border-color:var(--accent);color:var(--on-accent)">${I.check}</i>Done</span><span><i style="background:#DC2626;border-color:#DC2626;color:#fff">${I.x}</i>Missed</span><span><i style="border-style:dashed;color:var(--muted);font-weight:800;font-style:normal">–</i>Skipped</span><span><i style="border-style:dashed"></i>Rest day</span></div></div>`;
   if (!S.habits.length) return h + `<div class="empty">No habits yet.<br><button class="btn" data-act="newhabit" style="margin-top:14px">${I.plus}Add a habit</button></div>`;
   h += hInsightsHtml();
   const MH = S.habits.filter(hUnit);
@@ -3274,7 +3274,7 @@ function habitStats(id, keepMonth) {
   const nextMs = MILESTONES.find(v => v > total);
   const first = new Date(y, m - 1, 1), off = (first.getDay() + 6) % 7, last = new Date(y, m, 0).getDate(), td = today();
   let cal = ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(d => `<span class="wd">${d}</span>`).join('') + '<span></span>'.repeat(off);
-  for (let i = 1; i <= last; i++) { const d = new Date(y, m - 1, i), k = ymd(d); const fut = k > td; cal += `<button class="${x.log[k] === 1 ? 'on' : x.log[k] === -1 ? 'miss' : x.log[k] === 0 ? 'skip' : ''}${!x.days.includes(d.getDay()) ? ' ns' : ''}${fut ? ' fut' : ''}${k === td ? ' td' : ''}" ${fut ? 'disabled' : ''} data-k="${k}" aria-label="${i} ${MONS[m - 1]}${x.log[k] === 1 ? ', done' : x.log[k] === -1 ? ', missed' : ''}">${i}</button>`; }
+  for (let i = 1; i <= last; i++) { const d = new Date(y, m - 1, i), k = ymd(d); const fut = k > td; cal += `<button class="${x.log[k] === 1 ? 'on' : x.log[k] === -1 ? 'miss' : x.log[k] === 0 ? 'skip' : ''}${!x.days.includes(d.getDay()) ? ' ns' : ''}${fut ? ' fut' : ''}${k === td ? ' td' : ''}" ${fut ? 'disabled' : ''} data-k="${k}" aria-label="${i} ${MONS[m - 1]}${x.log[k] === 1 ? ', done' : x.log[k] === -1 ? ', missed' : x.log[k] === 0 ? ', skipped' : ''}">${x.log[k] === -1 ? `<span>${i}</span><em>✕</em>` : x.log[k] === 0 ? `<span>${i}</span><em>–</em>` : i}</button>`; }
   openSheet(`<div class="shead"><button class="cx" data-close>Close</button><span class="ttl">Habit</span><button class="ok" id="hsEdit" style="background:var(--surface);color:var(--ink)">Edit</button></div>
   <div style="display:flex;align-items:center;gap:14px;margin:12px 0 4px"><span style="font-size:44px">${x.emoji || '✅'}</span><div><h2 style="margin:0;font-size:24px">${esc(x.name)}</h2><span class="sub">${esc(x.section)}${x.type === 'avoid' ? ', stay away' : ''}</span></div></div>
   <div class="hstats"><div class="hstat"><span>Current streak</span><b>${habitStreak(x)}</b><small>days</small></div><div class="hstat"><span>Best streak</span><b>${habitBest(x)}</b><small>days</small></div>
@@ -3337,7 +3337,7 @@ function hInsightsHtml() {
   const longest = H.reduce((b, x) => { const v = habitBest(x); return v > b.v ? { v, x } : b; }, { v: 0, x: null });
   const life = S.habits.filter(hUnit).map(x => { const t = Object.values(x.amt || {}).reduce((a, b) => a + b, 0); if (!t) return ''; return hIsMin(x) ? `<span>${x.emoji} <b>${t >= 120 ? (t / 60).toFixed(t >= 600 ? 0 : 1) + ' hours' : t + ' min'}</b> of ${esc(x.name.toLowerCase())}</span>` : `<span>${x.emoji} <b>${t.toLocaleString('en-IN')}</b> ${esc(x.unit)}${/chant|jap|mala/i.test(x.unit + x.name) && t >= 108 ? ` · ${Math.floor(t / 108).toLocaleString('en-IN')} malas` : ''}</span>`; }).filter(Boolean);
   let heat = ''; const start = addDays(td, -(83 + ((pYmd(td).getDay() + 6) % 7) - 6)); for (let i = 0; i < 84; i++) { const d = addDays(start, i); if (d > td) { heat += '<i class="fut"></i>'; continue; } const p = dayPct(d); heat += `<i class="l${p == null ? 'x' : p === 0 ? 0 : p < .5 ? 1 : p < 1 ? 2 : 3}" title="${fmtShort(d)}${p != null ? ': ' + Math.round(p * 100) + '%' : ''}"></i>`; }
-  const tip = cons.length && cons[cons.length - 1].pc < 60 ? `${cons[cons.length - 1].x.emoji} ${esc(cons[cons.length - 1].x.name)} slips most (${cons[cons.length - 1].pc}%). Pair it with ${esc(cons[0].x.name)}, your steadiest habit.` : wkAvg.length > 1 ? `You are steadiest on ${DAYSL[wkAvg[0][0]]}s and weakest on ${DAYSL[wkAvg[wkAvg.length - 1][0]]}s.` : '';
+  const tip = cons.length > 1 && cons[cons.length - 1].pc < 60 && cons[0].x !== cons[cons.length - 1].x ? `${cons[cons.length - 1].x.emoji} ${esc(cons[cons.length - 1].x.name)} slips most (${cons[cons.length - 1].pc}%). Pair it with ${esc(cons[0].x.name)}, your steadiest habit.` : wkAvg.length > 1 ? `You are steadiest on ${DAYSL[wkAvg[0][0]]}s and weakest on ${DAYSL[wkAvg[wkAvg.length - 1][0]]}s.` : '';
   return `<section class="hin"><div class="fn-k">Insights · last 30 days</div><div class="hin-k"><div><b>${perfect}</b><span>perfect days</span></div><div><b>${act ? Math.round(H.reduce((a, x) => a + (cons.find(c => c.x === x) || { pc: 0 }).pc, 0) / H.length) : 0}%</b><span>consistency</span></div><div><b>${longest.v}</b><span>longest streak${longest.x ? ' · ' + longest.x.emoji : ''}</span></div></div>
   <div class="hin-heat">${heat}</div><div class="hin-leg"><span>12 weeks ago</span><span>Less <i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i> More</span></div>
   <div class="hin-c">${cons.map(c => `<div><span>${c.x.emoji || '✅'} ${esc(c.x.name)}</span><i><b style="width:${c.pc}%"></b></i><em>${c.pc}%</em></div>`).join('')}</div>
@@ -4031,7 +4031,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.11.5';
+const APPV = '6.11.6';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
