@@ -1394,6 +1394,10 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .rp-md{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:4px 0 14px}.rp-md button{height:38px;border-radius:10px;border:0;background:var(--surface);color:var(--ink);font:inherit;font-weight:700;font-size:14px;cursor:pointer}.rp-md button.on{background:var(--ink);color:var(--bg)}.rp-md button.last{grid-column:span 3}
 .rp-seg{display:flex;width:100%}.rp-seg button{flex:1}.rp-ck{display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:10px;font-weight:700;font-size:14.5px;margin:2px 0 14px;cursor:pointer}.rp-ck span{grid-column:2}.rp-ck input{width:20px;height:20px;accent-color:var(--accent)}.rp-ck span{font-weight:500;color:var(--muted);font-size:13px}
 .rp-prev{margin:14px 0 4px;padding:10px 12px;border-radius:12px;background:var(--surface);font-size:13.5px;font-weight:600}.rp-prev:empty{display:none}
+.dlg{position:fixed;inset:0;z-index:300;display:grid;place-items:center;padding:24px;background:rgba(10,20,25,0);pointer-events:none;transition:background .18s}.dlg.on{background:rgba(10,20,25,.42);pointer-events:auto}
+.dlg-b{width:min(380px,100%);background:var(--bg);color:var(--ink);border-radius:22px;padding:22px 20px 16px;box-shadow:0 20px 60px rgba(0,0,0,.25);transform:scale(.94);opacity:0;transition:transform .18s,opacity .18s}.dlg.on .dlg-b{transform:none;opacity:1}
+.dlg-b h3{margin:0;font-size:18px;font-weight:800;line-height:1.3}.dlg-b p{margin:8px 0 0;color:var(--muted);font-size:14.5px;line-height:1.45}.dlg-b .inp{margin-top:14px;width:100%}
+.dlg-a{display:flex;gap:10px;margin-top:20px}.dlg-a button{flex:1;height:46px;border-radius:14px;border:0;font:inherit;font-size:15px;font-weight:800;cursor:pointer;background:var(--ink);color:var(--bg)}.dlg-a button.q{background:var(--surface);color:var(--ink)}.dlg-a button.dg{background:#DC2626;color:#fff}
 </style>
 </head>
 <body>
@@ -1769,7 +1773,7 @@ function wireEditor(ed, bar, onSave) {
       else if (c === 'h3') document.execCommand('formatBlock', false, 'H3');
       else if (c === 'table') document.execCommand('insertHTML', false, '<table><tbody><tr><th>Item</th><th>Details</th></tr><tr><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td></tr></tbody></table><div><br></div>');
       else if (c === 'row') { let n = getSelection().anchorNode; while (n && n !== ed && n.nodeName !== 'TR') n = n.parentNode; if (n && n.nodeName === 'TR') { const tr = n.cloneNode(true); tr.querySelectorAll('td,th').forEach(x => { const td = document.createElement('td'); td.innerHTML = '<br>'; x.replaceWith(td); }); n.after(tr); } else toast('Tap inside a table first'); }
-      else if (c === 'link') { const u = prompt('Link address'); if (u) document.execCommand('createLink', false, /^https?:/i.test(u) ? u : 'https://' + u); }
+      else if (c === 'link') { const sel = window.getSelection(), rg = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null; uiPrompt('Link address', '', 'example.com', 'url').then(u => { if (!u) return; if (rg) { sel.removeAllRanges(); sel.addRange(rg); } document.execCommand('createLink', false, /^https?:/i.test(u) ? u : 'https://' + u); }); }
       else document.execCommand(c);
       $$('.npop', bar).forEach(x => x.hidden = true);
       ed.dispatchEvent(new Event('input'));
@@ -1841,7 +1845,7 @@ function vzZoomAt(cx, cy, ns) { const im = $('#vImg'); const ox = im.offsetLeft,
 })();
 document.addEventListener('click', e => { const im = e.target.closest && e.target.closest('.notes img, .qa-rich img, .rv-notes img'); if (!im || !im.src) return; e.preventDefault(); openNoteImg(im.src); });
 $('#vClose').onclick = () => { $('#viewer').classList.remove('on', 'zoom'); viewerCtx = null; vzReset(); };
-$('#vDel').onclick = () => { if (!viewerCtx) return; if (viewerCtx.rf) { if (!confirm('Remove this photo?')) return; viewerCtx.t.imgs = (viewerCtx.t.imgs || []).filter(x => x !== viewerCtx.id); viewerCtx.t.u = Date.now(); save(); $('#viewer').classList.remove('on'); viewerCtx = null; render(); return; } if (!confirm('Remove this image from the task?')) return; removeImage(viewerCtx.t, viewerCtx.id); $('#viewer').classList.remove('on'); viewerCtx = null; renderPage(); };
+$('#vDel').onclick = async () => { if (!viewerCtx) return; if (viewerCtx.rf) { if (!(await uiConfirm('Remove this photo?', '', 'Remove'))) return; viewerCtx.t.imgs = (viewerCtx.t.imgs || []).filter(x => x !== viewerCtx.id); viewerCtx.t.u = Date.now(); save(); $('#viewer').classList.remove('on'); viewerCtx = null; render(); return; } if (!(await uiConfirm('Remove this image?', '', 'Remove'))) return; removeImage(viewerCtx.t, viewerCtx.id); $('#viewer').classList.remove('on'); viewerCtx = null; renderPage(); };
 
 /* ================= state ================= */
 const KEY = 'sankalp.v1';
@@ -2332,6 +2336,21 @@ const repLabel = x => x.rep === 'once' ? 'Once' : x.rep === 'monthly' ? 'Every m
 
 /* ================= toast ================= */
 let toastT;
+/* In-app dialogs instead of the browser's "site says" pop-ups */
+function uiDialog({ title, msg, ok = 'OK', danger = false, input = null, value = '', ph = '' }) {
+  return new Promise(res => {
+    let el = document.getElementById('dlg'); if (!el) { el = document.createElement('div'); el.id = 'dlg'; el.className = 'dlg'; document.body.appendChild(el); }
+    el.innerHTML = `<div class="dlg-b" role="dialog" aria-modal="true" aria-labelledby="dlgT"><h3 id="dlgT">${esc(title || msg)}</h3>${title && msg ? `<p>${esc(msg)}</p>` : ''}${input != null ? `<input class="inp" id="dlgI" type="${input}" value="${esc(value)}" placeholder="${esc(ph)}" autocomplete="off">` : ''}<div class="dlg-a"><button type="button" class="q" id="dlgN">Cancel</button><button type="button" class="${danger ? 'dg' : ''}" id="dlgY">${esc(ok)}</button></div></div>`;
+    requestAnimationFrame(() => el.classList.add('on'));
+    const done = v => { el.classList.remove('on'); document.removeEventListener('keydown', key, true); setTimeout(() => { if (!el.classList.contains('on')) el.innerHTML = ''; }, 200); res(v); };
+    const yes = () => done(input != null ? $('#dlgI').value : true), no = () => done(input != null ? null : false);
+    const key = e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); no(); } else if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); yes(); } };
+    document.addEventListener('keydown', key, true); $('#dlgY').onclick = yes; $('#dlgN').onclick = no; el.onclick = e => { if (e.target === el) no(); };
+    setTimeout(() => { const i = $('#dlgI'); if (i) { i.focus(); i.select(); } else $('#dlgY').focus(); }, 60);
+  });
+}
+const uiConfirm = (title, msg, ok = 'Delete', danger = true) => uiDialog({ title, msg, ok, danger });
+const uiPrompt = (title, value = '', ph = '', type = 'text') => uiDialog({ title, input: type, value, ph, ok: 'Save' });
 function toast(msg, undo, label) {
   const el = $('#toast'); $('#toastMsg').textContent = msg; const b = $('#toastBtn'); b.textContent = label || 'Undo';
   b.hidden = !undo; b.onclick = () => { undo && undo(); el.classList.remove('on'); };
@@ -3144,7 +3163,7 @@ function habitForm(id) {
   const showU = () => { $$('#hUnitC button').forEach(z => z.classList.toggle('on', z.dataset.u === unitK)); $('#hUnitF').style.display = unitK ? '' : 'none'; $('#hUnitLw').style.display = unitK === 'chants' ? '' : 'none'; $('#hGoal').placeholder = unitK === 'mins' ? 'e.g. 20 (minutes)' : 'e.g. 108'; };
   $$('#hUnitC button').forEach(b => b.onclick = () => { unitK = b.dataset.u; unitTouched = true; showU(); }); showU();
   $('#hName').addEventListener('input', () => { if (unitTouched) return; const g = hUnitGuess($('#hName').value); unitK = g ? (g === 'mins' ? 'mins' : 'chants') : ''; showU(); });
-  $('#hSec').onchange = e => { if (e.target.value === '__new') { const n = prompt('Section name (you can start with an emoji, e.g. 📚 Learning)'); if (n && n.trim()) { const mm = n.trim().match(/^(\p{Extended_Pictographic}\uFE0F?)\s*(.+)$/u); const sec = { n: mm ? mm[2] : n.trim(), e: mm ? mm[1] : '✨' }; S.habitSections.push(sec); e.target.insertAdjacentHTML('afterbegin', `<option selected>${esc(sec.n)}</option>`); e.target.value = sec.n; } else e.target.value = x.section; } };
+  $('#hSec').onchange = async e => { if (e.target.value === '__new') { const n = await uiPrompt('New section', '', 'e.g. 📚 Learning'); if (n && n.trim()) { const mm = n.trim().match(/^(\p{Extended_Pictographic}\uFE0F?)\s*(.+)$/u); const sec = { n: mm ? mm[2] : n.trim(), e: mm ? mm[1] : '✨' }; S.habitSections.push(sec); e.target.insertAdjacentHTML('afterbegin', `<option selected>${esc(sec.n)}</option>`); e.target.value = sec.n; } else e.target.value = x.section; } };
   $('#hSave').onclick = () => {
     const name = $('#hName').value.trim(); const days = $$('#hDays button.on').map(b => +b.dataset.d);
     if (!name) { $('#hName').focus(); return; } if (!days.length) { toast('Pick at least one day'); return; }
@@ -3152,7 +3171,7 @@ function habitForm(id) {
     if (id) Object.assign(x, vals); else S.habits.push({ id: uid(), log: {}, createdAt: Date.now(), ...vals });
     save(); closeSheet(true); render();
   };
-  if (id) $('#hDel').onclick = () => { if (confirm('Delete this habit and its history?')) { S.habits = S.habits.filter(h => h.id !== id); save(); closeSheet(true); render(); } };
+  if (id) $('#hDel').onclick = async () => { if (await uiConfirm('Delete this habit?', 'Its whole history goes with it.')) { S.habits = S.habits.filter(h => h.id !== id); save(); closeSheet(true); render(); } };
 }
 let hstatMonth = null;
 function habitStats(id, keepMonth) {
@@ -3299,7 +3318,7 @@ function dateForm(id) {
     if (id) Object.assign(x, vals); else S.dates.push({ id: uid(), ...vals });
     save(); closeSheet(true); render();
   };
-  if (id) $('#dDel').onclick = () => { if (confirm('Delete this date?')) { S.dates = S.dates.filter(d => d.id !== id); save(); closeSheet(true); render(); } };
+  if (id) $('#dDel').onclick = async () => { if (await uiConfirm('Delete this date?')) { S.dates = S.dates.filter(d => d.id !== id); save(); closeSheet(true); render(); } };
 }
 
 /* ---------- focus ---------- */
@@ -3540,8 +3559,8 @@ function phoneLink() {
   try { localStorage.setItem('sankalp.native', '1'); } catch (e) { } S.settings.phoneOff = false; save();
   location.href = `intent://link?${q.toString()}#Intent;scheme=sankalp;package=com.mehul.sankalp;S.browser_fallback_url=${encodeURIComponent(APK_URL)};end`;
 }
-function phoneUnlink() {
-  if (!confirm('Disconnect the phone app? Dayline will send reminders itself again. Then uninstall Dayline Phone from your phone.')) return;
+async function phoneUnlink() {
+  if (!(await uiConfirm('Disconnect the phone app?', 'Dayline will send reminders itself again. Then uninstall Dayline Phone from your phone.', 'Disconnect'))) return;
   try { localStorage.removeItem('sankalp.native'); } catch (e) { }
   S.pcal = null; applyPcal(); S.remAck = null; S.settings.phoneOff = true;
   save(); render(); toast('Phone app disconnected');
@@ -3886,7 +3905,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.9.1';
+const APPV = '6.9.2';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -3940,7 +3959,7 @@ function projectForm(id, area0) {
   $$('#pEmo button').forEach(b => b.onclick = () => { emo = b.dataset.e; $$('#pEmo button').forEach(z => z.classList.toggle('on', z === b)); });
   $$('#pCol button').forEach(b => b.onclick = () => { col = b.dataset.c; $$('#pCol button').forEach(z => z.classList.toggle('on', z === b)); });
   $('#pSave').onclick = () => { const name = $('#pName').value.trim(); if (newA) { area = $('#pAreaNew').value.trim(); if (!area) { $('#pAreaNew').focus(); return; } } area ||= 'Personal'; if (!name) { $('#pName').focus(); return; } if (id) Object.assign(p, { name, area, color: col, emoji: emo }); else S.projects.push({ id: uid(), name, area, color: col, emoji: emo }); save(); closeSheet(true); render(); };
-  if (id) $('#pDel').onclick = () => { if (confirm(`Delete ${p.name}? Its tasks move to Inbox.`)) { S.tasks.forEach(t => { if (t.projectId === id) t.projectId = null; }); S.projects = S.projects.filter(x => x.id !== id); save(); closeSheet(true); go('home'); } };
+  if (id) $('#pDel').onclick = async () => { if (await uiConfirm(`Delete ${p.name}?`, 'Its tasks move to Inbox.')) { S.tasks.forEach(t => { if (t.projectId === id) t.projectId = null; }); S.projects = S.projects.filter(x => x.id !== id); save(); closeSheet(true); go('home'); } };
 }
 function tplForm(id, fromTask) {
   const t = id ? S.templates.find(x => x.id === id) : fromTask ? { emoji: '📋', name: fromTask.title, title: fromTask.title, notes: fromTask.notes, subs: fromTask.subs.map(s => s.t), priority: fromTask.priority, project: proj(fromTask.projectId)?.name || '' } : { emoji: '📋', name: '', title: '', notes: '', subs: [], priority: 4, project: '' };
@@ -3953,7 +3972,7 @@ function tplForm(id, fromTask) {
   ${id ? `<div class="btnrow"><button class="btn danger" id="tpDel">${I.trash}Delete template</button></div>` : ''}`);
   let notes = cleanHtml(t.notes); wireEditor($('#tpNotes'), $('#sheet .ntool'), h => { notes = h; });
   $('#tpSave').onclick = () => { $('#tpNotes')._flush(); const name = $('#tpName').value.trim(); if (!name) { $('#tpName').focus(); return; } const vals = { emoji: $('#tpEmo').value.trim() || '📋', name, title: $('#tpTitle').value, notes, subs: $('#tpSubs').value.split('\n').map(x => x.trim()).filter(Boolean), project: $('#tpProj').value, priority: +$('#tpPri').value, nh: true }; if (id) Object.assign(t, vals); else S.templates.push({ id: uid(), ...vals }); save(); closeSheet(true); render(); toast('Template saved'); };
-  if (id) $('#tpDel').onclick = () => { if (confirm('Delete this template?')) { S.templates = S.templates.filter(x => x.id !== id); save(); closeSheet(true); render(); } };
+  if (id) $('#tpDel').onclick = async () => { if (await uiConfirm('Delete this template?')) { S.templates = S.templates.filter(x => x.id !== id); save(); closeSheet(true); render(); } };
   if (!id) setTimeout(() => $('#tpName').focus(), 250);
 }
 function vTemplates() {
@@ -4076,7 +4095,7 @@ function goalSheet(id) {
     const addStep = () => { const v = $('#gNew').value.replace(/\n/g, ' ').trim(); if (!v) return; grab(); (g.steps ||= []).push({ id: uid(), t: v, d: false }); if (g.status === 'dream') g.status = 'plan'; draw(); setTimeout(() => $('#gNew')?.focus(), 50); };
     $('#gNewB').onclick = addStep; $('#gNew').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); addStep(); } }, true);
     $('#gOk').onclick = () => { grab(); if (!g.title) { $('#gT').focus(); return; } g.touched = Date.now(); const L = (S.goals ||= []); const i = L.findIndex(x => x.id === g.id); if (i >= 0) L[i] = g; else L.push(g); save(); closeSheet(true); render(); };
-    const del = $('#gDel'); if (del) del.onclick = () => { if (confirm('Delete this from your life list?')) { S.goals = S.goals.filter(x => x.id !== g.id); save(); closeSheet(true); render(); } };
+    const del = $('#gDel'); if (del) del.onclick = async () => { if (await uiConfirm('Delete this from your life list?')) { S.goals = S.goals.filter(x => x.id !== g.id); save(); closeSheet(true); render(); } };
   };
   draw(); if (!ex) setTimeout(() => $('#gT')?.focus(), 250);
 }
@@ -5148,8 +5167,8 @@ function sStep(k, id, dir) {
   else { const p = proj(id); const all = projSorted(); const grp = all.filter(x => x.area === p.area); const i = grp.indexOf(p), j = i + dir; if (j < 0 || j >= grp.length) return; const ids = all.map(x => x.id); const a = ids.indexOf(p.id), b = ids.indexOf(grp[j].id); [ids[a], ids[b]] = [ids[b], ids[a]]; S.settings.projOrder = ids; }
   save(); render();
 }
-function renameArea(a) {
-  const n = (prompt('Rename area', a) || '').trim(); if (!n || n === a) return;
+async function renameArea(a) {
+  const n = ((await uiPrompt('Rename area', a)) || '').trim(); if (!n || n === a) return;
   S.projects.forEach(p => { if (p.area === a) p.area = n; }); S.settings.areaOrder = (S.settings.areaOrder || []).map(x => x === a ? n : x);
   if ((S.settings.shut || {})[a] != null) { S.settings.shut = { ...S.settings.shut, [n]: S.settings.shut[a] }; delete S.settings.shut[a]; } save(); render();
 }
@@ -5162,7 +5181,7 @@ function moveSheet(ts) {
 function areaSheet(pid) {
   const p = proj(pid); if (!p) return; const others = [...new Set([...areasSorted(), 'Work', 'Personal'])].filter(a => a !== p.area);
   openSheet(sheetHead('Move ' + esc(p.name) + ' to', '', '') + `<div class="mvlist">${others.map(a => `<button type="button" data-a="${esc(a)}">${I.layers}${esc(a)}</button>`).join('')}<button type="button" data-a="">${I.plus}New area</button></div>`);
-  $$('#sheet .mvlist button').forEach(b => b.onclick = () => { let a = b.dataset.a; if (!a) { a = (prompt('New area name') || '').trim(); if (!a) return; } closeSheet(true); sMove({ k: 'p', id: pid }, { area: a }); toast('Moved to ' + a); });
+  $$('#sheet .mvlist button').forEach(b => b.onclick = async () => { let a = b.dataset.a; if (!a) { a = ((await uiPrompt('New area name', '', 'e.g. Side projects')) || '').trim(); if (!a) return; } closeSheet(true); sMove({ k: 'p', id: pid }, { area: a }); toast('Moved to ' + a); });
 }
 function sideMenu(x, y, k, id) {
   closeCtx(); const m = document.createElement('div'); m.id = 'ctx'; m.className = 'ctx'; m.setAttribute('role', 'menu');
@@ -5177,7 +5196,7 @@ function sideMenu(x, y, k, id) {
   m.querySelectorAll('[data-sm]').forEach(b => b.onclick = () => { const a = b.dataset.sm; if (a === 'mv') { if (smallMenu()) { closeCtx(); areaSheet(id); } return; } closeCtx();
     if (a === 'open') go('project/' + id); else if (a === 'edit') projectForm(id); else if (a === 'newp') projectForm(null, id); else if (a === 'ren') renameArea(id);
     else if (a === 'up' || a === 'down') sStep(k, id, a === 'up' ? -1 : 1); });
-  m.querySelectorAll('[data-ma]').forEach(b => b.onclick = () => { closeCtx(); let a = b.dataset.ma; if (!a) { a = (prompt('New area name') || '').trim(); if (!a) return; } sMove({ k: 'p', id }, { area: a }); toast('Moved to ' + a); });
+  m.querySelectorAll('[data-ma]').forEach(b => b.onclick = async () => { closeCtx(); let a = b.dataset.ma; if (!a) { a = ((await uiPrompt('New area name', '', 'e.g. Side projects')) || '').trim(); if (!a) return; } sMove({ k: 'p', id }, { area: a }); toast('Moved to ' + a); });
 }
 function blankMenu(x, y) {
   closeCtx(); const R = route(); const td = today(); const sel = String(getSelection() || '').trim().slice(0, 200);
@@ -5279,7 +5298,7 @@ document.addEventListener('click', e => {
     coachsw: () => { const k = b.dataset.k; S.settings.coach = { ...coachSet(), [k]: !coachSet()[k] }; save(); render(); }, nowstop: () => nowSwitch(null), logpast: () => { closeSheet(true); setTimeout(() => logSheet(), 60); }, logedit: () => logSheet((S.logs || []).find(l => l.id === id)),
     catrate: () => { const k = b.dataset.k; const v = catV(k); S.settings.catv = { ...(S.settings.catv || {}), [k]: v === 'p' ? 'n' : v === 'n' ? 'w' : 'p' }; save(); render(); },
     aikey: () => { const k = $('#akIn').value.trim(); if (!/^sk-ant-/.test(k)) { toast('That does not look like an Anthropic key (starts with sk-ant-)'); return; } try { localStorage.setItem('sankalp.ak', k); } catch (x) { } S.settings.aiModel = $('#amIn').value; save(); render(); toast('Key saved on this device'); },
-    aikeyrm: () => { if (confirm('Remove the Anthropic key from this device?')) { localStorage.removeItem('sankalp.ak'); render(); } },
+    aikeyrm: async () => { if (await uiConfirm('Remove the AI key from this device?', '', 'Remove')) { localStorage.removeItem('sankalp.ak'); render(); } },
     airun: () => aiRun(b.dataset.sc), aiask: () => aiAsk(b.dataset.sc),
     ekfocus: () => { S.timer.taskId = id; resetTimer('work'); closeSheet(true); startTimer(); go('focus'); },
     ekdone: () => { toggleDone(id); ekSheet(); }, eknext: () => { ekIdx++; ekSheet(); },
@@ -5290,7 +5309,7 @@ document.addEventListener('click', e => {
     poprem: () => { S.settings.popRem = S.settings.popRem === false; save(); render(); toast(S.settings.popRem ? 'Reminders will pop up on screen' : 'Reminders go quietly to the notification list'); },
     clearerr: () => { try { localStorage.removeItem('dayline.err'); } catch (e) { } render(); },
     trashrestore: () => trashRestore(id), trashkill: () => { S.trash = trash().filter(x => x.id !== id); save(); render(); toast('Deleted for good'); },
-    trashempty: () => { if (!confirm('Delete everything in the Trash for good?')) return; S.trash = []; save(); render(); toast('Trash emptied'); },
+    trashempty: async () => { if (!(await uiConfirm('Empty the Trash?', `${plural(trash().length, 'task')} will be deleted for good. This can't be undone.`, 'Empty Trash'))) return; S.trash = []; save(); render(); toast('Trash emptied'); },
     newfilter: () => filterForm(), filteredit: () => filterForm(id), selstart: () => selStart(id),
     wateradd: () => waterAdd(+b.dataset.ml), watercustom: () => waterCustom(), waterundo: () => waterUndo(), waterset: () => waterSheet(),
     fxtog: () => { S.settings.fx = S.settings.fx === false; save(); render(); if (S.settings.fx) celebrate(); },
@@ -5328,7 +5347,7 @@ document.addEventListener('click', e => {
     hidebanner: () => { S.settings['hide_' + b.dataset.k] = true; save(); render(); }, gconnectid: () => { const v = $('#gcid')?.value.trim(); if (v) { S.settings.gcid = v; save(); } gConnect(true, true); }, gref: () => gConnect(false), gsync: () => gSync(true), gout: gDisconnect,
     fbin: fbSignIn, fbout: () => { firebase.auth().signOut(); toast('Signed out. Data stays on this device.'); },
     export: exportData, restore: restoreData,
-    reset: () => { if (confirm('Erase all tasks, habits and settings on this device? Download a backup first if you need one.')) { localStorage.removeItem(KEY); S = seed(); saveLocal(); applyTheme(); go('home'); } }
+    reset: async () => { if (await uiConfirm('Erase everything on this device?', 'All tasks, habits and settings. Download a backup first if you need one.', 'Erase')) { localStorage.removeItem(KEY); S = seed(); saveLocal(); applyTheme(); go('home'); } }
   };
   A[a] && A[a]();
 });
@@ -5342,7 +5361,7 @@ const unb64 = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') 
 const lockId = () => { try { return localStorage.getItem(LOCKK) || ''; } catch (e) { return ''; } };
 async function lockAvailable() { try { return !!(window.PublicKeyCredential && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()); } catch (e) { return false; } }
 async function lockToggle() {
-  if (lockId()) { if (!confirm('Turn off fingerprint lock on this device?')) return; localStorage.removeItem(LOCKK); render(); toast('Fingerprint lock off'); return; }
+  if (lockId()) { if (!(await uiConfirm('Turn off fingerprint lock?', 'Anyone with this device can open Dayline.', 'Turn off'))) return; localStorage.removeItem(LOCKK); render(); toast('Fingerprint lock off'); return; }
   if (!await lockAvailable()) { toast('This device or browser has no fingerprint unlock for websites'); return; }
   try {
     const cred = await navigator.credentials.create({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), rp: { name: 'Dayline', id: location.hostname }, user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'dayline-lock', displayName: 'Dayline app lock' }, pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }], authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'discouraged' }, timeout: 60000, attestation: 'none' } });
@@ -5364,7 +5383,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 function exportData() { const blob = new Blob([JSON.stringify({ ...S, imgs: IMGS })], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `dayline-backup-${today()}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
 function restoreData() {
   const fi = $('#fileIn'); fi.accept = 'application/json,.json'; fi.multiple = false;
-  fi.onchange = () => { const f = fi.files[0]; fi.value = ''; if (!f) return; const rd = new FileReader(); rd.onload = () => { try { const s = JSON.parse(rd.result); if (!s || !Array.isArray(s.tasks)) throw 0; if (!confirm('Replace everything on this device with this backup?')) return; const fb = S.settings.fb; if (s.imgs) { Object.entries(s.imgs).forEach(([k, v]) => { IMGS[k] = v; idb.put(k, v).catch(() => { }); }); delete s.imgs; } S = migrate(s); S.settings.fb ||= fb; save(); applyTheme(); render(); toast('Backup restored'); } catch (err) { toast('That file is not a Dayline backup'); } }; rd.readAsText(f); };
+  fi.onchange = () => { const f = fi.files[0]; fi.value = ''; if (!f) return; const rd = new FileReader(); rd.onload = async () => { try { const s = JSON.parse(rd.result); if (!s || !Array.isArray(s.tasks)) throw 0; if (!(await uiConfirm('Restore this backup?', 'Everything on this device is replaced with it.', 'Restore'))) return; const fb = S.settings.fb; if (s.imgs) { Object.entries(s.imgs).forEach(([k, v]) => { IMGS[k] = v; idb.put(k, v).catch(() => { }); }); delete s.imgs; } S = migrate(s); S.settings.fb ||= fb; save(); applyTheme(); render(); toast('Backup restored'); } catch (err) { toast('That file is not a Dayline backup'); } }; rd.readAsText(f); };
   fi.click();
 }
 
@@ -5671,7 +5690,7 @@ function rfPatterns() {
   { const li = rows.filter(r => r.lived != null); if (li.length >= 4) { const a = li.filter(r => r.lived === true), b = li.filter(r => r.lived !== true); if (a.length >= 2 && b.length >= 2) { const d = rfAvg(a.map(r => r.mood)) - rfAvg(b.map(r => r.mood)); if (d >= .4) out.push({ w: d, icon: '🎯', text: `Days you <b>live your intention</b> feel ${step(d)} better.` }); } } }
   return { need: 0, list: out.sort((a, b) => b.w - a.w).slice(0, 7), rows };
 }
-function rfStory(from, to) {
+async function rfStory(from, to) {
   const J = rf(); const days = []; for (let d = from; d <= to; d = addDays(d, 1)) days.push(d);
   const es = days.map(d => J.days[d]).filter(e => e && e.mood);
   const cnt = { good: es.filter(e => e.mood >= 4).length, okay: es.filter(e => e.mood === 3).length, low: es.filter(e => e.mood === 2).length, rough: es.filter(e => e.mood === 1).length };
@@ -5707,8 +5726,8 @@ async function rfSetLock(kind) {
       lsS(RLOCK, 'bio:' + b64(cred.rawId)); rfOpen = true; toast('Reflect now asks for your fingerprint'); rfSettings(); } catch (e) { toast(e.name === 'NotAllowedError' ? 'Cancelled' : 'Could not set up fingerprint'); }
     return;
   }
-  const p = prompt('Choose a 4–6 digit PIN for Reflect'); if (!p) return; if (!/^\d{4,6}$/.test(p)) { toast('Use 4 to 6 digits'); return; }
-  const p2 = prompt('Type the PIN again'); if (p2 !== p) { toast('PINs did not match'); return; }
+  const p = await uiPrompt('Choose a 4–6 digit PIN', '', 'PIN', 'password'); if (!p) return; if (!/^\d{4,6}$/.test(p)) { toast('Use 4 to 6 digits'); return; }
+  const p2 = await uiPrompt('Type the PIN again', '', 'PIN', 'password'); if (p2 !== p) { toast('PINs did not match'); return; }
   lsS(RLOCK, 'pin:' + await rfSha(p)); rfOpen = true; toast('Reflect PIN set. It stays on this device.'); rfSettings();
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') rfHid = Date.now(); else if (rfOpen && lsG(RLOCK) && rfHid && Date.now() - rfHid > 60000) { rfOpen = false; if (route().view === 'reflect') render(); } });
@@ -6113,7 +6132,7 @@ document.addEventListener('click', ev => {
     save: () => rfSaveCheckin(false),
     intsave: () => { const t = $('#rfInt')?.value.trim(); if (!t) { $('#rfInt')?.focus(); return; } const e = rfDay(td, true); e.int = { t, lived: null }; rfTouch(e); render(); toast('Intention set. Dayline asks tonight if you lived it 🎯'); },
     intidea: () => { const el = $('#rfInt'); if (el) { el.value = b.textContent; el.focus(); } },
-    intedit: () => { const e = rfDay(td, true); const t = prompt('Today I intend to…', e.int?.t || ''); if (t == null) return; e.int = t.trim() ? { t: t.trim(), lived: null } : null; rfTouch(e); render(); },
+    intedit: async () => { const e = rfDay(td, true); const t = await uiPrompt('Today I intend to…', e.int?.t || ''); if (t == null) return; e.int = t.trim() ? { t: t.trim(), lived: null } : null; rfTouch(e); render(); },
     lived: () => { const e = rfDay(td, true); e.int.lived = v === 'true' ? true : v === 'false' ? false : 'part'; rfTouch(e); renderMainOnly(); if (e.int.lived === true) toast('Lived it 🌱 That is how change happens.'); },
     aff: () => { if (!J.aff) return; const lim = { m: 3, a: 6, n: 9 }[v]; const c = ((J.aff.log ||= {})[td] ||= {}); if ((c[v] || 0) >= lim) { toast('Done for this part of the day ✨'); return; } c[v] = (c[v] || 0) + 1; save(); renderMainOnly(); try { navigator.vibrate?.(15); } catch (e) { } if (c[v] === lim) toast({ m: 'Morning done ☀️', a: 'Afternoon done 🌤️', n: 'Night done 🌙' }[v]); if ((c.m || 0) >= 3 && (c.a || 0) >= 6 && (c.n || 0) >= 9) rewardToast('✨', '3 · 6 · 9 complete', `Day ${Math.min(21, dayDiff(J.aff.start, td) + 1)} of 21`); },
     affedit: rfAffSheet, vision: () => rfVisionSheet(v), visualise: rfVisualise, newletter: rfLetterSheet, letter: () => rfLetterOpen(b.dataset.id),
@@ -6123,7 +6142,7 @@ document.addEventListener('click', ev => {
     mon: () => { const m = rfMonth || td.slice(0, 7); const d = pYmd(m + '-01'); d.setMonth(d.getMonth() + +v); rfMonth = ymd(d).slice(0, 7); renderMainOnly(); },
     wheel: rfWheelSheet,
     saveentry: () => { rfSaveEntryFields(v); const e = rfDay(v, true); e.saved = true; rfTouch(e); go('reflect'); toast(e.mood ? rfInstant(e) : 'Saved'); },
-    delentry: () => { if (!confirm('Delete everything written for ' + fmtDate(v) + '?')) return; delete J.days[v]; save(); go('reflect'); toast('Deleted'); },
+    delentry: async () => { if (!(await uiConfirm('Delete this entry?', 'Everything written for ' + fmtDate(v) + '.'))) return; delete J.days[v]; save(); go('reflect'); toast('Deleted'); },
     priv: () => { rfSaveEntryFields(v); const e = rfDay(v, true); e.priv = !e.priv; rfTouch(e); renderMainOnly(); },
     ask: () => { rfSaveEntryFields(v); rfAskQ(v); },
     photo: () => { rfSaveEntryFields(v); rfPick(async f => { const data = await compressImage(f); const id = 'i' + uid(); IMGS[id] = data; idb.put(id, data).catch(() => { }); const e = rfDay(v, true); e.imgs.push(id); rfTouch(e); render(); toast('Photo added'); }); },
@@ -6131,7 +6150,7 @@ document.addEventListener('click', ev => {
     note: () => rfNote(v, b.dataset.f, b.dataset.t),
     send: () => { const el = $('#rfAsk'); const t = el.value; el.value = ''; rfSend(t); },
     mstart: () => { J.mode = v === 'decide' ? 'decide' : null; save(); if (v === 'decide') { const el = $('#rfAsk'); el.placeholder = 'Describe the decision…'; el.focus(); toast('Tell me the decision, and what is pulling you each way'); } else rfSend(RF_STARTS[v]); },
-    newchat: () => { if (!confirm('Start a new conversation? This one is cleared.')) return; J.chat = []; J.mode = null; save(); render(); },
+    newchat: async () => { if (!(await uiConfirm('Start a new conversation?', 'This one is cleared.', 'Start new', false))) return; J.chat = []; J.mode = null; save(); render(); },
     savedec: () => rfDecSheet(+b.dataset.i), decreview: () => rfDecReview(b.dataset.id),
     evepick: () => { if (v !== 'keep') J.cfg.eve = v; J.cfg.asked = td.slice(0, 7); save(); render(); toast(v === 'keep' ? 'Keeping it as is' : 'Nudge moved to ' + fmtTime(v)); },
     about: rfAbout, abdel: () => { J.about[b.dataset.k].splice(+b.dataset.i, 1); save(); renderMainOnly(); },
