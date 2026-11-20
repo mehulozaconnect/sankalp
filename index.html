@@ -1406,6 +1406,8 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .dp-g button{position:relative;aspect-ratio:1;max-height:46px;border:0;background:none;border-radius:50%;font:inherit;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;display:grid;place-items:center}.dp-g button.we{color:var(--muted)}.dp-g button:hover{background:var(--surface)}.dp-g button.td{box-shadow:inset 0 0 0 1.5px var(--accent);font-weight:800;color:var(--ink)}.dp-g button.sel{background:var(--ink);color:var(--bg);font-weight:800;box-shadow:none}.dp-g button:disabled{opacity:.25;cursor:default}
 .dp-g button i{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);height:4px;border-radius:2px;background:var(--accent)}.dp-g button i.n1{width:4px}.dp-g button i.n2{width:9px}.dp-g button i.n3{width:14px}.dp-g button.sel i{background:var(--bg)}
 .dp-f{display:flex;justify-content:center;margin-top:8px}.dp-f button{border:0;background:none;font:inherit;font-weight:700;font-size:13.5px;color:var(--muted);padding:8px 12px;cursor:pointer}
+.tg-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}.tg-list button{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:14.5px;font-weight:700;padding:9px 13px;border-radius:999px;border:1.5px solid var(--line);background:none;color:var(--ink);cursor:pointer}.tg-list button svg{width:14px;height:14px}.tg-list button small{font-size:11.5px;color:var(--muted);font-weight:700}.tg-list button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}.tg-list button.on small{color:inherit;opacity:.7}
+.tg-new>div{display:flex;gap:8px}.tg-new .inp{flex:1;min-width:0}.tg-new button{flex:none;font:inherit;font-weight:800;padding:0 18px;border-radius:14px;border:0;background:var(--surface);color:var(--ink);cursor:pointer}
 </style>
 </head>
 <body>
@@ -3913,7 +3915,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.9.3';
+const APPV = '6.9.4';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4489,9 +4491,16 @@ function pickProject(t) {
   $$('.menu button').forEach(b => b.onclick = () => { t.projectId = b.dataset.p || null; applyAndRefresh(t); });
 }
 function pickTags(t) {
-  openSheet(sheetHead('Tags', 'Done', 'gOk') + `<div class="field"><label for="gIn">Tags, separated by commas</label><textarea class="inp one" rows="1" id="gIn" placeholder="calls, errands" data-form-type="other">${esc(t.tags.join(', '))}</textarea></div>`);
-  $('#gOk').onclick = () => { t.tags = $('#gIn').value.split(',').map(x => x.trim().replace(/^@/, '').toLowerCase()).filter(Boolean); applyAndRefresh(t); };
-  setTimeout(() => $('#gIn').focus(), 250);
+  const cnt = {}; [...S.tasks, ...(S.templates || [])].forEach(x => (x.tags || []).forEach(g => { if (!['won', 'dropped'].includes(g)) cnt[g] = (cnt[g] || 0) + 1; }));
+  const sel = new Set(t.tags); let all = [...new Set([...Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a] || a.localeCompare(b)), ...t.tags])];
+  const paint = () => { $('#gList').innerHTML = all.length ? all.map(g => `<button type="button" data-g="${esc(g)}" class="${sel.has(g) ? 'on' : ''}">${sel.has(g) ? I.check : '@'}${esc(g)}${cnt[g] ? `<small>${cnt[g]}</small>` : ''}</button>`).join('') : '<p class="hint">No tags yet. Make your first one below.</p>';
+    $$('#gList button').forEach(b => b.onclick = () => { const g = b.dataset.g; sel.has(g) ? sel.delete(g) : sel.add(g); paint(); }); };
+  openSheet(sheetHead('Tags', 'Done', 'gOk') + `<div class="field"><span class="flabel">Tap to add or remove</span><div class="tg-list" id="gList"></div></div>
+  <div class="field tg-new"><label for="gIn">New tag</label><div><input class="inp" id="gIn" placeholder="e.g. calls" autocomplete="off" data-form-type="other"><button type="button" id="gAdd">Add</button></div></div>`);
+  const add = () => { const v = $('#gIn').value.split(',').map(x => x.trim().replace(/^@/, '').toLowerCase().replace(/\s+/g, '-')).filter(Boolean); v.forEach(g => { sel.add(g); if (!all.includes(g)) all.unshift(g); }); $('#gIn').value = ''; paint(); };
+  $('#gAdd').onclick = add; $('#gIn').onkeydown = e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add(); } };
+  paint();
+  $('#gOk').onclick = () => { if ($('#gIn').value.trim()) add(); t.tags = [...all.filter(g => sel.has(g)), ...t.tags.filter(g => ['won', 'dropped'].includes(g))]; applyAndRefresh(t); };
 }
 function pickDur(t) {
   const pre = [0, 5, 10, 15, 30, 45, 60, 90, 120, 180, 240], cur = t.duration || 0, custom = cur && !pre.includes(cur);
