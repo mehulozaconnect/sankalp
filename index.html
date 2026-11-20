@@ -779,7 +779,7 @@ textarea.inp.one{resize:none;overflow:hidden;white-space:nowrap;line-height:20px
 .qm #app,.qm #tabbar,.qm #fab,.qm #toast{display:none!important}
 .qm{background:var(--bg)}
 .qm #scrim{background:transparent!important}
-.qm .sheet{top:0!important;bottom:auto!important;left:0!important;right:0!important;width:auto!important;margin:0!important;max-height:100vh!important;border-radius:0!important;box-shadow:none!important}
+.qm .sheet{transition:none!important;top:0!important;bottom:auto!important;left:0!important;right:0!important;width:auto!important;margin:0!important;max-height:100vh!important;border-radius:0!important;box-shadow:none!important}
 .qm-ok{position:fixed;inset:0;z-index:400;display:grid;place-content:center;justify-items:center;gap:8px;background:var(--bg);color:var(--ink);font-weight:800;font-size:17px}.qm-ok b{width:64px;height:64px;border-radius:50%;background:#16A34A;color:#fff;display:grid;place-items:center;font-size:32px}
 .qm .tplbtn,.qm .tplrow{display:none!important}
 .tplrow[hidden]{display:none!important}
@@ -3926,7 +3926,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.9.9';
+const APPV = '6.9.10';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4009,6 +4009,13 @@ function openSheet(html, onCancel, noHist) {
   $$('[data-close]', sh).forEach(b => b.onclick = () => closeSheet());
 }
 // Quick-add window (opened by a keyboard shortcut from any app): close it once the task is in, or on Cancel
+// size the quick window to the box and put it near the top-centre of the screen, like a launcher
+function qmFit() {
+  if (!window.QM) return; const fit = () => { const sh = $('#sheet'); if (!sh) return; const w = Math.min(680, screen.availWidth - 40), inner = Math.ceil(sh.scrollHeight) + 8, h = Math.min(screen.availHeight - 80, inner + (outerHeight - innerHeight || 40));
+    try { resizeTo(w, h); moveTo(Math.round((screen.availWidth - w) / 2) + (screen.availLeft || 0), Math.round(screen.availHeight * .18) + (screen.availTop || 0)); } catch (e) { } };
+  fit(); setTimeout(fit, 150); setTimeout(fit, 500);
+  if (!window.__qmObs) { window.__qmObs = new ResizeObserver(() => { clearTimeout(window.__qmT); window.__qmT = setTimeout(fit, 60); }); const sh = $('#sheet'); if (sh) window.__qmObs.observe(sh); }
+}
 function qmDone(added) {
   if (!window.QM) return; const o = document.createElement('div'); o.className = 'qm-ok'; o.innerHTML = added ? '<b>✓</b><span>Added to Dayline</span>' : '<span>Closed</span>'; document.body.appendChild(o);
   setTimeout(() => { try { window.close(); } catch (e) { } setTimeout(() => { o.remove(); document.body.classList.remove('qm'); window.QM = false; render(); }, 300); }, added ? 650 : 150);
@@ -7237,7 +7244,7 @@ new MutationObserver(() => { const el = document.getElementById('stBars'); if (e
   if (q.get('resched')) setTimeout(() => handleAction({ type: 'resched', id: q.get('resched'), sub }), 500);
   if (q.get('open')) setTimeout(() => handleAction({ type: 'open', id: q.get('open') }), 300);
   const shared = [q.get('title'), q.get('text'), q.get('url')].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
-  if (q.get('quick')) { window.QM = true; document.body.classList.add('qm'); document.title = 'Add to Dayline'; setTimeout(() => quickAdd({ quick: true }), 120); }
+  if (q.get('quick')) { window.QM = true; document.body.classList.add('qm'); document.title = 'Add to Dayline'; setTimeout(() => { quickAdd({ quick: true }); qmFit(); }, 120); }
   else if (q.get('add') || shared) { const txt = (q.get('text') || '').trim(), url = (q.get('url') || '').trim(); const lines = txt.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
     const title = (q.get('prefill') || q.get('title') || lines.shift() || url || '').slice(0, 200); const rest = [...lines, url && !title.includes(url) ? url : ''].filter(Boolean).join('\n');
     setTimeout(() => quickAdd({ prefill: title, prenote: rest }), 400); }
