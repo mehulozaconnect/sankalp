@@ -3915,7 +3915,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.9.5';
+const APPV = '6.9.6';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4914,15 +4914,17 @@ function setEntity(key, val) {
   const [kind, ...rest] = key.split(':'); const id = rest.join(':');
   if (kind === 'jday') { rf().days[id] = val; return; } if (key === 'meta:jr') { const J = rf(); S.jr = { ...val, days: J.days }; rf(); return; }
   const put = (arr) => { const i = arr.findIndex(x => x.id === id); if (i >= 0) arr[i] = val; else arr.push(val); };
+  if (kind === 'task' && trash().some(x => x.id === id)) { SYNC_HELD[id] = val; return; }
   if (kind === 'task') { const old = S.tasks.find(x => x.id === id); const was = old ? { seen: old.seenAt, done: old.done, snz: old.snoozeUntil } : null; put(S.tasks); if (was && (val.done && !was.done || (val.seenAt && val.seenAt !== was.seen) || (val.snoozeUntil && val.snoozeUntil !== was.snz))) closeNotifs(val); sweepSoon(); } else if (kind === 'project') put(S.projects); else if (kind === 'habit') put(S.habits); else if (kind === 'focus') put(S.focus); else if (kind === 'date') put(S.dates); else if (kind === 'goal') put(S.goals ||= []); else if (kind === 'trash') put(S.trash ||= []); else if (kind === 'filter') put(S.filters ||= []); else if (kind === 'tpl') put(S.templates); else if (kind === 'log') put(S.logs ||= []); else if (kind === 'phone') (S.phone ||= {})[id] = val; else if (kind === 'pcal') { S.pcal = val; applyPcal(); }
   else if (key === 'meta:cur') S.cur = val.c || null;
   else if (kind === 'meet') S.meetLog[id] = val;
   else if (kind === 'img') { IMGS[id] = val.data; idb.put(id, val.data).catch(() => { }); }
   else if (key === 'meta:coach' || key === 'meta:rv') { } else if (key === 'meta:ack') { const was = S.remAck && S.remAck.v; S.remAck = val; if (!val || val.v !== was) setTimeout(pushQueueSoon, 0); } else if (key === 'meta:days') S.days = val; else if (key === 'meta:water') S.water = val; else if (key === 'meta:rw') S.rw = val; else if (key === 'meta:plan') S.plan = val; else if (key === 'meta:learn') S.learn = val; else if (key === 'meta:sales') S.sales = val; else if (key === 'meta:funnel') S.funnel = val; else if (key === 'meta:hsec') S.habitSections = val; else if (key === 'meta:prefs') { Object.assign(S.settings, val); applyTheme(); }
 }
+const SYNC_HELD = {};
 function removeEntity(key) { sweepSoon();
   const [kind, ...rest] = key.split(':'); const id = rest.join(':'); if (kind === 'jday') { delete rf().days[id]; return; } const rm = n => { S[n] = S[n].filter(x => x.id !== id); };
-  if (kind === 'task') rm('tasks'); else if (kind === 'project') rm('projects'); else if (kind === 'habit') rm('habits'); else if (kind === 'focus') rm('focus'); else if (kind === 'date') rm('dates'); else if (kind === 'goal') S.goals = (S.goals || []).filter(x => x.id !== id); else if (kind === 'tpl') rm('templates'); else if (kind === 'trash') S.trash = (S.trash || []).filter(x => x.id !== id); else if (kind === 'filter') S.filters = (S.filters || []).filter(x => x.id !== id); else if (kind === 'log') rm('logs'); else if (kind === 'phone') delete (S.phone || {})[id]; else if (kind === 'meet') delete S.meetLog[id]; else if (kind === 'img') { delete IMGS[id]; idb.del(id).catch(() => { }); }
+  if (kind === 'task') rm('tasks'); else if (kind === 'project') rm('projects'); else if (kind === 'habit') rm('habits'); else if (kind === 'focus') rm('focus'); else if (kind === 'date') rm('dates'); else if (kind === 'goal') S.goals = (S.goals || []).filter(x => x.id !== id); else if (kind === 'tpl') rm('templates'); else if (kind === 'trash') { S.trash = (S.trash || []).filter(x => x.id !== id); if (SYNC_HELD[id] && !getTask(id)) { S.tasks.push(SYNC_HELD[id]); delete SYNC_HELD[id]; } } else if (kind === 'filter') S.filters = (S.filters || []).filter(x => x.id !== id); else if (kind === 'log') rm('logs'); else if (kind === 'phone') delete (S.phone || {})[id]; else if (kind === 'meet') delete S.meetLog[id]; else if (kind === 'img') { delete IMGS[id]; idb.del(id).catch(() => { }); }
 }
 function startSync() {
   stopSync(); const colRef = firebase.firestore().collection('users').doc(fbUser.uid).collection('items'); let first = true;
@@ -6509,20 +6511,6 @@ function smDumpSheet(prefill) {
     draw();
   };
 }
-// A meeting just ended: catch the follow-ups while they are fresh
-const SM_FU = ['Send proposal', 'Share notes', 'Schedule next call'];
-function smFollowHtml() {
-  const td = today(), now = Date.now(), rec = S.days[td] || {}, fu = rec.fu || {};
-  const m = meetingsOn(td).filter(x => x.e <= now && now - x.e < 45 * 6e4 && x.e - x.s >= 15 * 6e4 && !fu[x.id]).pop(); if (!m) return '';
-  const got = (rec.fuAdd || {})[m.id] || []; const short = m.t.length > 40 ? m.t.slice(0, 39) + '…' : m.t;
-  return `<section class="sm-fu" data-mid="${esc(m.id)}"><div class="sm-k">${I.cal}${esc(short)} just ended</div><b>Any follow-ups?</b><div class="sm-fuc">${SM_FU.map(x => `<button type="button" class="${got.includes(x) ? 'on' : ''}" data-sm="fuadd" data-id="${esc(m.id)}" data-v="${x}">${got.includes(x) ? I.check : I.plus}${x}</button>`).join('')}</div><div class="sm-fui"><textarea class="inp one" rows="1" id="smFuIn" aria-label="Another follow-up" placeholder="Another one… e.g. send deck fri" enterkeyhint="done"></textarea></div><div class="sm-btns"><button class="sm-b" data-sm="fudone" data-id="${esc(m.id)}">${got.length ? 'Done' : 'Nothing to add'}</button></div></section>`;
-}
-function smFuAdd(mid, text) {
-  const m = S.meetLog[mid]; const td = today(), rec = dayRec(td); const short = m ? m.t.replace(/\s*[-·|:].*$/, '').slice(0, 40) : '';
-  const t = addFromText(/\b(today|tomorrow|tmrw|mon|tue|wed|thu|fri|sat|sun|next|\d{1,2}\s*(am|pm)|\d{1,2}\s+[a-z]{3})\b/i.test(text) ? text : text + ' tomorrow', { view: 'today' }); if (!t || t.meeting) return null;
-  if (short && !t.title.toLowerCase().includes(short.toLowerCase())) t.title += ' · ' + short; t.notes = t.notes || (m ? esc('After: ' + m.t) : '');
-  ((rec.fuAdd ||= {})[mid] ||= []).push(text); save(); return t;
-}
 function smWaitHtml() {
   const td = today(), now = Date.now(), skip = (S.days[td] || {}).skip || {};
   const due = open().filter(t => smIsWait(t) && !t.someday && t.date && t.date <= td && !(skip[t.id] > now)).sort((a, b) => smWaitSince(a) < smWaitSince(b) ? -1 : 1); if (!due.length) return '';
@@ -6624,7 +6612,6 @@ document.addEventListener('click', ev => {
   const A = {
     dump: () => { const v = ($('#qaIn')?.value || '').trim(); if ($('#sheet').classList.contains('on')) { closeSheet(true); setTimeout(() => smDumpSheet(v), 240); } else smDumpSheet(v); },
     ask: () => smAskSheet(),
-    fuadd: () => { const t = smFuAdd(id, b.dataset.v); if (t) { render(); toast(`Added for ${fmtDate(t.date)}`); } },
     fudone: () => { (dayRec(td).fu ||= {})[id] = 1; save(); render(); },
     wgot: () => { const t = getTask(id); if (!t) return; delete t.wait; t.tags = t.tags.filter(x => x !== 'waiting'); save(); toggleDone(id); },
     wnudge: () => { const t = getTask(id); if (!t) return; setDate(t, td); (dayRec(td).skip ||= {})[id] = Date.now() + 864e5; if (t.wait) t.wait.nudged = td; save(); render(); toast('On today’s list. Send the nudge, then tap it done'); },
@@ -6632,8 +6619,6 @@ document.addEventListener('click', ev => {
   };
   if (A[a]) { ev.preventDefault(); A[a](); }
 });
-document.addEventListener('keydown', ev => { if (ev.target.id !== 'smFuIn' || ev.key !== 'Enter') return; ev.preventDefault(); const v = ev.target.value.trim(), sec = ev.target.closest('.sm-fu'); if (!v || !sec) return; const t = smFuAdd(sec.dataset.mid, v); if (t) { render(); toast(`Added for ${fmtDate(t.date)}`); } });
-document.addEventListener('input', ev => { if (ev.target.id === 'smFuIn' && ev.target.value.includes('\n')) { ev.target.value = ev.target.value.replace(/\n/g, ''); ev.target.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); } });
 
 
 /* ---------- Plan tab: plan a day, fill a free slot ---------- */
@@ -7199,6 +7184,9 @@ document.addEventListener('focusout', () => setTimeout(() => { const a = documen
 applyTheme();
 setTimeout(() => afterSync(drainActs), 400);
 stAuto();
+// one-time: clear the "Send proposal / Share notes / Schedule next call · <meeting>" tasks the retired after-meeting card made
+(function fuCleanup() { if (S.settings.fuClean1) return; const re = /^(Send proposal|Share notes|Schedule next call) · /; const L = S.tasks.filter(t => !t.done && re.test(t.title || '') && /^After: /.test(textOfHtml(t.notes || '')));
+  L.forEach(t => { S.tasks = S.tasks.filter(x => x.id !== t.id); trashPut(t); }); S.settings.fuClean1 = 1; save(); if (L.length) { render(); setTimeout(() => toast(`Cleared ${plural(L.length, 'old meeting follow-up')} (they're in Trash)`), 1500); } })();
 new MutationObserver(() => { const el = document.getElementById('stBars'); if (el && !el.dataset.on) { el.dataset.on = 1; stPaint(); } }).observe(document.getElementById('main') || document.body, { childList: true, subtree: true });
 (function handleUrl() {
   const q = new URLSearchParams(location.search);
