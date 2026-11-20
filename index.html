@@ -1421,6 +1421,8 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .hbm-3{display:flex;gap:6px;margin-top:10px}.hbm-3 button{flex:1;font:inherit;font-size:13px;font-weight:800;padding:9px 6px;border-radius:12px;border:1.5px solid var(--line);background:none;color:var(--ink);cursor:pointer;white-space:nowrap}.hbm-3 button.on.ms{background:color-mix(in srgb,#DC2626 12%,var(--bg));border-color:#DC2626;color:#DC2626}.hbm-3 button.on.sk{background:var(--surface);border-style:dashed}
 .sm-ntc{display:inline-block;margin-left:8px;color:var(--muted);font-weight:700;transition:transform .15s}.sm-nt:hover .sm-ntc{transform:translateX(3px)}
 .fu-auto{font-size:13px;font-weight:600;color:var(--accent-text);margin:6px 2px 0}.fu-auto:empty{display:none}
+.scal{margin:18px 4px 6px;padding:12px 10px 10px;border-radius:16px;background:color-mix(in srgb,var(--ink) 4%,transparent)}.scal-h{display:flex;align-items:center;justify-content:space-between;margin:0 2px 6px}.scal-h b{font-size:13.5px;font-weight:800}.scal-h span{display:flex;align-items:center;gap:2px}.scal-h button{width:26px;height:26px;border-radius:8px;border:0;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer}.scal-h button svg{width:14px;height:14px}.scal-h button:hover{background:var(--surface);color:var(--ink)}.scal-h .scal-t{width:auto;padding:0 7px;font:inherit;font-size:11.5px;font-weight:800;color:var(--ink);background:var(--surface)}
+.scal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center}.scal-g em{font-style:normal;font-size:10.5px;font-weight:800;color:var(--muted);padding:3px 0}.scal-g button{position:relative;aspect-ratio:1;border:0;background:none;border-radius:50%;font:inherit;font-size:12.5px;font-weight:600;color:var(--ink);cursor:pointer;padding:0}.scal-g button:hover{background:var(--surface)}.scal-g button.b::after{content:'';position:absolute;bottom:2px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--accent)}.scal-g button.td{box-shadow:inset 0 0 0 1.5px var(--accent);font-weight:800}.scal-g button.sel{background:var(--ink);color:var(--bg);font-weight:800}.scal-g button.sel::after{background:var(--bg)}
 </style>
 </head>
 <body>
@@ -2511,12 +2513,21 @@ function projectsNav(cur, arg) {
   });
   return h;
 }
+let sideCalM = null;
+function sideCalHtml() {
+  const td = today(); const ym = sideCalM || td.slice(0, 7), [y, m] = ym.split('-').map(Number), first = new Date(y, m - 1, 1), lead = (first.getDay() + 6) % 7, nd = new Date(y, m, 0).getDate();
+  const busy = {}; S.tasks.forEach(t => { if (!t.done && t.date && t.date.startsWith(ym)) busy[t.date] = (busy[t.date] || 0) + 1; }); Object.values(S.meetLog || {}).forEach(e => { const d = ymd(new Date(e.s)); if (d.startsWith(ym)) busy[d] = (busy[d] || 0) + 1; });
+  const sel = route().view === 'calendar' ? calSel : null; let c = '';
+  for (let i = 0; i < lead; i++) c += '<span></span>';
+  for (let d = 1; d <= nd; d++) { const k = `${ym}-${pad(d)}`; c += `<button type="button" data-act="sidecal" data-d="${k}" class="${k === td ? 'td' : ''}${k === sel ? ' sel' : ''}${busy[k] ? ' b' : ''}" title="${fmtDate(k)}${busy[k] ? ' · ' + plural(busy[k], 'item') : ''}">${d}</button>`; }
+  return `<div class="scal"><div class="scal-h"><b>${MONSL[m - 1]} ${y}</b><span><button type="button" data-act="sidecalm" data-v="-1" aria-label="Previous month">${I.back}</button>${ym !== td.slice(0, 7) ? `<button type="button" class="scal-t" data-act="sidecalm" data-v="0">Today</button>` : ''}<button type="button" data-act="sidecalm" data-v="1" aria-label="Next month">${I.next}</button></span></div><div class="scal-g"><em>M</em><em>T</em><em>W</em><em>T</em><em>F</em><em>S</em><em>S</em>${c}</div></div>`;
+}
 function renderSide() {
   const { view, arg } = route();
   $('#side').innerHTML = `<div style="padding:0 6px 14px;display:flex;justify-content:space-between;align-items:center"><a class="brand" href="#today">${LOGO(32)}<b>Dayline</b></a><a class="iconbtn" href="#settings" aria-label="Settings">${I.gear}</a></div>
   <button class="sidesearch" data-act="search">${I.search}Search<kbd>${esc(keyMap().search || '/')}</kbd></button>
   <div class="nav" style="padding:0">${listsNav(view)}</div><div class="nav" style="padding:0">${projectsNav(view, arg)}${filtersNav(view, arg)}</div>
-  <button class="navi" data-act="newproject" style="color:var(--muted);font-size:14px;margin-top:8px">${I.plus}<span class="nm">New project</span></button><button class="navi" data-act="editmenu" style="color:var(--muted);font-size:14px">${I.edit}<span class="nm">Edit menu</span></button><a class="navi${view === 'trash' ? ' on' : ''}" href="#trash" style="color:var(--muted);font-size:14px">${I.trash}<span class="nm">Trash</span>${trash().length ? `<span class="c">${trash().length}</span>` : ''}</a>`;
+  <button class="navi" data-act="newproject" style="color:var(--muted);font-size:14px;margin-top:8px">${I.plus}<span class="nm">New project</span></button><button class="navi" data-act="editmenu" style="color:var(--muted);font-size:14px">${I.edit}<span class="nm">Edit menu</span></button><a class="navi${view === 'trash' ? ' on' : ''}" href="#trash" style="color:var(--muted);font-size:14px">${I.trash}<span class="nm">Trash</span>${trash().length ? `<span class="c">${trash().length}</span>` : ''}</a>${sideCalHtml()}`;
 }
 
 /* ================= views ================= */
@@ -3929,7 +3940,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.9.15';
+const APPV = '6.9.16';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5404,6 +5415,8 @@ document.addEventListener('click', e => {
     hday: () => { const x = S.habits.find(h => h.id === id); if (hUnit(x)) hLogSheet(id, b.dataset.k); else cycleHabit(x, b.dataset.k); },
     habit: () => { const x = S.habits.find(h => h.id === id); if (hUnit(x)) { hLogSheet(id); return; } if (x.log[td] === 1) delete x.log[td]; else { x.log[td] = 1; const tot = habitTotal(x); if (MILESTONES.includes(tot)) toast(`${x.emoji} ${tot} check-ins. Milestone!`); } save(); render(); },
     newdate: () => dateForm(), editdate: () => dateForm(id), dfilter: () => { dateFilter = b.dataset.f; render(); },
+    sidecal: () => { calSel = b.dataset.d; calMonth = calSel.slice(0, 7); if (route().view === 'calendar') { renderMainOnly(); renderSide(); } else go('calendar'); },
+    sidecalm: () => { const v = +b.dataset.v, td = today(); if (!v) sideCalM = td.slice(0, 7); else { const [y, m] = (sideCalM || td.slice(0, 7)).split('-').map(Number), d = new Date(y, m - 1 + v, 1); sideCalM = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; } renderSide(); },
     calday: () => { calSel = b.dataset.d; if (calSel.slice(0, 7) !== calMonth) calMonth = calSel.slice(0, 7); renderMainOnly(); },
     calnav: () => { const [y, m] = calMonth.split('-').map(Number); calMonth = ymd(new Date(y, m - 1 + (+b.dataset.dir), 1)).slice(0, 7); renderMainOnly(); },
     caltoday: () => { calSel = td; calMonth = td.slice(0, 7); renderMainOnly(); },
