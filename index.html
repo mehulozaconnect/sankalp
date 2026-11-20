@@ -1420,6 +1420,7 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .hb-d.ms{background:conic-gradient(#DC2626 100%,transparent 0)}.hb-d.sk{opacity:.45;background:repeating-conic-gradient(color-mix(in srgb,var(--ink) 25%,transparent) 0 6%,transparent 6% 12%)}
 .hbm-3{display:flex;gap:6px;margin-top:10px}.hbm-3 button{flex:1;font:inherit;font-size:13px;font-weight:800;padding:9px 6px;border-radius:12px;border:1.5px solid var(--line);background:none;color:var(--ink);cursor:pointer;white-space:nowrap}.hbm-3 button.on.ms{background:color-mix(in srgb,#DC2626 12%,var(--bg));border-color:#DC2626;color:#DC2626}.hbm-3 button.on.sk{background:var(--surface);border-style:dashed}
 .sm-ntc{display:inline-block;margin-left:8px;color:var(--muted);font-weight:700;transition:transform .15s}.sm-nt:hover .sm-ntc{transform:translateX(3px)}
+.fu-auto{font-size:13px;font-weight:600;color:var(--accent-text);margin:6px 2px 0}.fu-auto:empty{display:none}
 </style>
 </head>
 <body>
@@ -3928,7 +3929,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.9.14';
+const APPV = '6.9.15';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -6908,24 +6909,39 @@ function fuLogSheet(t) {
     <div class="wsec">How did you reach them</div><div class="fu-chips">${FU_VIA.map(([k, i, l]) => `<button type="button" class="${st.via.includes(k) ? 'on' : ''}" data-via="${k}">${i} ${l}</button>`).join('')}</div>
     <div class="wsec">Did they respond?</div><div class="fu-chips">${[['yes', 'Yes, we spoke'], ['no', 'No response']].map(([k, l]) => `<button type="button" class="${resp === k ? 'on' : ''}" data-rs="${k}">${l}</button>`).join('')}</div>
     ${(st.topics.length || fuTopicsFor(t).length) ? `<div class="wsec">Discussed</div><div class="fu-chips">${[...new Set([...fuTopicsFor(t), ...st.topics])].map(x => `<button type="button" class="${st.topics.includes(x) ? 'on' : ''}" data-tp="${esc(x)}">${esc(x)}</button>`).join('')}</div>` : ''}
-    <label class="sm-lab" for="fuOut">What happened</label><textarea class="inp" id="fuOut" rows="3" placeholder="e.g. She will connect us to the project owner, back by mid next week">${esc(out)}</textarea>
+    <label class="sm-lab" for="fuOut">What happened</label><textarea class="inp" id="fuOut" rows="3" placeholder="e.g. Email sent to Gaurav, asked for his availability. Reach out again on wed 12pm p1">${esc(out)}</textarea><div class="fu-auto" id="fuAuto"></div>
     <div class="wsec">Next step</div><input class="inp" id="fuNx" placeholder="e.g. Send revised commercials, call Mayank" value="${esc(st.nx || '')}">
     <div class="fu-chips fu-nd">${[[addDays(today(), 1), 'Tomorrow'], [addDays(today(), 3), 'In 3 days'], [nextWeekday(1, false), 'Next Mon'], [addDays(today(), 7), 'In a week'], ['pick', '📅 Pick date'], ['', 'No date']].map(([k, l]) => `<button type="button" class="${st.ndl === l || (k === 'pick' && st.ndl === 'pick') ? 'on' : ''}" data-nd="${k}" data-ndl="${k === 'pick' ? 'pick' : l}">${k === 'pick' && st.ndl === 'pick' && st.nd ? '📅 ' + fmtShort(st.nd) : l}</button>`).join('')}</div>
     <button class="btn acc sm-full" id="fuLogGo">Save update</button>`;
     $('#fuNx').oninput = e => { st.nx = e.target.value; };
+    const hint = () => { const sp = fuSplitNext($('#fuOut').value), el = $('#fuAuto'); if (!el) return; el.innerHTML = sp.next ? `📅 Next follow-up will be set: <b>${esc(sp.next.text)}</b> · ${fmtDate(sp.next.date)}${sp.next.time ? ', ' + fmtTime(sp.next.time) : ''}${sp.next.pri ? ' · P' + sp.next.pri : ''}` : ''; };
+    $('#fuOut').addEventListener('input', hint); hint();
     $$('#fuL [data-nd]').forEach(b => b.onclick = () => { const k = b.dataset.nd; st.nx = $('#fuNx').value; st.ndl = b.dataset.ndl; if (k === 'pick') { const i = document.createElement('input'); i.type = 'date'; i.min = today(); i.value = st.nd || ''; i.style.cssText = 'position:fixed;left:-9999px'; document.body.appendChild(i); i.addEventListener('change', () => { st.nd = i.value || ''; i.remove(); draw(); }); dpOpen(i); } else { st.nd = k; draw(); } });
     $$('#fuL [data-via]').forEach(b => b.onclick = () => { const k = b.dataset.via; st.via = st.via.includes(k) ? st.via.filter(x => x !== k) : [...st.via, k]; draw(); });
     $$('#fuL [data-rs]').forEach(b => b.onclick = () => { resp = b.dataset.rs; draw(); });
     $$('#fuL [data-tp]').forEach(b => b.onclick = () => { const k = b.dataset.tp; st.topics = st.topics.includes(k) ? st.topics.filter(x => x !== k) : [...st.topics, k]; draw(); });
     $('#fuLogGo').onclick = () => { const out = $('#fuOut').value.trim(); const verbs = { call: 'Called', wa: 'WhatsApped', mail: 'Emailed', meet: 'Meeting' };
-      const nx = ($('#fuNx').value || '').trim(), nd = st.nd || ''; const parts = [st.via.map(k => verbs[k]).join(' and ') || 'Followed up', resp === 'no' ? 'No response' : '', resp === 'yes' && st.topics.length ? 'Discussed ' + st.topics.join(', ').toLowerCase() : '', out, nx || nd ? `Next: ${nx || 'follow up'}${nd ? ' on ' + fmtShort(nd) : ''}` : ''].filter(Boolean);
-      const line = `<div><b>${fuDmy(today())} -</b> ${esc(parts.join('. ').replace(/\.\./g, '.'))}</div>`; const snap = JSON.stringify(t);
-      t.notes = fuInsertLine(t.notes || '', line); delete t.fu; if (nd) { t.fu = { at: nd, time: t.time || null, via: [], topics: [], note: nx, set: Date.now() }; setDate(t, nd); t.someday = false; if (!t.reminders.length) t.reminders = [0]; t.firedKeys = []; t.tags = (t.tags || []).filter(x => x !== 'hold'); } save(); closeSheet(true); fuRefresh(t, true); render();
+      const sp = fuSplitNext(out); let nx = ($('#fuNx').value || '').trim(), nd = st.nd || '', ntime = null, npri = null;
+      if (sp.next) { if (!nx) nx = sp.next.text; if (!nd) nd = sp.next.date; ntime = sp.next.time; npri = sp.next.pri; }
+      const body = (sp.next ? sp.body : out).replace(/[.\s]+$/, ''); const how = st.via.length ? st.via.map(k => verbs[k]).join(' and ') : '';
+      const parts = [body || [how || 'Followed up', resp === 'no' ? 'no response' : ''].filter(Boolean).join(', '), body && resp === 'no' ? 'No response' : '', resp === 'yes' && st.topics.length ? 'Discussed ' + st.topics.join(', ').toLowerCase() : '', nx || nd ? `Next: ${nx || 'follow up'}${nd ? ' on ' + fmtShort(nd) + (ntime ? ' ' + fmtTime(ntime) : '') : ''}` : ''].filter(Boolean);
+      const line = `<div><b>Last Contacted - ${fuDDMM(today())}</b> - ${esc(parts.join('. ').replace(/\.\./g, '.'))}${/[.!?]$/.test(parts[parts.length - 1]) ? '' : '.'}</div>`; const snap = JSON.stringify(t);
+      t.notes = fuInsertLine(t.notes || '', line); delete t.fu; if (nd) { t.fu = { at: nd, time: ntime || t.time || null, via: [], topics: [], note: nx, set: Date.now() }; setDate(t, nd); if (ntime) t.time = ntime; if (npri) t.priority = npri; t.someday = false; if (!t.reminders.length) t.reminders = [0]; t.firedKeys = []; t.tags = (t.tags || []).filter(x => x !== 'hold'); } save(); closeSheet(true); fuRefresh(t, true); render();
       toast('Saved to Follow-ups', () => { const o = JSON.parse(snap), i = S.tasks.findIndex(x => x.id === o.id); if (i >= 0) S.tasks[i] = o; save(); fuRefresh(S.tasks[i], true); });
-      if (nd) toast(`Saved · next follow-up ${fmtDate(nd)}`); setTimeout(() => { if (getTask(t.id) && !t.fu) fuAskNext(t); }, 500); };
+      if (nd) toast(`Saved · next follow-up ${fmtDate(nd)}${ntime ? ', ' + fmtTime(ntime) : ''}`); setTimeout(() => { if (getTask(t.id) && !t.fu) fuAskNext(t); }, 500); };
   };
   draw();
 }
+// Split "what happened" into the update and a next-action sentence that carries a date/time ("reach out again on wed 12pm p1")
+function fuSplitNext(txt) {
+  const parts = String(txt || '').trim().split(/(?<=[.!?])\s+|\n+/).map(x => x.trim()).filter(Boolean); if (!parts.length) return { body: '', next: null };
+  const last = parts[parts.length - 1]; const dateish = /\b(today|tomorrow|tmrw|mon|tue|wed|thu|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next\s+week|in\s+\d+\s+(days?|weeks?)|\d{1,2}\s*(am|pm)|\d{1,2}[\/-]\d{1,2}|\d{1,2}\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))/i;
+  if (!dateish.test(last)) return { body: parts.join(' '), next: null };
+  const r = parseTask(last); if (!r || !r.date) return { body: parts.join(' '), next: null };
+  const txtNext = (r.title || '').replace(/^(and|then|also)\s+/i, '').replace(/[.\s]+$/, '');
+  return { body: parts.slice(0, -1).join(' '), next: { text: txtNext ? txtNext[0].toUpperCase() + txtNext.slice(1) : 'Follow up', date: r.date, time: r.time || null, pri: r.priority || null } };
+}
+const fuDDMM = d => { const x = pYmd(d); return `${pad(x.getDate())}-${pad(x.getMonth() + 1)}-${x.getFullYear()}`; };
 function fuAskNext(t) { const el = $('#fuWrap'); if (!el) return; el.innerHTML = `<div class="fu-card ask"><div class="fu-k">Logged ✓</div><p class="fu-note" style="margin-top:4px">Plan the next follow-up now, while it's fresh?</p><div class="fu-btns"><button class="pri" data-fu="edit" data-id="${t.id}">Plan next</button><button data-fu="skip" data-id="${t.id}">Not now</button></div></div>`; }
 function fuInsertLine(html, line) {
   const box = document.createElement('div'); box.innerHTML = cleanHtml(html); const blocks = [...box.children];
