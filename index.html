@@ -4031,7 +4031,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.11.4';
+const APPV = '6.11.5';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5404,8 +5404,8 @@ function hbMenu(x, y, id) {
 (function hbPress() { let T = 0, fired = false, sx = 0, sy = 0;
   document.addEventListener('touchstart', e => { const b = e.target.closest('.hb-d,.habit [data-act="habit"],.hrow [data-act="habit"]'); if (!b || e.touches.length !== 1) return; fired = false; sx = e.touches[0].clientX; sy = e.touches[0].clientY; clearTimeout(T); T = setTimeout(() => { fired = true; if (navigator.vibrate) try { navigator.vibrate(12); } catch (x) { } hbMenu(sx, sy, b.dataset.id); }, 480); }, { passive: true });
   document.addEventListener('touchmove', e => { if (Math.hypot(e.touches[0].clientX - sx, e.touches[0].clientY - sy) > 10) clearTimeout(T); }, { passive: true });
-  document.addEventListener('touchend', e => { clearTimeout(T); if (fired) { e.preventDefault(); } }, { passive: false });
-  document.addEventListener('click', e => { if (fired && e.target.closest('[data-act="habit"]')) { e.preventDefault(); e.stopPropagation(); fired = false; } }, true);
+  document.addEventListener('touchend', e => { clearTimeout(T); if (fired) { if (!e.target.closest('#ctx')) e.preventDefault(); fired = false; window.__hbSwallow = Date.now(); } }, { passive: false });
+  document.addEventListener('click', e => { if (window.__hbSwallow && Date.now() - window.__hbSwallow < 600 && e.target.closest('[data-act="habit"]')) { e.preventDefault(); e.stopPropagation(); window.__hbSwallow = 0; } }, true);
 })();
 document.addEventListener('contextmenu', e => {
   if (e.target.closest('input,textarea,[contenteditable=true],#sheet')) return;
