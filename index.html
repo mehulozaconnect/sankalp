@@ -1408,6 +1408,12 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .dp-f{display:flex;justify-content:center;margin-top:8px}.dp-f button{border:0;background:none;font:inherit;font-weight:700;font-size:13.5px;color:var(--muted);padding:8px 12px;cursor:pointer}
 .tg-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}.tg-list button{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:14.5px;font-weight:700;padding:9px 13px;border-radius:999px;border:1.5px solid var(--line);background:none;color:var(--ink);cursor:pointer}.tg-list button svg{width:14px;height:14px}.tg-list button small{font-size:11.5px;color:var(--muted);font-weight:700}.tg-list button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}.tg-list button.on small{color:inherit;opacity:.7}
 .tg-new>div{display:flex;gap:8px}.tg-new .inp{flex:1;min-width:0}.tg-new button{flex:none;font:inherit;font-weight:800;padding:0 18px;border-radius:14px;border:0;background:var(--surface);color:var(--ink);cursor:pointer}
+.hb-d{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.hbm{width:290px;padding:14px}.hbm-h{display:flex;gap:12px;align-items:center}.hbm-h>i{font-style:normal;font-size:26px;width:44px;height:44px;border-radius:14px;background:var(--surface);display:grid;place-items:center;flex:none}.hbm-h b{display:block;font-size:16px;font-weight:800}.hbm-h small{font-size:13px;color:var(--muted);font-weight:600}.hbm-h small.ok{color:#16A34A}
+.hbm-in{display:flex;align-items:center;gap:8px;margin-top:14px}.hbm-in input{flex:1;min-width:0;font:inherit;font-size:24px;font-weight:800;padding:8px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink)}.hbm-in input:focus{outline:0;border-color:var(--accent)}.hbm-in span{font-weight:700;color:var(--muted);font-size:13px}.hbm-in button{font:inherit;font-weight:800;padding:12px 14px;border-radius:12px;border:0;background:var(--ink);color:var(--bg);cursor:pointer}
+.hbm-q{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.hbm-q button{font:inherit;font-size:13px;font-weight:800;padding:7px 10px;border-radius:10px;border:0;background:var(--surface);color:var(--ink);cursor:pointer}
+.hbm-big{width:100%;margin-top:14px;font:inherit;font-size:15px;font-weight:800;padding:13px;border-radius:14px;border:0;background:#16A34A;color:#fff;cursor:pointer}.hbm-big.undo{background:var(--surface);color:var(--ink)}
+.hbm-s{display:block;width:100%;margin-top:10px;font:inherit;font-size:13px;font-weight:700;color:var(--muted);background:none;border:0;padding:6px;cursor:pointer;text-align:center}
 </style>
 </head>
 <body>
@@ -3915,7 +3921,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.9.6';
+const APPV = '6.9.7';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5253,8 +5259,29 @@ function blankMenu(x, y) {
     else if (a === 'sync') { try { if (fbUser) await pushNow(); } catch (e) { } render(); toast('Up to date'); }
   });
 }
+/* Right-click (laptop) or long-press (phone) a habit ring: tick it, or type today's count */
+function hbMenu(x, y, id) {
+  closeCtx(); const h = S.habits.find(z => z.id === id); if (!h) return; const td = today(), on = hOk(h, td), meas = !!hUnit(h), a = meas ? hAmt(h, td) : 0, mins = hIsMin(h);
+  const quick = mins ? [5, 10, 15, 20, 30] : /chant|jap|mala|mantra/i.test(h.unit + h.name) ? [108, 216, 540, 1080] : [1, 5, 10, 20];
+  const status = meas ? (a ? `${hFmt(h, a)} today${h.goal ? (a >= h.goal ? ' · goal met ✓' : ` · ${hFmt(h, h.goal - a)} to goal`) : ''}` : 'Nothing logged today') : on ? (h.type === 'avoid' ? 'Stayed away today ✓' : 'Done today ✓') : 'Not done yet today';
+  const m = document.createElement('div'); m.id = 'ctx'; m.className = 'ctx hbm'; m.setAttribute('role', 'dialog');
+  m.innerHTML = `<div class="hbm-h"><i>${h.emoji || '✅'}</i><div><b>${esc(h.name)}</b><small class="${on ? 'ok' : ''}">${status}</small></div></div>${meas ? `<div class="hbm-in"><input id="hbmV" type="number" inputmode="numeric" min="0" value="${a || ''}" placeholder="0"><span>${mins ? 'min' : esc(h.unit)}</span><button type="button" id="hbmOk">Save</button></div><div class="hbm-q">${quick.map(q => `<button type="button" data-q="${q}">+${mins ? q + 'm' : q.toLocaleString('en-IN')}</button>`).join('')}</div>` : `<button type="button" class="hbm-big${on ? ' undo' : ''}" id="hbmT">${on ? 'Mark as not done' : h.type === 'avoid' ? '✓ I stayed away today' : '✓ Mark done for today'}</button>`}<button type="button" class="hbm-s" id="hbmS">See stats ›</button>`;
+  document.body.appendChild(m); const r = m.getBoundingClientRect(); m.style.left = Math.max(8, Math.min(x - r.width + 40, innerWidth - r.width - 8)) + 'px'; m.style.top = Math.max(8, Math.min(y + 12, innerHeight - r.height - 8)) + 'px';
+  const fin = msg => { closeCtx(); save(); render(); if (msg) toast(msg); };
+  if (meas) { const i = $('#hbmV'); const put = () => { const v = Math.max(0, Math.round(+i.value || 0)); h.amt ||= {}; if (v) { h.amt[td] = v; h.log[td] = 1; } else { delete h.amt[td]; delete h.log[td]; } fin(v ? `${h.emoji || '✅'} ${hFmt(h, v)} today${h.goal && v >= h.goal ? ' · goal met' : ''}` : 'Cleared for today'); };
+    $('#hbmOk').onclick = put; i.onkeydown = e => { if (e.key === 'Enter') put(); }; $$('.hbm-q button').forEach(b => b.onclick = () => { i.value = (+i.value || 0) + +b.dataset.q; i.focus(); }); if (matchMedia('(pointer:fine)').matches) setTimeout(() => { i.focus(); i.select(); }, 30); }
+  else $('#hbmT').onclick = () => { if (on) delete h.log[td]; else h.log[td] = 1; fin(on ? `${h.name}: not done` : `${h.emoji || '✅'} ${h.name} done`); };
+  $('#hbmS').onclick = () => { closeCtx(); habitStats(id); };
+}
+(function hbPress() { let T = 0, fired = false, sx = 0, sy = 0;
+  document.addEventListener('touchstart', e => { const b = e.target.closest('.hb-d,.habit [data-act="habit"],.hrow [data-act="habit"]'); if (!b || e.touches.length !== 1) return; fired = false; sx = e.touches[0].clientX; sy = e.touches[0].clientY; clearTimeout(T); T = setTimeout(() => { fired = true; if (navigator.vibrate) try { navigator.vibrate(12); } catch (x) { } hbMenu(sx, sy, b.dataset.id); }, 480); }, { passive: true });
+  document.addEventListener('touchmove', e => { if (Math.hypot(e.touches[0].clientX - sx, e.touches[0].clientY - sy) > 10) clearTimeout(T); }, { passive: true });
+  document.addEventListener('touchend', e => { clearTimeout(T); if (fired) { e.preventDefault(); } }, { passive: false });
+  document.addEventListener('click', e => { if (fired && e.target.closest('[data-act="habit"]')) { e.preventDefault(); e.stopPropagation(); fired = false; } }, true);
+})();
 document.addEventListener('contextmenu', e => {
   if (e.target.closest('input,textarea,[contenteditable=true],#sheet')) return;
+  { const hb = e.target.closest('[data-act="habit"]'); if (hb && hb.dataset.id) { e.preventDefault(); if (!('ontouchstart' in window) || !e.sourceCapabilities || !e.sourceCapabilities.firesTouchEvents) hbMenu(e.clientX, e.clientY, hb.dataset.id); return; } }
   const el = e.target.closest('[data-id],[data-tid]'); const id = el && (el.dataset.tid || el.dataset.id);
   if (id && getTask(id)) { e.preventDefault(); ctxMenu(e.clientX, e.clientY, id); return; }
   const sp = e.target.closest('[data-dp]'), sa = !sp && e.target.closest('[data-da]'); if (sp || sa) { e.preventDefault(); sideMenu(e.clientX, e.clientY, sp ? 'p' : 'a', sp ? sp.dataset.dp : sa.dataset.da); return; }
@@ -5280,7 +5307,7 @@ function swipeAct(a, id) {
 }
 // Swipe the Today page left (not on a task) to open the menu
 (() => { let x0 = 0, y0 = 0, ok = false;
-  document.addEventListener('touchstart', e => { const v = route().view; ok = (v === 'today') && !e.target.closest('.row,.board,input,textarea,[contenteditable=true],#sheet,#page,.tl') && e.touches.length === 1; if (ok) { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; } }, { passive: true });
+  document.addEventListener('touchstart', e => { const v = route().view; ok = (v === 'today') && !e.target.closest('.row,.board,input,textarea,[contenteditable=true],#sheet,#page,.tl,.hb-row') && e.touches.length === 1; if (ok) { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; } }, { passive: true });
   document.addEventListener('touchend', e => { if (!ok) return; ok = false; const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0; if (dx < -80 && Math.abs(dy) < 60) { $('#main').classList.add('slideout'); setTimeout(() => { go('home'); $('#main').classList.remove('slideout'); }, 120); } }, { passive: true }); })();
 function swipe(el) {
   let x0 = 0, y0 = 0, dx = 0, on = false, locked = false;
