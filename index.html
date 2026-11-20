@@ -779,6 +779,8 @@ textarea.inp.one{resize:none;overflow:hidden;white-space:nowrap;line-height:20px
 .qm #app,.qm #tabbar,.qm #fab,.qm #toast{display:none!important}
 .qm{background:var(--bg)}
 .qm #scrim{background:transparent!important}
+.qm .sheet{top:0!important;bottom:auto!important;left:0!important;right:0!important;width:auto!important;margin:0!important;max-height:100vh!important;border-radius:0!important;box-shadow:none!important}
+.qm-ok{position:fixed;inset:0;z-index:400;display:grid;place-content:center;justify-items:center;gap:8px;background:var(--bg);color:var(--ink);font-weight:800;font-size:17px}.qm-ok b{width:64px;height:64px;border-radius:50%;background:#16A34A;color:#fff;display:grid;place-items:center;font-size:32px}
 .qm .tplbtn,.qm .tplrow{display:none!important}
 .tplrow[hidden]{display:none!important}
 .qmsaved{position:fixed;inset:0;display:grid;place-items:center;font-size:18px;font-weight:700;color:var(--ink);background:var(--bg)}
@@ -3924,7 +3926,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.9.8';
+const APPV = '6.9.9';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4006,8 +4008,13 @@ function openSheet(html, onCancel, noHist) {
   const sh = $('#sheet'); if (!sh.classList.contains('on') && !noHist) { try { history.pushState({ sk: 'ov' }, ''); sh.dataset.h = '1'; } catch (e) { } } else if (noHist) sh.dataset.h = ''; sh.innerHTML = html; sh.classList.remove('ltw'); sh.classList.add('on'); $('#scrim').classList.add('on'); sheetClose = onCancel || null; document.body.style.overflow = 'hidden'; sh.scrollTop = 0;
   $$('[data-close]', sh).forEach(b => b.onclick = () => closeSheet());
 }
+// Quick-add window (opened by a keyboard shortcut from any app): close it once the task is in, or on Cancel
+function qmDone(added) {
+  if (!window.QM) return; const o = document.createElement('div'); o.className = 'qm-ok'; o.innerHTML = added ? '<b>✓</b><span>Added to Dayline</span>' : '<span>Closed</span>'; document.body.appendChild(o);
+  setTimeout(() => { try { window.close(); } catch (e) { } setTimeout(() => { o.remove(); document.body.classList.remove('qm'); window.QM = false; render(); }, 300); }, added ? 650 : 150);
+}
 function closeSheet(silent, fromPop) { // silent = saved, do not run cancel handler
-  const sh = $('#sheet'); if (!sh.classList.contains('on')) return;
+  const sh = $('#sheet'); if (!sh.classList.contains('on')) return; if (window.QM && !silent) setTimeout(() => qmDone(false), 0);
   if (!fromPop && sh.dataset.h === '1' && history.state?.sk === 'ov') { popPending++; history.back(); } sh.dataset.h = '';
   sh.classList.remove('on'); $('#scrim').classList.remove('on'); if (!$('#page').classList.contains('on')) document.body.style.overflow = '';
   const f = sheetClose; sheetClose = null; if (!silent && f) f();
@@ -4322,7 +4329,7 @@ function quickAdd(ctxOverride) {
     if (res.meeting) { closeSheet(true); render(); toast(`Meeting added, ${fmtClock(res.meeting.s)}`); return; }
     const nv = noteVal(); if (nv) { res.notes = (res.notes || '') + nv; res.nh = true; save(); }
     applyOv(res);
-    closeSheet(true); if (ctx.quick) { document.body.classList.remove('qm'); window.QM = false; }
+    closeSheet(true); if (ctx.quick) { qmDone(true); }
     render(); setTimeout(() => taskSheet(res.id), 220);
   };
   $$('.tplchip[data-tpl]').forEach(b => b.onclick = () => { const t = S.templates.find(x => x.id === b.dataset.tpl); quickAdd({ ...ctx, tpl: t }); });
