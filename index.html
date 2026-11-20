@@ -4016,7 +4016,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.11';
+const APPV = '6.11.1';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -7351,14 +7351,17 @@ setTimeout(() => afterSync(drainActs), 400);
 stAuto();
 // one-time: clear the "Send proposal / Share notes / Schedule next call · <meeting>" tasks the retired after-meeting card made
 window.addEventListener('hashchange', () => { if (/^#adddates=/.test(location.hash)) addDatesLink(); });
-function addDatesLink() { const m = location.hash.match(/^#adddates=([A-Za-z0-9_\-]+)/); if (!m) return; let L = []; try { L = JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g, '+').replace(/_/g, '/'))))); } catch (e) { } history.replaceState(null, '', location.pathname + '#dates');
+function addDatesLink() { const m = location.hash.match(/^#adddates=([A-Za-z0-9_\-]+)/); if (m) { try { localStorage.setItem('sankalp.pendDates', m[1]); } catch (e) { } history.replaceState(null, '', location.pathname + '#dates'); }
+  let raw = null; try { raw = localStorage.getItem('sankalp.pendDates'); } catch (e) { } if (!raw) return; afterSync(() => setTimeout(() => addDatesApply(raw), 1500)); }
+function addDatesApply(raw) { let L = []; try { L = JSON.parse(decodeURIComponent(escape(atob(raw.replace(/-/g, '+').replace(/_/g, '/'))))); } catch (e) { } try { localStorage.removeItem('sankalp.pendDates'); } catch (e) { }
   const nk = x => x.toLowerCase().replace(/[^a-z]/g, ''); const have = new Set(S.dates.map(d => nk(d.name) + d.md)); let n = 0;
   L.forEach(([name, kind, md, year]) => { const ex = S.dates.find(d => d.md === md && (nk(d.name) === nk(name) || nk(d.name).includes(nk(name).slice(0, 6)))); if (ex) { if (!ex.year && year) ex.year = year; return; } S.dates.push({ id: uid(), name, kind, md, year: year || null, remind: [0, 1], note: '', time: '09:00', rep: 'yearly', full: null }); n++; });
   save(); setTimeout(() => { render(); toast(n ? `Added ${plural(n, 'date')}` : 'All these dates are already in Dayline'); }, 600); }
 addDatesLink();
-(function tplV2() { if (S.settings.tplV2) return; const T = (emoji, name, title, notes, subs, pri = 4, proj = '') => ({ id: uid(), emoji, name, title, notes: textToHtml(notes), subs, priority: pri, project: proj, builtin: true, nh: true });
-  const old = new Set(['Client demo prep', 'Proposal follow-up', 'Weekly review', 'Health check-up', 'Monthly bills']); S.templates = (S.templates || []).filter(x => !(x.builtin && old.has(x.name)));
-  const have = new Set(S.templates.map(x => x.name.toLowerCase())); MEHUL_TPLS(T).forEach(x => { if (!have.has(x.name.toLowerCase())) S.templates.push(x); }); S.settings.tplV2 = 1; save(); })();
+function tplSwap() { const T = (emoji, name, title, notes, subs, pri = 4, proj = '') => ({ id: uid(), emoji, name, title, notes: textToHtml(notes), subs, priority: pri, project: proj, builtin: true, nh: true });
+  const old = new Set(['client demo prep', 'proposal follow-up', 'weekly review', 'health check-up', 'monthly bills']); S.templates = (S.templates || []).filter(x => !old.has((x.name || '').toLowerCase()));
+  const have = new Set(S.templates.map(x => x.name.toLowerCase())); MEHUL_TPLS(T).forEach(x => { if (!have.has(x.name.toLowerCase())) S.templates.push(x); }); const seen = new Set(); S.templates = S.templates.filter(x => { const k = x.name.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }); S.settings.tplV3 = 1; save(); render(); }
+if (!S.settings.tplV3) afterSync(() => setTimeout(tplSwap, 1500));
 (function fuCleanup() { if (S.settings.fuClean1) return; const re = /^(Send proposal|Share notes|Schedule next call) · /; const L = S.tasks.filter(t => !t.done && re.test(t.title || '') && /^After: /.test(textOfHtml(t.notes || '')));
   L.forEach(t => { S.tasks = S.tasks.filter(x => x.id !== t.id); trashPut(t); }); S.settings.fuClean1 = 1; save(); if (L.length) { render(); setTimeout(() => toast(`Cleared ${plural(L.length, 'old meeting follow-up')} (they're in Trash)`), 1500); } })();
 new MutationObserver(() => { const el = document.getElementById('stBars'); if (el && !el.dataset.on) { el.dataset.on = 1; stPaint(); } }).observe(document.getElementById('main') || document.body, { childList: true, subtree: true });
