@@ -3940,7 +3940,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.9.16';
+const APPV = '6.9.17';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -6937,8 +6937,8 @@ function fuLogSheet(t) {
       const sp = fuSplitNext(out); let nx = ($('#fuNx').value || '').trim(), nd = st.nd || '', ntime = null, npri = null;
       if (sp.next) { if (!nx) nx = sp.next.text; if (!nd) nd = sp.next.date; ntime = sp.next.time; npri = sp.next.pri; }
       const body = (sp.next ? sp.body : out).replace(/[.\s]+$/, ''); const how = st.via.length ? st.via.map(k => verbs[k]).join(' and ') : '';
-      const parts = [body || [how || 'Followed up', resp === 'no' ? 'no response' : ''].filter(Boolean).join(', '), body && resp === 'no' ? 'No response' : '', resp === 'yes' && st.topics.length ? 'Discussed ' + st.topics.join(', ').toLowerCase() : '', nx || nd ? `Next: ${nx || 'follow up'}${nd ? ' on ' + fmtShort(nd) + (ntime ? ' ' + fmtTime(ntime) : '') : ''}` : ''].filter(Boolean);
-      const line = `<div><b>Last Contacted - ${fuDDMM(today())}</b> - ${esc(parts.join('. ').replace(/\.\./g, '.'))}${/[.!?]$/.test(parts[parts.length - 1]) ? '' : '.'}</div>`; const snap = JSON.stringify(t);
+      const parts = [body || [how || 'Followed up', resp === 'no' ? 'no response' : ''].filter(Boolean).join(', '), body && resp === 'no' ? 'No response' : '', resp === 'yes' && st.topics.length ? 'Discussed ' + st.topics.join(', ').toLowerCase() : ''].filter(Boolean);
+      const line = `<div><b>Last Contacted - ${fuDDMM(today())}</b> - ${esc(parts.join('. ').replace(/\.\./g, '.'))}${/[.!?]$/.test(parts[parts.length - 1]) ? '' : '.'}</div><hr><div><br></div>`; const snap = JSON.stringify(t);
       t.notes = fuInsertLine(t.notes || '', line); delete t.fu; if (nd) { t.fu = { at: nd, time: ntime || t.time || null, via: [], topics: [], note: nx, set: Date.now() }; setDate(t, nd); if (ntime) t.time = ntime; if (npri) t.priority = npri; t.someday = false; if (!t.reminders.length) t.reminders = [0]; t.firedKeys = []; t.tags = (t.tags || []).filter(x => x !== 'hold'); } save(); closeSheet(true); fuRefresh(t, true); render();
       toast('Saved to Follow-ups', () => { const o = JSON.parse(snap), i = S.tasks.findIndex(x => x.id === o.id); if (i >= 0) S.tasks[i] = o; save(); fuRefresh(S.tasks[i], true); });
       if (nd) toast(`Saved · next follow-up ${fmtDate(nd)}${ntime ? ', ' + fmtTime(ntime) : ''}`); setTimeout(() => { if (getTask(t.id) && !t.fu) fuAskNext(t); }, 500); };
