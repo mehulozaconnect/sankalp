@@ -3380,8 +3380,23 @@ const dtInit = n => n.replace(/['’]s\b/g, '').split(/\s+|&/).filter(w => /^[A-
 const DT_COL = ['#F97316', '#EC4899', '#8B5CF6', '#3B82F6', '#14B8A6', '#22C55E', '#EAB308', '#EF4444'];
 const dtCol = n => DT_COL[[...n].reduce((a, c) => a + c.charCodeAt(0), 0) % DT_COL.length];
 function dtWish(x, i) { const first = x.name.split(/\s+/)[0].replace(/['’]s$/, ''); return x.kind === 'anniversary' ? `Happy anniversary, ${x.name}! 💍 Wishing you both many more years of love and laughter.` : `Happy birthday ${first}! 🎂${i.yrs ? ` Many happy returns on your ${ordinal(i.yrs)}.` : ''} Wishing you a wonderful year ahead.`; }
+// paste many dates at once, one per line: "Amit Desai - 23 Nov 1977" or "Mehul & Lata - 7 Jul - anniversary"
+function dtParseLines(txt) {
+  const out = []; String(txt || '').split(/\n+/).forEach(line => { line = line.trim(); if (!line) return;
+    const m = line.match(/(\d{1,2})[\s\/\-.]*(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s\/\-.,]*(\d{4})?|(\d{1,2})[\/\-.](\d{1,2})(?:[\/\-.](\d{4}))?/i); if (!m) return;
+    let d, mo, y; if (m[2]) { d = +m[1]; mo = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(m[2].toLowerCase()) + 1; y = m[3] ? +m[3] : null; } else { d = +m[4]; mo = +m[5]; y = m[6] ? +m[6] : null; }
+    if (!d || !mo || d > 31 || mo > 12) return; const kind = /anniv/i.test(line) ? 'anniversary' : 'birthday';
+    const name = line.replace(m[0], '').replace(/\b(anniversary|birthday|bday)\b/ig, '').replace(/[\-–:,|]+/g, ' ').replace(/['’]s\s*$/, '').replace(/\s+/g, ' ').trim(); if (!name) return;
+    out.push([name, kind, `${pad(mo)}-${pad(d)}`, y && y > 1900 ? y : null]); });
+  return out;
+}
+function dtBulk() {
+  openSheet(sheetHead('Add several dates', 'Add', 'dbOk') + `<p class="hint" style="margin:4px 0 10px">One per line: name, then the date. Add the year to show ages. Write "anniversary" for anniversaries.</p><textarea class="inp" id="dbIn" rows="10" placeholder="Amit Desai - 23 Nov 1977&#10;Freya - 12 Dec 2015&#10;Mehul & Lata - 7 Jul - anniversary"></textarea><p class="hint" id="dbHint"></p>`);
+  const hint = () => { const L = dtParseLines($('#dbIn').value); $('#dbHint').textContent = L.length ? `Ready to add ${plural(L.length, 'date')}` : ''; }; $('#dbIn').oninput = hint;
+  $('#dbOk').onclick = () => { const L = dtParseLines($('#dbIn').value); if (!L.length) { toast('No dates found. Use: Name - 23 Nov 1977'); return; } closeSheet(true); addDatesApply(btoa(unescape(encodeURIComponent(JSON.stringify(L))))); };
+}
 function vDates() {
-  let h = topbar(`<button class="iconbtn" data-act="newdate" aria-label="Add a date">${I.plus}</button>`);
+  let h = topbar(`<button class="pill ghost" data-act="dtbulk" style="height:34px">Add several</button><button class="iconbtn" data-act="newdate" aria-label="Add a date">${I.plus}</button>`);
   const all = S.dates.map(x => ({ x, ...dateInfo(x) })).filter(o => o.days >= 0).sort((a, b) => a.days - b.days);
   const cnt = k => all.filter(o => k === 'all' || o.x.kind === k).length;
   const list = all.filter(o => dateFilter === 'all' || o.x.kind === dateFilter);
@@ -4016,7 +4031,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.11.2';
+const APPV = '6.11.3';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5492,6 +5507,7 @@ document.addEventListener('click', e => {
     hday: () => { const x = S.habits.find(h => h.id === id); if (hUnit(x)) hLogSheet(id, b.dataset.k); else cycleHabit(x, b.dataset.k); },
     habit: () => { const x = S.habits.find(h => h.id === id); if (hUnit(x)) { hLogSheet(id); return; } if (x.log[td] === 1) delete x.log[td]; else { x.log[td] = 1; const tot = habitTotal(x); if (MILESTONES.includes(tot)) toast(`${x.emoji} ${tot} check-ins. Milestone!`); } save(); render(); },
     newdate: () => dateForm(), editdate: () => dateForm(id), dtcopy: () => { try { navigator.clipboard.writeText(b.dataset.w); toast('Wish copied'); } catch (e) { } },
+    dtbulk: () => dtBulk(),
     dtmonth: () => { const el = document.getElementById('dtm-' + b.dataset.m) || [...document.querySelectorAll('.dt-card')].find(() => +b.dataset.m === new Date().getMonth()); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); else toast('Nothing coming up that month'); },
     dtgift: () => { const x = S.dates.find(d => d.id === b.dataset.id); if (!x) return; const o = dateInfo(x); const tp = (S.templates || []).find(t => t.name === 'Birthday plan'); const t = newTask({ title: (x.kind === 'anniversary' ? 'Anniversary: ' : 'Birthday: ') + x.name, date: o.days > 3 ? addDays(o.occ, -3) : today(), notes: tp ? tp.notes.replace('For - ', 'For - ' + esc(x.name)) : '', priority: 3 }); if (tp) t.subtasks = tp.subs.map(z => ({ id: uid(), title: z, done: false })); const hp = S.projects.find(p => p.name === 'Home'); if (hp) t.projectId = hp.id; S.tasks.push(t); save(); render(); toast(`Gift plan added for ${fmtDate(t.date)}`); }, dfilter: () => { dateFilter = b.dataset.f; render(); },
     pawk: () => { const v = +b.dataset.v, td = today(); if (!v) { const d = pYmd(td); pwStart = addDays(td, -((d.getDay() + 6) % 7)); calSel = td; } else { pwStart = addDays(pwStart || td, 7 * v); calSel = null; } renderMainOnly(); },
