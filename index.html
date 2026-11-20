@@ -3883,6 +3883,7 @@ function settingsAll(arg) {
   ${(() => { let er = ''; try { er = localStorage.getItem('dayline.err') || ''; } catch (e) { } return er ? `<div class="setrow"><span class="l"><b>Last problem</b><span style="word-break:break-word">${esc(er)}</span></span><button class="pill ghost" data-act="clearerr">Clear</button></div>` : ''; })()}
   <div class="setrow"><span class="l"><b>Installed as an app</b><span>${standalone() ? 'Yes' : 'Not yet. Installing gives full screen and steadier reminders.'}</span></span>${standalone() ? '' : `<button class="pill ghost" data-act="install">Install</button>`}</div>
   <div class="setrow"><span class="l"><b>Fingerprint lock</b><span>${lockId() ? 'On. Asked when you open Dayline or come back after a minute.' : 'Ask for your fingerprint or screen lock to open Dayline.'}</span></span><button class="switch${lockId() ? ' on' : ''}" data-act="lockon" role="switch" aria-checked="${!!lockId()}" aria-label="Fingerprint lock"></button></div></div>`;
+  if (isWide() || /Windows/.test(navigator.userAgent)) h += `<div class="sechead" id="quickkey"><h2 class="sec">Quick add from any app</h2></div><div class="setsec" style="padding:14px 16px">${hotkeyPanel()}</div>`;
   h += `<div class="sechead" id="storage"><h2 class="sec">Storage and speed</h2></div><div class="setsec"><div class="st-bars" id="stBars"><p class="hint">Measuring…</p></div>
   <div class="setrow"><span class="l"><b>Clean up now</b><span>Removes old app versions, unused pictures and temporary files. Your tasks, notes and habits are never touched.</span></span><button class="pill ghost" data-act="stclean">Clean</button></div>
   <div class="setrow"><span class="l"><b>Clean up automatically</b><span>Once a day, when you open Dayline or it goes to the background.</span></span><button class="switch${S.settings.autoClean !== false ? ' on' : ''}" data-act="stauto" role="switch" aria-checked="${S.settings.autoClean !== false}" aria-label="Clean up automatically"></button></div></div>`;
@@ -3927,7 +3928,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.9.13';
+const APPV = '6.9.14';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
