@@ -1398,6 +1398,14 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .dlg-b{width:min(380px,100%);background:var(--bg);color:var(--ink);border-radius:22px;padding:22px 20px 16px;box-shadow:0 20px 60px rgba(0,0,0,.25);transform:scale(.94);opacity:0;transition:transform .18s,opacity .18s}.dlg.on .dlg-b{transform:none;opacity:1}
 .dlg-b h3{margin:0;font-size:18px;font-weight:800;line-height:1.3}.dlg-b p{margin:8px 0 0;color:var(--muted);font-size:14.5px;line-height:1.45}.dlg-b .inp{margin-top:14px;width:100%}
 .dlg-a{display:flex;gap:10px;margin-top:20px}.dlg-a button{flex:1;height:46px;border-radius:14px;border:0;font:inherit;font-size:15px;font-weight:800;cursor:pointer;background:var(--ink);color:var(--bg)}.dlg-a button.q{background:var(--surface);color:var(--ink)}.dlg-a button.dg{background:#DC2626;color:#fff}
+.dp-in{cursor:pointer;caret-color:transparent}
+.dp-b{padding:18px 16px 14px;width:min(380px,100%)}.dp-h{display:flex;align-items:flex-start;justify-content:space-between;padding:0 4px}.dp-h small{display:block;color:var(--muted);font-weight:700;font-size:13px}.dp-h b{font-size:26px;font-weight:800;letter-spacing:-.01em}.dp-x{width:36px;height:36px;border-radius:50%;border:0;background:var(--surface);color:var(--ink);display:grid;place-items:center;cursor:pointer}.dp-x svg{width:16px;height:16px}
+.dp-q{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:14px 0 10px}.dp-q button{border:0;background:var(--surface);color:var(--ink);font:inherit;font-weight:800;font-size:13.5px;padding:8px 4px;border-radius:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.2}.dp-q small{font-weight:600;font-size:11.5px;color:var(--muted)}.dp-q button.on{background:var(--ink);color:var(--bg)}.dp-q button.on small{color:inherit;opacity:.75}
+.dp-nav{display:flex;align-items:center;gap:6px;margin:6px 0 4px}.dp-nav b{flex:1;font-size:15.5px;font-weight:800;padding-left:6px;order:-1}.dp-nav button{width:36px;height:36px;border-radius:50%;border:0;background:none;color:var(--ink);display:grid;place-items:center;cursor:pointer}.dp-nav button:hover{background:var(--surface)}.dp-nav button svg{width:18px;height:18px}.dp-nav .dp-now{width:auto;border-radius:10px;padding:0 10px;font:inherit;font-size:12.5px;font-weight:800;background:var(--surface)}
+.dp-g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}.dp-g em{font-style:normal;font-size:11.5px;font-weight:800;color:var(--muted);padding:6px 0}
+.dp-g button{position:relative;aspect-ratio:1;max-height:46px;border:0;background:none;border-radius:50%;font:inherit;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;display:grid;place-items:center}.dp-g button.we{color:var(--muted)}.dp-g button:hover{background:var(--surface)}.dp-g button.td{box-shadow:inset 0 0 0 1.5px var(--accent);font-weight:800;color:var(--ink)}.dp-g button.sel{background:var(--ink);color:var(--bg);font-weight:800;box-shadow:none}.dp-g button:disabled{opacity:.25;cursor:default}
+.dp-g button i{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);height:4px;border-radius:2px;background:var(--accent)}.dp-g button i.n1{width:4px}.dp-g button i.n2{width:9px}.dp-g button i.n3{width:14px}.dp-g button.sel i{background:var(--bg)}
+.dp-f{display:flex;justify-content:center;margin-top:8px}.dp-f button{border:0;background:none;font:inherit;font-weight:700;font-size:13.5px;color:var(--muted);padding:8px 12px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -3905,7 +3913,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.9.2';
+const APPV = '6.9.3';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4225,7 +4233,7 @@ function quickAdd(ctxOverride) {
   `, ctx.quick ? () => window.close() : null, !!ctx.quick);
   const inp = $('#qaIn'), addB = $('#qaAdd');
   const ov = {};
-  const upd = () => { const v = inp.value.trim(); addB.disabled = !v; $('#qaExp').disabled = !v; if (!v || smMulti(v)) { $('#qaChips').innerHTML = ''; $('#qaPrev').innerHTML = ''; return; } const r = parseTask(v); if (ov.date) { r.date = ov.date; r.someday = false; } if (ov.time) { r.time = ov.time; if (!r.reminders.length) r.reminders = [0]; } r._edit = true; const nagOn = ov.nag ?? !!r.nag; $('#qaChips').innerHTML = chipsFor(r) + (r.reminders.length || r.time ? `<button type="button" class="chip nagt${nagOn ? ' on' : ''}" data-nagt aria-pressed="${nagOn}" title="Repeat the reminder every 10 minutes until you tick Done">${I.repeat}${nagOn ? 'Keep reminding: on' : 'Keep reminding'}</button>` : ''); { const nb = $('#qaChips [data-nagt]'); if (nb) { nb.onpointerdown = e => e.preventDefault(); nb.onclick = () => { ov.nag = !nagOn; upd(); }; } } $$('#qaChips [data-chip]').forEach(b => { b.onpointerdown = e => e.preventDefault(); b.onclick = () => { const el = $(b.dataset.chip === 'date' ? '#qaD' : '#qaT'); el.value = b.dataset.chip === 'date' ? (r.date || today()) : (r.time || ''); try { el.showPicker(); } catch (x) { el.focus(); el.click(); } }; }); $('#qaPrev').innerHTML = r.title ? `${r.meeting ? 'Meeting' : 'Task'}: <b>${esc(r.title)}</b>` : ''; };
+  const upd = () => { const v = inp.value.trim(); addB.disabled = !v; $('#qaExp').disabled = !v; if (!v || smMulti(v)) { $('#qaChips').innerHTML = ''; $('#qaPrev').innerHTML = ''; return; } const r = parseTask(v); if (ov.date) { r.date = ov.date; r.someday = false; if (r.repeat && r.repeat.type === 'monthly') r.repeat = { ...r.repeat, dom: pYmd(ov.date).getDate() }; } if (ov.time) { r.time = ov.time; if (!r.reminders.length) r.reminders = [0]; } r._edit = true; const nagOn = ov.nag ?? !!r.nag; $('#qaChips').innerHTML = chipsFor(r) + (r.reminders.length || r.time ? `<button type="button" class="chip nagt${nagOn ? ' on' : ''}" data-nagt aria-pressed="${nagOn}" title="Repeat the reminder every 10 minutes until you tick Done">${I.repeat}${nagOn ? 'Keep reminding: on' : 'Keep reminding'}</button>` : ''); { const nb = $('#qaChips [data-nagt]'); if (nb) { nb.onpointerdown = e => e.preventDefault(); nb.onclick = () => { ov.nag = !nagOn; upd(); }; } } $$('#qaChips [data-chip]').forEach(b => { b.onpointerdown = e => e.preventDefault(); b.onclick = () => { const el = $(b.dataset.chip === 'date' ? '#qaD' : '#qaT'); el.value = b.dataset.chip === 'date' ? (r.date || today()) : (r.time || ''); try { el.showPicker(); } catch (x) { el.focus(); el.click(); } }; }); $('#qaPrev').innerHTML = r.title ? `${r.meeting ? 'Meeting' : 'Task'}: <b>${esc(r.title)}</b>` : ''; };
   const fit = () => { inp.style.height = 'auto'; inp.style.height = inp.scrollHeight + 'px'; };
   inp.addEventListener('input', () => { fit(); upd(); }); upd(); fit();
   // Several tasks typed or pasted at once (one per line, or separated by commas): offer to add them separately
@@ -4240,7 +4248,7 @@ function quickAdd(ctxOverride) {
   $$('#qaQuick button').forEach(b => { b.onpointerdown = e => e.preventDefault(); b.onclick = () => {
     if (b.dataset.qd) { const k = b.dataset.qd, on = b.classList.contains('on'); if (on) delete ov.date; else ov.date = k === 'w' ? nextWeekday(6, true) : addDays(today(), +k); $$('#qaQuick [data-qd]').forEach(x => x.classList.toggle('on', !on && x === b)); upd(); inp.focus(); return; }
     const sym = b.dataset.qi, pos = inp.selectionStart ?? inp.value.length, pre = inp.value.slice(0, pos), add = (pre && !/\s$/.test(pre) ? ' ' : '') + sym; inp.value = pre + add + inp.value.slice(pos); const c = pos + add.length; inp.focus(); inp.setSelectionRange(c, c); fit(); upd(); scanPick(); }; });
-  const applyOv = t => { if (!t || t.meeting) return; if (ov.nag !== undefined) { t.nag = ov.nag ? 10 : null; save(); } if (ov.date) { t.date = ov.date; t.someday = false; } if (ov.time) { t.time = ov.time; t.firedKeys = []; if (!t.reminders.length) t.reminders = [0]; } if (ov.date || ov.time) save(); };
+  const applyOv = t => { if (!t || t.meeting) return; if (ov.nag !== undefined) { t.nag = ov.nag ? 10 : null; save(); } if (ov.date) { t.date = ov.date; t.someday = false; if (t.repeat) { if (t.repeat.type === 'monthly') t.repeat.dom = pYmd(ov.date).getDate(); t.date = firstDate(t.repeat, ov.date); } } if (ov.time) { t.time = ov.time; t.firedKeys = []; if (!t.reminders.length) t.reminders = [0]; } if (ov.date || ov.time) save(); };
   // # projects and @ tags: a picker pops up while you type
   const note = $('#qaNote'), pick = $('#qaPick'); let pk = { items: [], i: 0, start: -1 };
   wireEditor(note, $('#qaNoteBar'), () => { }); // same typing shortcuts as task notes: Tab bullets, "- " lists, "---" line
@@ -7125,6 +7133,51 @@ document.addEventListener('click', ev => { const b = ev.target.closest('[data-fn
     S.tasks.push(t); S.funnel ||= {}; S.funnel['t:' + t.id] = { s: acc.st, at: today(), h: [[acc.st, today()]] }; save(); render(); taskSheet(t.id); toast('Lead sheet made. Fill in the contact and log follow-ups'); }
 }, true);
 
+/* ---------- Dayline's own date picker, used for every date field instead of the phone's ---------- */
+let DP = null;
+function dpOpen(inp) {
+  if (!inp || inp.disabled) return; const td = today(), cur = inp.value || '', base = pYmd(cur || td);
+  DP = { inp, sel: cur, y: base.getFullYear(), m: base.getMonth(), min: inp.min || '', max: inp.max || '' };
+  let el = document.getElementById('dp'); if (!el) { el = document.createElement('div'); el.id = 'dp'; el.className = 'dlg dp'; document.body.appendChild(el); el.addEventListener('click', dpClick); }
+  dpPaint(); requestAnimationFrame(() => el.classList.add('on'));
+  document.addEventListener('keydown', dpKey, true);
+}
+function dpKey(e) { if (!DP) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); dpClose(); } }
+function dpClose() { const el = document.getElementById('dp'); if (el) el.classList.remove('on'); document.removeEventListener('keydown', dpKey, true); const i = DP && DP.inp; DP = null; if (i) setTimeout(() => { try { i.blur(); } catch (e) { } }, 0); }
+function dpSet(v) {
+  if (!DP) return; const i = DP.inp; i.value = v; i.dispatchEvent(new Event('input', { bubbles: true })); i.dispatchEvent(new Event('change', { bubbles: true })); dpClose();
+}
+function dpPaint() {
+  const el = document.getElementById('dp'); if (!el || !DP) return; const { y, m, sel, min, max } = DP, td = today();
+  const first = new Date(y, m, 1), lead = (first.getDay() + 6) % 7, nd = lastDom(y, m), cells = [];
+  const cnt = {}; S.tasks.forEach(t => { if (!t.done && t.date && t.date.slice(0, 7) === `${y}-${pad(m + 1)}`) cnt[t.date] = (cnt[t.date] || 0) + 1; });
+  for (let i = 0; i < lead; i++) cells.push('<span></span>');
+  for (let d = 1; d <= nd; d++) { const k = `${y}-${pad(m + 1)}-${pad(d)}`, off = (min && k < min) || (max && k > max), wd = new Date(y, m, d).getDay();
+    cells.push(`<button type="button" data-dp="${k}" class="${k === sel ? 'sel' : ''}${k === td ? ' td' : ''}${wd === 0 || wd === 6 ? ' we' : ''}"${off ? ' disabled' : ''}>${d}${cnt[k] ? `<i class="n${Math.min(cnt[k], 3)}"></i>` : ''}</button>`); }
+  const nextMon = (() => { const d = pYmd(td); do d.setDate(d.getDate() + 1); while (d.getDay() !== 1); return ymd(d); })(), wkEnd = (() => { const d = pYmd(td); while (d.getDay() !== 6) d.setDate(d.getDate() + 1); return ymd(d); })();
+  const q = [[td, 'Today'], [addDays(td, 1), 'Tomorrow'], [wkEnd, 'Weekend'], [nextMon, 'Next Mon'], [addDays(td, 7), 'In a week'], [ymd(new Date(pYmd(td).getFullYear(), pYmd(td).getMonth() + 1, pYmd(td).getDate())), 'In a month']].filter(([k]) => (!min || k >= min) && (!max || k <= max));
+  const head = sel ? pYmd(sel) : null;
+  el.innerHTML = `<div class="dlg-b dp-b" role="dialog" aria-modal="true" aria-label="Pick a date"><div class="dp-h"><div><small>${sel ? (sel === td ? 'Today' : sel === addDays(td, 1) ? 'Tomorrow' : DAYSL[head.getDay()]) : 'Pick a date'}</small><b>${head ? `${head.getDate()} ${MONS[head.getMonth()]} ${head.getFullYear()}` : '—'}</b></div><button type="button" class="dp-x" data-dpa="close" aria-label="Close">${I.x}</button></div>
+  <div class="dp-q">${q.map(([k, l]) => `<button type="button" data-dp="${k}" class="${k === sel ? 'on' : ''}">${l}<small>${k === td || k === addDays(td, 1) ? DAYS[pYmd(k).getDay()] : fmtShort(k)}</small></button>`).join('')}</div>
+  <div class="dp-nav"><button type="button" data-dpa="prev" aria-label="Previous month">${I.back}</button><b>${MONSL[m]} ${y}</b>${y !== pYmd(td).getFullYear() || m !== pYmd(td).getMonth() ? `<button type="button" class="dp-now" data-dpa="now">Today</button>` : ''}<button type="button" data-dpa="next" aria-label="Next month">${I.next}</button></div>
+  <div class="dp-g"><em>M</em><em>T</em><em>W</em><em>T</em><em>F</em><em>S</em><em>S</em>${cells.join('')}</div>
+  ${DP.inp.required ? '' : `<div class="dp-f"><button type="button" data-dpa="clear">Clear date</button></div>`}</div>`;
+}
+function dpClick(e) {
+  if (!DP) return; if (e.target.id === 'dp') { dpClose(); return; }
+  const b = e.target.closest('[data-dp],[data-dpa]'); if (!b) return;
+  if (b.dataset.dp) { dpSet(b.dataset.dp); return; }
+  const a = b.dataset.dpa; if (a === 'close') dpClose(); else if (a === 'clear') dpSet('');
+  else if (a === 'now') { const t = pYmd(today()); DP.y = t.getFullYear(); DP.m = t.getMonth(); dpPaint(); }
+  else { DP.m += a === 'next' ? 1 : -1; if (DP.m < 0) { DP.m = 11; DP.y--; } if (DP.m > 11) { DP.m = 0; DP.y++; } dpPaint(); }
+}
+// every date field (now and later) opens this picker instead of the phone's calendar
+(function dpHook() {
+  const mark = root => (root.querySelectorAll ? root.querySelectorAll('input[type=date]:not([data-dpk])') : []).forEach(i => { i.dataset.dpk = 1; i.readOnly = true; i.classList.add('dp-in'); });
+  mark(document); new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => n.nodeType === 1 && (n.matches && n.matches('input[type=date]') ? mark(n.parentNode || document) : mark(n))))).observe(document.body, { childList: true, subtree: true });
+  document.addEventListener('click', e => { const i = e.target.closest && e.target.closest('input[type=date]'); if (!i) return; e.preventDefault(); dpOpen(i); }, true);
+  const sp = HTMLInputElement.prototype.showPicker; HTMLInputElement.prototype.showPicker = function () { if (this.type === 'date') return dpOpen(this); return sp && sp.call(this); };
+})();
 /* ================= start ================= */
 document.addEventListener('focusin', e => { if (!isWide() && e.target.matches && e.target.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,[contenteditable=true]')) document.body.classList.add('typing'); });
 document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a || !a.matches || !a.matches('input,textarea,[contenteditable=true]')) document.body.classList.remove('typing'); }, 60));
