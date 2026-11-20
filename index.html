@@ -1418,6 +1418,7 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .hd.sk i{border-style:dashed;color:var(--muted);font-style:normal;font-weight:800}.mcal button.skip{border-style:dashed;color:var(--muted);text-decoration:line-through}
 .hb-d.ms{background:conic-gradient(#DC2626 100%,transparent 0)}.hb-d.sk{opacity:.45;background:repeating-conic-gradient(color-mix(in srgb,var(--ink) 25%,transparent) 0 6%,transparent 6% 12%)}
 .hbm-3{display:flex;gap:6px;margin-top:10px}.hbm-3 button{flex:1;font:inherit;font-size:13px;font-weight:800;padding:9px 6px;border-radius:12px;border:1.5px solid var(--line);background:none;color:var(--ink);cursor:pointer;white-space:nowrap}.hbm-3 button.on.ms{background:color-mix(in srgb,#DC2626 12%,var(--bg));border-color:#DC2626;color:#DC2626}.hbm-3 button.on.sk{background:var(--surface);border-style:dashed}
+.sm-ntc{display:inline-block;margin-left:8px;color:var(--muted);font-weight:700;transition:transform .15s}.sm-nt:hover .sm-ntc{transform:translateX(3px)}
 </style>
 </head>
 <body>
@@ -3925,7 +3926,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.9.11';
+const APPV = '6.9.12';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4004,7 +4005,7 @@ function vTemplates() {
 let sheetClose = null;
 const sheetHead = (title, okLabel, okId) => `<div class="shead"><button class="cx" data-close>Cancel</button><span class="ttl">${esc(title)}</span>${okLabel ? `<button class="ok" id="${okId}">${esc(okLabel)}</button>` : '<span></span>'}</div>`;
 function openSheet(html, onCancel, noHist) {
-  const sh = $('#sheet'); if (!sh.classList.contains('on') && !noHist) { try { history.pushState({ sk: 'ov' }, ''); sh.dataset.h = '1'; } catch (e) { } } else if (noHist) sh.dataset.h = ''; sh.innerHTML = html; sh.classList.remove('ltw'); sh.classList.add('on'); $('#scrim').classList.add('on'); sheetClose = onCancel || null; document.body.style.overflow = 'hidden'; sh.scrollTop = 0;
+  const sh = $('#sheet'); if (!sh.classList.contains('on') && !noHist && !window.QM) { try { history.pushState({ sk: 'ov' }, ''); sh.dataset.h = '1'; } catch (e) { } } else if (noHist) sh.dataset.h = ''; sh.innerHTML = html; sh.classList.remove('ltw'); sh.classList.add('on'); $('#scrim').classList.add('on'); sheetClose = onCancel || null; document.body.style.overflow = 'hidden'; sh.scrollTop = 0;
   $$('[data-close]', sh).forEach(b => b.onclick = () => closeSheet());
 }
 // Quick-add window (opened by a keyboard shortcut from any app): close it once the task is in, or on Cancel
@@ -4017,7 +4018,7 @@ function qmFit() {
 }
 function qmDone(added) {
   if (!window.QM) return; const o = document.createElement('div'); o.className = 'qm-ok'; o.innerHTML = added ? '<b>✓</b><span>Added to Dayline</span>' : '<span>Closed</span>'; document.body.appendChild(o);
-  setTimeout(() => { try { window.close(); } catch (e) { } setTimeout(() => { o.remove(); document.body.classList.remove('qm'); window.QM = false; render(); }, 300); }, added ? 650 : 150);
+  setTimeout(() => { try { window.close(); } catch (e) { } setTimeout(() => { o.remove(); if (window.QM) quickAdd({ quick: true }); }, 350); }, added ? 650 : 120);
 }
 function closeSheet(silent, fromPop) { // silent = saved, do not run cancel handler
   const sh = $('#sheet'); if (!sh.classList.contains('on')) return; if (window.QM && !silent) setTimeout(() => qmDone(false), 0);
@@ -4378,7 +4379,7 @@ function askExit() {
   clearTimeout(exitArmed); toast('Press Back again to close Dayline');
   exitArmed = setTimeout(() => { exitArmed = 0; try { if (history.state?.sk === 'root') history.pushState({ sk: 'app' }, ''); } catch (e) { } }, 2500);
 }
-(function initHistory() { try { if (history.state?.sk !== 'app') { history.replaceState({ sk: 'root' }, ''); history.pushState({ sk: 'app' }, ''); } } catch (e) { } })();
+(function initHistory() { try { if (/[?&]quick=/.test(location.search)) return; if (history.state?.sk !== 'app') { history.replaceState({ sk: 'root' }, ''); history.pushState({ sk: 'app' }, ''); } } catch (e) { } })();
 function whenLabel(t) {
   if (t.someday) return { l: 'Someday', late: false };
   if (!t.date) return null;
@@ -6313,8 +6314,8 @@ function smPrepHtml() {
 }
 function smNextCard(N) {
   const t = N.t, p = proj(t.projectId); const sub = [t.time ? fmtTime(t.time) : `About ${fmtMins(smEst(t))}`, p ? p.name : '', t.date < today() ? 'Overdue' : ''].filter(Boolean).join(' · ');
-  return `<section class="sm-next" aria-label="Next up"><div class="sm-k">Next up · ${esc(N.why)}</div><button class="sm-nt" data-act="open" data-id="${t.id}">${esc(t.title)}</button><div class="sm-ns">${esc(sub)}</div>${t.fu && t.fu.at <= today() ? `<div class="sm-fu1">↻ ${esc(fuAgenda(t))}</div>` : ''}
-  <div class="sm-btns"><button class="sm-b pri" data-act="done" data-id="${t.id}">${I.check}Done</button><button class="sm-b" data-sm="notnow" data-id="${t.id}">Not now</button><button class="sm-b" data-sm="focus" data-id="${t.id}">${I.play}Focus</button></div>${smMulti(t.title) ? `<button class="sm-split" data-sm="split" data-id="${t.id}">✂️ This looks like ${plural(smMulti(t.title).segs.length, 'task')}. Split it</button>` : ''}${N.note ? `<p class="sm-why">${esc(N.note)}</p>` : ''}</section>`;
+  return `<section class="sm-next" aria-label="Next up"><div class="sm-k">Next up · ${esc(N.why)}</div><button class="sm-nt" data-act="open" data-id="${t.id}" title="Open">${esc(t.title)}<span class="sm-ntc">›</span></button><div class="sm-ns">${esc(sub)}</div>${t.fu && t.fu.at <= today() ? `<div class="sm-fu1">↻ ${esc(fuAgenda(t))}</div>` : ''}
+  <div class="sm-btns">${t.fu || ldIsLead(t) || /^\s*lead\s*[:\-–]/i.test(t.title) ? `<button class="sm-b pri" data-sm="fulog" data-id="${t.id}">📝 Log update</button><button class="sm-b" data-sm="notnow" data-id="${t.id}">Not now</button><button class="sm-b" data-act="open" data-id="${t.id}">Open ›</button>` : `<button class="sm-b pri" data-act="done" data-id="${t.id}">${I.check}Done</button><button class="sm-b" data-sm="notnow" data-id="${t.id}">Not now</button><button class="sm-b" data-sm="focus" data-id="${t.id}">${I.play}Focus</button>`}</div>${smMulti(t.title) ? `<button class="sm-split" data-sm="split" data-id="${t.id}">✂️ This looks like ${plural(smMulti(t.title).segs.length, 'task')}. Split it</button>` : ''}${N.note ? `<p class="sm-why">${esc(N.note)}</p>` : ''}</section>`;
 }
 function smPlanCard(P) {
   const n = P.pool.length, wd = new Date().getDay(), cap = smCap(wd), cl = smClashes(today()).length;
@@ -6466,6 +6467,7 @@ document.addEventListener('click', ev => {
     plan: () => smPlanSheet('morning'), replan: () => smPlanSheet('replan'),
     skipplan: () => { rec.started = Date.now(); rec.replanOff = Date.now() + 3 * 3600e3; save(); render(); },
     keepplan: () => { rec.replanOff = Date.now() + 2 * 3600e3; save(); render(); },
+    fulog: () => { const t = getTask(id); if (t) fuLogSheet(t); },
     notnow: () => { (rec.skip ||= {})[id] = Date.now() + 60 * 6e4; save(); render(); toast('Okay, not for the next hour', () => { delete rec.skip[id]; save(); render(); }); },
     focus: () => { const t = getTask(id); if (!t) return; S.timer.taskId = id; resetTimer('work'); const n = smEst(t); if (n < S.settings.pomo) S.timer.left = n * 60; startTimer(); go('focus'); },
     allmove: () => { const tom = addDays(td, 1), L = wrapData(td).left; const snap = L.map(t => [t.id, t.date, t.pushed || 0]); L.forEach(t => { setDate(t, tom); t.someday = false; }); save(); render(); toast(`${plural(L.length, 'task')} moved to tomorrow`, () => { snap.forEach(([id, d, p]) => { const t = getTask(id); if (t) { t.date = d; t.pushed = p; t.firedKeys = []; } }); save(); render(); }); },
@@ -6902,16 +6904,20 @@ function fuLogSheet(t) {
     <div class="wsec">Did they respond?</div><div class="fu-chips">${[['yes', 'Yes, we spoke'], ['no', 'No response']].map(([k, l]) => `<button type="button" class="${resp === k ? 'on' : ''}" data-rs="${k}">${l}</button>`).join('')}</div>
     ${(st.topics.length || fuTopicsFor(t).length) ? `<div class="wsec">Discussed</div><div class="fu-chips">${[...new Set([...fuTopicsFor(t), ...st.topics])].map(x => `<button type="button" class="${st.topics.includes(x) ? 'on' : ''}" data-tp="${esc(x)}">${esc(x)}</button>`).join('')}</div>` : ''}
     <label class="sm-lab" for="fuOut">What happened</label><textarea class="inp" id="fuOut" rows="3" placeholder="e.g. She will connect us to the project owner, back by mid next week">${esc(out)}</textarea>
-    <button class="btn acc sm-full" id="fuLogGo">Save to Follow-ups</button>`;
+    <div class="wsec">Next step</div><input class="inp" id="fuNx" placeholder="e.g. Send revised commercials, call Mayank" value="${esc(st.nx || '')}">
+    <div class="fu-chips fu-nd">${[[addDays(today(), 1), 'Tomorrow'], [addDays(today(), 3), 'In 3 days'], [nextWeekday(1, false), 'Next Mon'], [addDays(today(), 7), 'In a week'], ['pick', '📅 Pick date'], ['', 'No date']].map(([k, l]) => `<button type="button" class="${st.ndl === l || (k === 'pick' && st.ndl === 'pick') ? 'on' : ''}" data-nd="${k}" data-ndl="${k === 'pick' ? 'pick' : l}">${k === 'pick' && st.ndl === 'pick' && st.nd ? '📅 ' + fmtShort(st.nd) : l}</button>`).join('')}</div>
+    <button class="btn acc sm-full" id="fuLogGo">Save update</button>`;
+    $('#fuNx').oninput = e => { st.nx = e.target.value; };
+    $$('#fuL [data-nd]').forEach(b => b.onclick = () => { const k = b.dataset.nd; st.nx = $('#fuNx').value; st.ndl = b.dataset.ndl; if (k === 'pick') { const i = document.createElement('input'); i.type = 'date'; i.min = today(); i.value = st.nd || ''; i.style.cssText = 'position:fixed;left:-9999px'; document.body.appendChild(i); i.addEventListener('change', () => { st.nd = i.value || ''; i.remove(); draw(); }); dpOpen(i); } else { st.nd = k; draw(); } });
     $$('#fuL [data-via]').forEach(b => b.onclick = () => { const k = b.dataset.via; st.via = st.via.includes(k) ? st.via.filter(x => x !== k) : [...st.via, k]; draw(); });
     $$('#fuL [data-rs]').forEach(b => b.onclick = () => { resp = b.dataset.rs; draw(); });
     $$('#fuL [data-tp]').forEach(b => b.onclick = () => { const k = b.dataset.tp; st.topics = st.topics.includes(k) ? st.topics.filter(x => x !== k) : [...st.topics, k]; draw(); });
     $('#fuLogGo').onclick = () => { const out = $('#fuOut').value.trim(); const verbs = { call: 'Called', wa: 'WhatsApped', mail: 'Emailed', meet: 'Meeting' };
-      const parts = [st.via.map(k => verbs[k]).join(' and ') || 'Followed up', resp === 'no' ? 'No response' : '', resp === 'yes' && st.topics.length ? 'Discussed ' + st.topics.join(', ').toLowerCase() : '', out].filter(Boolean);
+      const nx = ($('#fuNx').value || '').trim(), nd = st.nd || ''; const parts = [st.via.map(k => verbs[k]).join(' and ') || 'Followed up', resp === 'no' ? 'No response' : '', resp === 'yes' && st.topics.length ? 'Discussed ' + st.topics.join(', ').toLowerCase() : '', out, nx || nd ? `Next: ${nx || 'follow up'}${nd ? ' on ' + fmtShort(nd) : ''}` : ''].filter(Boolean);
       const line = `<div><b>${fuDmy(today())} -</b> ${esc(parts.join('. ').replace(/\.\./g, '.'))}</div>`; const snap = JSON.stringify(t);
-      t.notes = fuInsertLine(t.notes || '', line); delete t.fu; save(); closeSheet(true); fuRefresh(t, true);
+      t.notes = fuInsertLine(t.notes || '', line); delete t.fu; if (nd) { t.fu = { at: nd, time: t.time || null, via: [], topics: [], note: nx, set: Date.now() }; setDate(t, nd); t.someday = false; if (!t.reminders.length) t.reminders = [0]; t.firedKeys = []; t.tags = (t.tags || []).filter(x => x !== 'hold'); } save(); closeSheet(true); fuRefresh(t, true); render();
       toast('Saved to Follow-ups', () => { const o = JSON.parse(snap), i = S.tasks.findIndex(x => x.id === o.id); if (i >= 0) S.tasks[i] = o; save(); fuRefresh(S.tasks[i], true); });
-      setTimeout(() => { if (getTask(t.id) && !t.fu) fuAskNext(t); }, 500); };
+      if (nd) toast(`Saved · next follow-up ${fmtDate(nd)}`); setTimeout(() => { if (getTask(t.id) && !t.fu) fuAskNext(t); }, 500); };
   };
   draw();
 }
