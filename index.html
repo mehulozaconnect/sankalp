@@ -1443,6 +1443,19 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .pa-x{flex:1;min-width:0;display:flex;flex-direction:column;text-align:left;background:none;border:0;padding:0;font:inherit;color:var(--ink);cursor:pointer}.pa-x b{font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pa-x small{font-size:12px;color:var(--muted);font-weight:600}
 .pa-r.m .pa-x{padding-left:10px;border-left:3px solid var(--meet,#7C3AED)}.pa-r.m .pa-t{color:var(--meet,#7C3AED)}.pa-r.done{opacity:.45}.pa-r.done .pa-x b{text-decoration:line-through}.pa-join{font-size:12.5px;font-weight:800;padding:6px 12px;border-radius:999px;background:var(--meet,#7C3AED);color:#fff;text-decoration:none}
 .pa-r .chk{flex:none}
+.dt-top p{margin:4px 0 0;color:var(--muted);font-weight:600}.dt-top p b{color:var(--ink)}
+.dt-hero{position:relative;margin:6px 16px 14px;padding:20px;border-radius:24px;color:#fff;background:linear-gradient(135deg,var(--c),color-mix(in srgb,var(--c) 55%,#1E1B4B));display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;overflow:hidden}.dt-hero::after{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.08)}
+.dt-hav{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center;font-size:28px;border:2px solid rgba(255,255,255,.35)}.dt-hav b{font-size:22px;font-weight:800}
+.dt-hm small{font-size:12.5px;font-weight:800;opacity:.85;text-transform:uppercase;letter-spacing:.05em}.dt-hm b{display:block;font-size:24px;font-weight:800;line-height:1.15;margin:2px 0}.dt-hm span{font-size:14px;opacity:.9;font-weight:600}
+.dt-hb{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;position:relative;z-index:1}.dt-hb a,.dt-hb button{font:inherit;font-size:13.5px;font-weight:800;padding:9px 14px;border-radius:12px;border:0;background:rgba(255,255,255,.18);color:#fff;text-decoration:none;cursor:pointer}.dt-hb .dt-wa{background:#fff;color:#0F3D2E}
+.dt-ring{position:absolute;right:18px;top:18px;width:68px;height:68px;border-radius:50%;background:conic-gradient(#fff calc(var(--p)*1%),rgba(255,255,255,.2) 0);display:grid;place-items:center;z-index:1}.dt-ring::before{content:'';position:absolute;inset:6px;border-radius:50%;background:color-mix(in srgb,var(--c) 70%,#1E1B4B)}.dt-ring b,.dt-ring small{position:relative;line-height:1}.dt-ring b{font-size:20px;font-weight:800;margin-top:-6px}.dt-ring small{font-size:10px;font-weight:700;opacity:.85;position:absolute;bottom:16px}
+.dt-year{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin:0 16px 14px;padding:12px 10px 8px;border-radius:18px;background:var(--surface)}.dt-year button{display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:none;padding:0;cursor:pointer;font:inherit;color:var(--ink)}.dt-year span{height:38px;width:8px;border-radius:4px;background:color-mix(in srgb,var(--ink) 7%,transparent);display:flex;align-items:flex-end;overflow:hidden}.dt-year i{display:block;width:100%;border-radius:4px;background:#EC4899}.dt-year b{font-size:11px;font-weight:800;color:var(--muted)}.dt-year small{font-size:10px;font-weight:700;color:var(--muted);line-height:1}.dt-year .cur b{color:var(--ink)}.dt-year .cur span{box-shadow:0 0 0 2px color-mix(in srgb,#EC4899 30%,transparent)}
+.optchips button small{opacity:.6;font-weight:700;margin-left:2px}
+.dt-sec{margin:16px 20px 8px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.dt-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:0 16px 6px}.dt-card{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:14px;border-radius:18px;border:0;background:color-mix(in srgb,var(--c) 10%,var(--bg));color:var(--ink);font:inherit;cursor:pointer}.dt-card b{font-size:15px;font-weight:800;margin-top:8px;line-height:1.2}.dt-card small{font-size:12.5px;color:var(--muted);font-weight:600}.dt-card em{font-style:normal;font-size:12px;font-weight:800;color:var(--c);margin-top:6px}
+.dt-av{width:40px;height:40px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;flex:none}
+.dt-row{display:flex;align-items:center;gap:12px;width:calc(100% - 32px);margin:0 16px;padding:10px 4px;border:0;border-bottom:1px solid var(--line);background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer}.dt-row .dt-av{width:36px;height:36px;font-size:12.5px}.dt-rn{flex:1;min-width:0;display:flex;flex-direction:column}.dt-rn b{font-size:15px;font-weight:700}.dt-rn small{font-size:12.5px;color:var(--muted);font-weight:600}.dt-cd{font-size:17px;font-weight:800}.dt-cd i{font-style:normal;font-size:11px;color:var(--muted);margin-left:1px}
+@media (min-width:900px){.dt-hero{grid-template-columns:auto 1fr auto}.dt-hb{grid-column:auto}.dt-ring{position:relative;right:auto;top:auto}}
 </style>
 </head>
 <body>
@@ -1898,15 +1911,23 @@ const DEF_SETTINGS = { appmap: {}, workStart: '09:30', checkin: 60, aiModel: 'cl
 const HSECTIONS = [{ n: 'Morning', e: '🌅' }, { n: 'Work', e: '💼' }, { n: 'Health', e: '💪' }, { n: 'Spiritual', e: '🙏' }, { n: 'Night', e: '🌙' }];
 const LEAD_NOTES = 'Contact Name - \nDesignation - \nDemo Date - \nLead Source - \nSector - \nFunction - (Sales / Service / Support)\nCo Size - \nLead Rating - \nTool - \nVolume - \nExpected Timeline - \nPricing - \nLead Scoring - \n\nNotes - \n\n\nFollow-ups - \n';
 const LEAD_HTML = '<div>Contact Name - </div><div>Designation - </div><div>Demo Date - </div><div>Lead Source - </div><div>Sector - </div><div>Function - (Sales / Service / Support)</div><div>Co Size - </div><div><b>Lead Rating - </b></div><div>Tool - </div><div>Volume - </div><div><b>Expected Timeline - </b></div><div><b>Pricing - </b></div><div><b>Lead Scoring - </b></div><div><br></div><div><mark><b>Notes -</b></mark></div><div><br></div><div><br></div><div><mark><b>Follow-ups</b></mark></div><div><br></div>';
+// Templates built around AssessHub sales work: demos, proposals, AI calling and WhatsApp go-lives, agreements, collections, renewals
+const MEHUL_TPLS = T => [
+  T('🎯', 'Client demo', 'Demo: ', 'Client - \nAttendees (client) - \nFrom AssessHub - \nUse case - \nShow - (SuperBot WhatsApp / AI calling / Assessments / SuperBrain)\nDemo link - \n', ['Confirm time and attendees', 'Set up the demo flow for their use case', 'Test the bot and voice agent end to end', 'Send agenda', 'Recap and next steps within 24 hours'], 2, 'Client demos'),
+  T('📄', 'Proposal and commercials', 'Proposal: ', 'Client - \nProducts - \nVolume - \nCommercials quoted - \nSent on - \n', ['Confirm scope and volumes', 'Per-unit commercials', 'Write it: About AssessHub + proposed solution only', 'Internal review', 'Send proposal', 'Follow up in 3 days'], 2, 'Sales'),
+  T('🤖', 'AI calling go-live', 'AI calling: ', 'Client - \nRole / use case - \nLanguages - \nVolume per day - \nCandidate Rejection Criteria - \n', ['Call script: max 3 lines per turn, lean questions', 'Agree Candidate Rejection Criteria', 'Post-call fields (about 15, recruiter-relevant)', 'Test calls with the team', 'Pilot batch live', 'First report: conversions on connected calls, Listen links'], 2, 'Client demos'),
+  T('💬', 'WhatsApp bot setup', 'WhatsApp bot: ', 'Client - \nUse case - \nEligibility rules - \n', ['Flow and questions (keep it lean)', 'Eligibility rules and rejection messages', 'Document collection step', 'Test with the team', 'Go live', 'First leads report (count documentation in progress as leads)'], 2, 'Client demos'),
+  T('✍️', 'Agreement / NDA', 'Agreement: ', 'Client - \nType - (NDA / MSA / SOW / Renewal)\nSignatory - Twinkle\nClient contact - \n', ['Draft from the latest template', 'Share with client legal', 'Work in their changes', 'Signed by Twinkle', 'Countersigned copy saved'], 2, 'Sales'),
+  T('🧾', 'Invoice and collection', 'Invoice: ', 'Client - \nInvoice no - \nAmount - \nRaised on - \nFinance contact - \n', ['Raise invoice', 'Send to client finance', 'Confirm they received it', 'Follow up at 30 days', 'Payment received: mark paid in the billing sheet'], 2, 'Sales'),
+  T('🔄', 'Renewal', 'Renewal: ', 'Client - \nCurrent term ends - \nUsage last year - \nNew commercials - \n', ['Pull last year\'s usage', 'Renewal proposal', 'Agreement signed', 'PO received', 'Invoice raised'], 2, 'Sales'),
+  T('📊', 'Weekly sales review', 'Weekly sales review', '', ['Upload the billing Excel to Sales Dashboard', 'Chase collections past 30 days', 'Move stuck leads in Lead Status', 'Line up this week\'s demos', 'Pick 3 deals to close this week'], 2, 'Sales'),
+  T('🎁', 'Birthday plan', 'Birthday: ', 'For - \nGift idea - \n', ['Decide the gift', 'Order or buy it', 'Plan cake or dinner', 'Wish on the day'], 3, 'Home')
+];
 function defaultTemplates() {
   const T = (emoji, name, title, notes, subs, pri = 4, proj = '') => ({ id: uid(), emoji, name, title, notes: notes.startsWith('<') ? notes : textToHtml(notes), subs, priority: pri, project: proj, builtin: true, nh: true });
   return [
     T('🧲', 'Lead', 'Lead: ', LEAD_HTML, [], 2, 'Sales'),
-    T('🎯', 'Client demo prep', 'Demo: ', 'Client - \nAttendees - \nUse case - \nDemo link - \n', ['Confirm attendees and time', 'Set up demo data for their use case', 'Test links and screen share', 'Send agenda', 'Send recap and next steps after demo'], 2, 'Client demos'),
-    T('📄', 'Proposal follow-up', 'Proposal: ', 'Client - \nValue - \nSent on - \n', ['Draft scope', 'Pricing and commercials', 'Internal review', 'Send proposal', 'Follow up in 3 days'], 2, 'Sales'),
-    T('🗓️', 'Weekly review', 'Weekly review', '', ['Clear Inbox', 'Check next week\'s calendar', 'Pick 3 outcomes for the week', 'Look at stuck tasks in Insights'], 3),
-    T('🩺', 'Health check-up', 'Health check-up', 'Doctor / lab - \nFasting needed - \n', ['Book appointment', 'Fasting reminder the night before', 'Collect reports', 'Review with doctor'], 3, 'Health'),
-    T('💡', 'Monthly bills', 'Pay monthly bills', '', ['Electricity', 'Mobile and internet', 'Credit card', 'Maintenance', 'SIP check'], 2, 'Home')
+    ...MEHUL_TPLS(T)
   ];
 }
 function seed() {
@@ -3355,18 +3376,34 @@ function dateInfo(x) {
   const what = x.kind === 'birthday' ? (yrs ? `turns ${yrs}` : 'Birthday') : x.kind === 'anniversary' ? (yrs ? `${ordinal(yrs)} anniversary` : 'Anniversary') : 'Event';
   return { occ, days, yrs, what, emoji: x.kind === 'birthday' ? '🎂' : x.kind === 'anniversary' ? '💍' : '📌' };
 }
+const dtInit = n => n.replace(/['’]s\b/g, '').split(/\s+|&/).filter(w => /^[A-Za-z]/.test(w) && !/^(ji|and|birthday|anniversary)$/i.test(w)).slice(0, 2).map(w => w[0].toUpperCase()).join('') || '🎉';
+const DT_COL = ['#F97316', '#EC4899', '#8B5CF6', '#3B82F6', '#14B8A6', '#22C55E', '#EAB308', '#EF4444'];
+const dtCol = n => DT_COL[[...n].reduce((a, c) => a + c.charCodeAt(0), 0) % DT_COL.length];
+function dtWish(x, i) { const first = x.name.split(/\s+/)[0].replace(/['’]s$/, ''); return x.kind === 'anniversary' ? `Happy anniversary, ${x.name}! 💍 Wishing you both many more years of love and laughter.` : `Happy birthday ${first}! 🎂${i.yrs ? ` Many happy returns on your ${ordinal(i.yrs)}.` : ''} Wishing you a wonderful year ahead.`; }
 function vDates() {
-  let h = topbar(`<button class="iconbtn" data-act="newdate" aria-label="Add a date">${I.plus}</button>`) + `<div class="pad"><h1 class="title">Birthdays and dates</h1></div>`;
-  const list = S.dates.map(x => ({ x, ...dateInfo(x) })).filter(o => (dateFilter === 'all' || o.x.kind === dateFilter) && o.days >= 0).sort((a, b) => a.days - b.days);
-  h += `<div class="filters optchips">${[['all', 'All'], ['birthday', 'Birthdays'], ['anniversary', 'Anniversaries'], ['event', 'Events']].map(([k, l]) => `<button class="${dateFilter === k ? 'on' : ''}" data-act="dfilter" data-f="${k}">${l}</button>`).join('')}</div>`;
-  if (!list.length) return h + `<div class="empty">No dates yet.<br><button class="btn" data-act="newdate" style="margin-top:14px">${I.plus}Add a date</button></div>`;
-  const n = list[0];
-  h += `<div class="dhero"><div class="big">${n.days === 0 ? 'Today' : n.days}<small>${n.days === 0 ? 'celebrate' : n.days === 1 ? 'day to go' : 'days to go'}</small></div><div><b>${n.emoji} ${esc(n.x.name)}</b><span>${cap(n.what)} on ${DAYSL[pYmd(n.occ).getDay()]}, ${fmtShort(n.occ)}</span></div></div>`;
-  let cur = '';
-  list.forEach(o => {
-    const mk = o.occ.slice(0, 7); if (mk !== cur) { cur = mk; const d = pYmd(o.occ); h += `<div class="dmonth">${MONSL[d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''}</div>`; }
-    h += `<button class="drow" data-act="editdate" data-id="${o.x.id}"><span class="tok${o.days === 0 ? ' now' : ''}"><b>${o.days === 0 ? '🎉' : o.days}</b><small>${o.days === 0 ? 'today' : o.days === 1 ? 'day' : 'days'}</small></span><span class="dn"><b>${esc(o.x.name)}</b><span>${cap(o.what)}, ${fmtShort(o.occ)} · ${fmtTime(o.x.time || '09:00')} · ${repLabel(o.x)}</span></span><span class="de">${o.emoji}</span></button>`;
-  });
+  let h = topbar(`<button class="iconbtn" data-act="newdate" aria-label="Add a date">${I.plus}</button>`);
+  const all = S.dates.map(x => ({ x, ...dateInfo(x) })).filter(o => o.days >= 0).sort((a, b) => a.days - b.days);
+  const cnt = k => all.filter(o => k === 'all' || o.x.kind === k).length;
+  const list = all.filter(o => dateFilter === 'all' || o.x.kind === dateFilter);
+  h += `<div class="pad dt-top"><h1 class="title">Birthdays and dates</h1><p>${plural(all.filter(o => o.x.kind === 'birthday').length, 'birthday')} · ${plural(all.filter(o => o.x.kind === 'anniversary').length, 'anniversary', 'anniversaries')}${all.some(o => o.days <= 30) ? ` · <b>${all.filter(o => o.days <= 30).length} in the next 30 days</b>` : ''}</p></div>`;
+  if (!all.length) return h + `<div class="empty">No dates yet.<br><button class="btn" data-act="newdate" style="margin-top:14px">${I.plus}Add a date</button></div>`;
+  // hero: the next one, with a ready wish
+  const n = list[0] || all[0], col = dtCol(n.x.name), wish = dtWish(n.x, n);
+  h += `<section class="dt-hero" style="--c:${col}"><div class="dt-hav">${n.x.kind === 'anniversary' ? '💍' : `<b>${esc(dtInit(n.x.name))}</b>`}</div><div class="dt-hm"><small>${n.days === 0 ? '🎉 Today' : n.days === 1 ? 'Tomorrow' : `In ${n.days} days · ${DAYSL[pYmd(n.occ).getDay()]}`}</small><b>${esc(n.x.name)}</b><span>${cap(n.what)} · ${fmtShort(n.occ)}</span></div>
+    <div class="dt-hb"><a class="dt-wa" href="https://wa.me/?text=${encodeURIComponent(wish)}" target="_blank" rel="noopener">💬 Wish on WhatsApp</a><button data-act="dtcopy" data-w="${esc(wish)}">Copy wish</button><button data-act="dtgift" data-id="${n.x.id}">🎁 Plan a gift</button></div>${n.days > 0 ? `<div class="dt-ring" style="--p:${Math.max(4, 100 - n.days / 365 * 100)}"><b>${n.days}</b><small>${n.days === 1 ? 'day' : 'days'}</small></div>` : ''}</section>`;
+  // year at a glance
+  const by = Array(12).fill(0); all.forEach(o => by[pYmd(o.occ).getMonth()]++); const mx = Math.max(1, ...by), cm = new Date().getMonth();
+  h += `<div class="dt-year">${by.map((c, m) => `<button data-act="dtmonth" data-m="${m}" class="${m === cm ? 'cur' : ''}"><span><i style="height:${c ? Math.max(14, c / mx * 100) : 0}%"></i></span><b>${MONS[m][0]}</b>${c ? `<small>${c}</small>` : '<small>&nbsp;</small>'}</button>`).join('')}</div>`;
+  h += `<div class="filters optchips">${[['all', 'All'], ['birthday', '🎂 Birthdays'], ['anniversary', '💍 Anniversaries'], ['event', '📌 Events']].filter(([k]) => k === 'all' || cnt(k)).map(([k, l]) => `<button class="${dateFilter === k ? 'on' : ''}" data-act="dfilter" data-f="${k}">${l} <small>${cnt(k)}</small></button>`).join('')}</div>`;
+  // coming up soon: cards
+  const soon = list.filter(o => o.days <= 30 && o !== n);
+  if (soon.length) h += `<div class="dt-sec">Next 30 days</div><div class="dt-cards">${soon.map(o => { const c = dtCol(o.x.name); return `<button class="dt-card" data-act="editdate" data-id="${o.x.id}" style="--c:${c}"><span class="dt-av">${o.x.kind === 'anniversary' ? '💍' : esc(dtInit(o.x.name))}</span><b>${esc(o.x.name)}</b><small>${cap(o.what)}</small><em>${o.days === 1 ? 'Tomorrow' : `${o.days} days`} · ${DAYS[pYmd(o.occ).getDay()].slice(0, 3)} ${pYmd(o.occ).getDate()} ${MONS[pYmd(o.occ).getMonth()]}</em></button>`; }).join('')}</div>`;
+  // later, month by month
+  let cur = ''; const later = list.filter(o => o.days > 30);
+  if (later.length) h += `<div class="dt-sec">Later</div>`;
+  later.forEach(o => { const d = pYmd(o.occ), mk = o.occ.slice(0, 7);
+    if (mk !== cur) { cur = mk; h += `<div class="dmonth" id="dtm-${d.getMonth()}">${MONSL[d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''}</div>`; }
+    h += `<button class="dt-row" data-act="editdate" data-id="${o.x.id}"><span class="dt-av" style="--c:${dtCol(o.x.name)}">${o.x.kind === 'anniversary' ? '💍' : esc(dtInit(o.x.name))}</span><span class="dt-rn"><b>${esc(o.x.name)}</b><small>${cap(o.what)} · ${DAYS[d.getDay()].slice(0, 3)} ${d.getDate()} ${MONS[d.getMonth()]}</small></span><span class="dt-cd">${o.days >= 60 ? `${Math.floor(o.days / 30.4)}<i>mo</i>` : `${o.days}<i>d</i>`}</span></button>`; });
   return h;
 }
 function dateForm(id) {
@@ -3979,7 +4016,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.10';
+const APPV = '6.11';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5453,7 +5490,9 @@ document.addEventListener('click', e => {
     newproject: () => projectForm(null, b.dataset.area), editmenu: () => menuEditor(), phoneunlink: () => phoneUnlink(), meetopen: () => { S.settings.meetOpen = !S.settings.meetOpen; save(); render(); }, editproject: () => projectForm(id), newhabit: () => habitForm(), edithabit: () => habitForm(id), habitstats: () => habitStats(id),
     hday: () => { const x = S.habits.find(h => h.id === id); if (hUnit(x)) hLogSheet(id, b.dataset.k); else cycleHabit(x, b.dataset.k); },
     habit: () => { const x = S.habits.find(h => h.id === id); if (hUnit(x)) { hLogSheet(id); return; } if (x.log[td] === 1) delete x.log[td]; else { x.log[td] = 1; const tot = habitTotal(x); if (MILESTONES.includes(tot)) toast(`${x.emoji} ${tot} check-ins. Milestone!`); } save(); render(); },
-    newdate: () => dateForm(), editdate: () => dateForm(id), dfilter: () => { dateFilter = b.dataset.f; render(); },
+    newdate: () => dateForm(), editdate: () => dateForm(id), dtcopy: () => { try { navigator.clipboard.writeText(b.dataset.w); toast('Wish copied'); } catch (e) { } },
+    dtmonth: () => { const el = document.getElementById('dtm-' + b.dataset.m) || [...document.querySelectorAll('.dt-card')].find(() => +b.dataset.m === new Date().getMonth()); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); else toast('Nothing coming up that month'); },
+    dtgift: () => { const x = S.dates.find(d => d.id === b.dataset.id); if (!x) return; const o = dateInfo(x); const tp = (S.templates || []).find(t => t.name === 'Birthday plan'); const t = newTask({ title: (x.kind === 'anniversary' ? 'Anniversary: ' : 'Birthday: ') + x.name, date: o.days > 3 ? addDays(o.occ, -3) : today(), notes: tp ? tp.notes.replace('For - ', 'For - ' + esc(x.name)) : '', priority: 3 }); if (tp) t.subtasks = tp.subs.map(z => ({ id: uid(), title: z, done: false })); const hp = S.projects.find(p => p.name === 'Home'); if (hp) t.projectId = hp.id; S.tasks.push(t); save(); render(); toast(`Gift plan added for ${fmtDate(t.date)}`); }, dfilter: () => { dateFilter = b.dataset.f; render(); },
     pawk: () => { const v = +b.dataset.v, td = today(); if (!v) { const d = pYmd(td); pwStart = addDays(td, -((d.getDay() + 6) % 7)); calSel = td; } else { pwStart = addDays(pwStart || td, 7 * v); calSel = null; } renderMainOnly(); },
     pajump: () => { e.preventDefault(); const el = document.getElementById('pa-' + b.dataset.d); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); },
     sidecal: () => { calSel = b.dataset.d; calMonth = calSel.slice(0, 7); const scr = () => setTimeout(() => { const el = document.getElementById('pa-' + calSel); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80); if (route().view === 'calendar') { renderMainOnly(); renderSide(); } else go('calendar'); scr(); },
@@ -7311,6 +7350,15 @@ applyTheme();
 setTimeout(() => afterSync(drainActs), 400);
 stAuto();
 // one-time: clear the "Send proposal / Share notes / Schedule next call · <meeting>" tasks the retired after-meeting card made
+window.addEventListener('hashchange', () => { if (/^#adddates=/.test(location.hash)) addDatesLink(); });
+function addDatesLink() { const m = location.hash.match(/^#adddates=([A-Za-z0-9_\-]+)/); if (!m) return; let L = []; try { L = JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g, '+').replace(/_/g, '/'))))); } catch (e) { } history.replaceState(null, '', location.pathname + '#dates');
+  const nk = x => x.toLowerCase().replace(/[^a-z]/g, ''); const have = new Set(S.dates.map(d => nk(d.name) + d.md)); let n = 0;
+  L.forEach(([name, kind, md, year]) => { const ex = S.dates.find(d => d.md === md && (nk(d.name) === nk(name) || nk(d.name).includes(nk(name).slice(0, 6)))); if (ex) { if (!ex.year && year) ex.year = year; return; } S.dates.push({ id: uid(), name, kind, md, year: year || null, remind: [0, 1], note: '', time: '09:00', rep: 'yearly', full: null }); n++; });
+  save(); setTimeout(() => { render(); toast(n ? `Added ${plural(n, 'date')}` : 'All these dates are already in Dayline'); }, 600); }
+addDatesLink();
+(function tplV2() { if (S.settings.tplV2) return; const T = (emoji, name, title, notes, subs, pri = 4, proj = '') => ({ id: uid(), emoji, name, title, notes: textToHtml(notes), subs, priority: pri, project: proj, builtin: true, nh: true });
+  const old = new Set(['Client demo prep', 'Proposal follow-up', 'Weekly review', 'Health check-up', 'Monthly bills']); S.templates = (S.templates || []).filter(x => !(x.builtin && old.has(x.name)));
+  const have = new Set(S.templates.map(x => x.name.toLowerCase())); MEHUL_TPLS(T).forEach(x => { if (!have.has(x.name.toLowerCase())) S.templates.push(x); }); S.settings.tplV2 = 1; save(); })();
 (function fuCleanup() { if (S.settings.fuClean1) return; const re = /^(Send proposal|Share notes|Schedule next call) · /; const L = S.tasks.filter(t => !t.done && re.test(t.title || '') && /^After: /.test(textOfHtml(t.notes || '')));
   L.forEach(t => { S.tasks = S.tasks.filter(x => x.id !== t.id); trashPut(t); }); S.settings.fuClean1 = 1; save(); if (L.length) { render(); setTimeout(() => toast(`Cleared ${plural(L.length, 'old meeting follow-up')} (they're in Trash)`), 1500); } })();
 new MutationObserver(() => { const el = document.getElementById('stBars'); if (el && !el.dataset.on) { el.dataset.on = 1; stPaint(); } }).observe(document.getElementById('main') || document.body, { childList: true, subtree: true });
