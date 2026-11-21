@@ -2000,6 +2000,9 @@ function areas() { return areasSorted(); }
 const dayRec = d => (S.days[d] ||= {});
 
 /* ================= repeat ================= */
+const WK_N = ['', '1st', '2nd', '3rd', '4th', 'last'];
+// nth weekday of a month: wk 1-4, or 5 for the last one
+function nthWd(y, m, wk, wd) { if (wk >= 5) { const d = new Date(y, m + 1, 0); while (d.getDay() !== wd) d.setDate(d.getDate() - 1); return d; } const d = new Date(y, m, 1); while (d.getDay() !== wd) d.setDate(d.getDate() + 1); d.setDate(d.getDate() + 7 * (wk - 1)); return d; }
 function repeatLabel(r) {
   if (!r) return '';
   let s = '';
@@ -2007,6 +2010,7 @@ function repeatLabel(r) {
   else if (r.type === 'weekly') s = r.n > 1 ? `Every ${r.n} weeks` : 'Weekly';
   else if (r.type === 'monthly') s = (r.n > 1 ? `Every ${r.n} months` : 'Monthly') + (r.dom && r.from !== 'done' ? (r.dom >= 32 || r.dom === 'L' ? ' on the last day' : ' on the ' + ordinal(r.dom)) : '');
   else if (r.type === 'mdays') s = 'Monthly on the ' + (r.mdays || []).map(x => x >= 32 ? 'last day' : ordinal(x)).join(', ').replace(/, ([^,]*)$/, ' and $1');
+  else if (r.type === 'mwd') s = `${cap(WK_N[r.wk])} ${DAYS[r.wd]} of every ${r.n > 1 ? r.n + ' months' : 'month'}`;
   else if (r.type === 'yearly') s = 'Yearly';
   else if (r.type === 'weekdays') s = 'Weekdays';
   else if (r.type === 'days') s = 'Every ' + r.days.map(d => DAYS[d]).join(', ');
@@ -2022,6 +2026,7 @@ function stepRaw(r, from, byDone) {
   else if (r.type === 'weekly') d.setDate(d.getDate() + 7 * (r.n || 1));
   else if (r.type === 'monthly') { const dom = !byDone && r.dom ? r.dom : d.getDate(), y = d.getFullYear(), m = d.getMonth() + (r.n || 1); return ymd(new Date(y, m, dom === 'L' || dom >= 32 ? lastDom(y, m) : Math.min(dom, lastDom(y, m)))); }
   else if (r.type === 'mdays') { const L = r.mdays || [d.getDate()]; for (let g = 0; g < 70; g++) { d.setDate(d.getDate() + 1); const ld = lastDom(d.getFullYear(), d.getMonth()), dd = d.getDate(); if (L.some(x => x >= 32 ? dd === ld : x === dd || (x > ld && dd === ld))) break; } }
+  else if (r.type === 'mwd') { let c = nthWd(d.getFullYear(), d.getMonth(), r.wk, r.wd); if (c <= d) { const k = new Date(d.getFullYear(), d.getMonth() + (r.n || 1), 1); c = nthWd(k.getFullYear(), k.getMonth(), r.wk, r.wd); } return ymd(c); }
   else if (r.type === 'yearly') { const y = d.getFullYear() + 1, m = d.getMonth(); return ymd(new Date(y, m, Math.min(d.getDate(), lastDom(y, m)))); }
   else if (r.type === 'weekdays') { do d.setDate(d.getDate() + 1); while (d.getDay() === 0 || d.getDay() === 6); }
   else if (r.type === 'days') { let i = 0; do { d.setDate(d.getDate() + 1); i++; } while (!r.days.includes(d.getDay()) && i < 8); }
@@ -2038,6 +2043,7 @@ function nextDate(t) {
 function firstDate(r, from) {
   const d = pYmd(from || today());
   if (r.type === 'weekdays') { while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1); }
+  if (r.type === 'mwd') { let c = nthWd(d.getFullYear(), d.getMonth(), r.wk, r.wd); if (c < d) c = nthWd(d.getFullYear(), d.getMonth() + 1, r.wk, r.wd); return r.skipWe ? toWorkday(ymd(c)) : ymd(c); }
   if (r.type === 'days') { let i = 0; while (!r.days.includes(d.getDay()) && i < 8) { d.setDate(d.getDate() + 1); i++; } }
   if (r.type === 'mdays') { const L = r.mdays || []; for (let g = 0; g < 70; g++) { const ld = lastDom(d.getFullYear(), d.getMonth()), dd = d.getDate(); if (L.some(x => x >= 32 ? dd === ld : x === dd || (x > ld && dd === ld))) break; d.setDate(d.getDate() + 1); } }
   if (r.type === 'monthly' && r.dom) { const y = d.getFullYear(), m = d.getMonth(), want = r.dom >= 32 || r.dom === 'L' ? lastDom(y, m) : Math.min(r.dom, lastDom(y, m)); if (d.getDate() > want) { const y2 = m === 11 ? y + 1 : y, m2 = (m + 1) % 12; return r.skipWe ? toWorkday(ymd(new Date(y2, m2, r.dom >= 32 ? lastDom(y2, m2) : Math.min(r.dom, lastDom(y2, m2))))) : ymd(new Date(y2, m2, r.dom >= 32 ? lastDom(y2, m2) : Math.min(r.dom, lastDom(y2, m2)))); } d.setDate(want); }
@@ -2092,6 +2098,7 @@ function toHM(h, mi, ap, ctxEvening) {
 function parseTask(input) {
   const r = { nag: null, title: '', date: null, time: null, endTime: null, evening: false, someday: false, priority: null, projectId: null, newProject: null, tags: [], repeat: null, reminders: [], duration: null, start: null, until: null, meeting: false, pinned: false };
   const M = '\u0001';
+  input = input.replace(/\b(?:evey|evry|evrey|everey|evary|eveyr|everry|eevry|eveery|ervery|evety|evert|evrry|eery)\b/gi, 'every');
   let s = ' ' + input.replace(/\s+/g, ' ') + ' ';
   const B = '(^|[\\s,\\u0001])', E = '(?=[\\s,.!?\\u0001]|$)';
   const take = (src, fn) => { const m = s.match(new RegExp(B + src + E, 'i')); if (!m) return false; if (fn(m) === false) return false; s = s.slice(0, m.index) + m[1] + M + s.slice(m.index + m[0].length); return true; };
@@ -2124,7 +2131,10 @@ function parseTask(input) {
   if (!r.until) take('(?:until|till|upto|up\\s+to)\\s+(' + MONRE + ')', m => { const mi = monIndex(m[2]); if (mi == null || mi < 0) return false; const n = new Date(); let y = n.getFullYear(); if (mi < n.getMonth()) y++; r.until = ymd(new Date(y, mi + 1, 0)); });
   // repeat
   const lead = (m, rep) => { r.repeat = rep; return m.index === 0 ? false : undefined; };
-  take('(?:every\\s+day|har\\s+din)', () => { r.repeat = { type: 'daily', n: 1 }; }) ||
+  const wkOf = w => /^(first|1)/i.test(w) ? 1 : /^(second|2)/i.test(w) ? 2 : /^(third|3)/i.test(w) ? 3 : /^(fourth|4)/i.test(w) ? 4 : 5;
+  take('(?:(?:every|each|on)\\s+)?(?:the\\s+)?(first|1st|second|2nd|third|3rd|fourth|4th|last)\\s+(' + WDRE + ')\\s+(?:of\\s+|in\\s+)?(?:every|each|the|a)?\\s*month(?:ly)?', m => { r.repeat = { type: 'mwd', n: 1, wk: wkOf(m[2]), wd: wdIndex(m[3]) }; }) ||
+    take('(?:every|each|har)\\s+month\\s+(?:on\\s+)?(?:the\\s+)?(first|1st|second|2nd|third|3rd|fourth|4th|last)\\s+(' + WDRE + ')', m => { r.repeat = { type: 'mwd', n: 1, wk: wkOf(m[2]), wd: wdIndex(m[3]) }; }) ||
+    take('(?:every\\s+day|har\\s+din)', () => { r.repeat = { type: 'daily', n: 1 }; }) ||
     take('(?:every\\s+weekday|on\\s+weekdays)', () => { r.repeat = { type: 'weekdays' }; }) ||
     take('every\\s+(\\d+)\\s*(days?|weeks?|months?)', m => { const u = m[3][0].toLowerCase(); r.repeat = { type: u === 'd' ? 'daily' : u === 'w' ? 'weekly' : 'monthly', n: +m[2] }; }) ||
     take('every\\s+(' + WDRE + '(?:(?:\\s*(?:,|and|&)\\s*|\\s+)' + WDRE + ')*)', m => { const days = [...m[2].matchAll(new RegExp(WDRE, 'gi'))].map(x => wdIndex(x[0])); r.repeat = { type: 'days', days: [...new Set(days)].sort() }; }) ||
@@ -2179,7 +2189,7 @@ function parseTask(input) {
     }
   }
   let title = s.split(M).join(' ').replace(/\s+/g, ' ').replace(/\s*,\s*/g, ', ').replace(/(,\s*)+/g, ', ').replace(/^[\s,]+|[\s,]+$/g, '');
-  for (let i = 0; i < 3; i++) title = title.replace(/\s+(on|by|at|for|in|from|with)$/i, '').replace(r.repeat ? /\s+(?:and\s+|&\s+)?(?:repeat(?:s|ing|ed)?|recurring|it)$/i : /$^/, '').replace(/\s+(?:and|&)$/i, '').replace(/^[\s,]+|[\s,]+$/g, '');
+  for (let i = 0; i < 3; i++) title = title.replace(/\s+(on|by|at|for|in|from|with|after|repeat)$/i, '').replace(r.repeat ? /\s+(?:and\s+|&\s+)?(?:repeat(?:s|ing|ed)?|recurring|it)$/i : /$^/, '').replace(/\s+(?:and|&)$/i, '').replace(/^[\s,]+|[\s,]+$/g, '');
   r.title = title ? title.charAt(0).toUpperCase() + title.slice(1) : '';
   if (r.time && r.endTime) { const [a1, a2] = r.time.split(':').map(Number), [b1, b2] = r.endTime.split(':').map(Number); r.duration ||= (b1 * 60 + b2) - (a1 * 60 + a2); }
   // "every month 15th starting nov 26": nov 26 means November 2026 here; start on the first 15th on or after it
@@ -4128,7 +4138,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.12';
+const APPV = '6.12.1';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4671,9 +4681,10 @@ function pickWhen(t) {
 function pickRepeat(t) {
   const td = today(); const r = t.repeat || {}; const rtype = !t.repeat ? '' : (r.type === 'daily' && (r.n || 1) > 1) ? 'ndays' : r.type;
   const md = new Set(r.mdays || (r.type === 'monthly' && r.dom ? [r.dom] : [pYmd(t.date || td).getDate()]));
-  openSheet(sheetHead('Repeat', 'Done', 'rOk') + `<div class="field"><label for="rType">Repeats</label><select class="inp" id="rType"><option value="">Never</option>${[['daily', 'Every day'], ['weekdays', 'Weekdays (Mon to Fri)'], ['days', 'On chosen days of the week'], ['weekly', 'Every week'], ['ndays', 'Every few days'], ['monthly', 'Every month'], ['mdays', 'On chosen dates of the month'], ['yearly', 'Every year']].map(([k, l]) => `<option value="${k}"${rtype === k ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
+  openSheet(sheetHead('Repeat', 'Done', 'rOk') + `<div class="field"><label for="rType">Repeats</label><select class="inp" id="rType"><option value="">Never</option>${[['daily', 'Every day'], ['weekdays', 'Weekdays (Mon to Fri)'], ['days', 'On chosen days of the week'], ['weekly', 'Every week'], ['ndays', 'Every few days'], ['monthly', 'Every month'], ['mdays', 'On chosen dates of the month'], ['mwd', 'A weekday of the month (e.g. last Sat)'], ['yearly', 'Every year']].map(([k, l]) => `<option value="${k}"${rtype === k ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
   <div class="daychips" id="rDays" style="${rtype === 'days' ? '' : 'display:none'}">${[1, 2, 3, 4, 5, 6, 0].map(d => `<button type="button" data-d="${d}" class="${(r.days || []).includes(d) ? 'on' : ''}">${DAYS[d].slice(0, 2)}</button>`).join('')}</div>
-  <div class="field" id="rN" style="${rtype === 'ndays' ? '' : 'display:none'}"><label for="rNv">Every how many days</label><input class="inp" type="number" min="2" max="60" id="rNv" value="${r.n > 1 ? r.n : 2}"></div>
+  <div class="grid2" id="rWd" style="${rtype === 'mwd' ? '' : 'display:none'}"><div class="field" style="margin:0"><label for="rWk">Which</label><select class="inp" id="rWk">${[1, 2, 3, 4, 5].map(k => `<option value="${k}"${(r.wk || 5) === k ? ' selected' : ''}>${cap(WK_N[k])}</option>`).join('')}</select></div><div class="field" style="margin:0"><label for="rWdd">Day</label><select class="inp" id="rWdd">${[1, 2, 3, 4, 5, 6, 0].map(d => `<option value="${d}"${(r.wd ?? pYmd(t.date || td).getDay()) === d ? ' selected' : ''}>${DAYS[d]}</option>`).join('')}</select></div></div>
+  <div class="field" id="rN" style="${rtype === 'ndays' ? '' : 'display:none'}"><label for="rNv">Every how many days</label><input class="inp" type="number" min="2" max="999" id="rNv" value="${r.n > 1 ? r.n : 2}"></div>
   <div class="rp-md" id="rMd" style="${rtype === 'mdays' ? '' : 'display:none'}">${Array.from({ length: 31 }, (_, i) => i + 1).map(n => `<button type="button" data-m="${n}" class="${md.has(n) ? 'on' : ''}">${n}</button>`).join('')}<button type="button" data-m="32" class="last${md.has(32) || md.has('L') ? ' on' : ''}">Last day</button></div>
   <div class="field" id="rFromW" style="${rtype ? '' : 'display:none'}"><span class="flabel">Next one is set from</span><div class="seg rp-seg" id="rFrom"><button type="button" data-f="due" class="${r.from !== 'done' ? 'on' : ''}">Due date</button><button type="button" data-f="done" class="${r.from === 'done' ? 'on' : ''}">When I finish</button></div><p class="hint" id="rFromH"></p></div>
   <label class="rp-ck" id="rSkW" style="${rtype && rtype !== 'weekdays' && rtype !== 'days' ? '' : 'display:none'}"><input type="checkbox" id="rSk"${r.skipWe ? ' checked' : ''}> Skip weekends <span>(a Saturday or Sunday moves to Monday)</span></label>
@@ -4683,16 +4694,17 @@ function pickRepeat(t) {
   const build = () => { const v = $('#rType').value, until = $('#rUntil').value || null, st = $('#rStart').value || td; if (!v) return null; let o;
     if (v === 'days') { let days = $$('#rDays button.on').map(b => +b.dataset.d); if (!days.length) days = [pYmd(st).getDay()]; o = { type: 'days', days: days.sort(), until }; }
     else if (v === 'ndays') o = { type: 'daily', n: Math.max(2, +$('#rNv').value || 2), until };
+    else if (v === 'mwd') o = { type: 'mwd', n: 1, wk: +$('#rWk').value, wd: +$('#rWdd').value, until };
     else if (v === 'mdays') { let L = $$('#rMd button.on').map(b => +b.dataset.m); if (!L.length) L = [pYmd(st).getDate()]; o = L.length === 1 ? { type: 'monthly', n: 1, dom: L[0], until } : { type: 'mdays', mdays: L.sort((a, b) => a - b), until }; }
     else o = { type: v, n: 1, until, ...(v === 'monthly' ? { dom: pYmd(st).getDate() } : {}) };
-    if (from === 'done' && !['days', 'weekdays', 'mdays'].includes(o.type)) o.from = 'done'; if ($('#rSk').checked && !['days', 'weekdays'].includes(o.type)) o.skipWe = true; return { o, st }; };
-  const paint = () => { const v = $('#rType').value; $('#rDays').style.display = v === 'days' ? '' : 'none'; $('#rN').style.display = v === 'ndays' ? '' : 'none'; $('#rMd').style.display = v === 'mdays' ? '' : 'none';
-    const fixed = ['days', 'weekdays', 'mdays'].includes(v); $('#rFromW').style.display = v && !fixed ? '' : 'none'; $('#rSkW').style.display = v && v !== 'weekdays' && v !== 'days' ? '' : 'none';
+    if (from === 'done' && !['days', 'weekdays', 'mdays', 'mwd'].includes(o.type)) o.from = 'done'; if ($('#rSk').checked && !['days', 'weekdays'].includes(o.type)) o.skipWe = true; return { o, st }; };
+  const paint = () => { const v = $('#rType').value; $('#rDays').style.display = v === 'days' ? '' : 'none'; $('#rN').style.display = v === 'ndays' ? '' : 'none'; $('#rMd').style.display = v === 'mdays' ? '' : 'none'; $('#rWd').style.display = v === 'mwd' ? '' : 'none';
+    const fixed = ['days', 'weekdays', 'mdays', 'mwd'].includes(v); $('#rFromW').style.display = v && !fixed ? '' : 'none'; $('#rSkW').style.display = v && v !== 'weekdays' && v !== 'days' ? '' : 'none';
     $$('#rFrom button').forEach(b => b.classList.toggle('on', b.dataset.f === from));
     $('#rFromH').textContent = from === 'done' ? 'Counts from the day you tick it. Good for a haircut, car service or a refill.' : 'Keeps a fixed schedule even if you finish early or late. Good for bills, rent and passes.';
     const b = build(); if (!b) { $('#rPrev').textContent = ''; return; } const L = nextFew(b.o, b.st, 4);
     $('#rPrev').innerHTML = b.o.from === 'done' ? `First on <b>${fmtDate(L[0])}</b>, then ${esc(repeatLabel({ ...b.o, from: null, until: null, dom: null, skipWe: false }).toLowerCase())} from the day you finish${b.o.skipWe ? ', moving weekends to Monday' : ''}.` : `Next: <b>${L.map(d => fmtShort(d)).join(' · ')}</b>${L.length === 4 ? ' …' : ''}`; };
-  $('#rType').onchange = paint; ['#rNv', '#rStart', '#rUntil', '#rSk'].forEach(q => $(q).addEventListener('input', paint)); $('#rSk').onchange = paint;
+  $('#rType').onchange = paint; ['#rNv', '#rStart', '#rUntil', '#rSk'].forEach(q => $(q).addEventListener('input', paint)); $('#rWk').onchange = paint; $('#rWdd').onchange = paint; $('#rSk').onchange = paint;
   $$('#rDays button').forEach(b => b.onclick = () => { b.classList.toggle('on'); paint(); });
   $$('#rMd button').forEach(b => b.onclick = () => { b.classList.toggle('on'); paint(); });
   $$('#rFrom button').forEach(b => b.onclick = () => { from = b.dataset.f; paint(); });
