@@ -1748,7 +1748,7 @@ function cleanNode(node, out) {
 function cleanHtml(h) { if (!h) return ''; const doc = new DOMParser().parseFromString('<div>' + h + '</div>', 'text/html'); const out = document.createElement('div'); cleanNode(doc.body.firstChild || doc.body, out); const r = out.innerHTML; return textOfHtml(r) || /<br|<hr|<img/.test(r) ? r : ''; }
 function textOfHtml(h) { return (h || '').replace(/<br\s*\/?>/gi, ' ').replace(/<\/(div|p|li|h3)>/gi, ' ').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim(); }
 const textOf = textOfHtml;
-// Typing "wednesday", "tomorrow 5pm", "p1", "#Sales" or "every monday" in a task's title sets them, like the add box does
+// Typing "wednesday", "tomorrow 5pm", "p1", "@Sales" or "every monday" in a task's title sets them, like the add box does
 function titleSmart(t, v) {
   const r = parseTask(v); if (!r.title || r.meeting) return false;
   const has = r.date || r.time || r.priority || r.projectId || r.newProject || r.repeat || (r.tags || []).length || r.duration || r.someday; if (!has) return false;
@@ -1759,7 +1759,7 @@ function titleSmart(t, v) {
   if (r.time) { t.time = r.time; t.evening = !!r.evening; if (!t.date) setDate(t, today()); if (!t.reminders.length) t.reminders = [0]; t.firedKeys = []; got.push(fmtTime(r.time)); }
   if (r.priority) { t.priority = r.priority; got.push('P' + r.priority); }
   if (r.newProject) r.projectId = ensureProject(r.newProject).id; if (r.projectId) { t.projectId = r.projectId; got.push(proj(r.projectId)?.name || ''); }
-  if ((r.tags || []).length) { t.tags = [...new Set([...(t.tags || []), ...r.tags])]; got.push(r.tags.map(x => '@' + x).join(' ')); }
+  if ((r.tags || []).length) { t.tags = [...new Set([...(t.tags || []), ...r.tags])]; got.push(r.tags.map(x => '#' + x).join(' ')); }
   if (r.repeat) { t.repeat = r.repeat; got.push(repeatLabel(r.repeat)); }
   if (r.duration) t.duration = r.duration;
   if (r.nag) t.nag = 10;
@@ -2152,10 +2152,10 @@ function parseTask(input) {
     take('weekly', m => lead(m, { type: 'weekly', n: 1 })) ||
     take('monthly', m => lead(m, { type: 'monthly', n: 1 })) ||
     take('yearly', m => lead(m, { type: 'yearly', n: 1 }));
-  // priority, tags, #project
+  // priority, @project, #tags
   take('(?:p|!)([1-4])', m => { r.priority = +m[2]; });
-  let g = 0; while (g++ < 10 && take('@([\\w-]+)', m => { r.tags.push(m[2].toLowerCase()); }));
-  take('#([\\w-]+)', m => { const name = m[2].replace(/[-_]/g, ' '); const p = findProject(name); if (p) r.projectId = p.id; else r.newProject = cap(name); });
+  take('@([\\w-]+)', m => { const name = m[2].replace(/[-_]/g, ' '); const p = findProject(name); if (p) r.projectId = p.id; else r.newProject = cap(name); });
+  let g = 0; while (g++ < 10 && take('#([\\w-]*[a-zA-Z][\\w-]*)', m => { r.tags.push(m[2].toLowerCase()); }));
   // date + part of day
   take('(today|aaj|tomorrow|tmrw|tmr|kal|this)\\s+(morning|afternoon|evening|night|subah|dopahar|shaam|sham|raat)', m => { r.date = /^(tomorrow|tmrw|tmr|kal)$/i.test(m[2]) ? addDays(today(), 1) : today(); setPart(m[3]); });
   take('tonight', () => { r.date ||= today(); setPart('night'); });
@@ -2226,7 +2226,7 @@ function chipsFor(r) {
   if (r.projectId) c.push(['proj', I.folder, proj(r.projectId).name]);
   if (r.newProject) c.push(['proj', I.folder, r.newProject + ' (new)']);
   if (r.pinned) c.push(['tag', I.pin, 'Pinned']);
-  r.tags.forEach(x => c.push(['tag', I.tag, '@' + x]));
+  r.tags.forEach(x => c.push(['tag', I.tag, '#' + x]));
   r.reminders.forEach(m => c.push(['remind', I.bell, m === 0 ? 'Remind on time' : 'Remind ' + remLabel(m)]));
   if (r.duration && !r.endTime) c.push(['dur', I.hour, fmtMins(r.duration)]);
   if (r.nag && !r._edit) c.push(['remind', I.repeat, 'Keep reminding']);
@@ -2305,7 +2305,7 @@ const filters = () => (S.filters ||= []);
 function filterMatch(q) {
   const td = today(), wk = addDays(td, 6); const toks = (q || '').toLowerCase().split(/\s+/).filter(Boolean);
   const pri = [], prj = [], tag = [], when = [], words = [];
-  toks.forEach(k => { if (/^p[1-4]$/.test(k)) pri.push(+k[1]); else if (k[0] === '#' && k.length > 1) prj.push(k.slice(1).replace(/_/g, '')); else if (k[0] === '@' && k.length > 1) tag.push(k.slice(1)); else if (['today', 'tomorrow', 'overdue', 'week', 'nodate', 'someday', 'pinned', 'evening', 'repeat', 'timed'].includes(k)) when.push(k); else if (k === 'no' || k === 'date') { if (k === 'date' && toks.includes('no')) when.push('nodate'); } else words.push(k); });
+  toks.forEach(k => { if (/^p[1-4]$/.test(k)) pri.push(+k[1]); else if (k[0] === '@' && k.length > 1) prj.push(k.slice(1).replace(/_/g, '')); else if (k[0] === '#' && k.length > 1) tag.push(k.slice(1)); else if (['today', 'tomorrow', 'overdue', 'week', 'nodate', 'someday', 'pinned', 'evening', 'repeat', 'timed'].includes(k)) when.push(k); else if (k === 'no' || k === 'date') { if (k === 'date' && toks.includes('no')) when.push('nodate'); } else words.push(k); });
   return open().filter(t => {
     if (pri.length && !pri.includes(t.priority)) return false;
     if (prj.length) { const p = proj(t.projectId); const nm = p ? p.name.toLowerCase().replace(/\s+/g, '') : 'inbox'; if (!prj.some(x => nm.startsWith(x))) return false; }
@@ -2321,7 +2321,7 @@ function filterForm(id) {
   openSheet(sheetHead(id ? 'Edit filter' : 'New filter', 'Save', 'fSave') + `
   <div class="field"><label for="fName">Name</label><input class="inp" id="fName" value="${esc(f.name)}" autocomplete="off"></div>
   <div class="field"><span class="flabel">Icon</span><div class="emojis" id="fEmo">${EM.map(e => `<button type="button" data-e="${e}" class="${e === emo ? 'on' : ''}">${e}</button>`).join('')}</div></div>
-  <div class="field"><label for="fQ">Show tasks matching</label><input class="inp" id="fQ" value="${esc(f.q)}" autocomplete="off" autocapitalize="off" spellcheck="false"><span class="hint">Words you can use: p1 to p4, #project, @tag, today, tomorrow, overdue, week, no date, someday, pinned, evening, repeat, timed, or any word from the task. Mix them freely.</span><div class="fcount" id="fCnt"></div></div>
+  <div class="field"><label for="fQ">Show tasks matching</label><input class="inp" id="fQ" value="${esc(f.q)}" autocomplete="off" autocapitalize="off" spellcheck="false"><span class="hint">Words you can use: p1 to p4, @project, #tag, today, tomorrow, overdue, week, no date, someday, pinned, evening, repeat, timed, or any word from the task. Mix them freely.</span><div class="fcount" id="fCnt"></div></div>
   ${id ? `<div class="btnrow"><button class="btn danger" id="fDel">${I.trash}Delete filter</button></div>` : ''}`);
   const cnt = () => { const q = $('#fQ').value.trim(); $('#fCnt').textContent = q ? plural(filterMatch(q).length, 'open task') + ' match right now' : ''; }; $('#fQ').oninput = cnt; cnt();
   $$('#fEmo button').forEach(b => b.onclick = () => { emo = b.dataset.e; $$('#fEmo button').forEach(z => z.classList.toggle('on', z === b)); });
@@ -2810,7 +2810,7 @@ function groupBy(list, mode) {
   }
   return null;
 }
-const addBar = (lbl) => `<div class="qa-wrap"><div class="addbar"><span class="ab-i">${I.plus}</span><textarea id="abIn" rows="1" aria-label="${lbl}" placeholder="${lbl}" autocomplete="off" autocorrect="on" enterkeyhint="done" data-form-type="other"></textarea><button type="button" class="ab-k" id="abGo" aria-label="Add task">${isWide() ? 'Enter' : 'Add'}</button><button type="button" class="ab-tpl" data-act="abtpl" aria-label="Add from a template" title="Add from a template">${I.layers}<span>Templates</span></button></div><div class="qa-pick ab-pick" id="abPick" role="listbox" hidden></div></div><div class="ab-tools" id="abTools" hidden><button type="button" data-ins="#"><b>#</b> Project</button><button type="button" data-ins="@"><b>@</b> Tag</button><button type="button" data-ins="p"><b>!</b> Priority</button></div><div class="ab-prev" id="abPrev"></div>`;
+const addBar = (lbl) => `<div class="qa-wrap"><div class="addbar"><span class="ab-i">${I.plus}</span><textarea id="abIn" rows="1" aria-label="${lbl}" placeholder="${lbl}" autocomplete="off" autocorrect="on" enterkeyhint="done" data-form-type="other"></textarea><button type="button" class="ab-k" id="abGo" aria-label="Add task">${isWide() ? 'Enter' : 'Add'}</button><button type="button" class="ab-tpl" data-act="abtpl" aria-label="Add from a template" title="Add from a template">${I.layers}<span>Templates</span></button></div><div class="qa-pick ab-pick" id="abPick" role="listbox" hidden></div></div><div class="ab-tools" id="abTools" hidden><button type="button" data-ins="@"><b>@</b> Project</button><button type="button" data-ins="#"><b>#</b> Tag</button><button type="button" data-ins="p"><b>!</b> Priority</button></div><div class="ab-prev" id="abPrev"></div>`;
 /* Work mode (weekdays 10–7) shows everything; outside it Today turns personal: no sales, meetings or work tasks */
 const TD_WORK_P = /assess\s*hub|office|work|client|sales|lead|demo|billing|invoice|company|five elements|crm|pipeline/i;
 const TD_WORK_T = /\b(nda|proposal|invoice|agreement|contract|rfp|rfq|sow|msa|po|purchase order|client|clients|demo|pitch|commercials?|deck|billing|renewal|onboarding|go[\s-]?live|kick[\s-]?off|poc|pilot|quotation|quote|follow[\s-]?up with|assesshub)\b/i;
@@ -4138,7 +4138,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.12.2';
+const APPV = '6.12.3';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4467,7 +4467,7 @@ function quickAdd(ctxOverride) {
   <div id="qaForm"><div class="qa-in"><label for="qaIn" class="sr">New task</label><textarea id="qaIn" rows="1" placeholder="Task name" enterkeyhint="done" autocomplete="off" autocapitalize="sentences" spellcheck="true" data-form-type="other">${ctx.tpl ? esc(ctx.tpl.title) : ''}</textarea>${('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) ? `<button type="button" class="iconbtn" id="qaMic" aria-label="Speak the task">${I.mic}</button>` : ''}</div>
   <div class="qa-wrap"><div class="qa-pick" id="qaPick" role="listbox" hidden></div></div>
   <label for="qaNote" class="sr">Notes</label><div class="qa-note qa-rich" id="qaNote" contenteditable="true" data-ph="Notes" role="textbox" aria-multiline="true" aria-label="Notes"></div><div class="ntool" id="qaNoteBar" style="display:none"></div>
-  <div class="chips" id="qaChips"></div><div class="qa-multi" id="qaMulti" hidden></div><div class="qa-quick" id="qaQuick"><button type="button" data-qd="0">Today</button><button type="button" data-qd="1">Tomorrow</button><button type="button" data-qd="w">This weekend</button><button type="button" data-qi="#"><b>#</b>Project</button><button type="button" data-qi="@"><b>@</b>Tag</button></div><div class="preview" id="qaPrev"></div><input type="date" id="qaD" class="qa-hid" tabindex="-1" aria-label="Pick date"><input type="time" id="qaT" class="qa-hid" tabindex="-1" aria-label="Pick time"></div>
+  <div class="chips" id="qaChips"></div><div class="qa-multi" id="qaMulti" hidden></div><div class="qa-quick" id="qaQuick"><button type="button" data-qd="0">Today</button><button type="button" data-qd="1">Tomorrow</button><button type="button" data-qd="w">This weekend</button><button type="button" data-qi="@"><b>@</b>Project</button><button type="button" data-qi="#"><b>#</b>Tag</button></div><div class="preview" id="qaPrev"></div><input type="date" id="qaD" class="qa-hid" tabindex="-1" aria-label="Pick date"><input type="time" id="qaT" class="qa-hid" tabindex="-1" aria-label="Pick time"></div>
   ${ctx.tpl ? '' : `<button type="button" class="tplbtn" id="qaTplBtn" aria-expanded="false">${I.layers}Templates</button><div class="tplrow" id="qaTpl" hidden>${S.templates.map(t => `<button class="tplchip" data-tpl="${t.id}">${t.emoji} ${esc(t.name)}</button>`).join('')}<button class="tplchip" id="qaNewTpl" style="border-style:dashed;color:var(--muted)">${I.plus} New</button></div>`}
   `, ctx.quick ? () => window.close() : null, !!ctx.quick);
   const inp = $('#qaIn'), addB = $('#qaAdd');
@@ -4504,13 +4504,13 @@ function quickAdd(ctxOverride) {
     const pos = inp.selectionStart, before = inp.value.slice(0, pos), m = before.match(/(^|\s)([#@])([\p{L}\p{N}_-]*)$/u);
     if (!m) return closePick();
     const sym = m[2], q = m[3].toLowerCase(), start = pos - m[3].length - 1; let items;
-    if (sym === '#') {
+    if (sym === '@') {
       items = S.projects.filter(p => !q || pslug(p.name).includes(q.replace(/_/g, '-')) || p.name.toLowerCase().includes(q)).slice(0, 8)
-        .map(p => ({ ins: '#' + (pslug(p.name) || p.name), html: `<span class="pd" style="background:${p.color || 'var(--muted)'}"></span>${esc((p.emoji ? p.emoji + ' ' : '') + p.name)}<small>${esc(p.area || '')}</small>` }));
-      if (q && !S.projects.some(p => pslug(p.name) === pslug(q))) items.push({ ins: '#' + q, html: `<span class="ph">+</span>New project “${esc(cap(q.replace(/[-_]/g, ' ')))}”` });
+        .map(p => ({ ins: '@' + (pslug(p.name) || p.name), html: `<span class="pd" style="background:${p.color || 'var(--muted)'}"></span>${esc((p.emoji ? p.emoji + ' ' : '') + p.name)}<small>${esc(p.area || '')}</small>` }));
+      if (q && !S.projects.some(p => pslug(p.name) === pslug(q))) items.push({ ins: '@' + q, html: `<span class="ph">+</span>New project “${esc(cap(q.replace(/[-_]/g, ' ')))}”` });
     } else {
-      const tags = allTags(); items = tags.filter(x => !q || x.includes(q)).slice(0, 8).map(x => ({ ins: '@' + x, html: `<span class="ph">@</span>${esc(x)}` }));
-      if (q && !tags.includes(q)) items.push({ ins: '@' + q, html: `<span class="ph">+</span>New tag “${esc(q)}”` });
+      const tags = allTags(); items = tags.filter(x => !q || x.includes(q)).slice(0, 8).map(x => ({ ins: '#' + x, html: `<span class="ph">#</span>${esc(x)}` }));
+      if (q && !tags.includes(q)) items.push({ ins: '#' + q, html: `<span class="ph">+</span>New tag “${esc(q)}”` });
     }
     pk = { items, i: 0, start }; drawPick();
   };
@@ -4611,7 +4611,7 @@ function renderPage(fresh) {
   if (t.reminders.length) props.push(`<button class="prop" data-pp="remind">${I.bell}${t.reminders.length === 1 ? remLabel(t.reminders[0]) : t.reminders.length + ' reminders'}</button>`);
   if (t.priority < 4) props.push(`<button class="prop p${t.priority}" data-pp="priority">${I.flag}P${t.priority}</button>`);
   props.push(`<button class="prop" data-pp="project">${p ? (p.emoji ? `<span>${p.emoji}</span>` : `<i class="dot" style="background:${p.color}"></i>`) + esc(p.name) : I.inbox + 'Inbox'}</button>`);
-  if (t.tags.length) props.push(`<button class="prop" data-pp="tags">${I.tag}${t.tags.map(x => '@' + esc(x)).join(' ')}</button>`);
+  if (t.tags.length) props.push(`<button class="prop" data-pp="tags">${I.tag}${t.tags.map(x => '#' + esc(x)).join(' ')}</button>`);
   if (t.duration) props.push(`<button class="prop" data-pp="dur">${I.hour}${fmtMins(t.duration)}</button>`);
   if (!t.subs.length) props.push(`<button class="prop more" id="pSubOpen">${I.plus}Subtask</button>`);
   props.push(`<button class="prop more" data-pp="more">${I.plus}More</button>`);
@@ -4733,7 +4733,7 @@ function pickProject(t) {
 function pickTags(t) {
   const cnt = {}; [...S.tasks, ...(S.templates || [])].forEach(x => (x.tags || []).forEach(g => { if (!['won', 'dropped'].includes(g)) cnt[g] = (cnt[g] || 0) + 1; }));
   const sel = new Set(t.tags); let all = [...new Set([...Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a] || a.localeCompare(b)), ...t.tags])];
-  const paint = () => { $('#gList').innerHTML = all.length ? all.map(g => `<button type="button" data-g="${esc(g)}" class="${sel.has(g) ? 'on' : ''}">${sel.has(g) ? I.check : '@'}${esc(g)}${cnt[g] ? `<small>${cnt[g]}</small>` : ''}</button>`).join('') : '<p class="hint">No tags yet. Make your first one below.</p>';
+  const paint = () => { $('#gList').innerHTML = all.length ? all.map(g => `<button type="button" data-g="${esc(g)}" class="${sel.has(g) ? 'on' : ''}">${sel.has(g) ? I.check : '#'}${esc(g)}${cnt[g] ? `<small>${cnt[g]}</small>` : ''}</button>`).join('') : '<p class="hint">No tags yet. Make your first one below.</p>';
     $$('#gList button').forEach(b => b.onclick = () => { const g = b.dataset.g; sel.has(g) ? sel.delete(g) : sel.add(g); paint(); }); };
   openSheet(sheetHead('Tags', 'Done', 'gOk') + `<div class="field"><span class="flabel">Tap to add or remove</span><div class="tg-list" id="gList"></div></div>
   <div class="field tg-new"><label for="gIn">New tag</label><div><input class="inp" id="gIn" placeholder="e.g. calls" autocomplete="off" data-form-type="other"><button type="button" id="gAdd">Add</button></div></div>`);
@@ -4769,9 +4769,9 @@ function pageMenu(t) {
     else if (m === 'del') { const id = t.id; closePage(); deleteTask(id); }
   });
 }
-const subMeta = c => { const m = []; if (c.p && c.p < 4) m.push(`<span class="sp p${c.p}">${I.flag}P${c.p}</span>`); if (c.at) m.push(`<span class="${!c.d && new Date(c.at).getTime() < Date.now() ? 'late' : ''}">${I.bell}${esc(subWhen(c))}</span>`); else if (c.due) m.push(`<span class="${!c.d && c.due < today() ? 'late' : ''}">${I.cal}${esc(fmtDate(c.due))}</span>`); (c.tags || []).forEach(x => m.push(`<span>@${esc(x)}</span>`)); return m.length ? `<small class="clat">${m.join('')}</small>` : ''; };
+const subMeta = c => { const m = []; if (c.p && c.p < 4) m.push(`<span class="sp p${c.p}">${I.flag}P${c.p}</span>`); if (c.at) m.push(`<span class="${!c.d && new Date(c.at).getTime() < Date.now() ? 'late' : ''}">${I.bell}${esc(subWhen(c))}</span>`); else if (c.due) m.push(`<span class="${!c.d && c.due < today() ? 'late' : ''}">${I.cal}${esc(fmtDate(c.due))}</span>`); (c.tags || []).forEach(x => m.push(`<span>#${esc(x)}</span>`)); return m.length ? `<small class="clat">${m.join('')}</small>` : ''; };
 const clRow = (c, withBell) => `<div class="cl${c.d ? ' done' : ''}" data-c="${c.id}"><input type="checkbox"${c.d ? ' checked' : ''} aria-label="Done"><span class="clw"><textarea class="clt" rows="1" aria-label="Subtask" autocomplete="off">${esc(c.t)}</textarea>${subMeta(c)}</span>${withBell ? `<button type="button" class="iconbtn${c.at || c.due || (c.p && c.p < 4) || (c.tags || []).length ? ' on' : ''}" data-bell aria-label="Subtask details: priority, date, time, tags">${I.more}</button>` : ''}<button type="button" class="iconbtn" data-rm aria-label="Remove subtask">${I.trash}</button></div>`;
-/* "Call Madhu tod 4pm p1 @call" -> subtask with priority, reminder and tags */
+/* "Call Madhu tod 4pm p1 #call" -> subtask with priority, reminder and tags */
 function subFromText(v) {
   const r = parseTask(v); const c = { id: uid(), t: (r.title || v).trim(), d: false };
   if (r.priority && r.priority < 4) c.p = r.priority; if (r.tags.length) c.tags = r.tags;
@@ -4828,13 +4828,13 @@ function impactPicker() {
   const c = $('#impClear'); if (c) c.onclick = () => { delete dayRec(td).impactId; save(); closeSheet(true); render(); };
 }
 function searchSheet() {
-  openSheet(`<div class="shead"><button class="cx" data-close>Cancel</button><span class="ttl">Search</span><span></span></div><label class="srch">${I.search}<textarea id="sIn" class="one" rows="1" placeholder="Tasks, notes, projects, habits, people" aria-label="Search" autocomplete="off" data-form-type="other" enterkeyhint="search"></textarea></label><div class="sres" id="sRes"><p class="hint">Search titles, notes and subtasks. Type @tag for tags, #project for a project, p1 for priority.</p></div>`);
+  openSheet(`<div class="shead"><button class="cx" data-close>Cancel</button><span class="ttl">Search</span><span></span></div><label class="srch">${I.search}<textarea id="sIn" class="one" rows="1" placeholder="Tasks, notes, projects, habits, people" aria-label="Search" autocomplete="off" data-form-type="other" enterkeyhint="search"></textarea></label><div class="sres" id="sRes"><p class="hint">Search titles, notes and subtasks. Type #tag for tags, @project for a project, p1 for priority.</p></div>`);
   const inp = $('#sIn');
   inp.oninput = () => {
-    const q = inp.value.trim().toLowerCase(); if (!q) { $('#sRes').innerHTML = '<p class="hint">Search titles, notes and subtasks. Type @tag for tags, #project for a project, p1 for priority.</p>'; return; }
-    // Every word must match. @tag finds tags, #project finds the project (and its area), p1–p4 finds priority
+    const q = inp.value.trim().toLowerCase(); if (!q) { $('#sRes').innerHTML = '<p class="hint">Search titles, notes and subtasks. Type #tag for tags, @project for a project, p1 for priority.</p>'; return; }
+    // Every word must match. #tag finds tags, @project finds the project (and its area), p1–p4 finds priority
     const words = q.split(/\s+/).filter(Boolean);
-    const hayOf = t => { const p = proj(t.projectId); const pn = p ? p.name.toLowerCase() : 'inbox'; return [t.title, textOf(t.notes), (t.tags || []).join(' '), (t.tags || []).map(x => '@' + x).join(' '), t.subs.map(s => s.t).join(' '), pn, '#' + pn.replace(/\s+/g, ''), p && p.area ? '#' + p.area.toLowerCase().replace(/\s+/g, '') + ' @' + p.area.toLowerCase().replace(/\s+/g, '') + ' ' + p.area.toLowerCase() : '', 'p' + t.priority].join(' ').toLowerCase(); };
+    const hayOf = t => { const p = proj(t.projectId); const pn = p ? p.name.toLowerCase() : 'inbox'; return [t.title, textOf(t.notes), (t.tags || []).join(' '), (t.tags || []).map(x => '#' + x).join(' '), t.subs.map(s => s.t).join(' '), pn, '@' + pn.replace(/\s+/g, ''), p && p.area ? '@' + p.area.toLowerCase().replace(/\s+/g, '') + ' @' + p.area.toLowerCase().replace(/\s+/g, '') + ' ' + p.area.toLowerCase() : '', 'p' + t.priority].join(' ').toLowerCase(); };
     const ts = S.tasks.filter(t => { const h = hayOf(t); return words.every(w => /^p[1-4]$/.test(w) ? t.priority === +w[1] : h.includes(w)); }).sort((a, b) => a.done - b.done || sortTasks(a, b)).slice(0, 60);
     const pq = q.replace(/^#/, '').replace(/\s+/g, ''); const ps = pq && !/^[@]/.test(q) ? S.projects.filter(p => p.name.toLowerCase().replace(/\s+/g, '').includes(pq) || (p.area || '').toLowerCase().replace(/\s+/g, '').includes(pq)) : []; const hs = S.habits.filter(x => x.name.toLowerCase().includes(q)); const ds = S.dates.filter(x => x.name.toLowerCase().includes(q));
     let h = '';
@@ -5323,7 +5323,7 @@ function render() {
 }
 function wire(view) {
   { const ab = $('#abIn'); if (ab) { const pv = $('#abPrev'); const apk = $('#abPick'), tools = $('#abTools');
-    // Type # or @ (or tap the chips) to pick a project or tag from a list
+    // Type @ or # (or tap the chips) to pick a project or tag from a list
     let pk = { items: [], i: 0, start: -1 };
     const tagList = () => { const c = {}; S.tasks.forEach(t => (t.tags || []).forEach(x => c[x] = (c[x] || 0) + 1)); ['work', 'personal', 'home', 'call', 'email', 'followup', 'waiting'].forEach(x => c[x] ||= 0); return Object.keys(c).sort((a, b) => c[b] - c[a] || a.localeCompare(b)); };
     const closePk = () => { apk.hidden = true; pk = { items: [], i: 0, start: -1 }; };
@@ -5331,9 +5331,9 @@ function wire(view) {
     const scanPk = () => {
       const pos = ab.selectionStart, before = ab.value.slice(0, pos), m = before.match(/(^|\s)([#@!])([\p{L}\p{N}_-]*)$/u); if (!m) return closePk();
       const sym = m[2], q = m[3].toLowerCase(), start = pos - m[3].length - 1; let items;
-      if (sym === '#') { items = S.projects.filter(p => !q || pslug(p.name).includes(q.replace(/_/g, '-')) || p.name.toLowerCase().includes(q)).slice(0, 8).map(p => ({ ins: '#' + (pslug(p.name) || p.name), html: `<span class="pd" style="background:${p.color || 'var(--muted)'}"></span>${esc((p.emoji ? p.emoji + ' ' : '') + p.name)}<small>${esc(p.area || '')}</small>` }));
-        if (q && !S.projects.some(p => pslug(p.name) === pslug(q))) items.push({ ins: '#' + q, html: `<span class="ph">+</span>New project “${esc(cap(q.replace(/[-_]/g, ' ')))}”` }); }
-      else if (sym === '@') { const tg = tagList(); items = tg.filter(x => !q || x.includes(q)).slice(0, 8).map(x => ({ ins: '@' + x, html: `<span class="ph">@</span>${esc(x)}` })); if (q && !tg.includes(q)) items.push({ ins: '@' + q, html: `<span class="ph">+</span>New tag “${esc(q)}”` }); }
+      if (sym === '@') { items = S.projects.filter(p => !q || pslug(p.name).includes(q.replace(/_/g, '-')) || p.name.toLowerCase().includes(q)).slice(0, 8).map(p => ({ ins: '@' + (pslug(p.name) || p.name), html: `<span class="pd" style="background:${p.color || 'var(--muted)'}"></span>${esc((p.emoji ? p.emoji + ' ' : '') + p.name)}<small>${esc(p.area || '')}</small>` }));
+        if (q && !S.projects.some(p => pslug(p.name) === pslug(q))) items.push({ ins: '@' + q, html: `<span class="ph">+</span>New project “${esc(cap(q.replace(/[-_]/g, ' ')))}”` }); }
+      else if (sym === '#') { const tg = tagList(); items = tg.filter(x => !q || x.includes(q)).slice(0, 8).map(x => ({ ins: '#' + x, html: `<span class="ph">#</span>${esc(x)}` })); if (q && !tg.includes(q)) items.push({ ins: '#' + q, html: `<span class="ph">+</span>New tag “${esc(q)}”` }); }
       else items = [[1, '#E5484D', 'Urgent'], [2, '#F2A33A', 'High'], [3, '#2F7BEA', 'Medium'], [4, 'var(--muted)', 'Normal']].filter(([n]) => !q || String(n).startsWith(q)).map(([n, c, l]) => ({ ins: 'p' + n, html: `<span class="pd" style="background:${c}"></span>P${n}<small>${l}</small>` }));
       pk = { items, i: 0, start }; drawPk();
     };
@@ -5383,7 +5383,7 @@ function ctxMenu(x, y, id) {
   <button class="cxb" data-cm="pin">${I.pin}${t.pinned ? 'Unpin' : 'Pin to top'}</button>
   <div class="cxsub"><button class="cxb" data-cm="move">${I.folder}Move to<span class="cxa">${I.next}</span></button><div class="cxp">${projs.map(p => `<button class="cxb${t.projectId === p.id ? ' on' : ''}" data-mp="${p.id}">${p.emoji ? `<span class="cxe">${p.emoji}</span>` : I.folder}${esc(p.name)}</button>`).join('')}<button class="cxb${!t.projectId ? ' on' : ''}" data-mp="">${I.inbox}Inbox</button></div></div>
   <button class="cxb" data-cm="nag">${I.bell}${nagOf(t) ? 'Stop repeat reminders' : 'Keep reminding until done'}</button>
-  <button class="cxb" data-cm="tags">${I.tag}Tags<span class="cxa">${t.tags.length ? t.tags.map(x => '@' + esc(x)).join(' ') : ''}</span></button>
+  <button class="cxb" data-cm="tags">${I.tag}Tags<span class="cxa">${t.tags.length ? t.tags.map(x => '#' + esc(x)).join(' ') : ''}</span></button>
   <div class="cxs"></div>
   <button class="cxb" data-cm="focus">${I.timer}Start focus</button>
   <button class="cxb" data-cm="dup">${I.layers}Duplicate</button>
@@ -6757,9 +6757,9 @@ function smDumpSplit(txt) {
   return String(txt || '').split(/\r?\n|;|•|(?<=[.!?])\s+(?=[A-Z])/).flatMap(l => l.split(/,\s+|\s+(?:and then|then|and also|also)\s+/i)).map(x => x.replace(/^\s*(?:[-*]|\d+[.)])\s*/, '').replace(/[.\s]+$/, '').trim()).filter(x => x.split(/\s+/).length >= 2 || x.length >= 8);
 }
 async function smDumpAi(txt) {
-  const projs = S.projects.map(p => '#' + (pslug(p.name) || p.name)).join(' ');
+  const projs = S.projects.map(p => '@' + (pslug(p.name) || p.name)).join(' ');
   const r = await aiCall(`You turn a busy person's messy note into clean tasks for the app Dayline. Today is ${DAYSL[new Date().getDay()]} ${today()}. Reply with ONLY JSON.`,
-    `Write each task as ONE line in Dayline's quick-add syntax: a short clear title (start with a verb, keep names), then optional date words (today, tomorrow, fri, 15 nov, next week), optional time (5pm), optional project from this list only: ${projs || '(none)'}, optional priority p1/p2/p3 only if the note says it is urgent or important, optional tags like @waiting when he is waiting on someone else. Do not invent dates, projects or tasks that are not in the note.\nJSON: {"lines":["..."]}\nNote:\n${txt.slice(0, 4000)}`, 900);
+    `Write each task as ONE line in Dayline's quick-add syntax: a short clear title (start with a verb, keep names), then optional date words (today, tomorrow, fri, 15 nov, next week), optional time (5pm), optional project from this list only: ${projs || '(none)'}, optional priority p1/p2/p3 only if the note says it is urgent or important, optional tags like #waiting when he is waiting on someone else. Do not invent dates, projects or tasks that are not in the note.\nJSON: {"lines":["..."]}\nNote:\n${txt.slice(0, 4000)}`, 900);
   const j = jsonLoose(r); return ((j && j.lines) || []).map(x => String(x).trim()).filter(Boolean).slice(0, 25);
 }
 function smDumpSheet(prefill) {
@@ -6840,7 +6840,7 @@ Actions (use task ids from the data):
 {"type":"priority","ids":[...],"p":1|2|3|4}
 {"type":"someday","ids":[...]}
 {"type":"top3","ids":[up to 3 ids for today]}
-{"type":"add","line":"one task in quick-add syntax, e.g. Send deck to Amit fri 5pm #sales p2"}
+{"type":"add","line":"one task in quick-add syntax, e.g. Send deck to Amit fri 5pm @sales p2"}
 {"type":"focus","id":"..."}  (start a focus session on that task)`;
 function smApply(acts) {
   const td = today(), snap = {}, added = [], out = []; let topSnap; let focusId = null;
