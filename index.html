@@ -199,7 +199,7 @@ h2.sec{margin:0;font-size:20px;font-weight:700}
 .chip.ghost{background:transparent!important;border:1px dashed var(--line)!important;color:var(--muted)}
 .chip.ghost::after{content:''}
 .qa-hid{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;bottom:0;left:0}
-.qa-pick{position:absolute;left:0;right:0;z-index:5;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.18);max-height:252px;overflow:auto;padding:4px}
+.qa-pick{position:absolute;left:0;right:0;z-index:5;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.18);max-height:min(252px,34vh);overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:4px}
 .qa-pick button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;color:var(--ink);font:inherit;font-size:15px;padding:10px 12px;border-radius:10px;text-align:left;cursor:pointer}
 .qa-pick button.on,.qa-pick button:hover{background:var(--surface)}
 .qa-pick .pd{width:10px;height:10px;border-radius:50%;flex:none}
@@ -1993,7 +1993,9 @@ const getTask = id => S.tasks.find(t => t.id === id);
 const proj = id => S.projects.find(p => p.id === id);
 const pslug = x => (x || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '');
 function findProject(name) { const n = name.trim().toLowerCase(), g = pslug(name); return S.projects.find(p => p.name.toLowerCase() === n) || (g && S.projects.find(p => pslug(p.name) === g)); }
-function ensureProject(name, area) { if (!name) return null; let p = findProject(name); if (!p) { const cols = ['#F2A33A', '#14B8A6', '#5B5BD6', '#C2367A', '#4D9A2A', '#1F6FEB', '#E0482A', '#8B5CF6']; p = { id: uid(), name: name.trim(), area: area || 'Personal', color: cols[S.projects.length % cols.length], emoji: '' }; S.projects.push(p); } return p; }
+// @ picker: every project, newest first (made in the last 2 weeks), then the sidebar order
+const pickProjs = () => { const wk = Date.now() - 14 * 864e5; return [...S.projects.filter(p => (p.at || 0) > wk).sort((a, b) => b.at - a.at), ...S.projects.filter(p => !((p.at || 0) > wk))]; };
+function ensureProject(name, area) { if (!name) return null; let p = findProject(name); if (!p) { const cols = ['#F2A33A', '#14B8A6', '#5B5BD6', '#C2367A', '#4D9A2A', '#1F6FEB', '#E0482A', '#8B5CF6']; p = { id: uid(), name: name.trim(), area: area || 'Personal', color: cols[S.projects.length % cols.length], emoji: '', at: Date.now() }; S.projects.push(p); } return p; }
 function addPlan(t) { if (!t.date || t.done) return; (S.plan[t.date] ||= []); if (!S.plan[t.date].includes(t.id)) S.plan[t.date].push(t.id); }
 function setDate(t, date) { t.nagAt = 0; t.nagN = 0; t.snoozeUntil = 0; const old = t.date; if (old && date && date > old && old <= today()) t.pushed = (t.pushed || 0) + 1; t.date = date; t.firedKeys = []; if (date) t.someday = false; addPlan(t); }
 function areas() { return areasSorted(); }
@@ -4138,7 +4140,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.12.3';
+const APPV = '6.12.4';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4191,7 +4193,7 @@ function projectForm(id, area0) {
   let newA = false; $$('#pArea button').forEach(b => b.onclick = () => { newA = !b.dataset.a; area = b.dataset.a; $$('#pArea button').forEach(z => z.classList.toggle('on', z === b)); const ni = $('#pAreaNew'); ni.hidden = !newA; if (newA) ni.focus(); });
   $$('#pEmo button').forEach(b => b.onclick = () => { emo = b.dataset.e; $$('#pEmo button').forEach(z => z.classList.toggle('on', z === b)); });
   $$('#pCol button').forEach(b => b.onclick = () => { col = b.dataset.c; $$('#pCol button').forEach(z => z.classList.toggle('on', z === b)); });
-  $('#pSave').onclick = () => { const name = $('#pName').value.trim(); if (newA) { area = $('#pAreaNew').value.trim(); if (!area) { $('#pAreaNew').focus(); return; } } area ||= 'Personal'; if (!name) { $('#pName').focus(); return; } if (id) Object.assign(p, { name, area, color: col, emoji: emo }); else S.projects.push({ id: uid(), name, area, color: col, emoji: emo }); save(); closeSheet(true); render(); };
+  $('#pSave').onclick = () => { const name = $('#pName').value.trim(); if (newA) { area = $('#pAreaNew').value.trim(); if (!area) { $('#pAreaNew').focus(); return; } } area ||= 'Personal'; if (!name) { $('#pName').focus(); return; } if (id) Object.assign(p, { name, area, color: col, emoji: emo }); else S.projects.push({ id: uid(), name, area, color: col, emoji: emo, at: Date.now() }); save(); closeSheet(true); render(); };
   if (id) $('#pDel').onclick = async () => { if (await uiConfirm(`Delete ${p.name}?`, 'Its tasks move to Inbox.')) { S.tasks.forEach(t => { if (t.projectId === id) t.projectId = null; }); S.projects = S.projects.filter(x => x.id !== id); save(); closeSheet(true); go('home'); } };
 }
 function tplForm(id, fromTask) {
@@ -4505,7 +4507,7 @@ function quickAdd(ctxOverride) {
     if (!m) return closePick();
     const sym = m[2], q = m[3].toLowerCase(), start = pos - m[3].length - 1; let items;
     if (sym === '@') {
-      items = S.projects.filter(p => !q || pslug(p.name).includes(q.replace(/_/g, '-')) || p.name.toLowerCase().includes(q)).slice(0, 8)
+      items = pickProjs().filter(p => !q || pslug(p.name).includes(q.replace(/_/g, '-')) || p.name.toLowerCase().includes(q))
         .map(p => ({ ins: '@' + (pslug(p.name) || p.name), html: `<span class="pd" style="background:${p.color || 'var(--muted)'}"></span>${esc((p.emoji ? p.emoji + ' ' : '') + p.name)}<small>${esc(p.area || '')}</small>` }));
       if (q && !S.projects.some(p => pslug(p.name) === pslug(q))) items.push({ ins: '@' + q, html: `<span class="ph">+</span>New project “${esc(cap(q.replace(/[-_]/g, ' ')))}”` });
     } else {
@@ -5331,7 +5333,7 @@ function wire(view) {
     const scanPk = () => {
       const pos = ab.selectionStart, before = ab.value.slice(0, pos), m = before.match(/(^|\s)([#@!])([\p{L}\p{N}_-]*)$/u); if (!m) return closePk();
       const sym = m[2], q = m[3].toLowerCase(), start = pos - m[3].length - 1; let items;
-      if (sym === '@') { items = S.projects.filter(p => !q || pslug(p.name).includes(q.replace(/_/g, '-')) || p.name.toLowerCase().includes(q)).slice(0, 8).map(p => ({ ins: '@' + (pslug(p.name) || p.name), html: `<span class="pd" style="background:${p.color || 'var(--muted)'}"></span>${esc((p.emoji ? p.emoji + ' ' : '') + p.name)}<small>${esc(p.area || '')}</small>` }));
+      if (sym === '@') { items = pickProjs().filter(p => !q || pslug(p.name).includes(q.replace(/_/g, '-')) || p.name.toLowerCase().includes(q)).map(p => ({ ins: '@' + (pslug(p.name) || p.name), html: `<span class="pd" style="background:${p.color || 'var(--muted)'}"></span>${esc((p.emoji ? p.emoji + ' ' : '') + p.name)}<small>${esc(p.area || '')}</small>` }));
         if (q && !S.projects.some(p => pslug(p.name) === pslug(q))) items.push({ ins: '@' + q, html: `<span class="ph">+</span>New project “${esc(cap(q.replace(/[-_]/g, ' ')))}”` }); }
       else if (sym === '#') { const tg = tagList(); items = tg.filter(x => !q || x.includes(q)).slice(0, 8).map(x => ({ ins: '#' + x, html: `<span class="ph">#</span>${esc(x)}` })); if (q && !tg.includes(q)) items.push({ ins: '#' + q, html: `<span class="ph">+</span>New tag “${esc(q)}”` }); }
       else items = [[1, '#E5484D', 'Urgent'], [2, '#F2A33A', 'High'], [3, '#2F7BEA', 'Medium'], [4, 'var(--muted)', 'Normal']].filter(([n]) => !q || String(n).startsWith(q)).map(([n, c, l]) => ({ ins: 'p' + n, html: `<span class="pd" style="background:${c}"></span>P${n}<small>${l}</small>` }));
