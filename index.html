@@ -1200,6 +1200,12 @@ body.selmode #fab{display:none!important}
 .sm-habits button.on{background:color-mix(in srgb,#22C55E 18%,var(--bg));color:#1E9E55}
 .rtm{flex:none;font-size:13.5px;font-weight:700;color:var(--soft);white-space:nowrap;padding:12px 20px 0 8px}.row:has(.subtog) .rtm{padding-right:2px}.rtm.soft{color:var(--muted);font-weight:600}.rtm s{opacity:.6;font-weight:500}
 .row.done .rtm{color:var(--muted);font-weight:500}
+.thead h1{display:flex;align-items:center;gap:10px}.tvbtn{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--muted);border:1px solid var(--line);flex:none}.tvbtn svg{width:17px;height:17px}.tvbtn:hover{color:var(--ink)}
+.tvh{width:100%;border:0;background:none;font:inherit;font-size:14px;font-weight:700;color:var(--soft);cursor:pointer;text-align:left}.tvh .tvc{display:grid;place-items:center;width:18px;height:18px;margin-left:-4px;color:var(--muted);transition:transform .18s}.tvh .tvc svg{width:16px;height:16px}.tvh.shut .tvc{transform:rotate(-90deg)}.tvh .cnt{color:var(--muted);font-weight:600}.tvh .tvmv{margin-left:auto;color:var(--accent-text);font-weight:700;font-size:13px}
+.tvm{padding:6px;border-radius:16px}.tvm .tvt{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:8px 10px 6px}
+.tvr{display:flex;align-items:center;gap:10px;width:100%;padding:11px 10px;border-radius:11px;border:0;background:none;color:var(--ink);font:inherit;font-size:15px;text-align:left;cursor:pointer}.tvr.on,.tvr:hover{background:var(--surface)}.tvr>svg{width:19px;height:19px;flex:none;color:var(--soft)}.tvr b{font-weight:600}.tvr span{margin-left:auto;color:var(--muted);font-size:14px}.tvr i{display:grid;width:16px;height:16px;color:var(--muted);transition:transform .18s}.tvr i svg{width:16px;height:16px}.tvr:not(.on) i{transform:rotate(-90deg)}
+.tvl{margin:2px 4px 6px 30px;border-left:2px solid var(--line);padding-left:6px}.tvl button{display:flex;align-items:center;width:100%;padding:9px 10px;border:0;background:none;border-radius:9px;color:var(--ink);font:inherit;font-size:14.5px;text-align:left;cursor:pointer}.tvl button:hover{background:var(--surface)}.tvl button.on{color:var(--accent-text);font-weight:700}.tvl button svg{width:16px;height:16px;margin-left:auto}
+.tvreset{width:100%;margin-top:4px;padding:10px;border:0;border-top:1px solid var(--line);background:none;color:var(--muted);font:inherit;font-size:13.5px;cursor:pointer}
 .sm-view{display:flex;gap:8px;padding:16px 20px 6px;flex-wrap:wrap}
 .sm-view button{height:34px;padding:0 12px;border-radius:17px;border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--soft);display:inline-flex;gap:6px;align-items:center}.sm-view svg{width:15px;height:15px}
 .sm-sheet{padding:0 2px 8px}
@@ -1986,7 +1992,8 @@ function migrate(s) {
 }
 function load() { let raw = null; try { raw = localStorage.getItem(KEY); const s = JSON.parse(raw); if (s && (s.v === 1 || s.v === 2)) return migrate(s); } catch (e) { try { if (raw) localStorage.setItem(KEY + '.rescue.' + Date.now(), raw); } catch (x) { } } return seed(); }
 let S = load();
-function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('Could not save. Storage may be full.'); } }
+let MT_SIG = null; function mtStamp() { const now = Date.now(), first = !MT_SIG; const nx = {}; S.tasks.forEach(t => { const { mt, firedKeys, nagAt, nagN, ...rest } = t; const j = JSON.stringify(rest); nx[t.id] = j; if (!first && MT_SIG[t.id] !== undefined && MT_SIG[t.id] !== j) t.mt = now; }); MT_SIG = nx; }
+function saveLocal() { try { mtStamp(); } catch (e) { } try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('Could not save. Storage may be full.'); } }
 function save() { saveLocal(); schedulePush(); pushQueueSoon(); }
 
 const getTask = id => S.tasks.find(t => t.id === id);
@@ -2804,6 +2811,47 @@ function dayBand() {
   const foot = `<div class="mtbf"><span>${plural(ms.length, 'meeting')} · ${fmtMins(busy)}${left.length && nx ? ` · ${left.length - 1 ? left.length - 1 + ' more after this' : 'last one today'}` : ''}</span>${others.length ? `<button data-act="meetopen" aria-expanded="${open_}">${open_ ? 'Hide' : 'See all'}<i class="chev${open_ ? '' : ' shut'}">${I.next}</i></button>` : ''}${nowChip}</div>`;
   return `<div class="mtb">${head}${list}${foot}${adH}</div>`;
 }
+/* Today view options, TickTick style: Group by, Sort by, Order. Groups fold open and shut. */
+const TV_G = [['time', 'Time of day'], ['project', 'Project'], ['date', 'Date'], ['created', 'Created time'], ['tag', 'Tag'], ['priority', 'Priority'], ['none', 'None']];
+const TV_S = [['smart', 'Smart'], ['date', 'Date'], ['created', 'Created time'], ['modified', 'Modified time'], ['title', 'Title'], ['tag', 'Tag'], ['priority', 'Priority']];
+const TV_IC = { g: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="10" rx="2"/><path d="M3 19h18"/></svg>', s: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4v16M4 20l-2-2M4 20l2-2M10 6h10M10 12h7M10 18h4"/></svg>', o: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20V4M3 8l4-4 4 4M17 4v16M13 16l4 4 4-4"/></svg>', chev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>' };
+function tdv() { const v = S.settings.tdv || {}; return { g: v.g || S.settings.todayGroup || 'time', s: v.s || 'smart', o: v.o || 'asc' }; }
+function tvOrd(s, o) { const L = s === 'priority' ? ['Highest first', 'Lowest first'] : s === 'title' || s === 'tag' ? ['A to Z', 'Z to A'] : s === 'smart' ? ['As planned', 'Reversed'] : ['Oldest first', 'Newest first']; if (s === 'date') { L[0] = 'Earliest first'; L[1] = 'Latest first'; } return o === 'desc' ? L[1] : L[0]; }
+function tvCmp(v) {
+  const k = { date: t => (t.date || '9999-99-99') + (t.time || '99:99'), created: t => t.createdAt || 0, modified: t => t.mt || t.createdAt || 0, title: t => (t.title || '').toLowerCase(), tag: t => (t.tags || [])[0] || '￿', priority: t => t.priority }[v.s];
+  const dir = v.o === 'desc' ? -1 : 1;
+  if (!k) return v.o === 'desc' ? (a, b) => -sortTasks(a, b) : sortTasks;
+  return (a, b) => { const x = k(a), y = k(b); if (x !== y) return (x < y ? -1 : 1) * dir; return sortTasks(a, b); };
+}
+const PRI_N = { 1: 'Urgent', 2: 'High', 3: 'Medium', 4: 'No priority' }, PRI_C = { 1: 'var(--danger)', 2: 'var(--accent-text)', 3: 'var(--meet)', 4: 'var(--ring)' };
+function tvGroups(list, v) {
+  const cmp = tvCmp(v), td = today(), out = [], put = (k, label, color, items, extra) => { if (items.length) out.push({ k, label, color, items: items.sort(cmp), ...(extra || {}) }); };
+  if (v.g === 'none') put('all', '', '', [...list]);
+  else if (v.g === 'priority') { const ps = [1, 2, 3, 4]; if (v.s === 'priority' && v.o === 'desc') ps.reverse(); ps.forEach(p => put('p' + p, PRI_N[p], PRI_C[p], list.filter(t => t.priority === p))); }
+  else if (v.g === 'project') { const g = {}; list.forEach(t => (g[t.projectId || '_'] ||= []).push(t)); Object.keys(g).sort((a, b) => a === '_' ? 1 : b === '_' ? -1 : S.projects.findIndex(p => p.id === a) - S.projects.findIndex(p => p.id === b)).forEach(k => { const p = proj(k); put('j' + k, p ? `${p.emoji ? p.emoji + ' ' : ''}${p.name}` : 'No project', p ? p.color : 'var(--ring)', g[k], { hide: !!p }); }); }
+  else if (v.g === 'date') { const g = {}; list.forEach(t => (g[t.date || ''] ||= []).push(t)); Object.keys(g).sort().forEach(d => put('d' + d, !d ? 'No date' : d === td ? 'Today' : d < td ? `Overdue · ${fmtShort(d)}` : fmtDate(d), d && d < td ? 'var(--danger)' : 'var(--accent-text)', g[d])); }
+  else if (v.g === 'created') { const day = 864e5, now = Date.now(), b = t => { const a = (now - (t.createdAt || 0)) / day; return a < 1 && ymd(new Date(t.createdAt)) === td ? 0 : ymd(new Date(t.createdAt)) === addDays(td, -1) ? 1 : a < 7 ? 2 : a < 31 ? 3 : 4; }; ['Created today', 'Yesterday', 'This week', 'This month', 'Earlier'].forEach((l, i) => put('c' + i, l, 'var(--accent-text)', list.filter(t => b(t) === i))); }
+  else if (v.g === 'tag') { const g = {}; list.forEach(t => (g[(t.tags || [])[0] || ''] ||= []).push(t)); Object.keys(g).sort((a, b) => !a ? 1 : !b ? -1 : a.localeCompare(b)).forEach(k => put('t' + k, k ? '#' + k : 'No tag', k ? 'var(--accent-text)' : 'var(--ring)', g[k])); }
+  return out;
+}
+function tvFold() { try { return JSON.parse(localStorage.getItem('sankalp.tvfold') || '{}'); } catch (e) { return {}; } }
+function tvHead(k, label, n, color, extra) { const f = tvFold()[k]; return `<button type="button" class="grouph tvh${f ? ' shut' : ''}" data-act="tvfold" data-id="${esc(k)}" aria-expanded="${!f}"><span class="tvc">${TV_IC.chev}</span>${color ? `<i class="dot" style="background:${color}"></i>` : ''}${label}<span class="cnt">${n}</span>${extra || ''}</button>`; }
+function tvBlock(k, label, list, color, o, extra) { if (!list.length) return ''; const f = tvFold()[k]; return (label ? tvHead(k, label, list.length, color, extra) : '') + (f ? '' : rows(list, o)); }
+function tvMenu(btn) {
+  closeCtx(); const r = btn.getBoundingClientRect(); let open = '';
+  const m = document.createElement('div'); m.id = 'ctx'; m.className = 'ctx tvm'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-label', 'View options'); document.body.appendChild(m);
+  const paint = () => { const v = tdv(), lab = (L, x) => (L.find(z => z[0] === x) || [, ''])[1];
+    const sec = (key, ic, name, val, opts, cur) => `<button type="button" class="tvr${open === key ? ' on' : ''}" data-tvo="${key}">${ic}<b>${name}</b><span>${val}</span><i>${TV_IC.chev}</i></button>${open === key ? `<div class="tvl">${opts.map(([k, l]) => `<button type="button" data-tvp="${key}" data-v="${k}" class="${k === cur ? 'on' : ''}">${l}${k === cur ? I.check : ''}</button>`).join('')}</div>` : ''}`;
+    m.innerHTML = `<div class="tvt">View options</div>` + sec('g', TV_IC.g, 'Group by', lab(TV_G, v.g), TV_G, v.g) + sec('s', TV_IC.s, 'Sort by', lab(TV_S, v.s), TV_S, v.s) + sec('o', TV_IC.o, 'Order', tvOrd(v.s, v.o), [['asc', tvOrd(v.s, 'asc')], ['desc', tvOrd(v.s, 'desc')]], v.o) + (v.g !== 'time' || v.s !== 'smart' || v.o !== 'asc' ? `<button type="button" class="tvreset" data-tvreset>Reset to default</button>` : '');
+    const w = Math.min(300, innerWidth - 16); m.style.width = w + 'px'; m.style.left = Math.max(8, Math.min(r.right - w, innerWidth - w - 8)) + 'px';
+    const h = m.offsetHeight; m.style.top = (r.bottom + 6 + h < innerHeight - 8 ? r.bottom + 6 : Math.max(8, r.top - h - 6)) + 'px';
+    $$('[data-tvo]', m).forEach(b => b.onclick = () => { open = open === b.dataset.tvo ? '' : b.dataset.tvo; paint(); });
+    const set = (k, val) => { S.settings.tdv = { ...tdv(), [k]: val }; if (k === 'g') S.settings.todayGroup = ['time', 'priority', 'project'].includes(val) ? val : S.settings.todayGroup; save(); render(); open = ''; paint(); };
+    $$('[data-tvp]', m).forEach(b => b.onclick = () => set(b.dataset.tvp, b.dataset.v));
+    const rs = $('[data-tvreset]', m); if (rs) rs.onclick = () => { S.settings.tdv = { g: 'time', s: 'smart', o: 'asc' }; S.settings.todayGroup = 'time'; save(); render(); open = ''; paint(); };
+  };
+  paint();
+}
 function groupBy(list, mode) {
   if (mode === 'priority') { return [1, 2, 3, 4].map(p => ({ k: p === 4 ? 'No priority' : 'Priority ' + p, color: p === 1 ? 'var(--danger)' : p === 2 ? 'var(--accent-text)' : p === 3 ? 'var(--meet)' : 'var(--ring)', items: list.filter(t => t.priority === p).sort(sortTasks) })).filter(g => g.items.length); }
   if (mode === 'project') {
@@ -2837,9 +2885,8 @@ function vToday() {
   const workN = PERS ? D0.openCount - D.openCount : 0, st = S.settings, td = today(), rec = S.days[td] || {}, now = Date.now(), nm = smNowM();
   const doneN = D.doneToday.length, tot = doneN + D.openCount, bday = S.dates.filter(x => occOf(x) === td);
   const P = smPlan(td, true), [w0, w1] = workWin(), late = !!rec.started && P.over.length > 0;
-  const gl = { time: 'Time', priority: 'Priority', project: 'Project' }[st.todayGroup] || 'Time';
   let h = topbar(`<button class="pill sm-askb" data-sm="ask" aria-label="Ask Dayline">✨ Ask</button>` + glowChip());
-  h += `<div class="thead"><h1>Today</h1><span>${DAYS[d.getDay()]}, ${d.getDate()} ${MONS[d.getMonth()]}${bday.length ? ' · 🎂 ' + bday.map(x => esc(x.name)).join(', ') : ''}<br>${tot ? `${doneN} of ${tot} done` : 'Nothing planned'}${D.overdue.length ? ` · <b>${D.overdue.length} overdue</b>` : ''}${rec.started && D.openCount && !rec.wrap && nm < w1 ? ` · <em class="${late ? 'lt' : 'ok'}">${late ? 'running late' : 'on track'}</em>` : ''}</span></div>`;
+  h += `<div class="thead"><h1>Today<button type="button" class="tvbtn" data-act="tvmenu" aria-label="View options: group and sort" title="Group and sort">${TV_IC.o}</button></h1><span>${DAYS[d.getDay()]}, ${d.getDate()} ${MONS[d.getMonth()]}${bday.length ? ' · 🎂 ' + bday.map(x => esc(x.name)).join(', ') : ''}<br>${tot ? `${doneN} of ${tot} done` : 'Nothing planned'}${D.overdue.length ? ` · <b>${D.overdue.length} overdue</b>` : ''}${rec.started && D.openCount && !rec.wrap && nm < w1 ? ` · <em class="${late ? 'lt' : 'ok'}">${late ? 'running late' : 'on track'}</em>` : ''}</span></div>`;
   h += bannersHtml();
   if (st.gOn && !gValid() && !S.pcal) h += `<button class="gnote" data-act="gref">${I.gcal}Google Calendar paused. Tap to refresh.</button>`;
   // one smart card: plan in the morning, next up in the day, close in the evening
@@ -2860,15 +2907,16 @@ function vToday() {
   const nx = N ? N.t.id : null, ex = l => l.filter(t => t.id !== nx);
   { const top = keep(((S.days[td] || {}).top || []).map(getTask).filter(t => t && !t.done && t.id !== nx && !(t.date && t.date > td))); if (top.length) h += `<div class="grouph" style="color:var(--accent-text)">${I.star} Top 3 for today</div>` + rows(top); }
   if (ex(D.pinned).length) h += `<div class="grouph">${I.pin} Pinned</div>` + rows(ex(D.pinned), { inPinned: true });
-  if (st.todayGroup === 'time') {
-    if (ex(D.overdue).length) h += `<div class="grouph" style="color:var(--danger)">Overdue <span class="cnt">${ex(D.overdue).length}</span><button data-act="moveoverdue" style="margin-left:auto;color:var(--accent-text);font-weight:700;font-size:13px">Move all to today</button></div>` + rows(ex(D.overdue));
-    if (ex(D.day).length) h += `<div class="grouph">${N ? 'Later today' : 'Today'}</div>` + rows(ex(D.day));
-    if (ex(D.evening).length) h += `<div class="grouph">${I.moon} Evening</div>` + rows(ex(D.evening));
-  } else groupBy(ex([...D.overdue, ...D.day, ...D.evening]), st.todayGroup).forEach(g => { h += `<div class="grouph"><i class="dot" style="background:${g.color}"></i>${esc(g.k)} <span class="cnt">${g.items.length}</span></div>` + rows(g.items, { hideProject: st.todayGroup === 'project' && g.hide }); });
+  const TV = tdv(), tcmp = TV.s === 'smart' && TV.o === 'asc' ? null : tvCmp(TV), so = l => tcmp ? [...l].sort(tcmp) : l;
+  if (TV.g === 'time') {
+    h += tvBlock('ov', 'Overdue', so(ex(D.overdue)), 'var(--danger)', null, `<span class="tvmv" data-act="moveoverdue">Move all to today</span>`);
+    h += tvBlock('day', N ? 'Later today' : 'Today', so(ex(D.day)), 'var(--accent-text)');
+    h += tvBlock('eve', 'Evening', so(ex(D.evening)), 'var(--meet)');
+  } else tvGroups(ex([...D.overdue, ...D.day, ...D.evening]), TV).forEach(g => { h += tvBlock(g.k, esc(g.label), g.items, g.color, { hideProject: TV.g === 'project' && g.hide }); });
   if (!D.openCount) h += `<div class="empty">${doneN ? 'All done for today ✓' : 'Nothing for today. Tap + to add a task.'}</div>`;
   if (isWide()) h += `<div class="td-add">${addBar('Add a task for today')}</div>`;
   if (doneN && st.showDone) h += `<div class="doneh">Done today <span>${doneN}</span></div>` + rows(D.doneToday);
-  h += `<div class="sm-view"><button data-act="groupcycle">${I.layers}Group: ${gl}</button>${doneN ? `<button data-act="toggledone">${st.showDone ? I.eyeoff : I.eye}${st.showDone ? 'Hide' : 'Show'} ${doneN} done</button>` : ''}</div>`;
+  h += `<div class="sm-view"><button data-act="tvmenu" aria-haspopup="dialog">${TV_IC.s}${TV.g === 'time' && TV.s === 'smart' ? 'View options' : `${(TV_G.find(z => z[0] === TV.g) || [, ''])[1]} · ${TV.s === 'smart' ? 'smart' : (TV_S.find(z => z[0] === TV.s) || [, ''])[1].toLowerCase()}`}</button>${doneN ? `<button data-act="toggledone">${st.showDone ? I.eyeoff : I.eye}${st.showDone ? 'Hide' : 'Show'} ${doneN} done</button>` : ''}</div>`;
   return h;
 }
 function vInbox() { const l = inboxTasks(); return topbar() + `<div class="pad"><h1 class="title">Inbox</h1></div><div style="height:8px"></div>` + addBar('Add a task to Inbox') + (l.length ? rows(l) : `<div class="empty">Inbox is clear.</div>`); }
@@ -4140,7 +4188,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.12.4';
+const APPV = '6.13';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5150,7 +5198,7 @@ function entities() {
   const o = {}; S.tasks.forEach(t => o['task:' + t.id] = t); S.projects.forEach(p => o['project:' + p.id] = p); S.habits.forEach(h => o['habit:' + h.id] = h);
   S.focus.forEach(f => o['focus:' + f.id] = f); S.dates.forEach(d => o['date:' + d.id] = d); (S.goals || []).forEach(g => o['goal:' + g.id] = g); S.templates.forEach(t => o['tpl:' + t.id] = t); Object.values(S.meetLog).forEach(m => { if (m.src !== 'pcal') o['meet:' + m.id] = m; }); if (S.pcal) o['pcal:' + (S.pcal.id || 'all')] = S.pcal; o['meta:coach'] = coachBrief(); Object.keys(IMGS).forEach(id => o['img:' + id] = { id, data: IMGS[id] }); (S.logs || []).forEach(l => o['log:' + l.id] = l); Object.values(S.phone || {}).forEach(p => o['phone:' + p.id] = p); o['meta:cur'] = { c: S.cur || null }; o['meta:rv'] = { v: remSig() }; if (S.remAck) o['meta:ack'] = S.remAck;
   const st = S.settings; o['meta:days'] = S.days; if (S.water) o['meta:water'] = S.water; (S.trash || []).forEach(x => o['trash:' + x.id] = x); (S.filters || []).forEach(f => o['filter:' + f.id] = f); if (S.rw) o['meta:rw'] = S.rw; o['meta:plan'] = S.plan; if (S.learn) o['meta:learn'] = S.learn; if (S.sales) o['meta:sales'] = S.sales; if (S.funnel) o['meta:funnel'] = S.funnel; o['meta:hsec'] = S.habitSections; { const J = rf(); Object.values(J.days).forEach(e => o['jday:' + e.d] = e); const { days, ...jm } = J; o['meta:jr'] = jm; }
-  o['meta:prefs'] = { phoneOff: !!st.phoneOff, coach: coachSet(), appmap: st.appmap, nagDef: st.nagDef, workStart: st.workStart, checkin: st.checkin, catv: st.catv, aiModel: st.aiModel, aiPrivate: st.aiPrivate, logo: st.logo, darkStyle: st.darkStyle, gcid: st.gcid, theme: st.theme, mode: st.mode, accent: st.accent, font: st.font, pomo: st.pomo, brk: st.brk, morning: st.morning, shutdown: st.shutdown, meetBefore: st.meetBefore, quietOn: st.quietOn, quietStart: st.quietStart, quietEnd: st.quietEnd, shield: st.shield, showDone: st.showDone, todayGroup: st.todayGroup, fx: st.fx, popRem: st.popRem, inCard: st.inCard, srvPush: st.srvPush };
+  o['meta:prefs'] = { phoneOff: !!st.phoneOff, coach: coachSet(), appmap: st.appmap, nagDef: st.nagDef, workStart: st.workStart, checkin: st.checkin, catv: st.catv, aiModel: st.aiModel, aiPrivate: st.aiPrivate, logo: st.logo, darkStyle: st.darkStyle, gcid: st.gcid, theme: st.theme, mode: st.mode, accent: st.accent, font: st.font, pomo: st.pomo, brk: st.brk, morning: st.morning, shutdown: st.shutdown, meetBefore: st.meetBefore, quietOn: st.quietOn, quietStart: st.quietStart, quietEnd: st.quietEnd, shield: st.shield, showDone: st.showDone, todayGroup: st.todayGroup, tdv: st.tdv, fx: st.fx, popRem: st.popRem, inCard: st.inCard, srvPush: st.srvPush };
   return o;
 }
 function setEntity(key, val) {
@@ -5572,6 +5620,7 @@ document.addEventListener('click', e => {
     subdone: () => { const t = getTask(id); const c = t.subs.find(x => x.id === b.dataset.s); c.d = !c.d; save(); renderMainOnly(); if (t.subs.every(x => x.d) && !t.done) toast('All subtasks done. Finish the task?', () => toggleDone(id)); },
     toggledone: () => { S.settings.showDone = !S.settings.showDone; save(); render(); },
     group: () => { S.settings.todayGroup = b.dataset.g; save(); render(); },
+    tvmenu: () => tvMenu(b), tvfold: () => { const f = tvFold(); if (f[id]) delete f[id]; else f[id] = 1; try { localStorage.setItem('sankalp.tvfold', JSON.stringify(f)); } catch (e) { } renderMainOnly(); },
     groupcycle: () => { const o = ['time', 'priority', 'project']; S.settings.todayGroup = o[(o.indexOf(S.settings.todayGroup) + 1) % 3]; save(); render(); toast('Grouped by ' + { time: 'time', priority: 'priority', project: 'project' }[S.settings.todayGroup]); },
     moveoverdue: () => { todayData().overdue.forEach(t => setDate(t, td)); save(); render(); toast('Moved to today'); },
     objective: () => textSheet('Today\'s objective', 'What would make today a good day?', S.days[td]?.objective, 'Close the Fusion proposal and clear follow-ups', v => { dayRec(td).objective = v; }),
