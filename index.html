@@ -1043,6 +1043,26 @@ body.typing .tabbar,body.typing .fab{display:none}
 .pgfx{margin:8px 16px 40px;padding:6px 4px}
 .wrw{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 4px;text-decoration:none;color:var(--ink)}.wrw>div{padding:10px 12px;border-radius:14px;background:linear-gradient(160deg,color-mix(in srgb,#FFB347 18%,var(--bg)),var(--surface))}.wrw b{font-family:var(--fd);font-size:20px;display:block}.wrw small{font-size:11.5px;font-weight:700;color:var(--muted)}
 .wrw-n{font-size:13.5px;color:var(--soft);margin:8px 0 10px;line-height:1.45}
+.hc-pop{animation:hcpop .8s cubic-bezier(.2,1.6,.4,1)}@keyframes hcpop{0%{transform:scale(1)}35%{transform:scale(1.35)}100%{transform:scale(1)}}
+.hc-ov{position:fixed;inset:0;z-index:9997;display:grid;place-items:center;padding:24px;background:rgba(5,8,20,.55);backdrop-filter:blur(3px);animation:hcfade .25s ease-out;cursor:pointer}.hc-ov.out{opacity:0;transition:.25s}
+.hc-ov.lv6,.hc-ov.lv7{background:rgba(5,8,20,.78)}
+.hc-card{position:relative;overflow:hidden;width:min(320px,100%);border-radius:28px;padding:26px 22px 18px;text-align:center;color:#fff;background:var(--hcbg);box-shadow:0 24px 70px rgba(0,0,0,.5);animation:hcin .55s cubic-bezier(.2,1.5,.4,1)}
+.hc-card>*{position:relative}.hc-rays{position:absolute!important;inset:-60%;background:repeating-conic-gradient(rgba(255,255,255,.13) 0 9deg,transparent 9deg 22deg);animation:hcspin 14s linear infinite;opacity:.0}
+.lv5 .hc-rays{opacity:.5}.lv6 .hc-rays,.lv7 .hc-rays{opacity:1}
+.hc-tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.16);margin-bottom:14px}
+.hc-med{width:120px;height:120px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;position:relative;animation:hcbob 2.4s ease-in-out infinite}
+.hc-med i{font-style:normal;font-size:52px;line-height:1;width:86px;height:86px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.16);position:relative;z-index:1}
+.hc-med.bronze{background:radial-gradient(circle at 35% 30%,#F5C18B,#B8732F 55%,#6B3B12);box-shadow:0 0 0 4px rgba(255,255,255,.12)}
+.hc-med.silver{background:radial-gradient(circle at 35% 30%,#fff,#C7CED8 50%,#6B7480);box-shadow:0 0 0 4px rgba(255,255,255,.15),0 0 34px rgba(255,255,255,.35)}
+.hc-med.gold{background:radial-gradient(circle at 35% 30%,#FFF3B0,#F5B700 50%,#9A6A00);box-shadow:0 0 0 5px rgba(255,236,150,.25),0 0 60px rgba(255,200,40,.6)}
+.th-mala .hc-med{background:none;box-shadow:none}.hc-beads{position:absolute;inset:0;width:100%;height:100%;animation:hcspin 30s linear infinite}
+.th-mala .hc-med i{background:radial-gradient(circle,#FDE68A,#F59E0B 70%);box-shadow:0 0 30px rgba(245,158,11,.6)}
+.lv7 .hc-med{width:136px;height:136px}.lv7 .hc-med i{width:96px;height:96px;font-size:58px}
+.hc-card b{display:block;font-size:26px;line-height:1.15;font-weight:800;letter-spacing:-.01em}.lv7 .hc-card b{font-size:30px}
+.hc-card span{display:block;margin-top:8px;font-size:14px;opacity:.9;line-height:1.4}
+.hc-dots{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin:14px auto 0;max-width:230px}.hc-dots i{width:8px;height:8px;border-radius:50%;background:#FDE68A;box-shadow:0 0 6px #FDE68A}
+.hc-card small{display:block;margin-top:16px;font-size:11px;opacity:.6}
+@keyframes hcin{0%{transform:scale(.6) translateY(30px);opacity:0}100%{transform:none;opacity:1}}@keyframes hcfade{from{opacity:0}}@keyframes hcspin{to{transform:rotate(360deg)}}@keyframes hcbob{50%{transform:translateY(-5px)}}
 .confetti{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9999}
 .xppop{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);z-index:9998;padding:6px 14px;border-radius:999px;background:linear-gradient(135deg,#FFB347,#FF6A3D);color:#fff;font-weight:800;font-size:14px;box-shadow:0 6px 18px rgba(255,106,61,.35);animation:xpp 1.3s ease-out forwards;pointer-events:none}
 @keyframes xpp{0%{opacity:0;transform:translate(-50%,10px) scale(.9)}15%{opacity:1;transform:translate(-50%,0) scale(1.05)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-40px)}}
@@ -3167,6 +3187,83 @@ function celebrate() {
   let t0 = performance.now(); const step = t => { const k = (t - t0) / 1000; g.clearRect(0, 0, innerWidth, innerHeight); P.forEach(p => { p.vy += .38; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.a += p.va; g.save(); g.globalAlpha = Math.max(0, 1 - k / 1.8); g.translate(p.x, p.y); g.rotate(p.a); g.fillStyle = p.c; g.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); g.restore(); }); if (k < 1.8) requestAnimationFrame(step); else cv.remove(); };
   requestAnimationFrame(step);
 }
+/* Habit celebrations: grow with the streak (3, 5, 7, 10, 21, 30…) and with goal multiples (2×, 3×, 5×, 10×), themed per habit */
+let HC_UI = 0, HC_ST = null;
+addEventListener('pointerdown', () => HC_UI = Date.now(), true); addEventListener('keydown', () => HC_UI = Date.now(), true);
+function hcTheme(h) {
+  const n = `${h.name} ${h.unit || ''} ${h.emoji || ''}`;
+  if (/chant|jaap|\bjap|mala|naam|mantra|📿|🕉/i.test(n)) return { k: 'mala', em: ['✨', '📿'], bead: 1, cols: ['#7C2D12', '#9A3412', '#B45309', '#D97706', '#FCD34D'], bg: 'linear-gradient(160deg,#2a1206,#7c2d12 60%,#b45309)', mot: 'rain' };
+  if (/surya|\bsun\b|arghya|🌅|☀|🌞|🌄/i.test(n)) return { k: 'sun', em: ['☀️', '✨'], drop: 1, cols: ['#F59E0B', '#FBBF24', '#FB923C', '#38BDF8', '#7DD3FC'], bg: 'linear-gradient(180deg,#1e3a8a,#c2410c 62%,#fbbf24)', mot: 'rise' };
+  if (h.type === 'avoid' || /🛑|🚫|⛔/.test(n)) return { k: 'shield', em: ['🛡️', '💪'], cols: ['#2563EB', '#3B82F6', '#60A5FA', '#A78BFA', '#E0E7FF'], bg: 'linear-gradient(160deg,#0b1229,#1e3a8a 60%,#4338ca)', mot: 'burst' };
+  if (/meditat|dhyan|pranayam|yoga|breath|🧘|🪷/i.test(n)) return { k: 'calm', em: ['🪷', '🌸'], cols: ['#F9A8D4', '#C4B5FD', '#FBCFE8', '#A5B4FC'], bg: 'linear-gradient(160deg,#1e1b4b,#6d28d9 60%,#db2777)', mot: 'rise' };
+  if (/walk|run|gym|exercise|workout|steps|cycl|swim|🏃|💪|🏋|🚶/i.test(n)) return { k: 'fit', em: ['⚡', '🔥', '💪'], cols: ['#EF4444', '#F97316', '#FACC15', '#FB7185'], bg: 'linear-gradient(160deg,#450a0a,#b91c1c 60%,#f97316)', mot: 'burst' };
+  if (/read|book|study|learn|📖|📚/i.test(n)) return { k: 'read', em: ['📖', '💡', '✨'], cols: ['#14B8A6', '#2DD4BF', '#FDE68A', '#99F6E4'], bg: 'linear-gradient(160deg,#042f2e,#0f766e 60%,#14b8a6)', mot: 'rain' };
+  return { k: 'any', em: [h.emoji || '✅', '✨'], cols: ['#F5A524', '#2F86F6', '#22C55E', '#EC4899', '#8B5CF6', '#FFD24D'], bg: 'linear-gradient(160deg,#111827,#3730a3 60%,#0d9488)', mot: 'rain' };
+}
+const HC_STREAK = { 3: [2, '3 in a row'], 5: [3, '5-day streak'], 7: [4, 'One full week'], 10: [5, '10 days strong'], 21: [6, 'Habit formed'], 30: [7, 'One whole month'], 50: [7, '50 days'], 100: [7, 'Century · 100 days'], 108: [7, '108 days · a full mala'], 150: [7, '150 days'], 200: [7, '200 days'], 365: [7, 'One whole year'], 500: [7, '500 days'], 1000: [7, '1,000 days'] };
+const HC_MULT = { 1: [2, 'Goal met'], 2: [3, 'Double goal'], 3: [4, '3× goal'], 4: [4, '4× goal'], 5: [5, '5× goal'], 10: [7, '10× goal'] };
+function hcMult(h, d) { if (!hUnit(h) || !h.goal) return 0; const m = Math.floor(hAmt(h, d) / h.goal); return m >= 10 ? 10 : m >= 5 ? 5 : m; }
+function hcWatch() {
+  const td = today(), cur = {}; (S.habits || []).forEach(h => cur[h.id] = { ok: hOk(h, td), m: hcMult(h, td) });
+  const prev = HC_ST; HC_ST = { td, cur }; if (!prev || prev.td !== td || Date.now() - HC_UI > 4000) return;
+  let best = null;
+  S.habits.forEach(h => { const a = prev.cur[h.id], b = cur[h.id]; if (!a) return; const nowOk = b.ok && !a.ok, upM = b.m > a.m;
+    if (!nowOk && !upM) return; const n = habitStreak(h), sT = nowOk ? (HC_STREAK[n] || (n === 1 ? [1, 'Day 1 · a fresh start'] : [1, `Day ${n}`])) : [0, ''], mT = upM ? HC_MULT[b.m] || [0, ''] : [0, ''];
+    const lv = Math.max(sT[0], mT[0]), title = mT[0] > sT[0] ? mT[1] : sT[1]; if (!best || lv > best.lv) best = { h, lv, title, n, m: b.m }; });
+  if (!best) return;
+  { const k = best.h.id + '|' + td + '|' + best.title; const seen = (S.hcSeen ||= {}); if (seen[k]) best.lv = Math.min(best.lv, 1); else { Object.keys(seen).forEach(x => { if (!x.includes('|' + td + '|')) delete seen[x]; }); seen[k] = 1; } }
+  const hs = S.habits.filter(h => h.days.includes(new Date().getDay())), perfect = hs.length >= 2 && hs.every(h => hOk(h, td) || h.log[td] === 0) && S.hcPerfect !== td;
+  if (perfect) { S.hcPerfect = td; save(); }
+  setTimeout(() => hcPlay(best.h, best.lv, best.title, best.n, best.m, perfect), 40);
+}
+function hcLine(h, n, m) {
+  const t = hcTheme(h), a = hUnit(h) ? hAmt(h, today()) : 0, nm = esc(h.name);
+  const what = a ? `${hFmt(h, a)} today` : t.k === 'shield' ? 'Stayed strong today' : t.k === 'sun' ? 'Offered today' : 'Done today';
+  const best = n > 1 && n >= habitBest(h) ? ' · your best ever' : '';
+  return `${nm} · ${what}${best}`;
+}
+function hcPlay(h, lv, title, n, m, perfect) {
+  const t = hcTheme(h), fx = S.settings.fx !== false && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const el = $(`.hb-d[data-id="${h.id}"]`) || $(`[data-act="habit"][data-id="${h.id}"]`) || $(`[data-id="${h.id}"]`); const r = el && el.getBoundingClientRect();
+  const ox = r && r.width ? r.left + r.width / 2 : innerWidth / 2, oy = r && r.width ? r.top + r.height / 2 : innerHeight * .45;
+  if (el && fx) { el.classList.remove('hc-pop'); void el.offsetWidth; el.classList.add('hc-pop'); setTimeout(() => el.classList.remove('hc-pop'), 900); }
+  if (fx) hcFx(t, lv, ox, oy);
+  if (lv >= 4) hcCard(h, t, lv, title, n, m, fx);
+  else toast(`${h.emoji || '✅'} ${title}${lv >= 2 ? ' 🔥' : ''} · ${h.name}${hUnit(h) && hAmt(h, today()) ? ' · ' + hFmt(h, hAmt(h, today())) : ''}`);
+  if (perfect) setTimeout(() => { if (fx) hcFx(hcTheme({ name: '', emoji: '🌟' }), 3, innerWidth / 2, innerHeight * .3, S.habits.map(x => x.emoji || '✅')); rewardToast('🌟', 'Perfect habit day', `All ${S.habits.filter(x => x.days.includes(new Date().getDay())).length} habits done today`); }, lv >= 4 ? 3200 : 1400);
+}
+function hcFx(t, lv, ox, oy, ems) {
+  const cv = document.createElement('canvas'); cv.className = 'confetti'; const W = innerWidth, H = innerHeight, dpr = devicePixelRatio || 1; cv.width = W * dpr; cv.height = H * dpr; document.body.appendChild(cv);
+  const g = cv.getContext('2d'); g.scale(dpr, dpr); const em = ems || t.em, P = [], rnd = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.floor(Math.random() * a.length)];
+  const kind = () => t.bead && Math.random() < .7 ? 'bead' : t.drop && Math.random() < .45 ? 'drop' : Math.random() < (lv >= 3 ? .35 : .5) ? 'emo' : 'conf';
+  const add = (x, y, vx, vy, gr, life, k) => P.push({ x, y, vx, vy, gr, life, k: k || kind(), r: rnd(5, 9), a: rnd(0, 6), va: rnd(-.2, .2), c: pick(t.cols), e: pick(em), s: rnd(16, 26), t0: 0 });
+  const burst = (x, y, cnt, sp) => { for (let i = 0; i < cnt; i++) { const an = Math.random() * Math.PI * 2, v = rnd(sp * .4, sp); add(x, y, Math.cos(an) * v, Math.sin(an) * v - 2, .22, rnd(1.1, 1.7)); } };
+  burst(ox, oy, [0, 16, 28, 30, 34, 40, 50, 60][lv], [0, 6, 8, 9, 9, 10, 11, 12][lv]);
+  const rainN = [0, 0, 0, 40, 46, 50, 70, 90][lv], dur = [0, 1.6, 1.8, 2.6, 3, 3.4, 4.2, 5][lv];
+  for (let i = 0; i < rainN; i++) { const d = rnd(0, dur * .5); if (t.mot === 'rise') add(rnd(0, W), H + 20 + d * 200, rnd(-.6, .6), -rnd(2.2, 4), -.012, dur, Math.random() < .6 ? 'emo' : kind()); else add(rnd(0, W), -20 - d * 240, rnd(-.8, .8), rnd(1.5, 3.5), .05, dur); }
+  const fw = [0, 0, 0, 0, 0, 3, 5, 8][lv];
+  for (let i = 0; i < fw; i++) setTimeout(() => { const x = rnd(W * .15, W * .85), y = rnd(H * .12, H * .4), c = pick(t.cols); for (let j = 0; j < 36; j++) { const an = j / 36 * Math.PI * 2, v = rnd(3.5, 5); P.push({ x, y, vx: Math.cos(an) * v, vy: Math.sin(an) * v, gr: .06, life: 1.3, k: 'spark', r: 2.6, a: 0, va: 0, c, t0: (performance.now() - T0) / 1000 }); } }, 350 + i * 420);
+  const T0 = performance.now(); const end = dur + fw * .45 + .4;
+  const draw = p => { g.fillStyle = p.c; if (p.k === 'emo') { g.font = `${p.s}px system-ui,"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji"`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(p.e, 0, 0); }
+    else if (p.k === 'bead') { const R = p.r * .95, gd = g.createRadialGradient(-R * .35, -R * .35, R * .1, 0, 0, R); gd.addColorStop(0, '#E9A56B'); gd.addColorStop(.55, p.c); gd.addColorStop(1, '#3b1406'); g.fillStyle = gd; g.beginPath(); g.arc(0, 0, R, 0, 7); g.fill(); g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = .8; g.beginPath(); g.moveTo(-R * .6, 0); g.lineTo(R * .6, 0); g.stroke(); }
+    else if (p.k === 'drop') { const R = p.r * .8; g.fillStyle = Math.random() < 2 ? '#38BDF8' : p.c; g.beginPath(); g.moveTo(0, -R * 1.6); g.quadraticCurveTo(R, 0, 0, R); g.quadraticCurveTo(-R, 0, 0, -R * 1.6); g.fill(); g.fillStyle = 'rgba(255,255,255,.7)'; g.beginPath(); g.arc(-R * .3, -R * .1, R * .25, 0, 7); g.fill(); }
+    else if (p.k === 'spark') { g.beginPath(); g.arc(0, 0, p.r, 0, 7); g.fill(); }
+    else g.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); };
+  const step = now => { const k = (now - T0) / 1000; g.clearRect(0, 0, W, H);
+    P.forEach(p => { if (k < p.t0) return; p.vy += p.gr; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.a += p.va; const al = Math.max(0, 1 - Math.max(0, k - p.t0 - p.life * .6) / (p.life * .4)); if (al <= 0) return;
+      g.save(); g.globalAlpha = al; g.translate(p.x, p.y); if (p.k !== 'emo' && p.k !== 'drop') g.rotate(p.a); draw(p); g.restore(); });
+    if (k < end) requestAnimationFrame(step); else cv.remove(); };
+  requestAnimationFrame(step);
+}
+function hcCard(h, t, lv, title, n, m, fx) {
+  $('#hcOv')?.remove(); const ov = document.createElement('div'); ov.id = 'hcOv'; ov.className = `hc-ov lv${lv} th-${t.k}`; ov.style.setProperty('--hcbg', t.bg);
+  const medal = lv >= 7 ? 'gold' : lv >= 6 ? 'gold' : lv >= 5 ? 'silver' : 'bronze';
+  const beads = t.bead ? `<svg class="hc-beads" viewBox="0 0 120 120">${Array.from({ length: 27 }, (_, i) => { const an = i / 27 * Math.PI * 2 - Math.PI / 2; return `<circle cx="${60 + Math.cos(an) * 52}" cy="${60 + Math.sin(an) * 52}" r="${i === 0 ? 6 : 4.6}" fill="${i === 0 ? '#F59E0B' : '#8B3A12'}" stroke="#3b1406" stroke-width=".8"/>`; }).join('')}</svg>` : '';
+  const sub = hcLine(h, n, m), tag = lv >= 7 ? (t.k === 'mala' ? 'Sadhana milestone' : 'Legend') : lv >= 6 ? 'Milestone' : lv >= 5 ? 'Big win' : 'Nice one';
+  ov.innerHTML = `<div class="hc-card"><div class="hc-rays"></div><div class="hc-tag">${tag}</div><div class="hc-med ${medal}">${beads}<i>${h.emoji || '✅'}</i></div><b>${esc(title)}</b><span>${sub}</span>${lv >= 6 ? `<div class="hc-dots">${Array.from({ length: Math.min(n, 30) }, () => '<i></i>').join('')}</div>` : ''}<small>Tap anywhere to continue</small></div>`;
+  ov.onclick = () => { ov.classList.add('out'); setTimeout(() => ov.remove(), 260); }; document.body.appendChild(ov);
+  setTimeout(() => ov.isConnected && ov.click(), lv >= 7 ? 6000 : lv >= 6 ? 5000 : 3800);
+}
 function xpPop(n) { if (S.settings.fx === false) return; const el = document.createElement('div'); el.className = 'xppop'; el.textContent = `+${n} XP`; document.body.appendChild(el); setTimeout(() => el.remove(), 1300); }
 function rewardToast(emo, title, sub) { const el = document.createElement('div'); el.className = 'rwtoast'; el.innerHTML = `<span class="rwe">${emo}</span><span><b>${esc(title)}</b><small>${esc(sub)}</small></span>`; el.onclick = () => { el.remove(); go('progress'); }; document.body.appendChild(el); setTimeout(() => el.classList.add('out'), 3600); setTimeout(() => el.remove(), 4200); }
 let rwT = 0;
@@ -4031,7 +4128,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.11.6';
+const APPV = '6.12';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5209,6 +5306,7 @@ function renderMainOnly() {
 function renderMainCore() { rwMemo = null; const v = route().view; $('#main').innerHTML = viewHtml(); $('#main').classList.toggle('calw', v === 'calendar' || v === 'week'); $('#main').classList.toggle('setw', v === 'settings'); document.body.classList.toggle('oncal', v === 'calendar' || v === 'week' || v === 'settings'); renderSide(); renderTabs(); renderRail(); wire(v); rewardCheck(); badge(); if (selMode) selPaint(); }
 function render() {
   const { view } = route(); renderMainOnly();
+  try { hcWatch(); } catch (e) { }
   $('#fab').style.display = ['settings', 'focus', 'insights', 'habits', 'dates', 'templates', 'home', 'review', 'life', 'progress', 'trash', 'reflect', 'you', 'close', 'calendar', 'week', 'sales', 'funnel'].includes(view) || (isWide() && $('#main .addbar')) ? 'none' : '';
 }
 function wire(view) {
