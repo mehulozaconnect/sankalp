@@ -1211,6 +1211,7 @@ body.selmode #fab{display:none!important}
 .grt{margin-top:10px;font-size:12.5px;color:var(--muted);line-height:1.45}.grt i{color:var(--soft);font-style:normal;font-weight:600}
 .cl .clx{display:block;height:auto;padding:12px 0 10px;cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;overflow-wrap:anywhere}
 .clg [data-sgf]{cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;padding:6px 0}.clg .sgch{display:inline-grid;width:18px;height:18px;vertical-align:-3px;margin-right:4px;color:var(--muted);transition:transform .18s}.clg .sgch svg{width:17px;height:17px}.clg.fold .sgch{transform:rotate(-90deg)}.clg .sgpv{display:block;font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clnote{display:block;font-size:13px;color:var(--soft);margin:-4px 0 8px;line-height:1.35;overflow-wrap:anywhere}.clg .clnote{margin:2px 0 0}
 .sgbtn{margin-left:auto;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:15px;border:1px solid var(--line);background:none;color:var(--accent-text);font:inherit;font-size:13px;font-weight:700;cursor:pointer;text-transform:none;letter-spacing:0}.sgbtn svg{width:15px;height:15px}
 #pSubs h3{display:flex;align-items:center}
 .clg{background:var(--surface);border-radius:12px;margin-top:8px;border-bottom:0!important}.clg .clgn{display:block;font-size:15.5px;font-weight:700;padding:2px 0}.clg .clgn em{font-style:normal;font-weight:600;font-size:13px;color:var(--muted);margin-left:4px}.clg.done .clgn{color:var(--muted);text-decoration:line-through}
@@ -4240,7 +4241,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.15.1';
+const APPV = '6.15.2';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4876,8 +4877,9 @@ function pageMenu(t) {
     else if (m === 'del') { const id = t.id; closePage(); deleteTask(id); }
   });
 }
+const subNote = c => c.n ? `<small class="clnote">💬 ${esc(c.n)}</small>` : '';
 const subMeta = c => { const m = []; if (c.p && c.p < 4) m.push(`<span class="sp p${c.p}">${I.flag}P${c.p}</span>`); if (c.at) m.push(`<span class="${!c.d && new Date(c.at).getTime() < Date.now() ? 'late' : ''}">${I.bell}${esc(subWhen(c))}</span>`); else if (c.due) m.push(`<span class="${!c.d && c.due < today() ? 'late' : ''}">${I.cal}${esc(fmtDate(c.due))}</span>`); (c.tags || []).forEach(x => m.push(`<span>#${esc(x)}</span>`)); return m.length ? `<small class="clat">${m.join('')}</small>` : ''; };
-const clRow = (c, withBell) => `<div class="cl${c.d ? ' done' : ''}" data-c="${c.id}"><input type="checkbox"${c.d ? ' checked' : ''} aria-label="Done"><span class="clw"><span class="clt clx" role="button" tabindex="0" aria-label="${esc(c.t)}, tap to tick">${esc(c.t)}</span>${subMeta(c)}</span>${withBell ? `<button type="button" class="iconbtn${c.at || c.due || (c.p && c.p < 4) || (c.tags || []).length ? ' on' : ''}" data-bell aria-label="Subtask details: priority, date, time, tags">${I.more}</button>` : ''}<button type="button" class="iconbtn" data-rm aria-label="Remove subtask">${I.trash}</button></div>`;
+const clRow = (c, withBell) => `<div class="cl${c.d ? ' done' : ''}" data-c="${c.id}"><input type="checkbox"${c.d ? ' checked' : ''} aria-label="Done"><span class="clw"><span class="clt clx" role="button" tabindex="0" aria-label="${esc(c.t)}, tap to tick">${esc(c.t)}</span>${subMeta(c)}${subNote(c)}</span>${withBell ? `<button type="button" class="iconbtn${c.at || c.due || (c.p && c.p < 4) || (c.tags || []).length || c.n ? ' on' : ''}" data-bell aria-label="Subtask details: note, priority, date, time, tags">${I.more}</button>` : ''}<button type="button" class="iconbtn" data-rm aria-label="Remove subtask">${I.trash}</button></div>`;
 /* Subtask groups: a header subtask (grp) holds one priority and one reminder for items bought or done together (c.g = header id) */
 const subN = t => t.subs.filter(c => !c.grp).length;
 function sgFoldMap() { try { return JSON.parse(localStorage.getItem('sankalp.sgfold') || '{}'); } catch (e) { return {}; } }
@@ -4906,7 +4908,7 @@ function sgSheet(t, h) {
   };
   if (h) $('#sgUn').onclick = () => { t.subs.forEach(c => { if (c.g === h.id) delete c.g; }); t.subs = t.subs.filter(c => c !== h); save(); closeSheet(true); renderPage(); toast('Ungrouped'); };
 }
-const clGrp = (t, h) => { const it = t.subs.filter(c => c.g === h.id), dn = it.filter(c => c.d).length, fo = sgFolded(h), left = it.filter(c => !c.d).map(c => c.t); return `<div class="cl clg${h.d ? ' done' : ''}${fo ? ' fold' : ''}" data-c="${h.id}"><input type="checkbox"${h.d ? ' checked' : ''} aria-label="All done in ${esc(h.t)}"><span class="clw" data-sgf role="button" tabindex="0" aria-expanded="${!fo}" aria-label="${fo ? 'Show' : 'Hide'} items in ${esc(h.t)}"><b class="clgn"><i class="sgch">${TV_IC.chev}</i>${esc(h.t)} <em>${dn}/${it.length}</em></b>${subMeta(h)}${fo && left.length ? `<small class="sgpv">${esc(left.slice(0, 6).join(', '))}${left.length > 6 ? ` +${left.length - 6}` : ''}</small>` : ''}</span><button type="button" class="iconbtn${h.at || h.due || (h.p && h.p < 4) ? ' on' : ''}" data-bell aria-label="Group priority and reminder">${I.bell}</button><button type="button" class="iconbtn" data-sg aria-label="Edit group">${I.more}</button></div>`; };
+const clGrp = (t, h) => { const it = t.subs.filter(c => c.g === h.id), dn = it.filter(c => c.d).length, fo = sgFolded(h), left = it.filter(c => !c.d).map(c => c.t); return `<div class="cl clg${h.d ? ' done' : ''}${fo ? ' fold' : ''}" data-c="${h.id}"><input type="checkbox"${h.d ? ' checked' : ''} aria-label="All done in ${esc(h.t)}"><span class="clw" data-sgf role="button" tabindex="0" aria-expanded="${!fo}" aria-label="${fo ? 'Show' : 'Hide'} items in ${esc(h.t)}"><b class="clgn"><i class="sgch">${TV_IC.chev}</i>${esc(h.t)} <em>${dn}/${it.length}</em></b>${subMeta(h)}${subNote(h)}${fo && left.length ? `<small class="sgpv">${esc(left.slice(0, 6).join(', '))}${left.length > 6 ? ` +${left.length - 6}` : ''}</small>` : ''}</span><button type="button" class="iconbtn${h.at || h.due || (h.p && h.p < 4) ? ' on' : ''}" data-bell aria-label="Group priority and reminder">${I.bell}</button><button type="button" class="iconbtn" data-sg aria-label="Edit group">${I.more}</button></div>`; };
 /* "Call Madhu tod 4pm p1 #call" -> subtask with priority, reminder and tags */
 function subFromText(v) {
   const r = parseTask(v); const c = { id: uid(), t: (r.title || v).trim(), d: false };
@@ -4916,10 +4918,11 @@ function subFromText(v) {
 }
 function subRemind(t, c) {
   const td = today(); const [d0, t0] = (c.at || '').split('T');
-  openSheet(sheetHead('Subtask', 'Done', 'srOk') + `<div class="field"><label for="srN">Subtask</label><textarea class="inp one" rows="1" id="srN" autocomplete="off" data-form-type="other">${esc(c.t)}</textarea></div>
+  openSheet(sheetHead(c.grp ? 'Group' : 'Subtask', 'Done', 'srOk') + `<div class="field"><label for="srN">${c.grp ? 'Group name' : 'Subtask'}</label><textarea class="inp one" rows="1" id="srN" autocomplete="off" data-form-type="other">${esc(c.t)}</textarea></div>
   <div class="field"><label>Priority</label><div class="seg" id="srP">${[1, 2, 3, 4].map(p => `<button type="button" data-p="${p}" class="${(c.p || 4) === p ? 'on' : ''}">${p === 4 ? 'None' : 'P' + p}</button>`).join('')}</div></div>
   <div class="optchips" id="srQ">${[['30', 'In 30 min'], ['60', 'In 1 hour'], ['eve', 'Today 6 PM'], ['tm', 'Tomorrow 9 AM']].map(([k, l]) => `<button type="button" data-q="${k}">${l}</button>`).join('')}</div>
   <div class="grid2" style="margin-top:12px"><div class="field" style="margin:0"><label for="srD">Date</label><input class="inp" type="date" id="srD" value="${d0 || c.due || ''}"></div><div class="field" style="margin:0"><label for="srT">Time (reminds you)</label><input class="inp" type="time" id="srT" value="${t0 || ''}"></div></div>
+  <div class="field" style="margin-top:12px"><label for="srC">Note</label><textarea class="inp" rows="2" id="srC" placeholder="${c.grp ? 'e.g. Take from Krishna Vegetables' : 'e.g. Right side only'}" autocomplete="off" data-form-type="other">${esc(c.n || '')}</textarea></div>
   <div class="field" style="margin-top:12px"><label for="srG">Tags</label><textarea class="inp one" rows="1" id="srG" placeholder="call, email" autocomplete="off" data-form-type="other">${esc((c.tags || []).join(', '))}</textarea></div>
   ${c.at || c.due ? `<div class="btnrow"><button class="btn sec" id="srDel">${I.x}Clear date and time</button></div>` : ''}`);
   let pr = c.p || 4;
@@ -4928,6 +4931,7 @@ function subRemind(t, c) {
   $$('#srQ button').forEach(b => b.onclick = () => { const q = b.dataset.q; const n = new Date(); if (q === '30' || q === '60') { n.setMinutes(n.getMinutes() + +q, 0, 0); setAt(n); } else if (q === 'eve') { n.setHours(18, 0, 0, 0); setAt(n); } else { n.setDate(n.getDate() + 1); n.setHours(9, 0, 0, 0); setAt(n); } $$('#srQ button').forEach(x => x.classList.toggle('on', x === b)); });
   $('#srOk').onclick = () => {
     const nm = $('#srN').value.trim(); if (nm) c.t = nm;
+    { const nt = $('#srC').value.trim(); if (nt) c.n = nt; else delete c.n; }
     const d = $('#srD').value, tm = $('#srT').value; const oldAt = c.at;
     delete c.at; delete c.due;
     if (tm) c.at = (d || td) + 'T' + tm; else if (d) c.due = d;
@@ -5411,7 +5415,7 @@ function pushItems() {
     const zt = t.snoozeUntil > now ? t.snoozeUntil : 0; const A2 = zt ? A.filter(a => a.at >= zt || a.at < now - 6e4) : A;
     run({ id: t.id, title: t.title, tag: 't' + t.id, p: t.priority, nagBody: 'Still not done' }, A2);
     (t.subs || []).forEach(c => { if (c.d) return; const B = [];
-      if (c.at) { const at = new Date(c.at).getTime(); if (!isNaN(at)) B.push({ at, k: 's' + c.id + c.at, body: c.grp ? `${t.subs.filter(x => x.g === c.id && !x.d).map(x => x.t).join(', ').slice(0, 140)} · ${t.title}` : `Part of ${t.title}${p ? ' · ' + p.name : ''}`, nags: true }); }
+      if (c.at) { const at = new Date(c.at).getTime(); if (!isNaN(at)) B.push({ at, k: 's' + c.id + c.at, body: (c.n ? c.n + ' · ' : '') + (c.grp ? `${t.subs.filter(x => x.g === c.id && !x.d).map(x => x.t).join(', ').slice(0, 140)} · ${t.title}` : `Part of ${t.title}${p ? ' · ' + p.name : ''}`), nags: true }); }
       if (c.snoozeUntil) B.push({ at: c.snoozeUntil, k: 's' + c.id + '|z' + c.snoozeUntil, body: `Snoozed. Part of ${t.title}`, nags: true });
       const zc = c.snoozeUntil > now ? c.snoozeUntil : 0; run({ id: t.id, sub: c.id, title: c.t, ptitle: t.title, tag: 's' + c.id, p: t.priority, nagBody: `Still not done. Part of ${t.title}` }, zc ? B.filter(a => a.at >= zc || a.at < now - 6e4) : B); });
   });
