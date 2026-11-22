@@ -3247,8 +3247,10 @@ function rwIndex() {
   S.tasks.forEach(t => { if (t.done && t.doneAt) (done[ymd(new Date(t.doneAt))] ||= []).push(t); });
   S.focus.forEach(f => { const k = ymd(new Date(f.start)); focus[k] = (focus[k] || 0) + (+f.mins || 0); });
   const W = water(); const wUsed = false; // water now lives in the Arogya app
+  // deleted tasks no longer count against the day
+  const LIVE = new Set(); S.tasks.forEach(t => { LIVE.add(t.id); if (t.orig) LIVE.add(t.orig); });
   const score = d => {
-    const ids = S.plan[d] || []; const dn = (done[d] || []); const dnPlan = dn.filter(t => ids.includes(t.id) || ids.includes(t.orig)).length; const p = Math.max(ids.length, dnPlan);
+    const ids = (S.plan[d] || []).filter(id => LIVE.has(id)); const dn = (done[d] || []); const dnPlan = dn.filter(t => ids.includes(t.id) || ids.includes(t.orig)).length; const p = Math.max(ids.length, dnPlan);
     const wd = pYmd(d).getDay(); const hd = S.habits.filter(h => h.days.includes(wd) && d >= hStart(h)); const hDone = hd.filter(h => hOk(h, d)).length;
     const parts = []; if (p) parts.push([dnPlan / p, .5]); else if (dn.length) parts.push([1, .5]);
     if (hd.length) parts.push([hDone / hd.length, .3]);
@@ -4241,7 +4243,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.15.2';
+const APPV = '6.15.3';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
