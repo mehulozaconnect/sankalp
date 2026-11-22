@@ -22,6 +22,7 @@ jobs:
             T=$(gcloud auth print-access-token); B="https://firestore.googleapis.com/v1/projects/$P/databases/(default)/documents"; U=yGkm2hVTyqTOYtbYp87STmgTDTx2
             echo "== pushq"; curl -sS -H "Authorization: Bearer $T" "$B/pushq/$U" | python3 -c "import sys,json; d=json.load(sys.stdin); f=d.get('fields',{}); print({k:(v.get('booleanValue', v.get('integerValue','..'))) for k,v in f.items() if k not in ('items','water')})"
             for k in meta%253Aack meta%253Arv; do curl -sS -H "Authorization: Bearer $T" "$B/users/$U/items/$k" | python3 -c "import sys,json; d=json.load(sys.stdin); f=d.get('fields',{}); print('$k', f.get('u',{}).get('integerValue'), f.get('d',{}).get('stringValue','')[:120])"; done
+            T=$T python3 diag/check.py 2>&1 | cut -c1-900
             echo "== push sends (last 18h)"; gcloud logging read 'timestamp>="'$(date -u -d '-18 hours' +%FT%TZ)'" AND resource.type="cloud_run_revision" AND resource.labels.service_name="tick" AND severity>=WARNING' --project $P --limit 15 --format='value(timestamp,textPayload)' 2>&1 | cut -c1-200
             date -u +%s
           } > out.txt
