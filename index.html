@@ -1209,6 +1209,8 @@ body.selmode #fab{display:none!important}
 .grbox{margin:14px 0 4px;padding:12px 14px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}.grh{display:flex;align-items:baseline;gap:8px}.grh b{font-size:15px}.grh span{margin-left:auto;font-size:13px;color:var(--accent-text);font-weight:600}
 .grl{margin:10px 0 6px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}.grc{display:flex;flex-wrap:wrap;gap:7px}.grc button{height:34px;padding:0 12px;border-radius:17px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}.grc button:active{transform:scale(.95)}
 .grt{margin-top:10px;font-size:12.5px;color:var(--muted);line-height:1.45}.grt i{color:var(--soft);font-style:normal;font-weight:600}
+.cl .clx{display:block;height:auto;padding:12px 0 10px;cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;overflow-wrap:anywhere}
+.clg [data-sgf]{cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;padding:6px 0}.clg .sgch{display:inline-grid;width:18px;height:18px;vertical-align:-3px;margin-right:4px;color:var(--muted);transition:transform .18s}.clg .sgch svg{width:17px;height:17px}.clg.fold .sgch{transform:rotate(-90deg)}.clg .sgpv{display:block;font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sgbtn{margin-left:auto;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:15px;border:1px solid var(--line);background:none;color:var(--accent-text);font:inherit;font-size:13px;font-weight:700;cursor:pointer;text-transform:none;letter-spacing:0}.sgbtn svg{width:15px;height:15px}
 #pSubs h3{display:flex;align-items:center}
 .clg{background:var(--surface);border-radius:12px;margin-top:8px;border-bottom:0!important}.clg .clgn{display:block;font-size:15.5px;font-weight:700;padding:2px 0}.clg .clgn em{font-style:normal;font-weight:600;font-size:13px;color:var(--muted);margin-left:4px}.clg.done .clgn{color:var(--muted);text-decoration:line-through}
@@ -2410,6 +2412,7 @@ function grQuick(v) {
 }
 function grChips(t) {
   if (!GR_RE.test(t.title || '') || t.done) return '';
+  if (!grItems(t).length && (t.subs || []).length) return ''; // using subtasks instead of the notes list
   const h = grHist(); if (!Object.keys(h).length) { ['Onion', 'Tomato', 'Potatoes', 'Dhaniya', 'Green chilli', 'Ginger', 'Lemon', 'Milk', 'Curd', 'Bananas'].forEach(c => h[c.toLowerCase()] = { n: 0, c }); grSeen(grItems(t).map(i => i.x)); }
   const inL = new Set(grItems(t).filter(i => !i.ck).map(i => i.x.toLowerCase().replace(/\s*[-–(].*$/, '').trim()));
   const w1 = k => k.split(/\s+/)[0], used = new Set([...inL].map(w1)); const top = Object.entries(h).sort((a, b) => b[1].n - a[1].n || (b[1].at || 0) - (a[1].at || 0)).filter(([k]) => { if (inL.has(k) || used.has(w1(k))) return false; used.add(w1(k)); return true; }).slice(0, 16);
@@ -4237,7 +4240,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.15';
+const APPV = '6.15.1';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4750,9 +4753,9 @@ function renderPage(fresh) {
   { let ldT; $('#pNotes').addEventListener('input', () => { clearTimeout(ldT); ldT = setTimeout(() => { const w = $('#ldWrap'); if (!w) return; const tmp = { ...t, notes: cleanHtml($('#pNotes').innerHTML) }; w.innerHTML = ldBarHtml(tmp); }, 400); }); }
   const clWire = () => $$('#pCl .cl').forEach(el => {
     const c = t.subs.find(x => x.id === el.dataset.c); if (!c) return;
-    el.querySelector('input[type=checkbox]').onchange = e => { if (c.grp) { sgSetAll(t, c, e.target.checked); save(); renderPage(); return; } c.d = e.target.checked; if (c.d) { c.nagAt = 0; c.snoozeUntil = 0; } el.classList.toggle('done', c.d); const hd = c.g && t.subs.find(x => x.id === c.g); if (hd) { sgSync(t); save(); renderPage(); } else save(); if (t.subs.every(x => x.d) && !t.done) toast('All subtasks done. Finish the task?', () => { toggleDone(t.id); renderPage(); }); };
-    if (c.grp) { el.querySelector('[data-bell]').onclick = () => subRemind(t, c); el.querySelector('[data-sg]').onclick = () => sgSheet(t, c); return; }
-    const ct = el.querySelector('.clt'); ct.oninput = e => { c.t = e.target.value.replace(/\n/g, ' '); save(); }; ct.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); ct.blur(); } };
+    el.querySelector('input[type=checkbox]').onchange = e => { if (c.grp) { sgSetAll(t, c, e.target.checked); { const m = sgFoldMap(); delete m[c.id]; try { localStorage.setItem('sankalp.sgfold', JSON.stringify(m)); } catch (er) { } } save(); renderPage(); return; } c.d = e.target.checked; if (c.d) { c.nagAt = 0; c.snoozeUntil = 0; } el.classList.toggle('done', c.d); const hd = c.g && t.subs.find(x => x.id === c.g); if (hd) { sgSync(t); save(); renderPage(); } else save(); if (t.subs.every(x => x.d) && !t.done) toast('All subtasks done. Finish the task?', () => { toggleDone(t.id); renderPage(); }); };
+    if (c.grp) { el.querySelector('[data-bell]').onclick = () => subRemind(t, c); el.querySelector('[data-sg]').onclick = () => sgSheet(t, c); el.querySelector('[data-sgf]').onclick = () => { sgFoldSet(c, !sgFolded(c)); renderPage(); }; return; }
+    const ct = el.querySelector('.clt'), cb = el.querySelector('input[type=checkbox]'); ct.onclick = () => { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); }; ct.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ct.click(); } };
     el.querySelector('[data-rm]').onclick = () => { t.subs = t.subs.filter(x => x !== c); el.remove(); save(); };
     const bl = el.querySelector('[data-bell]'); if (bl) bl.onclick = () => subRemind(t, c);
   });
@@ -4874,13 +4877,16 @@ function pageMenu(t) {
   });
 }
 const subMeta = c => { const m = []; if (c.p && c.p < 4) m.push(`<span class="sp p${c.p}">${I.flag}P${c.p}</span>`); if (c.at) m.push(`<span class="${!c.d && new Date(c.at).getTime() < Date.now() ? 'late' : ''}">${I.bell}${esc(subWhen(c))}</span>`); else if (c.due) m.push(`<span class="${!c.d && c.due < today() ? 'late' : ''}">${I.cal}${esc(fmtDate(c.due))}</span>`); (c.tags || []).forEach(x => m.push(`<span>#${esc(x)}</span>`)); return m.length ? `<small class="clat">${m.join('')}</small>` : ''; };
-const clRow = (c, withBell) => `<div class="cl${c.d ? ' done' : ''}" data-c="${c.id}"><input type="checkbox"${c.d ? ' checked' : ''} aria-label="Done"><span class="clw"><textarea class="clt" rows="1" aria-label="Subtask" autocomplete="off">${esc(c.t)}</textarea>${subMeta(c)}</span>${withBell ? `<button type="button" class="iconbtn${c.at || c.due || (c.p && c.p < 4) || (c.tags || []).length ? ' on' : ''}" data-bell aria-label="Subtask details: priority, date, time, tags">${I.more}</button>` : ''}<button type="button" class="iconbtn" data-rm aria-label="Remove subtask">${I.trash}</button></div>`;
+const clRow = (c, withBell) => `<div class="cl${c.d ? ' done' : ''}" data-c="${c.id}"><input type="checkbox"${c.d ? ' checked' : ''} aria-label="Done"><span class="clw"><span class="clt clx" role="button" tabindex="0" aria-label="${esc(c.t)}, tap to tick">${esc(c.t)}</span>${subMeta(c)}</span>${withBell ? `<button type="button" class="iconbtn${c.at || c.due || (c.p && c.p < 4) || (c.tags || []).length ? ' on' : ''}" data-bell aria-label="Subtask details: priority, date, time, tags">${I.more}</button>` : ''}<button type="button" class="iconbtn" data-rm aria-label="Remove subtask">${I.trash}</button></div>`;
 /* Subtask groups: a header subtask (grp) holds one priority and one reminder for items bought or done together (c.g = header id) */
 const subN = t => t.subs.filter(c => !c.grp).length;
+function sgFoldMap() { try { return JSON.parse(localStorage.getItem('sankalp.sgfold') || '{}'); } catch (e) { return {}; } }
+function sgFolded(h) { const f = sgFoldMap()[h.id]; return f === undefined ? !!h.d : f === 1; }
+function sgFoldSet(h, v) { const m = sgFoldMap(); m[h.id] = v ? 1 : 0; try { localStorage.setItem('sankalp.sgfold', JSON.stringify(m)); } catch (e) { } }
 function sgSync(t) { (t.subs || []).filter(h => h.grp).forEach(h => { const it = t.subs.filter(c => c.g === h.id); if (it.length) { const all = it.every(c => c.d); if (all !== !!h.d) { h.d = all; if (all) { h.nagAt = 0; h.snoozeUntil = 0; } } } }); }
 function sgSetAll(t, h, on) { h.d = on; if (on) { h.nagAt = 0; h.snoozeUntil = 0; } t.subs.filter(c => c.g === h.id).forEach(c => { c.d = on; if (on) { c.nagAt = 0; c.snoozeUntil = 0; } }); }
 const SG_VEG = /\b(potato|aloo|onion|kanda|pyaz|tomato|dhaniya|dhnaiya|coriander|mirchi|chilli|chili|ginger|adrak|garlic|lahsun|lemon|nimbu|tindora|tondli|bhindi|okra|carr?ot|corr?ot|gajar|capsicum|cabbage|cauliflower|gobi|dudhi|lauki|karela|brinjal|baingan|spinach|palak|methi|peas|matar|beans|cucumber|kakdi|beetroot|radish|mooli|pumpkin|sweet potato|corn|mushroom|curry leaves|pudina|mint|sabzi|veg)/i;
-function sgOrder(t) { const H = t.subs.filter(c => c.grp).sort((a, b) => (a.p || 4) - (b.p || 4)), out = []; H.forEach(h => { out.push(h); t.subs.filter(c => c.g === h.id && !c.grp).forEach(c => out.push(c)); }); t.subs.filter(c => !c.grp && !(c.g && H.some(h => h.id === c.g))).forEach(c => out.push(c)); return out; }
+function sgOrder(t) { const H = t.subs.filter(c => c.grp).sort((a, b) => (!!a.d - !!b.d) || (a.p || 4) - (b.p || 4)), out = []; H.forEach(h => { out.push(h); if (!sgFolded(h)) t.subs.filter(c => c.g === h.id && !c.grp).forEach(c => out.push(c)); }); t.subs.filter(c => !c.grp && !(c.g && H.some(h => h.id === c.g))).forEach(c => out.push(c)); return out; }
 function sgSheet(t, h) {
   const free = t.subs.filter(c => !c.grp && (!c.g || (h && c.g === h.id) || !t.subs.some(x => x.id === c.g)));
   const sel = new Set(h ? free.filter(c => c.g === h.id).map(c => c.id) : free.filter(c => SG_VEG.test(c.t)).map(c => c.id));
@@ -4900,7 +4906,7 @@ function sgSheet(t, h) {
   };
   if (h) $('#sgUn').onclick = () => { t.subs.forEach(c => { if (c.g === h.id) delete c.g; }); t.subs = t.subs.filter(c => c !== h); save(); closeSheet(true); renderPage(); toast('Ungrouped'); };
 }
-const clGrp = (t, h) => { const it = t.subs.filter(c => c.g === h.id), dn = it.filter(c => c.d).length; return `<div class="cl clg${h.d ? ' done' : ''}" data-c="${h.id}"><input type="checkbox"${h.d ? ' checked' : ''} aria-label="All done in ${esc(h.t)}"><span class="clw"><b class="clgn">${esc(h.t)} <em>${dn}/${it.length}</em></b>${subMeta(h)}</span><button type="button" class="iconbtn${h.at || h.due || (h.p && h.p < 4) ? ' on' : ''}" data-bell aria-label="Group priority and reminder">${I.bell}</button><button type="button" class="iconbtn" data-sg aria-label="Edit group">${I.more}</button></div>`; };
+const clGrp = (t, h) => { const it = t.subs.filter(c => c.g === h.id), dn = it.filter(c => c.d).length, fo = sgFolded(h), left = it.filter(c => !c.d).map(c => c.t); return `<div class="cl clg${h.d ? ' done' : ''}${fo ? ' fold' : ''}" data-c="${h.id}"><input type="checkbox"${h.d ? ' checked' : ''} aria-label="All done in ${esc(h.t)}"><span class="clw" data-sgf role="button" tabindex="0" aria-expanded="${!fo}" aria-label="${fo ? 'Show' : 'Hide'} items in ${esc(h.t)}"><b class="clgn"><i class="sgch">${TV_IC.chev}</i>${esc(h.t)} <em>${dn}/${it.length}</em></b>${subMeta(h)}${fo && left.length ? `<small class="sgpv">${esc(left.slice(0, 6).join(', '))}${left.length > 6 ? ` +${left.length - 6}` : ''}</small>` : ''}</span><button type="button" class="iconbtn${h.at || h.due || (h.p && h.p < 4) ? ' on' : ''}" data-bell aria-label="Group priority and reminder">${I.bell}</button><button type="button" class="iconbtn" data-sg aria-label="Edit group">${I.more}</button></div>`; };
 /* "Call Madhu tod 4pm p1 #call" -> subtask with priority, reminder and tags */
 function subFromText(v) {
   const r = parseTask(v); const c = { id: uid(), t: (r.title || v).trim(), d: false };
