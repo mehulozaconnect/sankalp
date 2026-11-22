@@ -38,7 +38,7 @@ for t in tasks:
         mine = [i for i in items if i.get('id') == tid]
         print('NAG task', tid[:5], 'created', (now-int(t.get('createdAt',0)))//60000, 'min ago', 'date', t.get('date'), 'time', t.get('time'), 'rem', t.get('reminders'), 'nag', t.get('nag'), 'prio', t.get('priority'),
               'seen', (now-int(t['seenAt']))//60000 if t.get('seenAt') else None, 'snz', t.get('snoozeUntil'), 'nagAt', t.get('nagAt'), 'nagN', t.get('nagN'), 'fired', t.get('firedKeys'), 'someday', t.get('someday'),
-              'queued', [(i['k'][-6:], (i['at']-now)//60000) for i in mine][:15])
+              'queued', [(i['k'][-6:], (int(i['at'])-now)//60000) for i in mine][:15])
 st = {k: val(v) for k, v in get(f"{B}/pushs/{U}").get('fields', {}).items()}
 sent = st.get('sent') or {}
 rec = sorted([(k, (now-int(v))//60000) for k, v in sent.items() if now-int(v) < 8*3600e3], key=lambda x: x[1])
