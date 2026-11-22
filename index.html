@@ -506,7 +506,7 @@ textarea.inp{height:auto;min-height:96px;padding:10px 12px;line-height:1.5;resiz
 .ff-serif{font-family:Georgia,'Times New Roman',serif}.ff-mono{font-family:ui-monospace,Menlo,Consolas,'Courier New',monospace}.ff-hand{font-family:'Segoe Print','Bradley Hand','Comic Sans MS',cursive}
 ul.ls-arrow,ul.ls-check,ul.ls-dash,ul.ls-star{list-style:none;padding-left:1.5em}
 ul.ls-arrow>li::before,ul.ls-check>li::before,ul.ls-dash>li::before,ul.ls-star>li::before{display:inline-block;width:1.4em;margin-left:-1.4em;color:var(--accent-text,var(--accent))}
-ul.ls-arrow>li::before{content:'➤'}ul.ls-check>li::before{content:'☐'}ul.ls-dash>li::before{content:'–'}ul.ls-star>li::before{content:'★'}
+ul.ls-arrow>li::before{content:'➤'}ul.ls-check>li::before{content:'';width:1.05em;height:1.05em;margin-right:.45em;margin-left:-1.5em;vertical-align:-.15em;border:2px solid var(--accent-text,var(--accent));border-radius:5px;box-sizing:border-box;cursor:pointer}ul.ls-check{padding-left:1.7em}ul.ls-check>li.ck::before{background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/80% no-repeat;border-color:var(--accent)}ul.ls-check>li.ck{color:var(--muted);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 70%,transparent)}ul.ls-dash>li::before{content:'–'}ul.ls-star>li::before{content:'★'}
 .clat{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:12px;font-weight:600;color:var(--muted);margin:-4px 0 6px}
 .clat span{display:inline-flex;align-items:center;gap:3px}
 .clat svg{width:12px;height:12px}
@@ -1741,8 +1741,9 @@ function cleanNode(node, out) {
     let cls = [];
     if (tag === 'SPAN' || tag === 'FONT') { cls = rtClasses(c); tag = (/background/i.test(st) && !/transparent|rgba\(0, 0, 0, 0\)/i.test(st)) ? 'MARK' : /font-weight:\s*(bold|[6-9]00)/i.test(st) ? 'B' : cls.length ? 'SPAN' : null; }
     if (tag === 'UL') cls = (c.getAttribute('class') || '').split(/\s+/).filter(k => /^ls-/.test(k) && RT_CLS.test(k));
+    if (tag === 'LI' && c.classList && c.classList.contains('ck')) cls = ['ck'];
     if (tag && RT_OK.includes(tag)) {
-      const el = document.createElement(tag); if (cls.length && (tag === 'SPAN' || tag === 'UL')) el.className = cls.join(' ');
+      const el = document.createElement(tag); if (cls.length && (tag === 'SPAN' || tag === 'UL' || tag === 'LI')) el.className = cls.join(' ');
       if (tag === 'TD' || tag === 'TH') ['colspan', 'rowspan'].forEach(k => { const v = +c.getAttribute(k); if (v > 1 && v < 30) el.setAttribute(k, v); });
       if (tag === 'IMG') { const src = c.getAttribute('src') || ''; if (/^data:image\/(png|jpe?g|webp|gif);base64,/i.test(src) && src.length < 1000000) { el.setAttribute('src', src); if (c.classList && c.classList.contains('doc')) el.className = 'doc'; out.appendChild(el); } return; }
       if (tag === 'TABLE' && !c.querySelector('td,th')) return;
@@ -1780,6 +1781,10 @@ function textToHtml(s) { if (!s) return ''; if (/^\s*<(div|p|b|ul|ol|mark|br|h3|
 function toolbarHtml() { return `<div class="ntool" role="toolbar" aria-label="Formatting">${[['bold', '<b>B</b>', 'Bold'], ['italic', '<i style="font-family:serif">I</i>', 'Italic'], ['underline', '<u>U</u>', 'Underline'], ['mark', '<mark style="background:#FFE58A;color:#1a1400;padding:0 5px;border-radius:3px">H</mark>', 'Highlight'], ['h3', '<b style="font-size:17px">T</b>', 'Heading'], ['pop:fs', '<span style="font-size:13px">A</span><span style="font-size:17px">A</span>&nbsp;▾', 'Text size'], ['pop:ff', 'Font&nbsp;▾', 'Font'], ['pop:ls', '•&nbsp;List&nbsp;▾', 'List style'],  ['table', '▦&nbsp;Table', 'Insert a table'], ['row', '+&nbsp;Row', 'Add a row to the table'], ['link', 'Link', 'Add link'], ['removeFormat', 'Clear', 'Clear formatting']].map(([c, l, a]) => `<button type="button" data-cmd="${c}" aria-label="${a}" style="${l.length > 30 ? '' : 'padding:0 8px'}">${l}</button>`).join('')}<div class="npop" data-pop="fs" hidden>${[['fs:s', 'Small'], ['fs:n', 'Normal'], ['fs:l', 'Large'], ['fs:xl', 'Huge']].map(([c, l]) => `<button type="button" data-cmd="${c}" class="${c.slice(3) === 'n' ? '' : 'fs-' + c.slice(3)}">${l}</button>`).join('')}</div><div class="npop" data-pop="ff" hidden>${[['ff:default', 'Default'], ['ff:serif', 'Serif'], ['ff:mono', 'Mono'], ['ff:hand', 'Handwritten']].map(([c, l]) => `<button type="button" data-cmd="${c}" class="${c === 'ff:default' ? '' : 'ff-' + c.slice(3)}">${l}</button>`).join('')}</div><div class="npop" data-pop="ls" hidden>${[['ul:dot', '•  Bullets'], ['ul:arrow', '➤  Arrows'], ['ul:check', '☐  Checkboxes'], ['ul:dash', '–  Dashes'], ['ul:star', '★  Stars'], ['ol', '1.  Numbers']].map(([c, l]) => `<button type="button" data-cmd="${c}">${l}</button>`).join('')}</div></div>`; }
 function wireEditor(ed, bar, onSave) {
   let tm, range = null;
+  // Checklist: tap the box to tick or untick an item (no keyboard pops up)
+  const ckTap = e => { const li = e.target.closest && e.target.closest('ul.ls-check > li'); if (!li || !ed.contains(li)) return; const x = (e.changedTouches ? e.changedTouches[0] : e).clientX, L = li.getBoundingClientRect().left; if (x > L + 4) return;
+    e.preventDefault(); e.stopPropagation(); li.classList.toggle('ck'); if (navigator.vibrate) try { navigator.vibrate(8); } catch (er) { } ed.dispatchEvent(new Event('input')); };
+  ed.addEventListener('touchstart', ckTap, { passive: false }); ed.addEventListener('mousedown', ckTap);
   const isTouch = matchMedia('(pointer:coarse)').matches;
   const place = () => { const vv = window.visualViewport; const b = vv ? Math.max(0, innerHeight - vv.height - vv.offsetTop) : 0; bar.style.setProperty('--kbb', b + 'px'); };
   if (isTouch) {
@@ -2253,7 +2258,7 @@ function toggleDone(id) {
       const copy = { ...t, id: uid(), orig: t.id, done: true, doneAt: Date.now(), repeat: null, pinned: false, subs: t.subs.map(c => ({ ...c })) }; xpPop(rwIndex().xpTask(t, today()));
       S.tasks.push(copy); Object.values(S.days || {}).forEach(dd => { if (dd && dd.top) dd.top = dd.top.map(x => x === t.id ? copy.id : x); });
       if (!nd) { t.done = true; t.doneAt = Date.now(); S.tasks = S.tasks.filter(x => x !== copy); save(); render(); toast('Done. That was the last one in this series'); return; }
-      t.nagAt = 0; t.snoozeUntil = 0; t.date = nd; t.firedKeys = []; t.subs.forEach(c => { c.d = false; c.nagAt = 0; }); t.pushed = 0; addPlan(t);
+      t.nagAt = 0; t.snoozeUntil = 0; t.date = nd; t.firedKeys = []; t.subs.forEach(c => { c.d = false; c.nagAt = 0; }); if (t.notes && t.notes.includes('class="ck"')) t.notes = t.notes.replace(/<li class="ck">/g, '<li>'); t.pushed = 0; addPlan(t);
       save(); render(); toast(`Done. Next one ${nd === addDays(today(), 1) ? 'tomorrow' : 'on ' + fmtDate(nd)}`);
       return;
     }
@@ -4188,7 +4193,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.13';
+const APPV = '6.13.1';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
