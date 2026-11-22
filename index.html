@@ -1209,6 +1209,11 @@ body.selmode #fab{display:none!important}
 .grbox{margin:14px 0 4px;padding:12px 14px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}.grh{display:flex;align-items:baseline;gap:8px}.grh b{font-size:15px}.grh span{margin-left:auto;font-size:13px;color:var(--accent-text);font-weight:600}
 .grl{margin:10px 0 6px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}.grc{display:flex;flex-wrap:wrap;gap:7px}.grc button{height:34px;padding:0 12px;border-radius:17px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}.grc button:active{transform:scale(.95)}
 .grt{margin-top:10px;font-size:12.5px;color:var(--muted);line-height:1.45}.grt i{color:var(--soft);font-style:normal;font-weight:600}
+.sgbtn{margin-left:auto;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:15px;border:1px solid var(--line);background:none;color:var(--accent-text);font:inherit;font-size:13px;font-weight:700;cursor:pointer;text-transform:none;letter-spacing:0}.sgbtn svg{width:15px;height:15px}
+#pSubs h3{display:flex;align-items:center}
+.clg{background:var(--surface);border-radius:12px;margin-top:8px;border-bottom:0!important}.clg .clgn{display:block;font-size:15.5px;font-weight:700;padding:2px 0}.clg .clgn em{font-style:normal;font-weight:600;font-size:13px;color:var(--muted);margin-left:4px}.clg.done .clgn{color:var(--muted);text-decoration:line-through}
+.clin>.cl{padding-left:22px;border-left:2px solid var(--line);margin-left:16px}
+.sgpick{display:flex;flex-direction:column;gap:6px;max-height:42vh;overflow:auto}.sgpick button{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:15px;text-align:left;cursor:pointer}.sgpick button i{width:22px;height:22px;border-radius:6px;border:2px solid var(--ring);display:grid;place-items:center;flex:none}.sgpick button i svg{width:14px;height:14px;opacity:0}.sgpick button.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--bg))}.sgpick button.on i{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}.sgpick button.on i svg{opacity:1}
 .sm-view{display:flex;gap:8px;padding:16px 20px 6px;flex-wrap:wrap}
 .sm-view button{height:34px;padding:0 12px;border-radius:17px;border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--soft);display:inline-flex;gap:6px;align-items:center}.sm-view svg{width:15px;height:15px}
 .sm-sheet{padding:0 2px 8px}
@@ -2536,9 +2541,9 @@ function row(t, o = {}) {
   let tm = '';
   if (t.time) { const z = snoozedTo(t, t.date); tm = `<span class="rtm">${z != null ? `<s>${fmtTime(t.time)}</s> ${fmtTime(smHM(z))}` : fmtTime(t.time)}</span>`; }
   else if (!t.done && t.date === td) { const sc = (S.days[td]?.sched || {})[t.id]; if (sc != null && sc >= smNowM() - 30) tm = `<span class="rtm soft" title="Suggested by your plan">~${fmtTime(smHM(sc))}</span>`; }
-  const sd = t.subs.filter(c => c.d).length, isOpen = openSubs.has(t.id);
-  let h = `<div class="row${t.done ? ' done' : ''}" data-id="${t.id}"${isWide() ? ' draggable="true"' : ''}><button class="chk p${t.priority}" data-act="done" data-id="${t.id}" aria-label="${t.done ? 'Mark not done' : 'Complete'}: ${esc(t.title)}">${t.done ? I.check : ''}</button><button class="rbody" data-act="open" data-id="${t.id}"><span class="rt">${esc(t.title)}${o && o.emo && !t.done ? (e => e ? `<i class="remo">${e}</i>` : '')(taskEmoji(t)) : ''}</span>${meta.length ? `<span class="rm">${meta.join('')}</span>` : ''}</button>${tm}${t.subs.length ? `<button class="subtog${isOpen ? ' open' : ''}" data-act="subs" data-id="${t.id}" aria-expanded="${isOpen}" aria-label="Subtasks ${sd} of ${t.subs.length} done">${sd}/${t.subs.length}${I.next}</button>` : ''}</div>`;
-  if (isOpen && t.subs.length) h += `<div class="subs">${t.subs.map(c => `<button class="subrow${c.d ? ' d' : ''}" data-act="subdone" data-id="${t.id}" data-s="${c.id}"><i>${c.d ? I.check : ''}</i><span>${esc(c.t)}</span></button>`).join('')}</div>`;
+  const sd = t.subs.filter(c => c.d && !c.grp).length, isOpen = openSubs.has(t.id);
+  let h = `<div class="row${t.done ? ' done' : ''}" data-id="${t.id}"${isWide() ? ' draggable="true"' : ''}><button class="chk p${t.priority}" data-act="done" data-id="${t.id}" aria-label="${t.done ? 'Mark not done' : 'Complete'}: ${esc(t.title)}">${t.done ? I.check : ''}</button><button class="rbody" data-act="open" data-id="${t.id}"><span class="rt">${esc(t.title)}${o && o.emo && !t.done ? (e => e ? `<i class="remo">${e}</i>` : '')(taskEmoji(t)) : ''}</span>${meta.length ? `<span class="rm">${meta.join('')}</span>` : ''}</button>${tm}${t.subs.length ? `<button class="subtog${isOpen ? ' open' : ''}" data-act="subs" data-id="${t.id}" aria-expanded="${isOpen}" aria-label="Subtasks ${sd} of ${subN(t)} done">${sd}/${subN(t)}${I.next}</button>` : ''}</div>`;
+  if (isOpen && t.subs.length) h += `<div class="subs">${t.subs.filter(c => !c.grp).map(c => `<button class="subrow${c.d ? ' d' : ''}" data-act="subdone" data-id="${t.id}" data-s="${c.id}"><i>${c.d ? I.check : ''}</i><span>${esc(c.t)}</span></button>`).join('')}</div>`;
   return h;
 }
 // A small emoji that fits the task, shown after the title. It only appears when the day is light (6 tasks or fewer), so a busy list stays clean.
@@ -2739,8 +2744,8 @@ function vWeek() {
   return h + `</div>`;
 }
 function wcard(t) {
-  const p = proj(t.projectId); const sd = t.subs.filter(c => c.d).length; const late = !t.done && t.date && t.date < today();
-  return `<div class="wcard${t.done ? ' done' : ''} row" data-id="${t.id}" ${isWide() ? 'draggable="true"' : ''}><button class="chk p${t.priority}" data-act="done" data-id="${t.id}" aria-label="${t.done ? 'Mark not done' : 'Complete'}: ${esc(t.title)}">${t.done ? I.check : ''}</button><button class="wb" data-act="open" data-id="${t.id}"><span class="wt">${esc(t.title)}</span><span class="wm">${t.time ? `<span class="wtag time">${fmtTime(t.time)}</span>` : ''}${late ? `<span class="wtag late">${fmtShort(t.date)}</span>` : ''}${t.duration ? `<span class="wtag">${fmtMins(t.duration)}</span>` : ''}${t.subs.length ? `<span class="wtag">${sd}/${t.subs.length}</span>` : ''}${p ? `<span class="wtag">${p.emoji || ''} ${esc(p.name)}</span>` : ''}${t.repeat ? `<span class="wtag">${I.repeat ? '↻' : ''}</span>` : ''}</span></button></div>`;
+  const p = proj(t.projectId); const sd = t.subs.filter(c => c.d && !c.grp).length; const late = !t.done && t.date && t.date < today();
+  return `<div class="wcard${t.done ? ' done' : ''} row" data-id="${t.id}" ${isWide() ? 'draggable="true"' : ''}><button class="chk p${t.priority}" data-act="done" data-id="${t.id}" aria-label="${t.done ? 'Mark not done' : 'Complete'}: ${esc(t.title)}">${t.done ? I.check : ''}</button><button class="wb" data-act="open" data-id="${t.id}"><span class="wt">${esc(t.title)}</span><span class="wm">${t.time ? `<span class="wtag time">${fmtTime(t.time)}</span>` : ''}${late ? `<span class="wtag late">${fmtShort(t.date)}</span>` : ''}${t.duration ? `<span class="wtag">${fmtMins(t.duration)}</span>` : ''}${t.subs.length ? `<span class="wtag">${sd}/${subN(t)}</span>` : ''}${p ? `<span class="wtag">${p.emoji || ''} ${esc(p.name)}</span>` : ''}${t.repeat ? `<span class="wtag">${I.repeat ? '↻' : ''}</span>` : ''}</span></button></div>`;
 }
 
 /* ---------- right rail: day calendar with drag-to-schedule ---------- */
@@ -4232,7 +4237,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.14.1';
+const APPV = '6.15';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4710,13 +4715,13 @@ function renderPage(fresh) {
   if (t.duration) props.push(`<button class="prop" data-pp="dur">${I.hour}${fmtMins(t.duration)}</button>`);
   if (!t.subs.length) props.push(`<button class="prop more" id="pSubOpen">${I.plus}Subtask</button>`);
   props.push(`<button class="prop more" data-pp="more">${I.plus}More</button>`);
-  const sd = t.subs.filter(c => c.d).length;
+  sgSync(t); const sd = t.subs.filter(c => c.d && !c.grp).length;
   pg.innerHTML = `<div class="pbar"><button class="back" id="pBack" aria-label="Back">${I.back}<span>Back</span></button><div class="acts"><button class="iconbtn${t.pinned ? ' on' : ''}" id="pPin" aria-pressed="${t.pinned}" aria-label="${t.pinned ? 'Unpin' : 'Pin to top'}">${I.pin}</button><button class="iconbtn" id="pImgB" aria-label="Attach image">${I.img}</button><button class="iconbtn" id="pMore" aria-label="More actions">${I.more}</button><button class="iconbtn" id="pClose" aria-label="Close" title="Close (Esc)">${I.x}</button></div></div>
   <div class="ptitle${t.done ? ' done' : ''}"><button class="chk p${t.priority}${t.done ? ' isdone' : ''}" id="pChk" aria-label="${t.done ? 'Mark not done' : 'Complete task'}" style="${t.done ? '--x:1' : ''}">${t.done ? I.check : ''}</button><label for="pTitle" class="sr">Title</label><textarea id="pTitle" rows="1">${esc(t.title)}</textarea></div><div class="ptprev" id="pTitlePrev" aria-live="polite"></div>
   <div class="props">${props.join('')}</div>
   ${t.done ? '' : `<div class="pacts"><button id="paDone">${I.check}Done</button><button id="paSnz">${I.clock}Snooze</button><button id="paMove">${I.cal}Move</button><button data-fu="plan" data-id="${t.id}">${I.repeat || I.clock}Follow-up</button><button id="paFocus">${I.play}Focus</button></div><div id="fuWrap">${fuCardHtml(t)}</div>`}
   ${t.pushed >= 2 && !t.done ? `<div class="psec" style="padding-top:8px"><button class="warn" data-sm="stuck" data-id="${t.id}">Moved ${t.pushed} times. Tap for help: split it, schedule it, hand it over or drop it.</button></div>` : ''}
-  <div class="psec" id="pSubs"${t.subs.length ? '' : ' hidden'}><h3><span>Subtasks${t.subs.length ? ` ${sd}/${t.subs.length}` : ''}</span></h3><div id="pCl">${t.subs.map(c => clRow(c, true)).join('')}</div><div class="cl"><button type="button" id="pClAdd" class="iconbtn" style="width:24px;color:var(--muted)" aria-label="Add subtask">${I.plus}</button><textarea class="clt" id="pClNew" rows="1" placeholder="Add a subtask" aria-label="Add a subtask" enterkeyhint="enter" autocomplete="off"></textarea></div></div>
+  <div class="psec" id="pSubs"${t.subs.length ? '' : ' hidden'}><h3><span>Subtasks${t.subs.length ? ` ${sd}/${subN(t)}` : ''}</span>${subN(t) >= 2 ? `<button type="button" class="sgbtn" id="pSg">${I.layers}Group items</button>` : ''}</h3><div id="pCl">${sgOrder(t).map(c => c.grp ? clGrp(t, c) : `<div class="${c.g && t.subs.some(h => h.id === c.g) ? 'clin' : ''}">${clRow(c, true)}</div>`).join('')}</div><div class="cl"><button type="button" id="pClAdd" class="iconbtn" style="width:24px;color:var(--muted)" aria-label="Add subtask">${I.plus}</button><textarea class="clt" id="pClNew" rows="1" placeholder="Add a subtask" aria-label="Add a subtask" enterkeyhint="enter" autocomplete="off"></textarea></div></div>
   <div class="psec"><h3><span>Notes</span></h3>${toolbarHtml()}<div class="notes" id="pNotes" contenteditable="true" data-ph="Notes" role="textbox" aria-multiline="true" aria-label="Notes">${cleanHtml(t.notes)}</div>${grChips(t)}<div id="ldWrap">${ldBarHtml(t)}</div></div>
   ${t.imgs.length ? `<div class="psec"><h3><span>Images ${t.imgs.length}</span></h3><div class="imgs sm">${t.imgs.map(id => IMGS[id] ? `<button class="im" data-img="${id}" aria-label="Open image"><img src="${IMGS[id]}" alt="Attached image"></button>` : '').join('')}<button class="addimg" id="pAddImg" aria-label="Add image">${I.plus}</button></div></div>` : ''}
   <div class="pfoot">Created ${fmtDate(ymd(new Date(t.createdAt)))}${t.done && t.doneAt ? `. Done ${fmtDate(ymd(new Date(t.doneAt)))}` : ''}${t.pushed ? `. Moved ${plural(t.pushed, 'time')}` : ''}.</div>`;
@@ -4745,12 +4750,14 @@ function renderPage(fresh) {
   { let ldT; $('#pNotes').addEventListener('input', () => { clearTimeout(ldT); ldT = setTimeout(() => { const w = $('#ldWrap'); if (!w) return; const tmp = { ...t, notes: cleanHtml($('#pNotes').innerHTML) }; w.innerHTML = ldBarHtml(tmp); }, 400); }); }
   const clWire = () => $$('#pCl .cl').forEach(el => {
     const c = t.subs.find(x => x.id === el.dataset.c); if (!c) return;
-    el.querySelector('input[type=checkbox]').onchange = e => { c.d = e.target.checked; if (c.d) { c.nagAt = 0; c.snoozeUntil = 0; } el.classList.toggle('done', c.d); save(); if (t.subs.every(x => x.d) && !t.done) toast('All subtasks done. Finish the task?', () => { toggleDone(t.id); renderPage(); }); };
+    el.querySelector('input[type=checkbox]').onchange = e => { if (c.grp) { sgSetAll(t, c, e.target.checked); save(); renderPage(); return; } c.d = e.target.checked; if (c.d) { c.nagAt = 0; c.snoozeUntil = 0; } el.classList.toggle('done', c.d); const hd = c.g && t.subs.find(x => x.id === c.g); if (hd) { sgSync(t); save(); renderPage(); } else save(); if (t.subs.every(x => x.d) && !t.done) toast('All subtasks done. Finish the task?', () => { toggleDone(t.id); renderPage(); }); };
+    if (c.grp) { el.querySelector('[data-bell]').onclick = () => subRemind(t, c); el.querySelector('[data-sg]').onclick = () => sgSheet(t, c); return; }
     const ct = el.querySelector('.clt'); ct.oninput = e => { c.t = e.target.value.replace(/\n/g, ' '); save(); }; ct.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); ct.blur(); } };
     el.querySelector('[data-rm]').onclick = () => { t.subs = t.subs.filter(x => x !== c); el.remove(); save(); };
     const bl = el.querySelector('[data-bell]'); if (bl) bl.onclick = () => subRemind(t, c);
   });
   clWire();
+  { const sb = $('#pSg'); if (sb) sb.onclick = () => sgSheet(t); }
   const nw = $('#pClNew');
   const addSub = () => { const v = nw.value.replace(/\n/g, ' ').trim(); nw.value = ''; if (!v) return; const c = subFromText(v); t.subs.push(c); save(); $('#pCl').insertAdjacentHTML('beforeend', clRow(c, true)); clWire(); if (c.at) askNotify(); nw.focus(); };
   nw.onkeydown = e => { if (e.key === 'Enter' || e.keyCode === 13) { e.preventDefault(); addSub(); } };
@@ -4868,6 +4875,32 @@ function pageMenu(t) {
 }
 const subMeta = c => { const m = []; if (c.p && c.p < 4) m.push(`<span class="sp p${c.p}">${I.flag}P${c.p}</span>`); if (c.at) m.push(`<span class="${!c.d && new Date(c.at).getTime() < Date.now() ? 'late' : ''}">${I.bell}${esc(subWhen(c))}</span>`); else if (c.due) m.push(`<span class="${!c.d && c.due < today() ? 'late' : ''}">${I.cal}${esc(fmtDate(c.due))}</span>`); (c.tags || []).forEach(x => m.push(`<span>#${esc(x)}</span>`)); return m.length ? `<small class="clat">${m.join('')}</small>` : ''; };
 const clRow = (c, withBell) => `<div class="cl${c.d ? ' done' : ''}" data-c="${c.id}"><input type="checkbox"${c.d ? ' checked' : ''} aria-label="Done"><span class="clw"><textarea class="clt" rows="1" aria-label="Subtask" autocomplete="off">${esc(c.t)}</textarea>${subMeta(c)}</span>${withBell ? `<button type="button" class="iconbtn${c.at || c.due || (c.p && c.p < 4) || (c.tags || []).length ? ' on' : ''}" data-bell aria-label="Subtask details: priority, date, time, tags">${I.more}</button>` : ''}<button type="button" class="iconbtn" data-rm aria-label="Remove subtask">${I.trash}</button></div>`;
+/* Subtask groups: a header subtask (grp) holds one priority and one reminder for items bought or done together (c.g = header id) */
+const subN = t => t.subs.filter(c => !c.grp).length;
+function sgSync(t) { (t.subs || []).filter(h => h.grp).forEach(h => { const it = t.subs.filter(c => c.g === h.id); if (it.length) { const all = it.every(c => c.d); if (all !== !!h.d) { h.d = all; if (all) { h.nagAt = 0; h.snoozeUntil = 0; } } } }); }
+function sgSetAll(t, h, on) { h.d = on; if (on) { h.nagAt = 0; h.snoozeUntil = 0; } t.subs.filter(c => c.g === h.id).forEach(c => { c.d = on; if (on) { c.nagAt = 0; c.snoozeUntil = 0; } }); }
+const SG_VEG = /\b(potato|aloo|onion|kanda|pyaz|tomato|dhaniya|dhnaiya|coriander|mirchi|chilli|chili|ginger|adrak|garlic|lahsun|lemon|nimbu|tindora|tondli|bhindi|okra|carr?ot|corr?ot|gajar|capsicum|cabbage|cauliflower|gobi|dudhi|lauki|karela|brinjal|baingan|spinach|palak|methi|peas|matar|beans|cucumber|kakdi|beetroot|radish|mooli|pumpkin|sweet potato|corn|mushroom|curry leaves|pudina|mint|sabzi|veg)/i;
+function sgOrder(t) { const H = t.subs.filter(c => c.grp).sort((a, b) => (a.p || 4) - (b.p || 4)), out = []; H.forEach(h => { out.push(h); t.subs.filter(c => c.g === h.id && !c.grp).forEach(c => out.push(c)); }); t.subs.filter(c => !c.grp && !(c.g && H.some(h => h.id === c.g))).forEach(c => out.push(c)); return out; }
+function sgSheet(t, h) {
+  const free = t.subs.filter(c => !c.grp && (!c.g || (h && c.g === h.id) || !t.subs.some(x => x.id === c.g)));
+  const sel = new Set(h ? free.filter(c => c.g === h.id).map(c => c.id) : free.filter(c => SG_VEG.test(c.t)).map(c => c.id));
+  const nm = h ? h.t : (free.some(c => SG_VEG.test(c.t)) ? '🥬 Sabzi vendor' : '');
+  openSheet(sheetHead(h ? 'Edit group' : 'Group items', h ? 'Save' : 'Group', 'sgOk') + `<p class="sub" style="margin:2px 0 10px;line-height:1.45">Items from the same shop or vendor. They share one priority and one reminder.</p>
+  <div class="field"><label for="sgN">Group name</label><textarea class="inp one" rows="1" id="sgN" placeholder="e.g. 🥬 Sabzi vendor" autocomplete="off" data-form-type="other">${esc(nm)}</textarea></div>
+  <div class="optchips" id="sgQ">${['🥬 Sabzi vendor', '🍎 Fruit wala', '🥛 Dairy', '🛒 Kirana store', '💊 Chemist', '🧵 Tailor'].map(x => `<button type="button" data-n="${x}">${x}</button>`).join('')}</div>
+  <div class="field" style="margin-top:12px"><label>Items in this group</label><div class="sgpick">${free.map(c => `<button type="button" data-c="${c.id}" class="${sel.has(c.id) ? 'on' : ''}"><i>${I.check}</i>${esc(c.t)}</button>`).join('') || '<p class="sub">Add subtasks first.</p>'}</div></div>
+  ${h ? `<div class="btnrow"><button class="btn sec" id="sgUn">Ungroup</button></div>` : ''}`);
+  $$('#sgQ button').forEach(b => b.onclick = () => { $('#sgN').value = b.dataset.n; });
+  $$('.sgpick button').forEach(b => b.onclick = () => { const id = b.dataset.c; if (sel.has(id)) sel.delete(id); else sel.add(id); b.classList.toggle('on', sel.has(id)); });
+  $('#sgOk').onclick = () => {
+    const name = $('#sgN').value.trim() || 'Group'; if (!sel.size) { toast('Pick at least one item'); return; }
+    let g = h; if (!g) { g = { id: uid(), t: name, d: false, grp: 1 }; t.subs.unshift(g); } else g.t = name;
+    t.subs.forEach(c => { if (c.grp) return; if (sel.has(c.id)) c.g = g.id; else if (c.g === g.id) delete c.g; });
+    sgSync(t); save(); closeSheet(true); renderPage(); if (!h) setTimeout(() => subRemind(t, g), 250);
+  };
+  if (h) $('#sgUn').onclick = () => { t.subs.forEach(c => { if (c.g === h.id) delete c.g; }); t.subs = t.subs.filter(c => c !== h); save(); closeSheet(true); renderPage(); toast('Ungrouped'); };
+}
+const clGrp = (t, h) => { const it = t.subs.filter(c => c.g === h.id), dn = it.filter(c => c.d).length; return `<div class="cl clg${h.d ? ' done' : ''}" data-c="${h.id}"><input type="checkbox"${h.d ? ' checked' : ''} aria-label="All done in ${esc(h.t)}"><span class="clw"><b class="clgn">${esc(h.t)} <em>${dn}/${it.length}</em></b>${subMeta(h)}</span><button type="button" class="iconbtn${h.at || h.due || (h.p && h.p < 4) ? ' on' : ''}" data-bell aria-label="Group priority and reminder">${I.bell}</button><button type="button" class="iconbtn" data-sg aria-label="Edit group">${I.more}</button></div>`; };
 /* "Call Madhu tod 4pm p1 #call" -> subtask with priority, reminder and tags */
 function subFromText(v) {
   const r = parseTask(v); const c = { id: uid(), t: (r.title || v).trim(), d: false };
@@ -5372,7 +5405,7 @@ function pushItems() {
     const zt = t.snoozeUntil > now ? t.snoozeUntil : 0; const A2 = zt ? A.filter(a => a.at >= zt || a.at < now - 6e4) : A;
     run({ id: t.id, title: t.title, tag: 't' + t.id, p: t.priority, nagBody: 'Still not done' }, A2);
     (t.subs || []).forEach(c => { if (c.d) return; const B = [];
-      if (c.at) { const at = new Date(c.at).getTime(); if (!isNaN(at)) B.push({ at, k: 's' + c.id + c.at, body: `Part of ${t.title}${p ? ' · ' + p.name : ''}`, nags: true }); }
+      if (c.at) { const at = new Date(c.at).getTime(); if (!isNaN(at)) B.push({ at, k: 's' + c.id + c.at, body: c.grp ? `${t.subs.filter(x => x.g === c.id && !x.d).map(x => x.t).join(', ').slice(0, 140)} · ${t.title}` : `Part of ${t.title}${p ? ' · ' + p.name : ''}`, nags: true }); }
       if (c.snoozeUntil) B.push({ at: c.snoozeUntil, k: 's' + c.id + '|z' + c.snoozeUntil, body: `Snoozed. Part of ${t.title}`, nags: true });
       const zc = c.snoozeUntil > now ? c.snoozeUntil : 0; run({ id: t.id, sub: c.id, title: c.t, ptitle: t.title, tag: 's' + c.id, p: t.priority, nagBody: `Still not done. Part of ${t.title}` }, zc ? B.filter(a => a.at >= zc || a.at < now - 6e4) : B); });
   });
@@ -5665,7 +5698,7 @@ document.addEventListener('click', e => {
     areatog: () => { const a = b.dataset.a; S.settings.shut = { ...(S.settings.shut || {}), [a]: !(S.settings.shut || {})[a] }; save(); render(); },
     lifenew: () => goalSheet(), lifeopen: () => goalSheet(id), lifefilter: () => { lifeFilter = b.dataset.f; render(); }, nav: () => go(b.dataset.to), delete: () => deleteTask(id), search: searchSheet,
     subs: () => { openSubs.has(id) ? openSubs.delete(id) : openSubs.add(id); renderMainOnly(); },
-    subdone: () => { const t = getTask(id); const c = t.subs.find(x => x.id === b.dataset.s); c.d = !c.d; save(); renderMainOnly(); if (t.subs.every(x => x.d) && !t.done) toast('All subtasks done. Finish the task?', () => toggleDone(id)); },
+    subdone: () => { const t = getTask(id); const c = t.subs.find(x => x.id === b.dataset.s); c.d = !c.d; sgSync(t); save(); renderMainOnly(); if (t.subs.every(x => x.d) && !t.done) toast('All subtasks done. Finish the task?', () => toggleDone(id)); },
     toggledone: () => { S.settings.showDone = !S.settings.showDone; save(); render(); },
     group: () => { S.settings.todayGroup = b.dataset.g; save(); render(); },
     tvmenu: () => tvMenu(b), tvfold: () => { const f = tvFold(); if (f[id]) delete f[id]; else f[id] = 1; try { localStorage.setItem('sankalp.tvfold', JSON.stringify(f)); } catch (e) { } renderMainOnly(); },
@@ -5809,7 +5842,7 @@ function handleAction(d) {
   if (t && d.type !== 'later' && d.type !== 'open') { t.seenAt = Date.now(); save(); closeNotifs(t); } if (d.type === 'seen') return;
   const c = t && d.sub ? t.subs.find(x => x.id === d.sub) : null;
   if (c) {
-    if (d.type === 'done') { c.d = true; c.nagAt = 0; c.snoozeUntil = 0; save(); pushClose(t.id, c.id); render(); if (pageId === t.id) renderPage(); toast('Subtask done'); }
+    if (d.type === 'done') { if (c.grp) sgSetAll(t, c, true); c.d = true; c.nagAt = 0; c.snoozeUntil = 0; sgSync(t); save(); pushClose(t.id, c.id); render(); if (pageId === t.id) renderPage(); toast('Subtask done'); }
     if (d.type === 'snooze') { const mn = +d.mins || 10; c.nagAt = 0; c.snoozeUntil = (d.at || Date.now()) + mn * 6e4; save(); pushClose(t.id, c.id); render(); toast(`Snoozed for ${mn} minutes`); }
     if (d.type === 'open') taskSheet(t.id);
     if (d.type === 'resched') { taskSheet(t.id); toast('Tap the subtask to change its time'); }
