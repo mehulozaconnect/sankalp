@@ -1206,6 +1206,9 @@ body.selmode #fab{display:none!important}
 .tvr{display:flex;align-items:center;gap:10px;width:100%;padding:11px 10px;border-radius:11px;border:0;background:none;color:var(--ink);font:inherit;font-size:15px;text-align:left;cursor:pointer}.tvr.on,.tvr:hover{background:var(--surface)}.tvr>svg{width:19px;height:19px;flex:none;color:var(--soft)}.tvr b{font-weight:600}.tvr span{margin-left:auto;color:var(--muted);font-size:14px}.tvr i{display:grid;width:16px;height:16px;color:var(--muted);transition:transform .18s}.tvr i svg{width:16px;height:16px}.tvr:not(.on) i{transform:rotate(-90deg)}
 .tvl{margin:2px 4px 6px 30px;border-left:2px solid var(--line);padding-left:6px}.tvl button{display:flex;align-items:center;width:100%;padding:9px 10px;border:0;background:none;border-radius:9px;color:var(--ink);font:inherit;font-size:14.5px;text-align:left;cursor:pointer}.tvl button:hover{background:var(--surface)}.tvl button.on{color:var(--accent-text);font-weight:700}.tvl button svg{width:16px;height:16px;margin-left:auto}
 .tvreset{width:100%;margin-top:4px;padding:10px;border:0;border-top:1px solid var(--line);background:none;color:var(--muted);font:inherit;font-size:13.5px;cursor:pointer}
+.grbox{margin:14px 0 4px;padding:12px 14px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}.grh{display:flex;align-items:baseline;gap:8px}.grh b{font-size:15px}.grh span{margin-left:auto;font-size:13px;color:var(--accent-text);font-weight:600}
+.grl{margin:10px 0 6px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}.grc{display:flex;flex-wrap:wrap;gap:7px}.grc button{height:34px;padding:0 12px;border-radius:17px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}.grc button:active{transform:scale(.95)}
+.grt{margin-top:10px;font-size:12.5px;color:var(--muted);line-height:1.45}.grt i{color:var(--soft);font-style:normal;font-weight:600}
 .sm-view{display:flex;gap:8px;padding:16px 20px 6px;flex-wrap:wrap}
 .sm-view button{height:34px;padding:0 12px;border-radius:17px;border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--soft);display:inline-flex;gap:6px;align-items:center}.sm-view svg{width:15px;height:15px}
 .sm-sheet{padding:0 2px 8px}
@@ -2258,7 +2261,7 @@ function toggleDone(id) {
       const copy = { ...t, id: uid(), orig: t.id, done: true, doneAt: Date.now(), repeat: null, pinned: false, subs: t.subs.map(c => ({ ...c })) }; xpPop(rwIndex().xpTask(t, today()));
       S.tasks.push(copy); Object.values(S.days || {}).forEach(dd => { if (dd && dd.top) dd.top = dd.top.map(x => x === t.id ? copy.id : x); });
       if (!nd) { t.done = true; t.doneAt = Date.now(); S.tasks = S.tasks.filter(x => x !== copy); save(); render(); toast('Done. That was the last one in this series'); return; }
-      t.nagAt = 0; t.snoozeUntil = 0; t.date = nd; t.firedKeys = []; t.subs.forEach(c => { c.d = false; c.nagAt = 0; }); if (t.notes && t.notes.includes('class="ck"')) t.notes = t.notes.replace(/<li class="ck">/g, '<li>'); t.pushed = 0; addPlan(t);
+      t.nagAt = 0; t.snoozeUntil = 0; t.date = nd; t.firedKeys = []; t.subs.forEach(c => { c.d = false; c.nagAt = 0; }); if (t.notes && t.notes.includes('class="ck"')) { if (GR_RE.test(t.title || '')) { const d = grDoc(t), got = [...d.querySelectorAll('ul.ls-check > li.ck')]; grSeen(got.map(li => li.textContent.trim())); got.forEach(li => li.remove()); t.notes = cleanHtml(d.innerHTML); } else t.notes = t.notes.replace(/<li class="ck">/g, '<li>'); } t.pushed = 0; addPlan(t);
       save(); render(); toast(`Done. Next one ${nd === addDays(today(), 1) ? 'tomorrow' : 'on ' + fmtDate(nd)}`);
       return;
     }
@@ -2371,6 +2374,40 @@ function addMeeting(r) {
   if (r.endTime) { const [h2, m2] = r.endTime.split(':').map(Number); e0 = pYmd(d); e0.setHours(h2, m2, 0, 0); } else e0 = new Date(s0.getTime() + (r.duration || 30) * 6e4);
   const id = 'man-' + uid(); S.meetLog[id] = { id, t: r.title || 'Meeting', s: s0.getTime(), e: e0.getTime(), allDay: false, join: '', src: 'manual' };
   save(); return S.meetLog[id];
+}
+/* Running grocery list: "milk, eggs to grocery" adds to the list; Done clears what was bought and keeps the rest for next time; usual items as one-tap chips */
+const GR_RE = /\b(grocer(y|ies)|sabzi|kirana|veggies|vegetables?)\b/i;
+function grTask() { const L = S.tasks.filter(t => !t.done && GR_RE.test(t.title || '')); return L.sort((a, b) => (!!b.repeat - !!a.repeat) || ((a.date || '9') < (b.date || '9') ? -1 : 1))[0] || null; }
+function grDoc(t) { const d = new DOMParser().parseFromString('<div>' + (t.notes || '') + '</div>', 'text/html').body.firstChild; return d; }
+function grItems(t) { const d = grDoc(t); return [...d.querySelectorAll('ul.ls-check > li')].map(li => ({ x: li.textContent.trim(), ck: li.classList.contains('ck') })).filter(i => i.x); }
+function grHist() { return S.settings.grHist ||= {}; }
+function grSeen(names) { const h = grHist(); names.forEach(n => { const k = n.toLowerCase().replace(/\s*[-–(].*$/, '').trim(); if (!k) return; const o = h[k] || { n: 0, c: n.replace(/\s*[-–(].*$/, '').trim() }; o.n++; o.at = Date.now(); h[k] = o; }); }
+function grAppend(t, names) {
+  if (pageId === t.id) $('#pNotes')?._flush?.();
+  const d = grDoc(t); let ul = d.querySelector('ul.ls-check'); if (!ul) { ul = document.createElement('ul'); ul.className = 'ls-check'; d.appendChild(ul); }
+  const have = [...d.querySelectorAll('ul.ls-check > li')]; let added = 0;
+  names.forEach(n => { const k = n.toLowerCase(); const ex = have.find(li => li.textContent.trim().toLowerCase().replace(/\s*[-–(].*$/, '') === k.replace(/\s*[-–(].*$/, '')); if (ex) { ex.classList.remove('ck'); return; } const li = document.createElement('li'); li.textContent = n; ul.appendChild(li); have.push(li); added++; });
+  [...ul.querySelectorAll('li')].forEach(li => { if (!li.textContent.trim()) li.remove(); });
+  t.notes = cleanHtml(d.innerHTML); t.nh = true; save(); if (pageId === t.id) renderPage(); return added;
+}
+function grParse(v) {
+  let m = v.match(/^(?:add\s+|buy\s+|get\s+)?(.+?)\s+(?:to|in|into|on)\s+(?:my\s+|the\s+)?(?:grocery|groceries|sabzi|kirana)(?:\s+list)?\.?$/i) || v.match(/^(?:grocery|groceries|sabzi|kirana)(?:\s+list)?\s*[:\-–]\s*(.+)$/i);
+  if (!m) return null; return m[1].split(/\s*(?:,|;|\n|\s\+\s|\band\b|&)\s*/i).map(x => x.trim()).filter(Boolean).map(x => x[0].toUpperCase() + x.slice(1));
+}
+function grQuick(v) {
+  const names = grParse(v); if (!names || !names.length) return false;
+  let t = grTask(); if (!t) { const d = new Date(); const sat = addDays(today(), (6 - d.getDay() + 7) % 7); t = newTask({ title: 'Grocery', date: sat, repeat: { type: 'days', days: [6], n: 1 }, priority: 3 }); const pr = S.projects.find(p => /^errands$/i.test(p.name)); if (pr) t.projectId = pr.id; S.tasks.push(t); addPlan(t); }
+  grAppend(t, names); render();
+  toast(`🛒 Added ${names.length > 2 ? plural(names.length, 'item') : names.join(' and ')} to ${esc(t.title)}${t.date ? ' · ' + (t.date === today() ? 'today' : fmtDate(t.date)) : ''}`, () => taskSheet(t.id), 'Open');
+  return true;
+}
+function grChips(t) {
+  if (!GR_RE.test(t.title || '') || t.done) return '';
+  const h = grHist(); if (!Object.keys(h).length) { ['Onion', 'Tomato', 'Potatoes', 'Dhaniya', 'Green chilli', 'Ginger', 'Lemon', 'Milk', 'Curd', 'Bananas'].forEach(c => h[c.toLowerCase()] = { n: 0, c }); grSeen(grItems(t).map(i => i.x)); }
+  const inL = new Set(grItems(t).filter(i => !i.ck).map(i => i.x.toLowerCase().replace(/\s*[-–(].*$/, '').trim()));
+  const w1 = k => k.split(/\s+/)[0], used = new Set([...inL].map(w1)); const top = Object.entries(h).sort((a, b) => b[1].n - a[1].n || (b[1].at || 0) - (a[1].at || 0)).filter(([k]) => { if (inL.has(k) || used.has(w1(k))) return false; used.add(w1(k)); return true; }).slice(0, 16);
+  const left = grItems(t).filter(i => !i.ck).length, got = grItems(t).filter(i => i.ck).length;
+  return `<div class="grbox"><div class="grh"><b>🛒 ${left ? plural(left, 'item') + ' to buy' : 'List is empty'}</b>${got ? `<span>${got} in the bag</span>` : ''}</div>${top.length ? `<div class="grl">Your usual · tap to add</div><div class="grc">${top.map(([k, o]) => `<button type="button" data-gradd="${esc(o.c)}">+ ${esc(o.c)}</button>`).join('')}</div>` : ''}<div class="grt">Add from anywhere: type <i>milk, eggs to grocery</i>. Tap Done after shopping: bought items clear, the rest stay for next time.</div></div>`;
 }
 function addFromText(text, ctx) {
   const r = parseTask(text); if (!r.title && !r.meeting) return null;
@@ -4193,7 +4230,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.13.1';
+const APPV = '6.14';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4527,7 +4564,7 @@ function quickAdd(ctxOverride) {
   `, ctx.quick ? () => window.close() : null, !!ctx.quick);
   const inp = $('#qaIn'), addB = $('#qaAdd');
   const ov = {};
-  const upd = () => { const v = inp.value.trim(); addB.disabled = !v; $('#qaExp').disabled = !v; if (!v || smMulti(v)) { $('#qaChips').innerHTML = ''; $('#qaPrev').innerHTML = ''; return; } const r = parseTask(v); if (!r.projectId && !r.newProject && ctx.view === 'project' && proj(ctx.arg)) r.projectId = ctx.arg; if (ov.date) { r.date = ov.date; r.someday = false; if (r.repeat && r.repeat.type === 'monthly') r.repeat = { ...r.repeat, dom: pYmd(ov.date).getDate() }; } if (ov.time) { r.time = ov.time; if (!r.reminders.length) r.reminders = [0]; } r._edit = true; const nagOn = ov.nag ?? !!r.nag; $('#qaChips').innerHTML = chipsFor(r) + (r.reminders.length || r.time ? `<button type="button" class="chip nagt${nagOn ? ' on' : ''}" data-nagt aria-pressed="${nagOn}" title="Repeat the reminder every 10 minutes until you tick Done">${I.repeat}${nagOn ? 'Keep reminding: on' : 'Keep reminding'}</button>` : ''); { const nb = $('#qaChips [data-nagt]'); if (nb) { nb.onpointerdown = e => e.preventDefault(); nb.onclick = () => { ov.nag = !nagOn; upd(); }; } } $$('#qaChips [data-chip]').forEach(b => { b.onpointerdown = e => e.preventDefault(); b.onclick = () => { const el = $(b.dataset.chip === 'date' ? '#qaD' : '#qaT'); el.value = b.dataset.chip === 'date' ? (r.date || today()) : (r.time || ''); try { el.showPicker(); } catch (x) { el.focus(); el.click(); } }; }); $('#qaPrev').innerHTML = r.title ? `${r.meeting ? 'Meeting' : 'Task'}: <b>${esc(r.title)}</b>` : ''; };
+  const upd = () => { const v = inp.value.trim(); addB.disabled = !v; $('#qaExp').disabled = !v; if (!v || smMulti(v)) { $('#qaChips').innerHTML = ''; $('#qaPrev').innerHTML = ''; return; } { const g = grParse(v); if (g && g.length) { const gt = grTask(); $('#qaChips').innerHTML = ''; $('#qaPrev').innerHTML = `🛒 Adds <b>${esc(g.join(', '))}</b> to ${gt ? esc(gt.title) + ' list' : 'a new Grocery list (Saturdays)'}`; return; } } const r = parseTask(v); if (!r.projectId && !r.newProject && ctx.view === 'project' && proj(ctx.arg)) r.projectId = ctx.arg; if (ov.date) { r.date = ov.date; r.someday = false; if (r.repeat && r.repeat.type === 'monthly') r.repeat = { ...r.repeat, dom: pYmd(ov.date).getDate() }; } if (ov.time) { r.time = ov.time; if (!r.reminders.length) r.reminders = [0]; } r._edit = true; const nagOn = ov.nag ?? !!r.nag; $('#qaChips').innerHTML = chipsFor(r) + (r.reminders.length || r.time ? `<button type="button" class="chip nagt${nagOn ? ' on' : ''}" data-nagt aria-pressed="${nagOn}" title="Repeat the reminder every 10 minutes until you tick Done">${I.repeat}${nagOn ? 'Keep reminding: on' : 'Keep reminding'}</button>` : ''); { const nb = $('#qaChips [data-nagt]'); if (nb) { nb.onpointerdown = e => e.preventDefault(); nb.onclick = () => { ov.nag = !nagOn; upd(); }; } } $$('#qaChips [data-chip]').forEach(b => { b.onpointerdown = e => e.preventDefault(); b.onclick = () => { const el = $(b.dataset.chip === 'date' ? '#qaD' : '#qaT'); el.value = b.dataset.chip === 'date' ? (r.date || today()) : (r.time || ''); try { el.showPicker(); } catch (x) { el.focus(); el.click(); } }; }); $('#qaPrev').innerHTML = r.title ? `${r.meeting ? 'Meeting' : 'Task'}: <b>${esc(r.title)}</b>` : ''; };
   const fit = () => { inp.style.height = 'auto'; inp.style.height = inp.scrollHeight + 'px'; };
   inp.addEventListener('input', () => { fit(); upd(); }); upd(); fit();
   // Several tasks typed or pasted at once (one per line, or separated by commas): offer to add them separately
@@ -4586,6 +4623,7 @@ function quickAdd(ctxOverride) {
   });
   const submit = e => {
     e && e.preventDefault(); const v = inp.value.trim(); if (!v) return;
+    if (!ctx.tpl && grQuick(v)) { closeSheet(true); if (ctx.quick) { quickDone(); return; } return; }
     if (!ctx.tpl && smMulti(v)) { const many = smMulti(v); const ids = smMultiAdd(v, ctx, t => { const keep = ov.time; if (many.iv) delete ov.time; applyOv(t); if (keep) ov.time = keep; }); if (ids && ids.length) { askNotify(); closeSheet(true); if (ctx.quick) { quickDone(); return; } render(); toast(`Added ${plural(ids.length, 'task')}`, smUndoAdd(ids)); return; } }
     const res = addFromText(v, ctx); if (!res) { toast('Add a few words for the task name'); return; }
     const nv = noteVal(); if (nv && !res.meeting) { res.notes = (res.notes || '') + nv; res.nh = true; save(); }
@@ -4677,7 +4715,7 @@ function renderPage(fresh) {
   ${t.done ? '' : `<div class="pacts"><button id="paDone">${I.check}Done</button><button id="paSnz">${I.clock}Snooze</button><button id="paMove">${I.cal}Move</button><button data-fu="plan" data-id="${t.id}">${I.repeat || I.clock}Follow-up</button><button id="paFocus">${I.play}Focus</button></div><div id="fuWrap">${fuCardHtml(t)}</div>`}
   ${t.pushed >= 2 && !t.done ? `<div class="psec" style="padding-top:8px"><button class="warn" data-sm="stuck" data-id="${t.id}">Moved ${t.pushed} times. Tap for help: split it, schedule it, hand it over or drop it.</button></div>` : ''}
   <div class="psec" id="pSubs"${t.subs.length ? '' : ' hidden'}><h3><span>Subtasks${t.subs.length ? ` ${sd}/${t.subs.length}` : ''}</span></h3><div id="pCl">${t.subs.map(c => clRow(c, true)).join('')}</div><div class="cl"><button type="button" id="pClAdd" class="iconbtn" style="width:24px;color:var(--muted)" aria-label="Add subtask">${I.plus}</button><textarea class="clt" id="pClNew" rows="1" placeholder="Add a subtask" aria-label="Add a subtask" enterkeyhint="enter" autocomplete="off"></textarea></div></div>
-  <div class="psec"><h3><span>Notes</span></h3>${toolbarHtml()}<div class="notes" id="pNotes" contenteditable="true" data-ph="Notes" role="textbox" aria-multiline="true" aria-label="Notes">${cleanHtml(t.notes)}</div><div id="ldWrap">${ldBarHtml(t)}</div></div>
+  <div class="psec"><h3><span>Notes</span></h3>${toolbarHtml()}<div class="notes" id="pNotes" contenteditable="true" data-ph="Notes" role="textbox" aria-multiline="true" aria-label="Notes">${cleanHtml(t.notes)}</div>${grChips(t)}<div id="ldWrap">${ldBarHtml(t)}</div></div>
   ${t.imgs.length ? `<div class="psec"><h3><span>Images ${t.imgs.length}</span></h3><div class="imgs sm">${t.imgs.map(id => IMGS[id] ? `<button class="im" data-img="${id}" aria-label="Open image"><img src="${IMGS[id]}" alt="Attached image"></button>` : '').join('')}<button class="addimg" id="pAddImg" aria-label="Add image">${I.plus}</button></div></div>` : ''}
   <div class="pfoot">Created ${fmtDate(ymd(new Date(t.createdAt)))}${t.done && t.doneAt ? `. Done ${fmtDate(ymd(new Date(t.doneAt)))}` : ''}${t.pushed ? `. Moved ${plural(t.pushed, 'time')}` : ''}.</div>`;
   pg.classList.add('on'); document.body.style.overflow = 'hidden'; pg.scrollTop = y;
@@ -4697,7 +4735,9 @@ function renderPage(fresh) {
   $('#pMore').onclick = () => pageMenu(t);
   $$('[data-pp]', pg).forEach(b => b.onclick = () => ({ when: pickWhen, repeat: pickRepeat, remind: pickRemind, priority: pickPriority, project: pickProject, tags: pickTags, dur: pickDur, more: pickMore })[b.dataset.pp](t));
   { const so = $('#pSubOpen'); if (so) so.onclick = e => { e.preventDefault(); $('#pSubs').hidden = false; so.remove(); setTimeout(() => $('#pClNew')?.focus(), 30); }; }
-  wireEditor($('#pNotes'), $('.ntool', pg), html => { if (html !== t.notes) { t.notes = html; save(); } });
+  const grWire = () => $$('[data-gradd]', pg).forEach(b => b.onclick = () => { grAppend(t, [b.dataset.gradd]); toast(`🛒 Added ${b.dataset.gradd}`); });
+  wireEditor($('#pNotes'), $('.ntool', pg), html => { if (html !== t.notes) { t.notes = html; save(); const gb = $('.grbox', pg); if (gb) { const n = document.createElement('div'); n.innerHTML = grChips(t); if (n.firstChild) { gb.replaceWith(n.firstChild); grWire(); } } } });
+  grWire();
   { const ne = $('#pNotes'); const lcRun = () => { if (lcBold(ne)) ne.dispatchEvent(new Event('input', { bubbles: true })); };
     lcRun(); ne.addEventListener('keyup', e => { if (e.key === 'Enter') lcRun(); }); ne.addEventListener('blur', lcRun); }
   { let ldT; $('#pNotes').addEventListener('input', () => { clearTimeout(ldT); ldT = setTimeout(() => { const w = $('#ldWrap'); if (!w) return; const tmp = { ...t, notes: cleanHtml($('#pNotes').innerHTML) }; w.innerHTML = ldBarHtml(tmp); }, 400); }); }
@@ -5203,7 +5243,7 @@ function entities() {
   const o = {}; S.tasks.forEach(t => o['task:' + t.id] = t); S.projects.forEach(p => o['project:' + p.id] = p); S.habits.forEach(h => o['habit:' + h.id] = h);
   S.focus.forEach(f => o['focus:' + f.id] = f); S.dates.forEach(d => o['date:' + d.id] = d); (S.goals || []).forEach(g => o['goal:' + g.id] = g); S.templates.forEach(t => o['tpl:' + t.id] = t); Object.values(S.meetLog).forEach(m => { if (m.src !== 'pcal') o['meet:' + m.id] = m; }); if (S.pcal) o['pcal:' + (S.pcal.id || 'all')] = S.pcal; o['meta:coach'] = coachBrief(); Object.keys(IMGS).forEach(id => o['img:' + id] = { id, data: IMGS[id] }); (S.logs || []).forEach(l => o['log:' + l.id] = l); Object.values(S.phone || {}).forEach(p => o['phone:' + p.id] = p); o['meta:cur'] = { c: S.cur || null }; o['meta:rv'] = { v: remSig() }; if (S.remAck) o['meta:ack'] = S.remAck;
   const st = S.settings; o['meta:days'] = S.days; if (S.water) o['meta:water'] = S.water; (S.trash || []).forEach(x => o['trash:' + x.id] = x); (S.filters || []).forEach(f => o['filter:' + f.id] = f); if (S.rw) o['meta:rw'] = S.rw; o['meta:plan'] = S.plan; if (S.learn) o['meta:learn'] = S.learn; if (S.sales) o['meta:sales'] = S.sales; if (S.funnel) o['meta:funnel'] = S.funnel; o['meta:hsec'] = S.habitSections; { const J = rf(); Object.values(J.days).forEach(e => o['jday:' + e.d] = e); const { days, ...jm } = J; o['meta:jr'] = jm; }
-  o['meta:prefs'] = { phoneOff: !!st.phoneOff, coach: coachSet(), appmap: st.appmap, nagDef: st.nagDef, workStart: st.workStart, checkin: st.checkin, catv: st.catv, aiModel: st.aiModel, aiPrivate: st.aiPrivate, logo: st.logo, darkStyle: st.darkStyle, gcid: st.gcid, theme: st.theme, mode: st.mode, accent: st.accent, font: st.font, pomo: st.pomo, brk: st.brk, morning: st.morning, shutdown: st.shutdown, meetBefore: st.meetBefore, quietOn: st.quietOn, quietStart: st.quietStart, quietEnd: st.quietEnd, shield: st.shield, showDone: st.showDone, todayGroup: st.todayGroup, tdv: st.tdv, fx: st.fx, popRem: st.popRem, inCard: st.inCard, srvPush: st.srvPush };
+  o['meta:prefs'] = { phoneOff: !!st.phoneOff, coach: coachSet(), appmap: st.appmap, nagDef: st.nagDef, workStart: st.workStart, checkin: st.checkin, catv: st.catv, aiModel: st.aiModel, aiPrivate: st.aiPrivate, logo: st.logo, darkStyle: st.darkStyle, gcid: st.gcid, theme: st.theme, mode: st.mode, accent: st.accent, font: st.font, pomo: st.pomo, brk: st.brk, morning: st.morning, shutdown: st.shutdown, meetBefore: st.meetBefore, quietOn: st.quietOn, quietStart: st.quietStart, quietEnd: st.quietEnd, shield: st.shield, showDone: st.showDone, todayGroup: st.todayGroup, tdv: st.tdv, grHist: st.grHist, fx: st.fx, popRem: st.popRem, inCard: st.inCard, srvPush: st.srvPush };
   return o;
 }
 function setEntity(key, val) {
@@ -5400,6 +5440,7 @@ function wire(view) {
     ab.oninput = () => { scanPk(); if (ab.value.includes('\n')) { ab.value = ab.value.replace(/\n/g, ''); ab.onkeydown({ key: 'Enter', preventDefault() { } }); return; } const v = ab.value.trim(); if (!v) { pv.innerHTML = ''; return; } { const hh = smMultiHint(v, route()); if (hh) { pv.innerHTML = `<div class="qa-multi qa-m2">${hh}</div>`; return; } } const r = parseTask(v); r._edit = true; pv.innerHTML = (r.date || r.time || r.priority || r.projectId || r.repeat || r.tags.length) ? chipsFor(r) : ''; };
     ab.onkeydown = e => { if (!apk.hidden && pk.items.length && e.key) { if (e.key === 'ArrowDown') { e.preventDefault(); pk.i = (pk.i + 1) % pk.items.length; drawPk(); return; } if (e.key === 'ArrowUp') { e.preventDefault(); pk.i = (pk.i - 1 + pk.items.length) % pk.items.length; drawPk(); return; } if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault && e.preventDefault(); choosePk(pk.i); return; } if (e.key === 'Escape') { closePk(); return; } }
       if (e.key === 'Escape') { ab.value = ''; pv.innerHTML = ''; ab.blur(); return; } if (e.key !== 'Enter' || e.isComposing) return; e.preventDefault(); const v = ab.value.trim(); if (!v) return;
+      if (grQuick(v)) { ab.value = ''; pv.innerHTML = ''; return; }
       if (smMulti(v)) { const ids = smMultiAdd(v, route()); if (ids && ids.length) { ab.value = ''; pv.innerHTML = ''; askNotify(); render(); toast(`Added ${plural(ids.length, 'task')}`, smUndoAdd(ids)); return; } }
       const res = addFromText(v, route()); if (!res) { toast('Add a few words for the task name'); return; } if (res.meeting) { render(); toast(`Meeting added, ${fmtClock(res.meeting.s)}`); return; }
       ab.value = ''; pv.innerHTML = ''; if (res.reminders.length) askNotify(); render(); const n = $('#abIn'); if (n) { n.value = ''; n.focus(); } const np = $('#abPrev'); if (np) np.innerHTML = '';
