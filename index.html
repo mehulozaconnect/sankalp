@@ -506,7 +506,7 @@ textarea.inp{height:auto;min-height:96px;padding:10px 12px;line-height:1.5;resiz
 .ff-serif{font-family:Georgia,'Times New Roman',serif}.ff-mono{font-family:ui-monospace,Menlo,Consolas,'Courier New',monospace}.ff-hand{font-family:'Segoe Print','Bradley Hand','Comic Sans MS',cursive}
 ul.ls-arrow,ul.ls-check,ul.ls-dash,ul.ls-star{list-style:none;padding-left:1.5em}
 ul.ls-arrow>li::before,ul.ls-check>li::before,ul.ls-dash>li::before,ul.ls-star>li::before{display:inline-block;width:1.4em;margin-left:-1.4em;color:var(--accent-text,var(--accent))}
-ul.ls-arrow>li::before{content:'➤'}ul.ls-check>li::before{content:'';width:1.05em;height:1.05em;margin-right:.45em;margin-left:-1.5em;vertical-align:-.15em;border:2px solid var(--accent-text,var(--accent));border-radius:5px;box-sizing:border-box;cursor:pointer}ul.ls-check{padding-left:1.7em}ul.ls-check>li.ck::before{background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/80% no-repeat;border-color:var(--accent)}ul.ls-check>li.ck{color:var(--muted);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 70%,transparent)}ul.ls-dash>li::before{content:'–'}ul.ls-star>li::before{content:'★'}
+ul.ls-arrow>li::before{content:'➤'}ul.ls-check>li::before{content:'';width:1.3em;height:1.3em;margin-right:.55em;margin-left:-1.85em;vertical-align:-.28em;border:2px solid var(--accent-text,var(--accent));border-radius:5px;box-sizing:border-box;cursor:pointer}ul.ls-check{padding-left:2.1em}ul.ls-check>li{padding:5px 0;line-height:1.45}ul.ls-check>li.ck::before{background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/80% no-repeat;border-color:var(--accent)}ul.ls-check>li.ck{color:var(--muted);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 70%,transparent)}ul.ls-dash>li::before{content:'–'}ul.ls-star>li::before{content:'★'}
 .clat{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:12px;font-weight:600;color:var(--muted);margin:-4px 0 6px}
 .clat span{display:inline-flex;align-items:center;gap:3px}
 .clat svg{width:12px;height:12px}
@@ -1785,7 +1785,9 @@ function toolbarHtml() { return `<div class="ntool" role="toolbar" aria-label="F
 function wireEditor(ed, bar, onSave) {
   let tm, range = null;
   // Checklist: tap the box to tick or untick an item (no keyboard pops up)
-  const ckTap = e => { const li = e.target.closest && e.target.closest('ul.ls-check > li'); if (!li || !ed.contains(li)) return; const x = (e.changedTouches ? e.changedTouches[0] : e).clientX, L = li.getBoundingClientRect().left; if (x > L + 4) return;
+  const ckTap = e => { const pt = e.changedTouches ? e.changedTouches[0] : e, x = pt.clientX, y = pt.clientY; let li = e.target.closest && e.target.closest('ul.ls-check > li');
+    if (!li && e.target.closest) { const ul = e.target.closest('ul.ls-check'); if (ul) li = [...ul.children].find(c => { const b = c.getBoundingClientRect(); return y >= b.top - 2 && y <= b.bottom + 2; }); }
+    if (!li || !ed.contains(li)) return; const L = li.getBoundingClientRect().left; if (x > L + 10) return;
     e.preventDefault(); e.stopPropagation(); li.classList.toggle('ck'); if (navigator.vibrate) try { navigator.vibrate(8); } catch (er) { } ed.dispatchEvent(new Event('input')); };
   ed.addEventListener('touchstart', ckTap, { passive: false }); ed.addEventListener('mousedown', ckTap);
   const isTouch = matchMedia('(pointer:coarse)').matches;
@@ -4230,7 +4232,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.14';
+const APPV = '6.14.1';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
