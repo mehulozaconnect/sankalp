@@ -1,0 +1,15 @@
+== pushq
+{'pop': True, 'native': True, 'by': '..', 'card': True, 'u': '1795433812847'}
+meta%253Aack 1795433798246 {"v":"hw4nkj.3445","at":1795433798246}
+meta%253Arv 1795433711656 {"v":"hw4nkj.3445"}
+pushq native True pop True card True updated min ago 1 by dmwd5e
+queued items 8 nag items 0
+open tasks 39
+PROJECTS in cloud 15 TAGS in cloud 11
+sent last 8h [('26-11-2315:000', 128), ('z1795419063168', 247), ('26-11-2312:300', 278), ('26-11-2311:050', 363)]
+acts [('snooze', 'ez6hm', 277)]
+prefs nagDef 0 quietOn False 22:00 07:30 srvPush True phoneOff False
+meta%3Aack 1 min ago {"v":"hw4nkj.3445","at":1795433798246}
+meta%3Arv 3 min ago {"v":"hw4nkj.3445"}
+== push sends (last 18h)
+1795433930
