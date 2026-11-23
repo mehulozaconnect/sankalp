@@ -15,21 +15,23 @@ print('pushq native', q.get('native'), 'pop', q.get('pop'), 'card', q.get('card'
 items = q.get('items') or []
 print('queued items', len(items), 'nag items', sum(1 for i in items if '|n' in i.get('k','')))
 # tasks with nag on
-tok = None; tasks = []
+tok = None; tasks = []; PJ = 0; TG = set()
 while True:
     u = f"{B}/users/{U}/items?pageSize=300" + (f"&pageToken={tok}" if tok else '')
     d = get(u)
     for doc in d.get('documents', []):
         name = urllib.parse.unquote(doc['name'].split('/')[-1])
+        if name.startswith('project:') and not val(doc.get('fields',{}).get('x',{})): PJ += 1
         if not name.startswith('task:'): continue
         f = doc.get('fields', {}); 
         if val(f.get('x', {})) : continue
         try: t = json.loads(val(f.get('d', {})) or '{}')
         except Exception: continue
-        tasks.append(t)
+        tasks.append(t); TG.update(t.get('tags') or [])
     tok = d.get('nextPageToken')
     if not tok: break
 print('open tasks', sum(1 for t in tasks if not t.get('done')))
+print('PROJECTS in cloud', PJ, 'TAGS in cloud', len(TG))
 prefs = None
 for t in tasks:
     if t.get('done'): continue
