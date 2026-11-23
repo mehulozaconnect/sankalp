@@ -2920,6 +2920,24 @@ const addBar = (lbl) => `<div class="qa-wrap"><div class="addbar"><span class="a
 const TD_WORK_P = /assess\s*hub|office|work|client|sales|lead|demo|billing|invoice|company|five elements|crm|pipeline/i;
 const TD_WORK_T = /\b(nda|proposal|invoice|agreement|contract|rfp|rfq|sow|msa|po|purchase order|client|clients|demo|pitch|commercials?|deck|billing|renewal|onboarding|go[\s-]?live|kick[\s-]?off|poc|pilot|quotation|quote|follow[\s-]?up with|assesshub)\b/i;
 function tdIsWork(t) { const p = t.projectId && S.projects.find(x => x.id === t.projectId); if (p && /^personal$/i.test(p.area || '') && /^(home|health|family|personal|kids|finance|shopping)$/i.test(p.name || '')) return false; return !!(p && (/^work$/i.test(p.area || '') || TD_WORK_P.test(p.name || ''))) || TD_WORK_T.test(t.title || '') || /^\s*(lead|collection)\s*[:\-–]/i.test(t.title || '') || (typeof ldIsLead === 'function' && ldIsLead(t)); }
+/* Personal tasks hide during work hours unless they matter now: P1, or timed inside work hours */
+const TD_PERS_T = /\b(puja|pooja|temple|mandir|aarti|chant\w*|jaap|meditat\w*|yoga|gym|grocer\w*|vegetables?|school|kids?|birthday|anniversary|haircut|laundry|clothes)\b/i;
+function tdIsPersonal(t) { if (tdIsWork(t)) return false; const p = t.projectId && S.projects.find(x => x.id === t.projectId); return p ? !/^work$/i.test(p.area || '') : TD_PERS_T.test(t.title || ''); }
+function tdPersImp(t, a, b) { if (t.priority === 1) return true; if (!t.time || t.date !== today()) return false; const m = hm2m(t.time); return m >= a && m < b; }
+let TD_SHOWP = false;
+/* A personal task that repeats on set weekdays (Every Sun) is never carried into another day: a missed one jumps to its next day */
+const rpDayTied = r => !!r && r.from !== 'done' && (r.type === 'weekly' || (r.type === 'days' && (r.days || []).length > 0 && (r.days || []).length < 7));
+function rpSkippable(t) { return !t.done && !t.someday && !!t.date && rpDayTied(t.repeat) && t.priority !== 1 && tdIsPersonal(t); }
+function rpNextOn(t, from) { let n = t.date, g = 0; while (n < from && g++ < 800) n = stepDate(t.repeat, n); if (t.repeat.type === 'days') { g = 0; while (!t.repeat.days.includes(pYmd(n).getDay()) && g++ < 8) n = stepDate(t.repeat, n); } return t.repeat.until && n > t.repeat.until ? null : n; }
+function rpAutoSkip() {
+  const td = today(), L = S.tasks.filter(t => rpSkippable(t) && t.date < td); if (!L.length) return;
+  const snap = L.map(t => [t.id, t.date, t.pushed || 0]); let n1 = null;
+  L.forEach(t => { const n = rpNextOn(t, td); if (!n) return; t.date = n; t.pushed = 0; t.firedKeys = []; t.nagAt = 0; t.nagN = 0; t.snoozeUntil = 0; if (t.baseTime) { t.time = t.baseTime; delete t.baseTime; } addPlan(t); n1 ||= [t, n]; });
+  if (!n1) return; save();
+  const msg = L.length === 1 ? `${n1[0].title} skipped to ${n1[1] === td ? 'today' : DAYS[pYmd(n1[1]).getDay()].slice(0, 3) + ' ' + fmtShort(n1[1])}` : `${plural(L.length, 'missed repeat')} skipped to their next day`;
+  setTimeout(() => toast(msg, () => { snap.forEach(([id, d, p]) => { const t = getTask(id); if (t) { t.date = d; t.pushed = p; t.firedKeys = []; } }); save(); render(); }), 400);
+}
+const rpCarryTo = (t, tom) => rpSkippable(t) ? (rpNextOn(t, tom) || tom) : tom;
 function tdMode() {
   const st = S.settings, n = new Date(), m = n.getHours() * 60 + n.getMinutes(), wd = n.getDay(), a = hm2m(st.modeFrom || '10:00'), b = hm2m(st.modeTo || '19:00');
   const auto = wd > 0 && wd < 6 && m >= a && m < b ? 'work' : 'personal'; let ov = null; try { ov = JSON.parse(localStorage.getItem('sankalp.tdmode') || 'null'); } catch (e) { }
@@ -2933,9 +2951,10 @@ function tdPersonalCard(M, D, workN, closeOk) {
   return `<section class="td-pc"><div class="td-pm"><b>${title}</b><small>${bits.join(' · ')}</small></div>${closeOk ? `<a href="#close" class="td-pa" title="Close the work day">Close day</a>` : ''}<button class="td-pa q" data-act="tdwork" title="Show work tasks">💼${workN ? ' ' + workN : ''}</button></section>`;
 }
 function vToday() {
-  const d = new Date(), M = tdMode(), PERS = M.mode === 'personal', D0 = todayData(), keep = l => PERS ? l.filter(t => !tdIsWork(t)) : l;
-  const D = PERS ? { ...D0, pinned: keep(D0.pinned), overdue: keep(D0.overdue), day: keep(D0.day), evening: keep(D0.evening), doneToday: keep(D0.doneToday) } : D0;
-  if (PERS) D.openCount = D.pinned.length + D.overdue.length + D.day.length + D.evening.length;
+  rpAutoSkip();
+  const d = new Date(), M = tdMode(), PERS = M.mode === 'personal', D0 = todayData(), keep = l => PERS ? l.filter(t => !tdIsWork(t)) : TD_SHOWP ? l : l.filter(t => !tdIsPersonal(t) || tdPersImp(t, M.a, M.b));
+  const D = { ...D0, pinned: keep(D0.pinned), overdue: keep(D0.overdue), day: keep(D0.day), evening: keep(D0.evening), doneToday: keep(D0.doneToday) };
+  D.openCount = D.pinned.length + D.overdue.length + D.day.length + D.evening.length; const persN = PERS ? 0 : D0.openCount - D.openCount;
   ROW_EMO_N = D.openCount; setTimeout(() => { ROW_EMO_N = null; }, 0);
   const workN = PERS ? D0.openCount - D.openCount : 0, st = S.settings, td = today(), rec = S.days[td] || {}, now = Date.now(), nm = smNowM();
   const doneN = D.doneToday.length, tot = doneN + D.openCount, bday = S.dates.filter(x => occOf(x) === td);
@@ -2971,7 +2990,7 @@ function vToday() {
   if (!D.openCount) h += `<div class="empty">${doneN ? 'All done for today ✓' : 'Nothing for today. Tap + to add a task.'}</div>`;
   if (isWide()) h += `<div class="td-add">${addBar('Add a task for today')}</div>`;
   if (doneN && st.showDone) h += `<div class="doneh">Done today <span>${doneN}</span></div>` + rows(D.doneToday);
-  h += `<div class="sm-view"><button data-act="tvmenu" aria-haspopup="dialog">${TV_IC.s}${TV.g === 'time' && TV.s === 'smart' ? 'View options' : `${(TV_G.find(z => z[0] === TV.g) || [, ''])[1]} · ${TV.s === 'smart' ? 'smart' : (TV_S.find(z => z[0] === TV.s) || [, ''])[1].toLowerCase()}`}</button>${doneN ? `<button data-act="toggledone">${st.showDone ? I.eyeoff : I.eye}${st.showDone ? 'Hide' : 'Show'} ${doneN} done</button>` : ''}</div>`;
+  h += `<div class="sm-view"><button data-act="tvmenu" aria-haspopup="dialog">${TV_IC.s}${TV.g === 'time' && TV.s === 'smart' ? 'View options' : `${(TV_G.find(z => z[0] === TV.g) || [, ''])[1]} · ${TV.s === 'smart' ? 'smart' : (TV_S.find(z => z[0] === TV.s) || [, ''])[1].toLowerCase()}`}</button>${persN || (TD_SHOWP && !PERS) ? `<button data-act="tdpshow">🏠 ${TD_SHOWP ? 'Hide personal' : `${persN} personal · later`}</button>` : ''}${doneN ? `<button data-act="toggledone">${st.showDone ? I.eyeoff : I.eye}${st.showDone ? 'Hide' : 'Show'} ${doneN} done</button>` : ''}</div>`;
   return h;
 }
 function vInbox() { const l = inboxTasks(); return topbar() + `<div class="pad"><h1 class="title">Inbox</h1></div><div style="height:8px"></div>` + addBar('Add a task to Inbox') + (l.length ? rows(l) : `<div class="empty">Inbox is clear.</div>`); }
@@ -4248,7 +4267,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.15.6';
+const APPV = '6.16.0';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5734,14 +5753,14 @@ document.addEventListener('click', e => {
     group: () => { S.settings.todayGroup = b.dataset.g; save(); render(); },
     tvmenu: () => tvMenu(b), tvfold: () => { const f = tvFold(); if (f[id]) delete f[id]; else f[id] = 1; try { localStorage.setItem('sankalp.tvfold', JSON.stringify(f)); } catch (e) { } renderMainOnly(); },
     groupcycle: () => { const o = ['time', 'priority', 'project']; S.settings.todayGroup = o[(o.indexOf(S.settings.todayGroup) + 1) % 3]; save(); render(); toast('Grouped by ' + { time: 'time', priority: 'priority', project: 'project' }[S.settings.todayGroup]); },
-    moveoverdue: () => { todayData().overdue.forEach(t => setDate(t, td)); save(); render(); toast('Moved to today'); },
+    moveoverdue: () => { todayData().overdue.forEach(t => setDate(t, rpCarryTo(t, td))); save(); render(); toast('Moved to today'); },
     objective: () => textSheet('Today\'s objective', 'What would make today a good day?', S.days[td]?.objective, 'Close the Fusion proposal and clear follow-ups', v => { dayRec(td).objective = v; }),
     tomorrow: () => { const tm = addDays(td, 1); textSheet('Tomorrow\'s focus', 'What is tomorrow about? This becomes tomorrow\'s objective.', S.days[tm]?.objective, 'Demo prep for Monday', v => { dayRec(tm).objective = v; S.settings.lastShutdown = td; }); },
     impact: impactPicker, ek: () => ekSheet(true),
     install: async () => { if (!installEvt) { toast('Use the browser menu, Add to Home screen'); return; } installEvt.prompt(); try { await installEvt.userChoice; } catch (x) { } installEvt = null; render(); },
     hidedenied: () => { S.settings.deniedSeen = true; save(); render(); },
-    carrytm: () => { const tm = addDays(td, 1); const l = open().filter(t => t.date && t.date <= td && t.priority <= 3 && !t.someday); l.forEach(t => setDate(t, tm)); save(); render(); toast(`${plural(l.length, 'task')} moved to tomorrow`); },
-    railday: () => { railDay = b.dataset.d; renderRail(); }, abtpl: () => { quickAdd(); setTimeout(() => { const b = $('#qaTplBtn'); if (b && b.getAttribute('aria-expanded') !== 'true') b.click(); }, 60); }, tdwork: () => tdSetMode('work'), tdpers: () => { try { localStorage.removeItem('sankalp.tdmode'); } catch (e) { } render(); }, stclean: async () => { await stClean(); stPaint(); }, stauto: () => { S.settings.autoClean = S.settings.autoClean === false; save(); render(); }, railhide: () => railSet(true), railshow: () => railSet(false), railwk: () => { railDay = addDays(railDay || today(), 7 * +b.dataset.dir); renderRail(); },
+    carrytm: () => { const tm = addDays(td, 1); const l = open().filter(t => t.date && t.date <= td && t.priority <= 3 && !t.someday); l.forEach(t => setDate(t, rpCarryTo(t, tm))); save(); render(); toast(`${plural(l.length, 'task')} moved on`); },
+    railday: () => { railDay = b.dataset.d; renderRail(); }, abtpl: () => { quickAdd(); setTimeout(() => { const b = $('#qaTplBtn'); if (b && b.getAttribute('aria-expanded') !== 'true') b.click(); }, 60); }, tdwork: () => tdSetMode('work'), tdpshow: () => { TD_SHOWP = !TD_SHOWP; render(); }, tdpers: () => { try { localStorage.removeItem('sankalp.tdmode'); } catch (e) { } render(); }, stclean: async () => { await stClean(); stPaint(); }, stauto: () => { S.settings.autoClean = S.settings.autoClean === false; save(); render(); }, railhide: () => railSet(true), railshow: () => railSet(false), railwk: () => { railDay = addDays(railDay || today(), 7 * +b.dataset.dir); renderRail(); },
     fest: () => { S.settings.fest = b.dataset.k; save(); applyTheme(); render(); toast(b.dataset.k === 'off' ? 'Festive icon off' : b.dataset.k === 'auto' ? 'Festive icon: Auto' : 'Icon changed'); },
     logo: () => { S.settings.logo = b.dataset.k; save(); applyTheme(); render(); toast(FEST[effIcon()] ? 'Logo saved. The festive icon is showing now; set Festive icon to Off to use this logo.' : 'Logo changed. The Home Screen icon updates by itself within a day.'); },
     dark: () => { S.settings.darkStyle = b.dataset.k; if (S.settings.mode === 'light') S.settings.mode = 'dark'; save(); applyTheme(); render(); },
@@ -6859,7 +6878,7 @@ document.addEventListener('click', ev => {
     fulog: () => { const t = getTask(id); if (t) fuLogSheet(t); },
     notnow: () => { (rec.skip ||= {})[id] = Date.now() + 60 * 6e4; save(); render(); toast('Okay, not for the next hour', () => { delete rec.skip[id]; save(); render(); }); },
     focus: () => { const t = getTask(id); if (!t) return; S.timer.taskId = id; resetTimer('work'); const n = smEst(t); if (n < S.settings.pomo) S.timer.left = n * 60; startTimer(); go('focus'); },
-    allmove: () => { const tom = addDays(td, 1), L = wrapData(td).left; const snap = L.map(t => [t.id, t.date, t.pushed || 0]); L.forEach(t => { setDate(t, tom); t.someday = false; }); save(); render(); toast(`${plural(L.length, 'task')} moved to tomorrow`, () => { snap.forEach(([id, d, p]) => { const t = getTask(id); if (t) { t.date = d; t.pushed = p; t.firedKeys = []; } }); save(); render(); }); },
+    allmove: () => { const tom = addDays(td, 1), L = wrapData(td).left; const snap = L.map(t => [t.id, t.date, t.pushed || 0]); L.forEach(t => { setDate(t, rpCarryTo(t, tom)); t.someday = false; }); save(); render(); toast(`${plural(L.length, 'task')} moved on`, () => { snap.forEach(([id, d, p]) => { const t = getTask(id); if (t) { t.date = d; t.pushed = p; t.firedKeys = []; } }); save(); render(); }); },
     closeedit: () => { smCloseEdit = true; render(); },
     closefinish: () => { let mood = ''; const line = ($('#rfLine')?.value || '').trim(); if (!rfLocked() && (line || rfDay(td)?.mood)) { rfSaveCheckin(true); const e = rfDay(td); if (e && e.mood) { e.saved = true; mood = e.mood >= 4 ? 'good' : e.mood === 3 ? 'ok' : 'tough'; } rfTouch(e); }
       rec.wrap = { note: line, mood, at: Date.now() }; smCloseEdit = false; save(); if (S.settings.fx !== false) celebrate(); go('today'); toast('Day closed. See you tomorrow'); },
