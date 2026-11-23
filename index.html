@@ -2272,7 +2272,8 @@ function toggleDone(id) {
       const copy = { ...t, id: uid(), orig: t.id, done: true, doneAt: Date.now(), repeat: null, pinned: false, subs: t.subs.map(c => ({ ...c })) }; xpPop(rwIndex().xpTask(t, today()));
       S.tasks.push(copy); Object.values(S.days || {}).forEach(dd => { if (dd && dd.top) dd.top = dd.top.map(x => x === t.id ? copy.id : x); });
       if (!nd) { t.done = true; t.doneAt = Date.now(); S.tasks = S.tasks.filter(x => x !== copy); save(); render(); toast('Done. That was the last one in this series'); return; }
-      t.nagAt = 0; t.snoozeUntil = 0; t.date = nd; t.firedKeys = []; t.subs.forEach(c => { c.d = false; c.nagAt = 0; }); if (t.notes && t.notes.includes('class="ck"')) { if (GR_RE.test(t.title || '')) { const d = grDoc(t), got = [...d.querySelectorAll('ul.ls-check > li.ck')]; grSeen(got.map(li => li.textContent.trim())); got.forEach(li => li.remove()); t.notes = cleanHtml(d.innerHTML); } else t.notes = t.notes.replace(/<li class="ck">/g, '<li>'); } t.pushed = 0; addPlan(t);
+      t.nagAt = 0; t.snoozeUntil = 0; t.date = nd; t.firedKeys = []; t.subs.forEach(c => { c.d = false; c.nagAt = 0; }); if (t.baseTime) { t.time = t.baseTime; delete t.baseTime; }
+    if (t.notes && t.notes.includes('class="ck"')) { if (GR_RE.test(t.title || '')) { const d = grDoc(t), got = [...d.querySelectorAll('ul.ls-check > li.ck')]; grSeen(got.map(li => li.textContent.trim())); got.forEach(li => li.remove()); t.notes = cleanHtml(d.innerHTML); } else t.notes = t.notes.replace(/<li class="ck">/g, '<li>'); } t.pushed = 0; addPlan(t);
       save(); render(); toast(`Done. Next one ${nd === addDays(today(), 1) ? 'tomorrow' : 'on ' + fmtDate(nd)}`);
       return;
     }
@@ -4247,7 +4248,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.15.5';
+const APPV = '6.15.6';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4790,16 +4791,20 @@ function pickWhen(t) {
   const sel = () => some ? 'someday' : !date ? 'none' : date === td ? 'today' : date === addDays(td, 1) ? 'tomorrow' : date === nextWeekday(1, false) ? 'nextweek' : 'date';
   openSheet(sheetHead('Date and time', 'Done', 'wOk') + `<div class="field"><div class="optchips" id="wQ">${[['today', 'Today'], ['tomorrow', 'Tomorrow'], ['nextweek', 'Next week'], ['someday', 'Someday'], ['none', 'No date']].map(([k, l]) => `<button type="button" data-q="${k}" class="${sel() === k ? 'on' : ''}">${l}</button>`).join('')}</div></div>
   <div class="grid2"><div class="field" style="margin:0"><label for="wDate">Date</label><input class="inp" type="date" id="wDate" value="${date || ''}"></div><div class="field" style="margin:0"><label for="wTime">Time</label><input class="inp" type="time" id="wTime" value="${t.time || ''}"></div></div>
+  ${t.repeat ? `<div class="field" style="margin-top:14px"><span class="flabel">Repeats ${esc(repeatLabel(t.repeat))}. Change</span><div class="seg" id="wScope"><button type="button" data-k="one" class="on">Only this time</button><button type="button" data-k="all">This and future</button></div>
+  <div class="grid2" id="wFut" style="margin-top:10px"><div class="field" style="margin:0"><label for="wFT">Next ones at</label><input class="inp" type="time" id="wFT" value="${t.baseTime || t.time || ''}"></div><p class="sub" style="margin:22px 0 0;font-size:13px">Later repeats keep this time</p></div></div>` : ''}
   <div class="setrow" style="border:0"><span class="l"><b>This evening</b><span>Shows under Evening in Today</span></span><button type="button" class="switch${t.evening ? ' on' : ''}" id="wEve" role="switch" aria-checked="${t.evening}" aria-label="This evening"></button></div>`);
   const sync = () => { $$('#wQ button').forEach(b => b.classList.toggle('on', b.dataset.q === sel())); $('#wDate').value = date || ''; };
   $$('#wQ button').forEach(b => b.onclick = () => { const q = b.dataset.q; some = q === 'someday'; date = q === 'today' ? td : q === 'tomorrow' ? addDays(td, 1) : q === 'nextweek' ? nextWeekday(1, false) : null; sync(); });
   $('#wDate').onchange = e => { date = e.target.value || null; some = false; sync(); };
   $('#wEve').onclick = e => { e.currentTarget.classList.toggle('on'); };
+  let scope = 'one'; $$('#wScope button').forEach(b => b.onclick = () => { scope = b.dataset.k; $$('#wScope button').forEach(z => z.classList.toggle('on', z === b)); $('#wFut').style.display = scope === 'one' ? '' : 'none'; });
   $('#wOk').onclick = () => {
-    let rf = ''; if (some) { t.someday = true; t.date = null; } else { if (date !== t.date) { setDate(t, date); rf = repFollow(t); } t.someday = false; }
-    t.time = $('#wTime').value || null; if (t.time && !t.date && !t.someday) setDate(t, td); t.evening = $('#wEve').classList.contains('on');
+    const oldTime = t.time; let rf = ''; if (some) { t.someday = true; t.date = null; } else { if (date !== t.date) { setDate(t, date); if (t.repeat && scope === 'all') rf = repFollow(t); } t.someday = false; }
+    t.time = $('#wTime').value || null;
+    if (t.repeat) { if (scope === 'one') { const ft = $('#wFT').value || oldTime || null; if (ft && ft !== t.time) t.baseTime = ft; else delete t.baseTime; } else delete t.baseTime; } if (t.time && !t.date && !t.someday) setDate(t, td); t.evening = $('#wEve').classList.contains('on');
     if (t.time && !t.reminders.length) { t.reminders = [0]; askNotify(); }
-    applyAndRefresh(t); if (rf) toast(`Repeat moved too: ${rf}`);
+    applyAndRefresh(t); if (rf) toast(`Repeat moved too: ${rf}`); else if (t.repeat && t.baseTime) toast(`Just this time at ${fmtTime(t.time)} · next ones at ${fmtTime(t.baseTime)}`);
   };
 }
 function pickRepeat(t) {
@@ -5522,7 +5527,7 @@ function wire(view) {
 // open Dayline's date picker straight away and move the task to the day you tap
 function pickDateOnly(t) {
   const i = document.createElement('input'); i.type = 'date'; i.value = t.someday ? '' : (t.date || ''); i.style.cssText = 'position:fixed;left:-9999px;opacity:0'; document.body.appendChild(i);
-  i.addEventListener('change', () => { const d = i.value; if (d) { setDate(t, d); const rf = repFollow(t); t.someday = false; save(); render(); if (pageId === t.id) renderPage(); toast('Moved to ' + fmtDate(d) + (rf ? ` · repeat: ${rf}` : '')); } else { t.date = null; t.time = null; t.firedKeys = []; save(); render(); toast('Date removed'); } });
+  i.addEventListener('change', () => { const d = i.value; if (d) { setDate(t, d); t.someday = false; save(); render(); if (pageId === t.id) renderPage(); if (t.repeat) { const r0 = JSON.stringify(t.repeat); toast('Moved to ' + fmtDate(d) + ' (this time only)', () => { const rf = repFollow(t); save(); render(); if (pageId === t.id) renderPage(); toast(rf ? 'Now repeats ' + rf : 'Repeat already matches'); }, 'Repeat from here'); } else toast('Moved to ' + fmtDate(d)); } else { t.date = null; t.time = null; t.firedKeys = []; save(); render(); toast('Date removed'); } });
   setTimeout(() => i.remove(), 600000); dpOpen(i);
 }
 function closeCtx() { const m = $('#ctx'); if (m) m.remove(); }
