@@ -4247,7 +4247,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.15.4';
+const APPV = '6.15.5';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -4775,6 +4775,16 @@ function renderPage(fresh) {
   const ab = $('#pClAdd'); if (ab) { ab.onpointerdown = e => e.preventDefault(); ab.onclick = addSub; }
 }
 function applyAndRefresh(t) { t.firedKeys = []; t.nagAt = 0; t.nagN = 0; if (t.snoozeUntil && t.date && pYmd(t.date).getTime() + hm2m(t.time || '09:00') * 6e4 > Date.now()) t.snoozeUntil = 0; save(); closeSheet(true); renderPage(); render(); }
+// Picking a new date for a repeating task moves the repeat with it (monthly on the 23rd -> on the 21st; weekly on Sat -> on Mon)
+function repFollow(t) {
+  const r = t.repeat; if (!r || !t.date || r.skipWe) return '';
+  const d = pYmd(t.date), day = d.getDate(), ld = lastDom(d.getFullYear(), d.getMonth()), wd = d.getDay();
+  if (r.type === 'monthly' && r.dom && r.dom !== 'L' && r.dom < 32) { if (day === Math.min(r.dom, ld)) return ''; r.dom = day; }
+  else if (r.type === 'days' && (r.days || []).length === 1) { if (r.days[0] === wd) return ''; r.days = [wd]; }
+  else if (r.type === 'mwd') { const wk = Math.ceil(day / 7), last = day + 7 > ld; if (r.wd === wd && (r.wk === wk || (r.wk === 5 && last))) return ''; r.wd = wd; r.wk = r.wk === 5 && last ? 5 : Math.min(wk, 4); }
+  else return '';
+  return repeatLabel(r);
+}
 function pickWhen(t) {
   const td = today(); let date = t.date, some = t.someday;
   const sel = () => some ? 'someday' : !date ? 'none' : date === td ? 'today' : date === addDays(td, 1) ? 'tomorrow' : date === nextWeekday(1, false) ? 'nextweek' : 'date';
@@ -4786,10 +4796,10 @@ function pickWhen(t) {
   $('#wDate').onchange = e => { date = e.target.value || null; some = false; sync(); };
   $('#wEve').onclick = e => { e.currentTarget.classList.toggle('on'); };
   $('#wOk').onclick = () => {
-    if (some) { t.someday = true; t.date = null; } else { if (date !== t.date) setDate(t, date); t.someday = false; }
+    let rf = ''; if (some) { t.someday = true; t.date = null; } else { if (date !== t.date) { setDate(t, date); rf = repFollow(t); } t.someday = false; }
     t.time = $('#wTime').value || null; if (t.time && !t.date && !t.someday) setDate(t, td); t.evening = $('#wEve').classList.contains('on');
     if (t.time && !t.reminders.length) { t.reminders = [0]; askNotify(); }
-    applyAndRefresh(t);
+    applyAndRefresh(t); if (rf) toast(`Repeat moved too: ${rf}`);
   };
 }
 function pickRepeat(t) {
@@ -5512,7 +5522,7 @@ function wire(view) {
 // open Dayline's date picker straight away and move the task to the day you tap
 function pickDateOnly(t) {
   const i = document.createElement('input'); i.type = 'date'; i.value = t.someday ? '' : (t.date || ''); i.style.cssText = 'position:fixed;left:-9999px;opacity:0'; document.body.appendChild(i);
-  i.addEventListener('change', () => { const d = i.value; if (d) { setDate(t, d); t.someday = false; save(); render(); if (pageId === t.id) renderPage(); toast('Moved to ' + fmtDate(d)); } else { t.date = null; t.time = null; t.firedKeys = []; save(); render(); toast('Date removed'); } });
+  i.addEventListener('change', () => { const d = i.value; if (d) { setDate(t, d); const rf = repFollow(t); t.someday = false; save(); render(); if (pageId === t.id) renderPage(); toast('Moved to ' + fmtDate(d) + (rf ? ` · repeat: ${rf}` : '')); } else { t.date = null; t.time = null; t.firedKeys = []; save(); render(); toast('Date removed'); } });
   setTimeout(() => i.remove(), 600000); dpOpen(i);
 }
 function closeCtx() { const m = $('#ctx'); if (m) m.remove(); }
@@ -7623,6 +7633,8 @@ document.addEventListener('focusin', e => { if (!isWide() && e.target.matches &&
 document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a || !a.matches || !a.matches('input,textarea,[contenteditable=true]')) document.body.classList.remove('typing'); }, 60));
 applyTheme();
 setTimeout(() => afterSync(drainActs), 400);
+// one-time: monthly repeats whose date was changed before 6.15.5 now follow that date
+setTimeout(() => afterSync(() => setTimeout(() => { if (S.settings.repF1) return; let n = 0; S.tasks.forEach(t => { const r = t.repeat; if (t.done || !r || r.type !== 'monthly' || !r.dom || r.dom === 'L' || r.dom >= 32 || r.skipWe || !t.date) return; const d = pYmd(t.date); if (d.getDate() !== Math.min(r.dom, lastDom(d.getFullYear(), d.getMonth()))) { r.dom = d.getDate(); n++; } }); S.settings.repF1 = true; save(); if (n) render(); }, 1500)), 600);
 stAuto();
 // one-time: clear the "Send proposal / Share notes / Schedule next call · <meeting>" tasks the retired after-meeting card made
 window.addEventListener('hashchange', () => { if (/^#adddates=/.test(location.hash)) addDatesLink(); });
