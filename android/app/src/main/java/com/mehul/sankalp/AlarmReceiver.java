@@ -53,6 +53,7 @@ public class AlarmReceiver extends BroadcastReceiver {
             try {
                 JSONObject a = new JSONObject(raw);
                 if (a.optBoolean("test")) { Alarms.show(ctx, a); return; }
+                if (a.optBoolean("hush")) { Alarms.hush(ctx, a); return; }
                 if (a.optBoolean("meet")) { if (a.optBoolean("date") || !Alarms.quiet(ctx)) Alarms.showMeet(ctx, a); return; }
                 boolean open = true;
                 try {

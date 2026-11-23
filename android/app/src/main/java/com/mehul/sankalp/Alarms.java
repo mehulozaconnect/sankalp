@@ -290,10 +290,23 @@ final class Alarms {
             b.addAction(new Notification.Action.Builder(ic, "Done", donePi).build())
              .addAction(new Notification.Action.Builder(ic, "Reschedule", reschedPi(ctx, a, nid + 4)).build());
         }
-        if (cardOn(ctx) && idle(ctx)) b.setFullScreenIntent(ReminderActivity.pending(ctx, a, nid + 3), true);
+        boolean hush = a.optBoolean("hush");
+        // "Keep reminding" tasks ring and vibrate again and again until you answer (Done, Snooze, open or swipe), for up to 90 seconds
+        boolean ring = !hush && a.optInt("nag", 0) > 0 && !a.optBoolean("meet");
+        if (hush) b.setOnlyAlertOnce(true);
+        else if (cardOn(ctx) && idle(ctx)) b.setFullScreenIntent(ReminderActivity.pending(ctx, a, nid + 3), true);
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
-        try { nm.notify(nid, b.build()); } catch (SecurityException ignored) { }
-        openCard(ctx, a);
+        Notification n0 = b.build();
+        if (ring) n0.flags |= Notification.FLAG_INSISTENT;
+        try { nm.notify(nid, n0); } catch (SecurityException ignored) { }
+        if (ring) {
+            try {
+                JSONObject h = new JSONObject(a.toString());
+                h.put("id", baseId(a) + "|h").put("hush", true).put("at", System.currentTimeMillis() + 90000L);
+                schedule(ctx, h);
+            } catch (Exception ignored) { }
+        }
+        if (!hush) openCard(ctx, a);
     }
 
     static void showMeet(Context ctx, JSONObject a) {
@@ -338,7 +351,7 @@ final class Alarms {
     static void scheduleNag(Context ctx, JSONObject a) {
         try {
             int nag = a.optInt("nag", 0), n = a.optInt("n", 0);
-            String base = a.optString("id").replaceAll("\\|n$", "");
+            String base = baseId(a);
             if (nag <= 0 || n >= NAG_MAX) return;
             JSONObject x = new JSONObject(a.toString());
             x.put("id", base + "|n").put("n", n + 1).put("at", System.currentTimeMillis() + nag * 60000L);
@@ -346,10 +359,23 @@ final class Alarms {
         } catch (Exception ignored) { }
     }
 
+    static String baseId(JSONObject a) { return a.optString("id").replaceAll("\\|(n|snz|h)$", ""); }
+
     static void cancelNag(Context ctx, JSONObject a) {
-        String base = a.optString("id").replaceAll("\\|(n|snz)$", "");
+        String base = baseId(a);
         cancel(ctx, base + "|n");
         cancel(ctx, base + "|snz");
+        cancel(ctx, base + "|h");
+    }
+
+    /** After 90 seconds of ringing: keep the reminder on screen but go quiet until the next "still not done". */
+    static void hush(Context ctx, JSONObject a) {
+        try {
+            NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+            int nid = notifId(a); boolean showing = false;
+            for (android.service.notification.StatusBarNotification sb : nm.getActiveNotifications()) if (sb.getId() == nid) { showing = true; break; }
+            if (showing) show(ctx, a);
+        } catch (Exception ignored) { }
     }
 
     static boolean quiet(Context ctx) {
