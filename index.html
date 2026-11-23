@@ -1416,7 +1416,7 @@ html.isdark .notes img.doc,html.isdark .qa-rich img.doc,html.isdark .rv-notes im
 .remo{font-style:normal;margin-left:6px;font-size:.92em}
 .sm-habits small{opacity:.6;font-weight:700}
 .hl{padding:4px 18px 18px;text-align:center}.hl>p{margin:4px 0 12px;color:var(--muted);font-weight:700;font-size:13.5px}.hl-in{display:flex;align-items:center;justify-content:center;gap:12px}.hl-in input{width:150px;font:inherit;font-size:40px;font-weight:800;text-align:center;border:0;border-bottom:2px solid var(--line);background:none;color:var(--ink);padding:4px 0}.hl-in input:focus{outline:0;border-color:var(--accent)}.hl-in button{width:48px;height:48px;border-radius:50%;border:0;background:var(--surface);color:var(--ink);font-size:24px;font-weight:700;cursor:pointer}
-.hl-u{display:block;margin-top:6px;color:var(--muted);font-weight:700;font-size:13px}.hl-q{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}.hl-q button{font:inherit;font-weight:800;font-size:14px;padding:9px 14px;border-radius:12px;border:0;background:var(--surface);color:var(--ink);cursor:pointer}.hl-clr{margin-top:14px;font:inherit;font-size:13px;font-weight:700;color:var(--danger);background:none;border:0;cursor:pointer}
+.hl-u{display:block;margin-top:6px;color:var(--muted);font-weight:700;font-size:13px}.hl-q{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}.hl-q button{font:inherit;font-weight:800;font-size:14px;padding:9px 14px;border-radius:12px;border:0;background:var(--surface);color:var(--ink);cursor:pointer}.hl-ms{margin-top:14px}.hl-clr{margin-top:14px;font:inherit;font-size:13px;font-weight:700;color:var(--danger);background:none;border:0;cursor:pointer}
 .hbars{position:relative;display:grid;grid-template-columns:repeat(14,1fr);gap:4px;height:120px;margin-top:14px;align-items:end}.hbars button{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;background:none;border:0;padding:0;cursor:pointer}.hbars button i{width:100%;max-width:22px;border-radius:6px 6px 3px 3px;background:color-mix(in srgb,var(--accent) 55%,transparent)}.hbars button.met i{background:var(--accent)}.hbars button span{font-size:10px;color:var(--muted);font-weight:700}.hbars button.td span{color:var(--ink)}.hgl{position:absolute;left:0;right:0;border-top:1.5px dashed color-mix(in srgb,var(--ink) 35%,transparent);margin-bottom:18px;pointer-events:none}
 .hsum{background:var(--surface);border-radius:18px;margin:4px 16px 14px;padding:14px}.hsum-r{width:100%;display:grid;grid-template-columns:1fr auto;gap:2px 10px;text-align:left;font:inherit;background:none;border:0;border-top:1px solid var(--line);padding:10px 0;color:var(--ink);cursor:pointer}.hsum-r:first-of-type{border:0;padding-top:0}.hsum-r span{font-weight:800}.hsum-r b{font-size:17px;grid-row:span 2;align-self:center}.hsum-r small{color:var(--muted);font-weight:600;font-size:12.5px}.hsum-r em{font-style:normal;font-weight:800}.hsum-r em.up{color:#16A34A}.hsum-r em.dn{color:#C2410C}
 .imgs.sm{grid-template-columns:repeat(auto-fill,minmax(72px,88px))}.imgs.sm .addimg svg{width:20px;height:20px}
@@ -2003,6 +2003,7 @@ function migrate(s) {
   s.templates.forEach(tp => { if (!tp.nh) { tp.notes = (tp.builtin && tp.name === 'Lead') ? LEAD_HTML : textToHtml(tp.notes || ''); tp.nh = true; } });
   s.settings.gcid ??= ''; s.settings.gOn ??= false; s.settings.nagDef ??= 0; s.settings.logo ??= 'sky'; s.settings.darkStyle ??= 'Slate';
   // 4.4: repeat reminders are off unless you switch them on for a task
+  if (!s.settings.hGoal1) { s.settings.hGoal1 = true; const td0 = ymd(new Date()); (s.habits || []).forEach(h => { if (h.unit && h.goal && h.log && h.log[td0] === 1 && ((h.amt || {})[td0] || 0) < h.goal) delete h.log[td0]; }); }
   if (!s.settings.nagOff1) { s.settings.nagOff1 = true; s.settings.nagDef = 0; s.tasks.forEach(t => { if (t.nag == null) { t.nagAt = 0; t.nagN = 0; } (t.subs || []).forEach(c => { c.nagAt = 0; }); }); }
   if (!s.settings.wrap1) { s.settings.wrap1 = true; s.settings.track = false; s.settings.checkin = 0; }
   if (!s.settings.v3) { s.settings.v3 = true; if (s.settings.theme === 'Marigold') s.settings.theme = 'Akash'; if (s.settings.accent === '#F2A33A') s.settings.accent = ''; }
@@ -3515,18 +3516,21 @@ function hMStats(x) {
   const mo = all.filter(([d]) => d.slice(0, 7) === td.slice(0, 7)), best = all.reduce((b, e) => e[1] > (b ? b[1] : 0) ? e : b, null);
   return { today: hAmt(x, td), wk, pwk, trend: pwk ? Math.round((wk - pwk) / pwk * 100) : null, month: sum(mo), avg: on30.length ? Math.round(sum(on30) / on30.length) : 0, perDay: Math.round(sum(d30) / 30), days30: on30.length, total: sum(all), best, goalHit: x.goal ? on30.filter(([, v]) => v >= x.goal).length : null };
 }
+// A counted habit with a goal is done only when the goal is reached; less is shown as progress on the ring
+function hSetAmt(x, day, v) { x.amt ||= {}; if (v > 0) { x.amt[day] = v; if (!x.goal || v >= x.goal) x.log[day] = 1; else delete x.log[day]; } else { delete x.amt[day]; if (x.log[day] === 1) delete x.log[day]; } }
 function hLogSheet(id, day) {
   const x = S.habits.find(h => h.id === id); if (!x) return; day = day || today(); const cur = hAmt(x, day), mins = hIsMin(x);
   const quick = mins ? [5, 10, 15, 20, 30, 45, 60] : /chant|jap|mala|mantra/i.test(x.unit + x.name) ? [27, 54, 108, 216, 540, 1080] : [1, 5, 10, 20, 50, 100];
   openSheet(sheetHead(`${x.emoji || '✅'} ${esc(x.name)}`, 'Save', 'hlOk') + `<div class="hl"><p>${day === today() ? 'Today' : fmtDate(day)}${x.goal ? ` · goal ${hFmt(x, x.goal)}` : ''}</p>
     <div class="hl-in"><button type="button" data-d="-1" aria-label="Less">−</button><input id="hlV" type="number" inputmode="numeric" min="0" value="${cur || ''}" placeholder="0"><button type="button" data-d="1" aria-label="More">+</button></div><span class="hl-u">${mins ? 'minutes' : esc(x.unit || 'count')}</span>
-    <div class="hl-q">${quick.map(q => `<button type="button" data-q="${q}">+${mins ? q + 'm' : q.toLocaleString('en-IN')}</button>`).join('')}</div>${mins ? '' : /chant|jap|mala/i.test(x.unit + x.name) ? '<p class="hint">1 mala = 108 chants</p>' : ''}${cur ? '<button type="button" class="hl-clr" id="hlClr">Clear this day</button>' : ''}</div>`);
+    <div class="hl-q">${quick.map(q => `<button type="button" data-q="${q}">+${mins ? q + 'm' : q.toLocaleString('en-IN')}</button>`).join('')}</div>${mins ? '' : /chant|jap|mala/i.test(x.unit + x.name) ? '<p class="hint">1 mala = 108 chants</p>' : ''}<div class="hbm-3 hl-ms"><button type="button" data-hv="-1" class="${x.log[day] === -1 ? 'on ms' : ''}">✕ Missed</button><button type="button" data-hv="0" class="${x.log[day] === 0 ? 'on sk' : ''}">– Skip ${day === today() ? 'today' : 'this day'}</button></div>${cur || x.log[day] != null ? '<button type="button" class="hl-clr" id="hlClr">Clear this day</button>' : ''}</div>`);
   const inp = $('#hlV'); setTimeout(() => { inp.focus(); inp.select(); }, 80);
   $$('.hl-q button').forEach(b => b.onclick = () => { inp.value = (+inp.value || 0) + +b.dataset.q; });
   $$('.hl-in button').forEach(b => b.onclick = () => { inp.value = Math.max(0, (+inp.value || 0) + +b.dataset.d * (mins ? 5 : 1)); });
-  const put = v => { x.amt ||= {}; if (v > 0) { x.amt[day] = v; x.log[day] = 1; } else { delete x.amt[day]; if (x.log[day] === 1) delete x.log[day]; } save(); closeSheet(true); render(); if (v > 0) { const st = hMStats(x); toast(`${x.emoji || '✅'} ${hFmt(x, v)} logged${x.goal ? (v >= x.goal ? ' · goal met' : ` · ${hFmt(x, x.goal - v)} to goal`) : ''} · this week ${hFmt(x, st.wk)}`); } };
+  const put = v => { hSetAmt(x, day, v); save(); closeSheet(true); render(); if (v > 0) { const st = hMStats(x); toast(`${x.emoji || '✅'} ${hFmt(x, v)} logged${x.goal ? (v >= x.goal ? ' · goal met' : ` · ${hFmt(x, x.goal - v)} to go`) : ''} · this week ${hFmt(x, st.wk)}`); } };
+  $$('.hl-ms [data-hv]').forEach(b => b.onclick = () => { delete (x.amt || {})[day]; x.log[day] = +b.dataset.hv; save(); closeSheet(true); render(); toast(b.dataset.hv === '-1' ? `${x.name}: missed` : `${x.name}: skipped, streak kept`); });
   $('#hlOk').onclick = () => put(Math.round(+inp.value || 0)); inp.onkeydown = e => { if (e.key === 'Enter') put(Math.round(+inp.value || 0)); };
-  if ($('#hlClr')) $('#hlClr').onclick = () => put(0);
+  if ($('#hlClr')) $('#hlClr').onclick = () => { delete (x.amt || {})[day]; delete x.log[day]; save(); closeSheet(true); render(); toast('Cleared'); };
 }
 function hMStatsHtml(x) {
   const s = hMStats(x), ser = hSeries(x, 14), mx = Math.max(1, x.goal || 0, ...ser.map(([, v]) => v)), td = today(), mins = hIsMin(x);
@@ -4243,7 +4247,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.15.3';
+const APPV = '6.15.4';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5643,12 +5647,12 @@ function hbMenu(x, y, id) {
   closeCtx(); const h = S.habits.find(z => z.id === id); if (!h) return; const td = today(), on = hOk(h, td), meas = !!hUnit(h), a = meas ? hAmt(h, td) : 0, mins = hIsMin(h);
   const quick = mins ? [5, 10, 15, 20, 30] : /chant|jap|mala|mantra/i.test(h.unit + h.name) ? [108, 216, 540, 1080] : [1, 5, 10, 20];
   const lv = h.log[td], mark = v => `<div class="hbm-3"><button type="button" data-hv="-1" class="${lv === -1 ? 'on ms' : ''}">✕ Missed</button><button type="button" data-hv="0" class="${lv === 0 ? 'on sk' : ''}">– Skip today</button>${lv != null ? '<button type="button" data-hv="x">Clear</button>' : ''}</div>`;
-  const status = lv === -1 ? 'Marked as missed today' : lv === 0 ? 'Skipped today · your streak is safe' : meas ? (a ? `${hFmt(h, a)} today${h.goal ? (a >= h.goal ? ' · goal met ✓' : ` · ${hFmt(h, h.goal - a)} to goal`) : ''}` : 'Nothing logged today') : on ? (h.type === 'avoid' ? 'Stayed away today ✓' : 'Done today ✓') : 'Not done yet today';
+  const status = lv === -1 ? 'Marked as missed today' : lv === 0 ? 'Skipped today · your streak is safe' : meas ? (a ? `${hFmt(h, a)} today${h.goal ? (a >= h.goal ? ' · goal met ✓' : ` · ${hFmt(h, h.goal - a)} to go, not done yet`) : ''}` : 'Nothing logged today') : on ? (h.type === 'avoid' ? 'Stayed away today ✓' : 'Done today ✓') : 'Not done yet today';
   const m = document.createElement('div'); m.id = 'ctx'; m.className = 'ctx hbm'; m.setAttribute('role', 'dialog');
   m.innerHTML = `<div class="hbm-h"><i>${h.emoji || '✅'}</i><div><b>${esc(h.name)}</b><small class="${on ? 'ok' : ''}">${status}</small></div></div>${meas ? `<div class="hbm-in"><input id="hbmV" type="number" inputmode="numeric" min="0" value="${a || ''}" placeholder="0"><span>${mins ? 'min' : esc(h.unit)}</span><button type="button" id="hbmOk">Save</button></div><div class="hbm-q">${quick.map(q => `<button type="button" data-q="${q}">+${mins ? q + 'm' : q.toLocaleString('en-IN')}</button>`).join('')}</div>` : `<button type="button" class="hbm-big${on ? ' undo' : ''}" id="hbmT">${on ? 'Mark as not done' : h.type === 'avoid' ? '✓ I stayed away today' : '✓ Mark done for today'}</button>`}${mark()}<button type="button" class="hbm-s" id="hbmS">See stats ›</button>`;
   document.body.appendChild(m); const r = m.getBoundingClientRect(); m.style.left = Math.max(8, Math.min(x - r.width + 40, innerWidth - r.width - 8)) + 'px'; m.style.top = Math.max(8, Math.min(y + 12, innerHeight - r.height - 8)) + 'px';
   const fin = msg => { closeCtx(); save(); render(); if (msg) toast(msg); };
-  if (meas) { const i = $('#hbmV'); const put = () => { const v = Math.max(0, Math.round(+i.value || 0)); h.amt ||= {}; if (v) { h.amt[td] = v; h.log[td] = 1; } else { delete h.amt[td]; delete h.log[td]; } fin(v ? `${h.emoji || '✅'} ${hFmt(h, v)} today${h.goal && v >= h.goal ? ' · goal met' : ''}` : 'Cleared for today'); };
+  if (meas) { const i = $('#hbmV'); const put = () => { const v = Math.max(0, Math.round(+i.value || 0)); hSetAmt(h, td, v); fin(v ? `${h.emoji || '✅'} ${hFmt(h, v)} today${h.goal ? (v >= h.goal ? ' · goal met' : ` · ${hFmt(h, h.goal - v)} to go`) : ''}` : 'Cleared for today'); };
     $('#hbmOk').onclick = put; i.onkeydown = e => { if (e.key === 'Enter') put(); }; $$('.hbm-q button').forEach(b => b.onclick = () => { i.value = (+i.value || 0) + +b.dataset.q; i.focus(); }); if (matchMedia('(pointer:fine)').matches) setTimeout(() => { i.focus(); i.select(); }, 30); }
   else $('#hbmT').onclick = () => { if (on) delete h.log[td]; else h.log[td] = 1; fin(on ? `${h.name}: not done` : `${h.emoji || '✅'} ${h.name} done`); };
   $$('.hbm-3 [data-hv]').forEach(b => b.onclick = () => { const v = b.dataset.hv; if (h.amt) delete h.amt[td]; if (v === 'x') { delete h.log[td]; fin(`${h.name}: cleared for today`); } else { h.log[td] = +v; fin(v === '-1' ? `${h.name}: missed today` : `${h.name}: skipped today, streak kept`); } });
