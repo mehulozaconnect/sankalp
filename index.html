@@ -2942,9 +2942,9 @@ function groupBy(list, mode) {
 }
 const addBar = (lbl) => `<div class="qa-wrap"><div class="addbar"><span class="ab-i">${I.plus}</span><textarea id="abIn" rows="1" aria-label="${lbl}" placeholder="${lbl}" autocomplete="off" autocorrect="on" enterkeyhint="done" data-form-type="other"></textarea><button type="button" class="ab-k" id="abGo" aria-label="Add task">${isWide() ? 'Enter' : 'Add'}</button><button type="button" class="ab-tpl" data-act="abtpl" aria-label="Add from a template" title="Add from a template">${I.layers}<span>Templates</span></button></div><div class="qa-pick ab-pick" id="abPick" role="listbox" hidden></div></div><div class="ab-tools" id="abTools" hidden><button type="button" data-ins="@"><b>@</b> Project</button><button type="button" data-ins="#"><b>#</b> Tag</button><button type="button" data-ins="p"><b>!</b> Priority</button></div><div class="ab-prev" id="abPrev"></div>`;
 /* Work mode (weekdays 10–7) shows everything; outside it Today turns personal: no sales, meetings or work tasks */
-const TD_WORK_P = /assess\s*hub|office|work|client|sales|lead|demo|billing|invoice|company|five elements|crm|pipeline/i;
+const TD_WORK_P = /assess\s*hub|office|work|client|sales|lead|demo|billing|invoice|company|five elements|crm|pipeline|deliverable|test|assessment|proposal|bank/i;
 const TD_WORK_T = /\b(nda|proposal|invoice|agreement|contract|rfp|rfq|sow|msa|po|purchase order|client|clients|demo|pitch|commercials?|deck|billing|renewal|onboarding|go[\s-]?live|kick[\s-]?off|poc|pilot|quotation|quote|follow[\s-]?up with|assesshub)\b/i;
-function tdIsWork(t) { const p = t.projectId && S.projects.find(x => x.id === t.projectId); if (p && /^personal$/i.test(p.area || '') && /^(home|health|family|personal|kids|finance|shopping)$/i.test(p.name || '')) return false; return !!(p && (/^work$/i.test(p.area || '') || TD_WORK_P.test(p.name || ''))) || TD_WORK_T.test(t.title || '') || /^\s*(lead|collection)\s*[:\-–]/i.test(t.title || '') || (typeof ldIsLead === 'function' && ldIsLead(t)); }
+function tdIsWork(t) { if ((t.tags || []).some(x => /^(work|office|client|sales)$/i.test(x))) return true; if ((t.tags || []).some(x => /^(personal|home|family)$/i.test(x))) return false; const p = t.projectId && S.projects.find(x => x.id === t.projectId); if (p && /^personal$/i.test(p.area || '') && /^(home|health|family|personal|kids|finance|shopping)$/i.test(p.name || '')) return false; return !!(p && (/^work$/i.test(p.area || '') || TD_WORK_P.test(p.name || ''))) || TD_WORK_T.test(t.title || '') || /^\s*(lead|collection)\s*[:\-–]/i.test(t.title || '') || (typeof ldIsLead === 'function' && ldIsLead(t)); }
 function tdMode() {
   const st = S.settings, n = new Date(), m = n.getHours() * 60 + n.getMinutes(), wd = n.getDay(), a = hm2m(st.modeFrom || '10:00'), b = hm2m(st.modeTo || '19:00');
   const auto = wd > 0 && wd < 6 && m >= a && m < b ? 'work' : 'personal'; let ov = null; try { ov = JSON.parse(localStorage.getItem('sankalp.tdmode') || 'null'); } catch (e) { }
@@ -4273,7 +4273,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.15.7';
+const APPV = '6.15.8';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
