@@ -4278,7 +4278,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.17';
+const APPV = '6.17.1';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -7352,7 +7352,9 @@ function fuLogSheet(t) {
   const draw = () => { const out = $('#fuOut') ? $('#fuOut').value : '';
     $('#fuL').innerHTML = `<div class="fu-for">${esc(t.title)} · ${fmtDate(today())}</div>
     <div class="wsec">How did you reach them</div><div class="fu-chips">${FU_VIA.map(([k, i, l]) => `<button type="button" class="${st.via.includes(k) ? 'on' : ''}" data-via="${k}">${i} ${l}</button>`).join('')}</div>
-    <div class="wsec">Did they respond?</div><div class="fu-chips">${[['yes', 'Yes, we spoke'], ['no', 'No response']].map(([k, l]) => `<button type="button" class="${resp === k ? 'on' : ''}" data-rs="${k}">${l}</button>`).join('')}</div>
+    ${(() => { const v = st.via; if (v.includes('meet')) return ''; // a meeting means you met: nothing to ask
+      const L = v.includes('call') ? [['yes', 'Yes, we spoke'], ['no', 'No answer']] : v.length ? [['yes', v.includes('mail') && !v.includes('wa') ? 'Yes, they replied' : 'Yes, they replied'], ['no', 'No reply yet']] : [['yes', 'Yes, we connected'], ['no', 'No response']];
+      return `<div class="wsec">${v.includes('call') ? 'Did they pick up?' : v.length ? 'Did they reply?' : 'Did they respond?'}</div><div class="fu-chips">${L.map(([k, l]) => `<button type="button" class="${resp === k ? 'on' : ''}" data-rs="${k}">${l}</button>`).join('')}</div>`; })()}
     ${(st.topics.length || fuTopicsFor(t).length) ? `<div class="wsec">Discussed</div><div class="fu-chips">${[...new Set([...fuTopicsFor(t), ...st.topics])].map(x => `<button type="button" class="${st.topics.includes(x) ? 'on' : ''}" data-tp="${esc(x)}">${esc(x)}</button>`).join('')}</div>` : ''}
     <label class="sm-lab" for="fuOut">What happened</label><textarea class="inp" id="fuOut" rows="3" placeholder="e.g. Email sent to Gaurav, asked for his availability. Reach out again on wed 12pm p1">${esc(out)}</textarea><div class="fu-auto" id="fuAuto"></div>
     <div class="wsec">Next step</div><input class="inp" id="fuNx" placeholder="e.g. Send revised commercials, call Mayank" value="${esc(st.nx || '')}">
@@ -7364,12 +7366,13 @@ function fuLogSheet(t) {
     $$('#fuL [data-nd]').forEach(b => b.onclick = () => { const k = b.dataset.nd; st.nx = $('#fuNx').value; st.ndl = b.dataset.ndl; if (k === 'pick') { const i = document.createElement('input'); i.type = 'date'; i.min = today(); i.value = st.nd || ''; i.style.cssText = 'position:fixed;left:-9999px'; document.body.appendChild(i); i.addEventListener('change', () => { st.nd = i.value || ''; i.remove(); draw(); }); dpOpen(i); } else { st.nd = k; draw(); } });
     $$('#fuL [data-via]').forEach(b => b.onclick = () => { const k = b.dataset.via; st.via = st.via.includes(k) ? st.via.filter(x => x !== k) : [...st.via, k]; draw(); });
     $$('#fuL [data-rs]').forEach(b => b.onclick = () => { resp = b.dataset.rs; draw(); });
+    if (st.via.includes('meet') && resp !== 'yes') { resp = 'yes'; }
     $$('#fuL [data-tp]').forEach(b => b.onclick = () => { const k = b.dataset.tp; st.topics = st.topics.includes(k) ? st.topics.filter(x => x !== k) : [...st.topics, k]; draw(); });
     $('#fuLogGo').onclick = () => { const out = $('#fuOut').value.trim(); const verbs = { call: 'Called', wa: 'WhatsApped', mail: 'Emailed', meet: 'Meeting' };
       const sp = fuSplitNext(out); let nx = ($('#fuNx').value || '').trim(), nd = st.nd || '', ntime = null, npri = null;
       if (sp.next) { if (!nx) nx = sp.next.text; if (!nd) nd = sp.next.date; ntime = sp.next.time; npri = sp.next.pri; }
       const body = (sp.next ? sp.body : out).replace(/[.\s]+$/, ''); const how = st.via.length ? st.via.map(k => verbs[k]).join(' and ') : '';
-      const parts = [body || [how || 'Followed up', resp === 'no' ? 'no response' : ''].filter(Boolean).join(', '), body && resp === 'no' ? 'No response' : '', resp === 'yes' && st.topics.length ? 'Discussed ' + st.topics.join(', ').toLowerCase() : ''].filter(Boolean);
+      const parts = [body || [how || 'Followed up', resp === 'no' ? (st.via.includes('call') && st.via.length === 1 ? 'no answer' : st.via.length && !st.via.includes('call') ? 'no reply yet' : 'no response') : ''].filter(Boolean).join(', '), body && resp === 'no' ? 'No response' : '', resp === 'yes' && st.topics.length ? 'Discussed ' + st.topics.join(', ').toLowerCase() : ''].filter(Boolean);
       const line = `<div><b>Last Contacted - ${fuDDMM(today())}</b> - ${esc(parts.join('. ').replace(/\.\./g, '.'))}${/[.!?]$/.test(parts[parts.length - 1]) ? '' : '.'}</div><hr><div><br></div>`; const snap = JSON.stringify(t);
       t.notes = fuInsertLine(t.notes || '', line); delete t.fu; if (nd) { t.fu = { at: nd, time: ntime || t.time || null, via: [], topics: [], note: nx, set: Date.now() }; setDate(t, nd); if (ntime) t.time = ntime; if (npri) t.priority = npri; t.someday = false; if (!t.reminders.length) t.reminders = [0]; t.firedKeys = []; t.tags = (t.tags || []).filter(x => x !== 'hold'); } save(); closeSheet(true); fuRefresh(t, true); render();
       toast('Saved to Follow-ups', () => { const o = JSON.parse(snap), i = S.tasks.findIndex(x => x.id === o.id); if (i >= 0) S.tasks[i] = o; save(); fuRefresh(S.tasks[i], true); });
