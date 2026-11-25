@@ -4278,7 +4278,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.17.2';
+const APPV = '6.17.3';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5976,6 +5976,8 @@ const IS_PHONE = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
 let lastInput = Date.now(); ['pointerdown', 'keydown', 'mousemove', 'wheel', 'touchstart'].forEach(ev => addEventListener(ev, () => { lastInput = Date.now(); }, { passive: true, capture: true }));
 async function notify(title, body, tag, data = {}, actions, once) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  // on an Android phone with the Sankalp phone app, that app does all alerts and nudges; the web app stays silent
+  if (tag !== 'test' && /Android/i.test(navigator.userAgent) && !S.settings.phoneOff && Object.keys(S.phone || {}).length > 0) return;
   const ck = once || (tag + '|' + title + '|' + Math.floor(Date.now() / 18e4));
   if (tag !== 'test' && actions) {
     // Reminders: the phone always rings (so the watch buzzes too). The laptop rings only while you're using it;
