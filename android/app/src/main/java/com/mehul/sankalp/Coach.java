@@ -103,7 +103,11 @@ final class Coach {
                 e.putBoolean("mo_" + td, true);
                 JSONObject cb = obj(p, "coachBrief");
                 StringBuilder sb = new StringBuilder();
-                if (!brief.optString("topTitle").isEmpty() && td.equals(brief.optString("date"))) sb.append("Start with: ").append(brief.optString("topTitle")).append(". ");
+                // before office hours (and on weekends) suggest a personal task, not work
+                java.util.Calendar kc = java.util.Calendar.getInstance(); int dw = kc.get(java.util.Calendar.DAY_OF_WEEK);
+                boolean workNow = dw != java.util.Calendar.SATURDAY && dw != java.util.Calendar.SUNDAY && now.compareTo("10:00") >= 0 && now.compareTo("19:00") < 0;
+                String pick = workNow ? brief.optString("topTitle") : brief.optString("pTitle");
+                if (!pick.isEmpty() && td.equals(brief.optString("date"))) sb.append("Start with: ").append(pick).append(". ");
                 if (!cb.optString("best").isEmpty()) sb.append("Your best hours: ").append(cb.optString("best")).append(". ");
                 if (!cb.optString("ySoc").isEmpty()) sb.append("Yesterday: ").append(cb.optString("ySoc")).append(" on social media. ");
                 if (!cb.optString("leak").isEmpty()) sb.append("Watch ").append(cb.optString("leak")).append(".");

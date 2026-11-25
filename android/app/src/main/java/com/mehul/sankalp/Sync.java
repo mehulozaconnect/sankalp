@@ -126,7 +126,7 @@ final class Sync {
     static JSONObject brief(JSONArray tasks) throws Exception {
         String td = day(System.currentTimeMillis());
         long d0 = midnight(0), w0 = midnight(-6);
-        JSONObject top = null; int topP = 9; String topDate = "9999";
+        JSONObject top = null, ptop = null; int topP = 9, ptopP = 9; String topDate = "9999";
         int p1 = 0, p1d = 0, doneToday = 0, doneWeek = 0;
         for (int i = 0; i < tasks.length(); i++) {
             JSONObject t = tasks.getJSONObject(i).getJSONObject("d");
@@ -138,13 +138,23 @@ final class Sync {
             if (done && doneAt >= w0) doneWeek++;
             int pr = t.optInt("priority", 4);
             if (pr == 1 && (date.equals(td) || (done && doneAt >= d0) || (!done && !date.isEmpty() && date.compareTo(td) < 0))) { p1++; if (done) p1d++; }
-            if (!done && !date.isEmpty() && date.compareTo(td) <= 0 && !t.optBoolean("someday", false)) {
-                if (pr < topP || (pr == topP && date.compareTo(topDate) < 0)) { topP = pr; topDate = date; top = t; }
+            // suggest only what is due today (overdue is counted elsewhere, never suggested), and keep a personal pick for mornings/evenings
+            if (!done && date.equals(td) && !t.optBoolean("someday", false)) {
+                if (pr < topP) { topP = pr; topDate = date; top = t; }
+                if (!isWork(t) && pr < ptopP) { ptopP = pr; ptop = t; }
             }
         }
         JSONObject b = new JSONObject().put("date", td).put("p1", p1).put("p1d", p1d).put("doneToday", doneToday).put("doneWeek", doneWeek);
         if (top != null) b.put("topId", top.optString("id")).put("topTitle", top.optString("title")).put("topP", topP);
+        if (ptop != null) b.put("pTitle", ptop.optString("title"));
         return b;
+    }
+
+    static final java.util.regex.Pattern WORK_T = java.util.regex.Pattern.compile("(?i)(^\\s*(lead|collection)\\s*[:\\-–])|\\b(nda|proposal|invoice|agreement|contract|rfp|client|demo|pitch|commercials?|deck|billing|renewal|onboarding|go[\\s-]?live|poc|pilot|quotation|assesshub|bank|followup|follow-up|meeting)\\b");
+    static boolean isWork(JSONObject t) {
+        JSONArray tg = t.optJSONArray("tags");
+        if (tg != null) for (int i = 0; i < tg.length(); i++) { String x = tg.optString(i).toLowerCase(); if (x.equals("work") || x.equals("office") || x.equals("client") || x.equals("sales")) return true; }
+        return WORK_T.matcher(t.optString("title", "")).find();
     }
 
     static void schedule(Context ctx) {
