@@ -56,6 +56,7 @@ public class ReminderActivity extends Activity {
 
     private void load(Intent i) {
         try { a = new JSONObject(i.getStringExtra("a")); } catch (Exception e) { finish(); return; }
+        if (a.optBoolean("cardRing")) ring();
         dark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
         ink = dark ? 0xFFF1F3F6 : 0xFF16191F;
         muted = dark ? 0xFF9AA1AD : 0xFF5D6470;
@@ -193,7 +194,28 @@ public class ReminderActivity extends Activity {
     }
 
     @Override
-    protected void onDestroy() { h.removeCallbacksAndMessages(null); super.onDestroy(); }
+    protected void onDestroy() { stopRing(); h.removeCallbacksAndMessages(null); super.onDestroy(); }
+
+    // When the card opens over another app it is the only alert, so it rings itself: once, or for up to 90 s on "Keep reminding" tasks
+    private android.media.MediaPlayer mp; private android.os.Vibrator vib;
+    private void ring() {
+        stopRing();
+        try {
+            boolean loop = a.optInt("nag", 0) > 0;
+            mp = new android.media.MediaPlayer();
+            mp.setAudioAttributes(new android.media.AudioAttributes.Builder().setUsage(android.media.AudioAttributes.USAGE_ALARM).setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
+            mp.setDataSource(this, android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION));
+            mp.setLooping(loop); mp.prepare(); mp.start();
+            vib = (android.os.Vibrator) getSystemService(VIBRATOR_SERVICE);
+            if (vib != null) vib.vibrate(android.os.VibrationEffect.createWaveform(new long[] { 0, 300, 150, 300, 900 }, loop ? 0 : -1));
+            if (loop) h.postDelayed(this::stopRing, 90000);
+        } catch (Exception ignored) { }
+    }
+    private void stopRing() {
+        try { if (mp != null) { mp.stop(); mp.release(); } } catch (Exception ignored) { }
+        mp = null;
+        try { if (vib != null) vib.cancel(); } catch (Exception ignored) { }
+    }
 
     private void checkElsewhere() {
         final JSONObject ja = a; final long since = shownAt - 5000; final android.content.Context ctx = getApplicationContext();
@@ -216,7 +238,7 @@ public class ReminderActivity extends Activity {
         ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).cancel(Alarms.notifId(a));
     }
 
-    private void dismiss() { cancelNotif(); finish(); }
+    private void dismiss() { stopRing(); cancelNotif(); finish(); }
 
     private void unlockThen(Runnable r) {
         KeyguardManager km = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);

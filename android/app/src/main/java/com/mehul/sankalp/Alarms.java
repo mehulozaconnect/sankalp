@@ -198,8 +198,15 @@ final class Alarms {
         } catch (Exception ignored) { }
     }
 
+    static final String CHQ = "rem_card";
     static void channel(Context ctx) {
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm.getNotificationChannel(CHQ) == null) {
+            // used while the reminder card is on screen: the card itself rings, so no second pop-up at the top
+            NotificationChannel q = new NotificationChannel(CHQ, "Reminders shown as a card", NotificationManager.IMPORTANCE_LOW);
+            q.setSound(null, null); q.enableVibration(false); q.setShowBadge(true);
+            nm.createNotificationChannel(q);
+        }
         if (nm.getNotificationChannel(CH) == null) {
             // Reminders always make a sound: they play on the alarm volume, so they are heard even when the ringer is on vibrate.
             NotificationChannel ch = new NotificationChannel(CH, "Task reminders", NotificationManager.IMPORTANCE_HIGH);
@@ -261,7 +268,9 @@ final class Alarms {
         Icon ic = Icon.createWithResource(ctx, R.drawable.ic_stat);
         int n = a.optInt("n", 0);
         String text = n > 0 ? "Still not done" : a.optString("body");
-        Notification.Builder b = new Notification.Builder(ctx, CH)
+        boolean viaCard = !a.optBoolean("hush") && android.provider.Settings.canDrawOverlays(ctx) && !idle(ctx);
+        if (viaCard) try { a.put("cardRing", true); } catch (Exception ignored) { }
+        Notification.Builder b = new Notification.Builder(ctx, viaCard ? CHQ : CH)
                 .setSmallIcon(R.drawable.ic_stat)
                 .setColor(0xFF2F7BEA)
                 .setContentTitle((a.optInt("prio") == 1 ? "P1 · " : "") + a.optString("title"))
@@ -287,7 +296,7 @@ final class Alarms {
         }
         boolean hush = a.optBoolean("hush");
         // "Keep reminding" tasks ring and vibrate again and again until you answer (Done, Snooze, open or swipe), for up to 90 seconds
-        boolean ring = !hush && a.optInt("nag", 0) > 0 && !a.optBoolean("meet");
+        boolean ring = !hush && !viaCard && a.optInt("nag", 0) > 0 && !a.optBoolean("meet");
         if (hush) b.setOnlyAlertOnce(true);
         else if (cardOn(ctx) && idle(ctx)) b.setFullScreenIntent(ReminderActivity.pending(ctx, a, nid + 3), true);
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
