@@ -4278,7 +4278,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.17.3';
+const APPV = '6.17.4';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -7395,11 +7395,24 @@ function fuSplitNext(txt) {
 const fuDDMM = d => { const x = pYmd(d); return `${pad(x.getDate())}-${pad(x.getMonth() + 1)}-${x.getFullYear()}`; };
 function fuAskNext(t) { const el = $('#fuWrap'); if (!el) return; el.innerHTML = `<div class="fu-card ask"><div class="fu-k">Logged ✓</div><p class="fu-note" style="margin-top:4px">Plan the next follow-up now, while it's fresh?</p><div class="fu-btns"><button class="pri" data-fu="edit" data-id="${t.id}">Plan next</button><button data-fu="skip" data-id="${t.id}">Not now</button></div></div>`; }
 function fuInsertLine(html, line) {
-  const box = document.createElement('div'); box.innerHTML = cleanHtml(html); const blocks = [...box.children];
-  const h = blocks.find(el => /^\s*follow[\s\-–]*ups?\b/i.test(el.textContent || ''));
-  if (h) { let at = h; let n = h.nextElementSibling; while (n && !(n.textContent || '').trim() && !n.querySelector('img,table')) { at = n; n = n.nextElementSibling; } if (at === h) h.insertAdjacentHTML('afterend', line); else at.insertAdjacentHTML('afterend', line); return box.innerHTML; }
-  return (box.innerHTML ? box.innerHTML + '<div><br></div>' : '') + '<div><mark><b>Follow-ups</b></mark></div>' + line;
+  // Find the "Follow-ups" heading wherever it sits (even inside a wrapper), merge duplicate headings, put the newest entry right under it
+  const box = document.createElement('div'); box.innerHTML = cleanHtml(html);
+  const isH = el => /^\s*follow[\s\-–]*ups?\s*[-–:]?\s*$/i.test((el.textContent || '').replace(/ /g, ' '));
+  const hs = [...box.querySelectorAll('*')].filter(el => isH(el) && !(el.parentElement && el.parentElement !== box && isH(el.parentElement)));
+  if (!hs.length) return (box.innerHTML ? box.innerHTML + '<div><br></div>' : '') + '<div><mark><b>Follow-ups</b></mark></div>' + line;
+  const h = hs[0];
+  // later duplicate headings: lift their entries up under the first heading (they are newer), then drop the duplicate heading
+  hs.slice(1).reverse().forEach(d => { const moved = []; let n = d.nextElementSibling; while (n && !isH(n)) { const nx = n.nextElementSibling; moved.push(n); n = nx; }
+    let prev = d.previousElementSibling; while (prev && !(prev.textContent || '').trim() && !prev.querySelector('img,table')) { const pp = prev.previousElementSibling; prev.remove(); prev = pp; }
+    d.remove(); let at = h; moved.forEach(m => { at.insertAdjacentElement('afterend', m); at = m; }); });
+  let at = h, n = h.nextElementSibling; while (n && !(n.textContent || '').trim() && !n.querySelector('img,table') && n.tagName !== 'HR') { at = n; n = n.nextElementSibling; }
+  if (line) at.insertAdjacentHTML('afterend', line);
+  // a divider line under every entry
+  [...box.querySelectorAll('div,p')].filter(el => /^\s*last\s+contacted\b/i.test(el.textContent || '') && !el.querySelector('div,p')).forEach(el => { let n = el.nextElementSibling; while (n && n.tagName !== 'HR' && !(n.textContent || '').trim() && !n.querySelector('img,table')) n = n.nextElementSibling; if (!n || n.tagName !== 'HR') el.insertAdjacentHTML('afterend', '<hr>'); });
+  return box.innerHTML;
 }
+// one-time tidy: merge duplicate Follow-ups headings in existing notes, newest first, with dividers
+setTimeout(() => afterSync(() => setTimeout(() => { if (S.settings.fuMerge1) return; let n = 0; S.tasks.forEach(t => { if (!t.notes || (t.notes.match(/follow[\s\-–]*ups?/gi) || []).length < 2) return; const o = fuInsertLine(t.notes, ''); if (o !== t.notes) { t.notes = o; n++; } }); S.settings.fuMerge1 = true; save(); if (n) render(); }, 2500)), 700);
 // "Last contacted - 19-11-2026" turns bold by itself so each contact stands out in the notes
 const LC_RE = /^(\s*last\s+contact(?:ed)?\s*[-–—:]\s*\d{1,2}[-/. ](?:\d{1,2}|[a-z]{3,9})[-/. ]\d{2,4})/i;
 function lcBold(ed) {
