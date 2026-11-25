@@ -115,7 +115,13 @@ public class ReminderActivity extends Activity {
         LinearLayout top = new LinearLayout(this);
         top.setGravity(Gravity.CENTER_VERTICAL);
         String when = new SimpleDateFormat("h:mm a", Locale.US).format(new Date(a.optLong("at", System.currentTimeMillis()))).toLowerCase(Locale.US);
-        TextView head = text("Sankalp  ·  " + when, 13, muted, true);
+        android.widget.ImageView logo = new android.widget.ImageView(this);
+        logo.setImageResource(R.drawable.dayline_logo);
+        logo.setClipToOutline(true);
+        logo.setOutlineProvider(new android.view.ViewOutlineProvider() { public void getOutline(android.view.View v, android.graphics.Outline o) { o.setRoundRect(0, 0, v.getWidth(), v.getHeight(), dp(6)); } });
+        LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(dp(22), dp(22)); llp.setMargins(0, 0, dp(8), 0);
+        top.addView(logo, llp);
+        TextView head = text("Dayline  ·  " + when, 13, muted, true);
         top.addView(head, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
         TextView x = text("✕", 18, muted, false);
         x.setPadding(dp(10), dp(4), dp(2), dp(4));
