@@ -1212,6 +1212,11 @@ body.selmode #fab{display:none!important}
 .cl .clx{display:block;height:auto;padding:12px 0 10px;cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;overflow-wrap:anywhere}
 .clg [data-sgf]{cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;padding:6px 0}.clg .sgch{display:inline-grid;width:18px;height:18px;vertical-align:-3px;margin-right:4px;color:var(--muted);transition:transform .18s}.clg .sgch svg{width:17px;height:17px}.clg.fold .sgch{transform:rotate(-90deg)}.clg .sgpv{display:block;font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .clnote{display:block;font-size:13px;color:var(--soft);margin:-4px 0 8px;line-height:1.35;overflow-wrap:anywhere}.clg .clnote{margin:2px 0 0}
+.rf-phase{margin:6px 16px 10px;padding:16px 18px;border-radius:20px;color:#fff;background:linear-gradient(135deg,#F59E0B,#EA580C)}.rf-phase.ph-mid{background:linear-gradient(135deg,#0EA5E9,#2563EB)}.rf-phase.ph-pm{background:linear-gradient(135deg,#4338CA,#7C3AED)}
+.rf-phase b{display:block;font-size:20px}.rf-phase span{display:block;font-size:13.5px;opacity:.9;margin-top:2px}.rf-steps{display:flex;align-items:center;gap:6px;margin-top:12px;flex-wrap:wrap}.rf-steps i{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:800;background:rgba(255,255,255,.22)}.rf-steps i.ok{background:#fff;color:#16A34A}.rf-steps em{font-style:normal;font-size:12.5px;font-weight:700;margin-right:6px}
+.rf-n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--on-accent,#fff);font-size:11.5px;font-weight:800;margin-right:8px;vertical-align:1px}.rf-k small{color:var(--muted);font-weight:600;margin-left:6px}
+.rf-tl{display:flex;flex-direction:column;gap:6px;margin-top:8px}.rf-tt{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:14.5px;text-align:left;text-decoration:none}.rf-tt i{font-style:normal;color:var(--muted);width:18px;flex:none}.rf-tt.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--bg))}.rf-tt.on i{color:#F59E0B}.rf-tt span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}.rf-tt small{color:var(--muted)}.rf-tt.dn span{color:var(--muted);text-decoration:line-through}.rf-tt.dn i{color:#16A34A}
+.rf-mv{border:0;background:color-mix(in srgb,var(--accent) 14%,var(--bg));color:var(--accent-text);font:inherit;font-size:12.5px;font-weight:700;padding:6px 10px;border-radius:999px;cursor:pointer;flex:none}
 .sgbtn{margin-left:auto;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:15px;border:1px solid var(--line);background:none;color:var(--accent-text);font:inherit;font-size:13px;font-weight:700;cursor:pointer;text-transform:none;letter-spacing:0}.sgbtn svg{width:15px;height:15px}
 #pSubs h3{display:flex;align-items:center}
 .clg{background:var(--surface);border-radius:12px;margin-top:8px;border-bottom:0!important}.clg .clgn{display:block;font-size:15.5px;font-weight:700;padding:2px 0}.clg .clgn em{font-style:normal;font-weight:600;font-size:13px;color:var(--muted);margin-left:4px}.clg.done .clgn{color:var(--muted);text-decoration:line-through}
@@ -4273,7 +4278,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.16.1';
+const APPV = '6.17';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -6257,22 +6262,41 @@ function rfToday() {
   J.dec.filter(x => !x.outcome && x.due <= td).slice(0, 1).forEach(x => h += `<section class="rf-card"><b>⚖️ How did it turn out?</b><span>${fmtShort(x.at)}: ${esc(x.q)}</span><span class="rf-mut">You chose: ${esc(x.choice || '')}</span><button class="btn sec" data-rf="decreview" data-id="${x.id}">Tell your mentor</button></section>`);
   // Month end: does the nudge time still suit you?
   { const t = pYmd(td), last = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate(), mk = td.slice(0, 7); if (t.getDate() >= last - 2 && J.cfg.asked !== mk && Object.keys(J.days).length >= 5) h += `<section class="rf-card"><b>🗓 Quick check for next month</b><span>Your check-in nudge comes at ${fmtTime(J.cfg.eve || '21:30')}. Still the right time?</span><div class="rf-row" style="margin-top:10px">${['20:30', '21:00', '21:30', '22:00'].map(x => `<button type="button" class="rf-chip${(J.cfg.eve || '21:30') === x ? ' on' : ''}" data-rf="evepick" data-v="${x}">${fmtTime(x)}</button>`).join('')}<button type="button" class="rf-chip" data-rf="evepick" data-v="keep">Keep it</button></div></section>`; }
-  // Morning: intention and affirmation
-  const int = e?.int || {};
-  if (!int.t) h += `<section class="rf-card rf-int"><div class="rf-k">${hr < 14 ? 'This morning' : 'Today'} I intend to</div><textarea class="inp rf-ta" id="rfInt" rows="2" placeholder="One thing that would make today feel right"></textarea>${rfIntIdeas()}<button class="btn acc" data-rf="intsave">Set intention</button></section>`;
-  else h += `<section class="rf-card rf-int"><div class="rf-k">Today I intend to</div><div class="rf-intt">${esc(int.t)}</div>${hr >= 17 || e?.mood ? `<div class="rf-k" style="margin-top:12px">Did you live it?</div><div class="rf-row">${[[true, 'Yes 🌱'], ['part', 'Partly'], [false, 'Not today']].map(([v, l]) => `<button type="button" class="rf-chip${int.lived === v ? ' on' : ''}" data-rf="lived" data-v="${v}">${l}</button>`).join('')}</div>` : `<button class="rf-link" data-rf="intedit">Change</button>`}</section>`;
-  if (J.aff && J.aff.text) { const a = J.aff, c = (a.log || {})[td] || {}; const n = Math.min(21, dayDiff(a.start, td) + 1); h += `<section class="rf-card rf-affc"><div class="rf-k">Affirmation · day ${Math.max(1, n)} of 21</div><div class="rf-aff">“${esc(a.text)}”</div>${rf369(c)}</section>`; }
-  // Evening check-in
+  // One clear flow by time of day: morning = close yesterday + plan, midday = stay on track, evening = close today + set up tomorrow
+  const int = e?.int || {}, ph = hr < 12 ? 'am' : hr < 17 ? 'mid' : 'pm';
+  const TD = todayData(), openT = [...TD.overdue, ...TD.day, ...TD.evening].filter(t => !t.done && !t.meeting);
+  const top = ((S.days[td] || {}).top || []).filter(id => getTask(id));
+  const doneT = S.tasks.filter(t => t.done && t.doneAt && ymd(new Date(t.doneAt)) === td && !t.meeting);
   const y = J.days[addDays(td, -1)];
-  if (!y?.mood && hr < 12 && !e?.mood) h += `<section class="rf-card rf-yday"><b>Yesterday in 30 seconds?</b>${rfMoodRow(null).replace(/data-rf="mood"/g, 'data-rf="ymood"')}</section>`;
+  const steps = { am: ['Close yesterday', 'Intention', 'Top 3'], mid: ['Intention', 'Top 3', 'Next move'], pm: ['How it went', 'Wins', 'Tomorrow'] }[ph];
+  const stepDone = { am: [!!y?.mood, !!int.t, top.length >= 1], mid: [!!int.t, top.length && top.every(id => getTask(id).done), false], pm: [!!e?.mood, doneT.length > 0, !!(J.days[addDays(td, 1)]?.int?.t)] }[ph];
+  h += `<section class="rf-phase ph-${ph}"><b>${{ am: '🌅 Start your day', mid: '☀️ Stay on track', pm: '🌙 Close your day' }[ph]}</b><span>${{ am: 'Two minutes now, a calmer day after.', mid: 'A quick look at what matters most.', pm: 'Look back, then set up tomorrow.' }[ph]}</span><div class="rf-steps">${steps.map((x, k) => `<i class="${stepDone[k] ? 'ok' : ''}">${stepDone[k] ? '✓' : k + 1}</i><em>${x}</em>`).join('')}</div></section>`;
+  const sec = (n, title, body, cls = '') => `<section class="rf-card ${cls}"><div class="rf-k"><span class="rf-n">${n}</span>${title}</div>${body}</section>`;
+  const topList = () => openT.length ? `<div class="rf-tl">${[...openT].sort((a, b) => (top.includes(b.id) - top.includes(a.id)) || sortTasks(a, b)).slice(0, 8).map(t => `<button type="button" class="rf-tt${top.includes(t.id) ? ' on' : ''}" data-rf="rftop" data-id="${t.id}"><i>${top.includes(t.id) ? '★' : '☆'}</i><span>${esc(t.title)}</span>${t.time ? `<small>${fmtTime(t.time)}</small>` : ''}</button>`).join('')}</div>` : '<p class="rf-mut">Nothing planned for today yet.</p>';
+  if (ph === 'am') {
+    h += sec(1, 'Close yesterday', y?.mood ? `<p class="rf-mut">Yesterday: ${rfMood(y.mood)[2]} ${rfMood(y.mood)[1]} ✓</p>` : `<p class="rf-mut">One tap. How was yesterday?</p>${rfMoodRow(null).replace(/data-rf="mood"/g, 'data-rf="ymood"')}`);
+    h += sec(2, 'Today I intend to', !int.t ? `<textarea class="inp rf-ta" id="rfInt" rows="2" placeholder="One thing that would make today feel right"></textarea>${rfIntIdeas()}<button class="btn acc" data-rf="intsave">Set intention</button>` : `<div class="rf-intt">${esc(int.t)}</div><button class="rf-link" data-rf="intedit">Change</button>`, 'rf-int');
+    h += sec(3, `Pick your top 3 <small>${top.length}/3</small>`, `<p class="rf-mut">Star the 3 that would make today a win. They lead your Today list.</p>${topList()}`);
+  } else if (ph === 'mid') {
+    h += sec(1, 'Your intention', int.t ? `<div class="rf-intt">${esc(int.t)}</div><button class="rf-link" data-rf="intedit">Change</button>` : `<textarea class="inp rf-ta" id="rfInt" rows="2" placeholder="It is not too late: one thing for the rest of today"></textarea><button class="btn acc" data-rf="intsave">Set intention</button>`, 'rf-int');
+    const tops = top.map(getTask); h += sec(2, `Top 3 <small>${tops.filter(t => t.done).length}/${tops.length || 3} done</small>`, tops.length ? `<div class="rf-tl">${tops.map(t => `<a class="rf-tt${t.done ? ' dn' : ''}" href="#today"><i>${t.done ? '✓' : '○'}</i><span>${esc(t.title)}</span></a>`).join('')}</div>` : `<p class="rf-mut">No top 3 yet. Star them now:</p>${topList()}`);
+    const nx = top.map(getTask).find(t => !t.done) || openT.slice().sort(sortTasks)[0];
+    h += sec(3, 'Next move', nx ? `<p class="rf-mut">Do this next:</p><div class="rf-intt">${esc(nx.title)}</div><a class="btn acc" href="#focus" data-rf="focusnext" data-id="${nx.id}">Start 25-min focus</a>` : `<p class="rf-mut">All clear. Take a real break 🌿</p>`);
+  } else {
   const f = e?.facts || rfFacts(td);
-  h += `<section class="rf-card"><div class="rf-k">${e?.mood ? 'Today' : 'How was today?'}</div>${rfMoodRow(e, true)}
+  h += `<section class="rf-card"><div class="rf-k"><span class="rf-n">1</span>${e?.mood ? 'Today' : 'How was today?'}</div>${rfMoodRow(e, true)}
    <div class="rf-k">Energy</div><input type="range" class="rf-range" id="rfEn" min="0" max="100" step="5" value="${e?.energy ?? 50}" aria-label="Energy, drained to charged"><div class="rf-lab"><span>Drained</span><span>Charged</span></div>
    <div class="rf-k">I felt</div><div class="rf-chips">${rfFeelChips(e, [...new Set([...rfQuickFeels(), ...(e?.feels || [])])])}<a class="rf-chip more" href="#reflect/feel">More feelings…</a></div>
    <div class="rf-k">Today had · added by Dayline</div><div class="rf-chips">${rfFactChips(f)}</div>
    <div class="rf-k">One line about today</div><div class="rf-line"><textarea class="inp rf-ta" id="rfLine" rows="2" placeholder="What stood out?">${esc(e?.line || '')}</textarea>${rfMicBtn('rfLine')}</div>
    <details class="rf-grat"${e?.grat?.some(Boolean) ? ' open' : ''}><summary>🙏 Three good things <span>optional</span></summary>${[0, 1, 2].map(i => `<input class="inp" id="rfG${i}" value="${esc(e?.grat?.[i] || '')}" placeholder="${['Something I am grateful for', 'Someone who made it better', 'A small win'][i]}">`).join('')}</details>
    <div class="rf-row rf-act"><button class="btn acc" data-rf="save">${e?.mood ? 'Update' : 'Save'}</button><a class="btn sec" href="#reflect/day/${td}">Write more →</a></div></section>`;
+    const lv = int.t ? `<div class="rf-k" style="margin-top:12px">You intended: ${esc(int.t)}. Did you live it?</div><div class="rf-row">${[[true, 'Yes 🌱'], ['part', 'Partly'], [false, 'Not today']].map(([v, l]) => `<button type="button" class="rf-chip${int.lived === v ? ' on' : ''}" data-rf="lived" data-v="${v}">${l}</button>`).join('')}</div>` : '';
+    h += sec(2, `Wins today <small>${doneT.length}</small>`, (doneT.length ? `<div class="rf-tl">${doneT.slice(0, 6).map(t => `<div class="rf-tt dn"><i>✓</i><span>${esc(t.title)}</span></div>`).join('')}${doneT.length > 6 ? `<p class="rf-mut">+${doneT.length - 6} more</p>` : ''}</div>` : '<p class="rf-mut">No tasks ticked today. Rest counts too.</p>') + lv);
+    const left = openT.filter(t => t.date && t.date <= td).slice(0, 6), tm = J.days[addDays(td, 1)]?.int?.t;
+    h += sec(3, 'Set up tomorrow', `${left.length ? `<p class="rf-mut">Still open. Move to tomorrow?</p><div class="rf-tl">${left.map(t => `<div class="rf-tt"><span>${esc(t.title)}</span><button type="button" class="rf-mv" data-rf="rfmove" data-id="${t.id}">Tomorrow →</button></div>`).join('')}</div>` : ''}<div class="rf-k" style="margin-top:12px">Tomorrow I intend to</div>${tm ? `<div class="rf-intt">${esc(tm)}</div>` : `<textarea class="inp rf-ta" id="rfTm" rows="2" placeholder="One thing for tomorrow"></textarea><button class="btn acc" data-rf="tmint">Save for tomorrow</button>`}`);
+  }
+  if (J.aff && J.aff.text) { const a = J.aff, c = (a.log || {})[td] || {}; const n = Math.min(21, dayDiff(a.start, td) + 1); h += `<section class="rf-card rf-affc"><div class="rf-k">Affirmation · day ${Math.max(1, n)} of 21</div><div class="rf-aff">“${esc(a.text)}”</div>${rf369(c)}</section>`; }
   h += rfHome();
   // Low day: something you were grateful for before
   if (e?.mood && e.mood <= 2) { const g = Object.values(J.days).filter(x => x.d !== td).flatMap(x => (x.grat || []).filter(Boolean).map(t => [t, x.d])); if (g.length) { const [t, d] = g[(new Date().getDate() + g.length) % g.length]; h += `<section class="rf-card rf-jar"><b>🫙 From your gratitude jar</b><p>“${esc(t)}”</p><span class="rf-mut">${fmtShort(d)}</span></section>`; } }
@@ -6625,6 +6649,10 @@ document.addEventListener('click', ev => {
     body: () => { const e = rfDay(td, true); e.body = e.body.includes(v) ? e.body.filter(x => x !== v) : [...e.body, v]; rfTouch(e); renderMainOnly(); },
     save: () => rfSaveCheckin(false),
     intsave: () => { const t = $('#rfInt')?.value.trim(); if (!t) { $('#rfInt')?.focus(); return; } const e = rfDay(td, true); e.int = { t, lived: null }; rfTouch(e); render(); toast('Intention set. Dayline asks tonight if you lived it 🎯'); },
+    rftop: () => { const id = b.dataset.id, d = (S.days[td] ||= {}); let t3 = (d.top || []).filter(x => getTask(x)); if (t3.includes(id)) t3 = t3.filter(x => x !== id); else { if (t3.length >= 3) { toast('Top 3 is full. Unstar one first'); return; } t3.push(id); } d.top = t3; save(); renderMainOnly(); },
+    rfmove: () => { const t = getTask(b.dataset.id); if (!t) return; setDate(t, addDays(td, 1)); save(); renderMainOnly(); toast(`Moved to tomorrow: ${t.title}`); },
+    tmint: () => { const t = $('#rfTm')?.value.trim(); if (!t) { $('#rfTm')?.focus(); return; } const e2 = rfDay(addDays(td, 1), true); e2.int = { t, lived: null }; rfTouch(e2); renderMainOnly(); toast('Saved. It greets you tomorrow morning 🌅'); },
+    focusnext: () => { ev.preventDefault(); S.timer.taskId = b.dataset.id; resetTimer('work'); startTimer(); go('focus'); },
     intidea: () => { const el = $('#rfInt'); if (el) { el.value = b.textContent; el.focus(); } },
     intedit: async () => { const e = rfDay(td, true); const t = await uiPrompt('Today I intend to…', e.int?.t || ''); if (t == null) return; e.int = t.trim() ? { t: t.trim(), lived: null } : null; rfTouch(e); render(); },
     lived: () => { const e = rfDay(td, true); e.int.lived = v === 'true' ? true : v === 'false' ? false : 'part'; rfTouch(e); renderMainOnly(); if (e.int.lived === true) toast('Lived it 🌱 That is how change happens.'); },
