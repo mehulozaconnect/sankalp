@@ -4273,7 +4273,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.15.8';
+const APPV = '6.15.9';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5997,7 +5997,8 @@ function tick() {
   try { waterTick(Date.now()); } catch (e) { }
   try { rfTick(Date.now()); } catch (e) { }
   const now = Date.now(), td = today(), hm = nowHM(); let changed = false; const quiet = inQuiet(), shield = shielded(); let missed = 0; const srv = pushLive(); if (srv) pushCardTick();
-  const nativeRem = phoneLinked() && Object.keys(S.phone || {}).length && S.remAck && S.remAck.v === remSig();
+  // on an Android phone with the Dayline phone app, the phone app alone rings, so the web app stays quiet (no double alerts)
+  const nativeRem = (phoneLinked() && Object.keys(S.phone || {}).length && S.remAck && S.remAck.v === remSig()) || (/Android/i.test(navigator.userAgent) && !S.settings.phoneOff && Object.keys(S.phone || {}).length > 0);
   S.tasks.forEach(t => {
     if (t.done || nativeRem) return; const hold = (quiet || shield) && t.priority !== 1;
     const nag = nagOf(t);

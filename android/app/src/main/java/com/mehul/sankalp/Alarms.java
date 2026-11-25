@@ -221,7 +221,7 @@ final class Alarms {
             android.os.PowerManager pm = (android.os.PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
             android.app.KeyguardManager km = (android.app.KeyguardManager) ctx.getSystemService(Context.KEYGUARD_SERVICE);
             boolean idle = !pm.isInteractive() || (km != null && km.isKeyguardLocked());
-            if (!idle) return;
+            // the card shows every time, also while the phone is in use (overlay permission allows it)
             Intent i = new Intent(ctx, ReminderActivity.class)
                     .setData(Uri.parse("sankalp://card/" + Uri.encode(a.optString("id"))))
                     .putExtra("a", a.toString())
