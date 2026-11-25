@@ -4273,7 +4273,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.15.9';
+const APPV = '6.16';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
@@ -5337,8 +5337,15 @@ function entities() {
   o['meta:prefs'] = { phoneOff: !!st.phoneOff, coach: coachSet(), appmap: st.appmap, nagDef: st.nagDef, workStart: st.workStart, checkin: st.checkin, catv: st.catv, aiModel: st.aiModel, aiPrivate: st.aiPrivate, logo: st.logo, darkStyle: st.darkStyle, gcid: st.gcid, theme: st.theme, mode: st.mode, accent: st.accent, font: st.font, pomo: st.pomo, brk: st.brk, morning: st.morning, shutdown: st.shutdown, meetBefore: st.meetBefore, quietOn: st.quietOn, quietStart: st.quietStart, quietEnd: st.quietEnd, shield: st.shield, showDone: st.showDone, todayGroup: st.todayGroup, tdv: st.tdv, grHist: st.grHist, fx: st.fx, popRem: st.popRem, inCard: st.inCard, srvPush: st.srvPush };
   return o;
 }
+// "Mark done" on a repeating task from the phone app card: tick it here so the next one is made, without opening Dayline on the phone
+let PD_T = null; const PD_Q = [];
+function pdoneQ(key, val) { if (!val || !val.id || Date.now() - (+val.at || 0) > 7 * 864e5) return; PD_Q.push([key, val]); clearTimeout(PD_T); PD_T = setTimeout(pdoneRun, 1200); }
+function pdoneRun() { const seen = (S.settings.pdoneSeen ||= {}); let n = 0;
+  while (PD_Q.length) { const [k, v] = PD_Q.shift(); if (seen[k]) continue; seen[k] = Date.now(); const t = getTask(v.id); if (t && !t.done && t.repeat && (!v.date || t.date === v.date)) { toggleDone(t.id); n++; } }
+  Object.keys(seen).forEach(k => { if (Date.now() - seen[k] > 8 * 864e5) delete seen[k]; }); save(); if (n) render(); }
 function setEntity(key, val) {
   const [kind, ...rest] = key.split(':'); const id = rest.join(':');
+  if (kind === 'pdone') { pdoneQ(key, val); return; }
   if (kind === 'jday') { rf().days[id] = val; return; } if (key === 'meta:jr') { const J = rf(); S.jr = { ...val, days: J.days }; rf(); return; }
   const put = (arr) => { const i = arr.findIndex(x => x.id === id); if (i >= 0) arr[i] = val; else arr.push(val); };
   if (kind === 'task' && trash().some(x => x.id === id)) { SYNC_HELD[id] = val; return; }

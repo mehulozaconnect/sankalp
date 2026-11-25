@@ -33,7 +33,13 @@ public class ActionReceiver extends BroadcastReceiver {
                     String name = a.optString("name");
                     JSONObject t = Api.getD(ctx, name);
                     if (t != null) {
-                        if (a.has("sub")) {
+                        if (a.optBoolean("rep") && !a.has("sub")) {
+                            // repeating task: leave a note; Dayline (phone, laptop) ticks it and makes the next one on its next sync, without opening anything here
+                            long now = System.currentTimeMillis();
+                            String mark = name.substring(0, name.lastIndexOf('/') + 1) + "pdone%3A" + now;
+                            JSONObject m = new JSONObject().put("id", t.optString("id")).put("date", t.optString("date", "")).put("at", now);
+                            Api.commit(ctx, new JSONArray().put(Api.write(mark, m.toString(), "pdone")));
+                        } else if (a.has("sub")) {
                             JSONArray subs = t.optJSONArray("subs");
                             if (subs != null) for (int i = 0; i < subs.length(); i++) {
                                 JSONObject c = subs.getJSONObject(i);
@@ -45,7 +51,7 @@ public class ActionReceiver extends BroadcastReceiver {
                             t.put("nagAt", 0);
                             t.put("snoozeUntil", 0);
                         }
-                        Api.commit(ctx, new JSONArray().put(Api.write(name, t.toString(), "task")));
+                        if (!(a.optBoolean("rep") && !a.has("sub"))) Api.commit(ctx, new JSONArray().put(Api.write(name, t.toString(), "task")));
                     }
                 }
             } catch (Exception e) {

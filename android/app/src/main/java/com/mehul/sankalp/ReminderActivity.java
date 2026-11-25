@@ -300,14 +300,6 @@ public class ReminderActivity extends Activity {
 
     private void done() {
         if (a.optBoolean("test")) { android.widget.Toast.makeText(this, "Works. Real tasks are marked done in Sankalp.", android.widget.Toast.LENGTH_SHORT).show(); dismiss(); return; }
-        if (a.optBoolean("rep") && !a.has("sub")) {
-            // Repeating tasks are completed in Sankalp so the next one is created correctly.
-            unlockThen(() -> {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(Alarms.SITE + "?done=" + Uri.encode(a.optString("tid")))));
-                dismiss();
-            });
-            return;
-        }
         sendBroadcast(new Intent(this, ActionReceiver.class).setAction("done").putExtra("a", a.toString()));
         dismiss();
     }

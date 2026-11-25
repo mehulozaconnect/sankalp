@@ -257,12 +257,7 @@ final class Alarms {
         Intent open = new Intent(Intent.ACTION_VIEW, Uri.parse(SITE + "?open=" + Uri.encode(tid)));
         PendingIntent openPi = PendingIntent.getActivity(ctx, nid, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         PendingIntent donePi;
-        if (a.optBoolean("rep") && !a.has("sub")) {
-            Intent d = new Intent(Intent.ACTION_VIEW, Uri.parse(SITE + "?done=" + Uri.encode(tid)));
-            donePi = PendingIntent.getActivity(ctx, nid + 1, d, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        } else {
-            donePi = action(ctx, "done", a, nid + 1);
-        }
+        donePi = action(ctx, "done", a, nid + 1); // repeating tasks too: Dayline makes the next one when it next syncs
         Icon ic = Icon.createWithResource(ctx, R.drawable.ic_stat);
         int n = a.optInt("n", 0);
         String text = n > 0 ? "Still not done" : a.optString("body");
