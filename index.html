@@ -3526,11 +3526,18 @@ function habitStats(id, keepMonth) {
   ${hUnit(x) ? hMStatsHtml(x) : ''}
   ${nextMs ? `<div class="milestone">Next milestone: <b>${nextMs}</b> check-ins, ${nextMs - total} to go${nextMs === 108 || nextMs === 1008 ? ' (a full mala)' : ''}.</div>` : ''}
   <div class="monthnav"><button class="iconbtn" id="hsPrev" aria-label="Previous month">${I.back}</button><b>${MONSL[m - 1]} ${y}</b><button class="iconbtn" id="hsNext" aria-label="Next month">${I.next}</button></div>
-  <div class="mcal" id="hsCal">${cal}</div><p class="hint" style="margin-top:10px">Tap a day: once for done, twice for missed, three times for skipped, again to clear. Dashed days are rest days.</p>`);
+  <div class="mcal" id="hsCal">${cal}</div><p class="hint" style="margin-top:10px">Tap a day: once for done, twice for missed, three times for skipped, again to clear. On a laptop, right-click a day to pick. Dashed days are rest days.</p>`);
   $('#hsEdit').onclick = () => habitForm(id);
   $('#hsPrev').onclick = () => { const d = new Date(y, m - 2, 1); hstatMonth = ymd(d).slice(0, 7); habitStats(id, true); };
   $('#hsNext').onclick = () => { const d = new Date(y, m, 1); if (ymd(d) > td) return; hstatMonth = ymd(d).slice(0, 7); habitStats(id, true); };
   $$('#hsCal button[data-k]').forEach(b => b.onclick = () => { if (hUnit(x)) hLogSheet(id, b.dataset.k); else { cycleHabit(x, b.dataset.k); habitStats(id, true); } });
+  // right-click (laptop) or long-press: pick Done / Missed / Skip / Clear for that day
+  $$('#hsCal button[data-k]').forEach(b => b.oncontextmenu = ev => { ev.preventDefault(); closeCtx(); const k = b.dataset.k, r = b.getBoundingClientRect(), cur = x.log[k];
+    const m = document.createElement('div'); m.id = 'ctx'; m.className = 'ctx'; m.style.cssText = `position:fixed;z-index:9999;min-width:170px;left:${Math.min(r.left, innerWidth - 190)}px;top:${Math.min(r.bottom + 4, innerHeight - 200)}px`;
+    m.innerHTML = `<div style="padding:8px 12px 4px;font-size:12px;font-weight:700;color:var(--muted)">${fmtDate(k)}</div>` + [[1, '✓ Done'], [-1, '✕ Missed'], [0, '– Skip (rest day)'], ['c', 'Clear']].map(([v, l]) => `<button type="button" data-v="${v}" style="display:block;width:100%;text-align:left;padding:10px 14px;border:0;background:${cur === v ? 'var(--surface)' : 'none'};color:inherit;font:inherit;cursor:pointer">${l}</button>`).join('');
+    document.body.appendChild(m);
+    $$('button', m).forEach(o => o.onclick = () => { const v = o.dataset.v; if (v === 'c') { delete x.log[k]; if (x.amt) delete x.amt[k]; } else if (+v === 1 && hUnit(x)) { closeCtx(); hLogSheet(id, k); return; } else { x.log[k] = +v; if (+v !== 1 && x.amt) delete x.amt[k]; } save(); closeCtx(); habitStats(id, true); render(); });
+  });
   $$('.hbars button').forEach(b => b.onclick = () => hLogSheet(id, b.dataset.k));
 }
 
@@ -4278,7 +4285,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.17.4';
+const APPV = '6.17.5';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
