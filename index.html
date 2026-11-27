@@ -1795,6 +1795,8 @@ function isDocImg(src) { return new Promise(res => { const i = new Image(); i.on
 function tsvToHtml(s) { const rows = s.replace(/\r/g, '').replace(/\n+$/, '').split('\n'); if (rows.length < 1 || !rows.every(r => r.includes('\t')) || rows.length > 300) return ''; return '<table><tbody>' + rows.map(r => '<tr>' + r.split('\t').map(c => `<td>${esc(c.trim()) || '<br>'}</td>`).join('') + '</tr>').join('') + '</tbody></table><div><br></div>'; }
 function textToHtml(s) { if (!s) return ''; if (/^\s*<(div|p|b|ul|ol|mark|br|h3|i|u|table)\b/i.test(s)) return cleanHtml(s); { const t = tsvToHtml(s); if (t) return t; } return s.split('\n').map(l => `<div>${l ? esc(l) : '<br>'}</div>`).join(''); }
 function toolbarHtml() { return `<div class="ntool" role="toolbar" aria-label="Formatting">${[['bold', '<b>B</b>', 'Bold'], ['italic', '<i style="font-family:serif">I</i>', 'Italic'], ['underline', '<u>U</u>', 'Underline'], ['mark', '<mark style="background:#FFE58A;color:#1a1400;padding:0 5px;border-radius:3px">H</mark>', 'Highlight'], ['h3', '<b style="font-size:17px">T</b>', 'Heading'], ['pop:fs', '<span style="font-size:13px">A</span><span style="font-size:17px">A</span>&nbsp;▾', 'Text size'], ['pop:ff', 'Font&nbsp;▾', 'Font'], ['pop:ls', '•&nbsp;List&nbsp;▾', 'List style'],  ['table', '▦&nbsp;Table', 'Insert a table'], ['row', '+&nbsp;Row', 'Add a row to the table'], ['link', 'Link', 'Add link'], ['removeFormat', 'Clear', 'Clear formatting']].map(([c, l, a]) => `<button type="button" data-cmd="${c}" aria-label="${a}" style="${l.length > 30 ? '' : 'padding:0 8px'}">${l}</button>`).join('')}<div class="npop" data-pop="fs" hidden>${[['fs:s', 'Small'], ['fs:n', 'Normal'], ['fs:l', 'Large'], ['fs:xl', 'Huge']].map(([c, l]) => `<button type="button" data-cmd="${c}" class="${c.slice(3) === 'n' ? '' : 'fs-' + c.slice(3)}">${l}</button>`).join('')}</div><div class="npop" data-pop="ff" hidden>${[['ff:default', 'Default'], ['ff:serif', 'Serif'], ['ff:mono', 'Mono'], ['ff:hand', 'Handwritten']].map(([c, l]) => `<button type="button" data-cmd="${c}" class="${c === 'ff:default' ? '' : 'ff-' + c.slice(3)}">${l}</button>`).join('')}</div><div class="npop" data-pop="ls" hidden>${[['ul:dot', '•  Bullets'], ['ul:arrow', '➤  Arrows'], ['ul:check', '☐  Checkboxes'], ['ul:dash', '–  Dashes'], ['ul:star', '★  Stars'], ['ol', '1.  Numbers']].map(([c, l]) => `<button type="button" data-cmd="${c}">${l}</button>`).join('')}</div></div>`; }
+// No browser right-click menu inside the app (it looks like a web page); text boxes and links keep it for copy/paste
+document.addEventListener('contextmenu', e => { if (e.defaultPrevented) return; const t = e.target; if (t.closest && t.closest('input,textarea,[contenteditable="true"],[contenteditable=""],a[href^="http"],img')) return; if (getSelection && String(getSelection()).trim()) return; e.preventDefault(); });
 function wireEditor(ed, bar, onSave) {
   let tm, range = null;
   // Checklist: tap the box to tick or untick an item (no keyboard pops up)
@@ -4285,7 +4287,7 @@ function settingsAll(arg) {
   return h;
 }
 /* Settings, grouped like a proper app: categories on the left (laptop) or a list you tap into (phone) */
-const APPV = '6.17.5';
+const APPV = '6.17.6';
 const SET_CATS = [
   ['account', 'Account', 'user', 'Sync, backup and your data'],
   ['notif', 'Notifications', 'bell', 'Reminders, quiet hours, check-ins'],
